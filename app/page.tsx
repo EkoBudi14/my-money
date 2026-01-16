@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import FinancialChart from '@/components/FinancialChart'
+import GoldPriceCard from '@/components/GoldPriceCard'
+import CurrencyCard from '@/components/CurrencyCard'
 import {
   Plus,
   Trash2,
@@ -226,7 +228,7 @@ export default function MoneyManager() {
         </header>
 
         {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Income */}
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
             <div className="flex justify-between items-start z-10 relative">
@@ -270,6 +272,12 @@ export default function MoneyManager() {
               </div>
             </div>
           </div>
+
+          {/* Gold Price */}
+          <GoldPriceCard />
+
+          {/* Currency (USD) */}
+          <CurrencyCard />
         </div>
 
         {/* Content Grid */}
