@@ -25,7 +25,8 @@ import {
   Package,
   Briefcase,
   Gift,
-  Landmark
+  Landmark,
+  Pencil
 } from 'lucide-react'
 
 // --- Types & Constants ---
@@ -66,6 +67,9 @@ export default function MoneyManager() {
   const [type, setType] = useState<'pemasukan' | 'pengeluaran'>('pemasukan')
   const [category, setCategory] = useState('')
 
+  // Edit State
+  const [editingId, setEditingId] = useState<number | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -97,8 +101,8 @@ export default function MoneyManager() {
     setLoading(false)
   }
 
-  // 2. Fungsi Tambah Transaksi
-  const addTransaction = async (e: React.FormEvent) => {
+  // 2. Fungsi Simpan (Tambah/Edit) Transaksi
+  const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Auto-fill title if empty but category is selected
@@ -106,40 +110,83 @@ export default function MoneyManager() {
 
     if (!finalTitle || !amount || !category) return alert("Mohon lengkapi data!")
 
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert([{
-        title: finalTitle,
-        amount: parseFloat(amount),
-        type,
-        category,
-        created_at: new Date().toISOString()
-      }])
-      .select()
+    const payload = {
+      title: finalTitle,
+      amount: parseFloat(amount),
+      type,
+      category,
+      // If editing, don't update created_at, else set new
+      ...(editingId ? {} : { created_at: new Date().toISOString() })
+    }
+
+    let error;
+    let data;
+
+    if (editingId) {
+      // Update Mode
+      const res = await supabase
+        .from('transactions')
+        .update(payload)
+        .eq('id', editingId)
+        .select()
+
+      error = res.error
+      data = res.data
+    } else {
+      // Insert Mode
+      const res = await supabase
+        .from('transactions')
+        .insert([payload])
+        .select()
+
+      error = res.error
+      data = res.data
+    }
 
     if (error) {
       console.error(error)
       alert("Gagal menyimpan transaksi")
     } else {
-      if (data) {
-        const newTransaction = data[0] as unknown as Transaction
-        // Ensure local state has valid category (handle potential nulls from DB trigger if any)
-        newTransaction.category = newTransaction.category || category
+      if (data && data.length > 0) {
+        const savedTransaction = data[0] as unknown as Transaction
+        // Ensure category fallback
+        savedTransaction.category = savedTransaction.category || category
 
-        setTransactions([newTransaction, ...transactions])
+        if (editingId) {
+          // Update local state
+          setTransactions(transactions.map(t => t.id === editingId ? savedTransaction : t))
+        } else {
+          // Add to local state
+          setTransactions([savedTransaction, ...transactions])
+        }
 
-        // Reset Form
-        setTitle('')
-        setAmount('')
-        setCategory('')
-        setCurrentDate(new Date())
-        setIsModalOpen(false)
+        resetForm()
       }
     }
   }
 
+  const resetForm = () => {
+    setTitle('')
+    setAmount('')
+    setCategory('')
+    setType('pemasukan')
+    setEditingId(null)
+    setIsModalOpen(false)
+  }
+
+  const handleEditClick = (t: Transaction) => {
+    setEditingId(t.id)
+    setTitle(t.title)
+    setAmount(t.amount.toString())
+    setCategory(t.category)
+    setType(t.type)
+    setIsModalOpen(true)
+  }
+
   // 3. Fungsi Hapus Transaksi
   const deleteTransaction = async (id: number) => {
+    if (!confirm('Apakah anda yakin ingin menghapus transaksi ini?')) return;
+
     const { error } = await supabase
       .from('transactions')
       .delete()
@@ -335,17 +382,31 @@ export default function MoneyManager() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className={`font-bold text-base ${t.type === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                              {t.type === 'pemasukan' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
-                            </p>
-                            <button
-                              onClick={() => deleteTransaction(t.id)}
-                              className="p-1 hover:bg-rose-100 hover:text-rose-600 rounded text-slate-300 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                              title="Hapus"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+
+                          <div className="text-right flex items-center gap-3">
+                            <div className="flex flex-col items-end">
+                              <p className={`font-bold text-base ${t.type === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {t.type === 'pemasukan' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
+                              </p>
+                            </div>
+
+                            {/* Action Buttons (Visible on mobile/all) */}
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEditClick(t)}
+                                className="p-2 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
+                                title="Edit"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => deleteTransaction(t.id)}
+                                className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all"
+                                title="Hapus"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </li>
                       )
@@ -361,36 +422,36 @@ export default function MoneyManager() {
       {/* Floating Action Button (Mobile & Desktop) */}
       <button
         onClick={() => {
+          resetForm()
           setIsModalOpen(true)
-          setTitle('')
-          setAmount('')
-          setCategory('')
         }}
         className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-blue-500/30 transition-all active:scale-90 z-40"
       >
         <Plus className="w-8 h-8" />
       </button>
 
-      {/* Add Transaction Overlay/Modal */}
+      {/* Add/Edit Transaction Overlay/Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 sm:p-6">
           <div
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-            onClick={() => setIsModalOpen(false)}
+            onClick={resetForm}
           ></div>
 
           <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl z-50 p-6 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-200 h-[85vh] md:h-auto overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-800">Tambah Transaksi</h3>
+              <h3 className="text-xl font-bold text-slate-800">
+                {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
+              </h3>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={resetForm}
                 className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={addTransaction} className="space-y-6">
+            <form onSubmit={handleSaveTransaction} className="space-y-6">
 
               {/* Type Switcher */}
               <div className="flex bg-slate-100 p-1 rounded-2xl">
@@ -419,7 +480,7 @@ export default function MoneyManager() {
                   className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-bold text-2xl"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  autoFocus
+                  autoFocus={!editingId}
                 />
               </div>
 
@@ -466,7 +527,7 @@ export default function MoneyManager() {
                 type="submit"
                 className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30"
               >
-                Simpan Transaksi
+                {editingId ? 'Update Transaksi' : 'Simpan Transaksi'}
               </button>
             </form>
           </div>
