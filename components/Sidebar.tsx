@@ -40,7 +40,7 @@ export default function Sidebar() {
             {/* Mobile Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed z-[60] bottom-6 right-6 p-4 bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 transition-all active:scale-95"
+                className="md:hidden fixed z-[60] bottom-6 left-6 p-4 bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 transition-all active:scale-95"
             >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

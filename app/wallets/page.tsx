@@ -153,7 +153,7 @@ export default function WalletsPage() {
                                     <div className={`p-3 rounded-2xl text-white ${getColor(wallet.type)}`}>
                                         {getIcon(wallet.type)}
                                     </div>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1">
                                         <button onClick={() => handleEdit(wallet)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600">
                                             <Pencil className="w-4 h-4" />
                                         </button>

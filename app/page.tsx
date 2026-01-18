@@ -374,10 +374,10 @@ export default function MoneyManager() {
 
   return (
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        {/* 1. Header Section (Desktop: Order 1, Mobile: Order 1) */}
+        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative">
           <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
             <button onClick={prevMonth} className="p-2 hover:bg-slate-50 rounded-full transition-colors active:scale-95">
               <ChevronLeft className="w-6 h-6 text-slate-600" />
@@ -395,9 +395,6 @@ export default function MoneyManager() {
               <ChevronRight className="w-6 h-6 text-slate-600" />
             </button>
           </div>
-
-
-
 
           <div className="mt-6 md:mt-0 flex flex-col md:items-end gap-4 w-full md:w-auto bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl">
             {/* Active Balance */}
@@ -448,203 +445,203 @@ export default function MoneyManager() {
             </div>
           </div>
 
+          {/* DEBUG: Demo Button Re-added for Mobile Testing */}
+          <button
+            onClick={() => { setWelcomeStep(1); setShowWelcome(true); }}
+            className="absolute top-0 right-0 m-2 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-600 px-2 py-1 rounded opacity-50 hover:opacity-100 transition-all z-20"
+            title="Preview Onboarding"
+          >
+            🔄 Demo Onboarding
+          </button>
         </header>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Income */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="flex justify-between items-start z-10 relative">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-slate-600 font-medium">Pemasukan Bulan Ini</p>
-                    <div className="group/tip relative">
-                      <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                        <div className="font-semibold mb-1">📈 Pemasukan</div>
-                        Total uang yang <strong>masuk</strong> ke dompet Anda bulan ini (gaji, bonus, dll)
-                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                      </div>
+        {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
+        <div className="lg:col-span-3 order-2 lg:order-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="flex justify-between items-start z-10 relative">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-slate-600 font-medium">Pemasukan Bulan Ini</p>
+                  <div className="group/tip relative">
+                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                      <div className="font-semibold mb-1">📈 Pemasukan</div>
+                      Total uang yang <strong>masuk</strong> ke dompet Anda bulan ini (gaji, bonus, dll)
+                      <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
                     </div>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-emerald-600">+ Rp {currentIncome.toLocaleString('id-ID')}</p>
-
-                {prevIncome > 0 && (
-                  <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${incomeChange >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                    <span>{incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%</span>
-                    <span className="opacity-75">vs bulan lalu</span>
-                  </div>
-                )}
               </div>
+              <p className="text-2xl font-bold text-emerald-600">+ Rp {currentIncome.toLocaleString('id-ID')}</p>
+
+              {prevIncome > 0 && (
+                <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${incomeChange >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                  <span>{incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%</span>
+                  <span className="opacity-75">vs bulan lalu</span>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Expense */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="flex justify-between items-start z-10 relative">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="bg-rose-100 p-2 rounded-lg text-rose-600">
-                    <TrendingDown className="w-5 h-5" />
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-slate-600 font-medium">Pengeluaran Bulan Ini</p>
-                    <div className="group/tip relative">
-                      <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                        <div className="font-semibold mb-1">📉 Pengeluaran</div>
-                        Total uang yang <strong>keluar</strong> dari dompet Anda bulan ini (belanja, tagihan, dll)
-                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                      </div>
+        {/* 3. Expense Card (Desktop: Order 3, Mobile: Order 3) */}
+        <div className="lg:col-span-3 order-3 lg:order-3 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="flex justify-between items-start z-10 relative">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-rose-100 p-2 rounded-lg text-rose-600">
+                  <TrendingDown className="w-5 h-5" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-slate-600 font-medium">Pengeluaran Bulan Ini</p>
+                  <div className="group/tip relative">
+                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                      <div className="font-semibold mb-1">📉 Pengeluaran</div>
+                      Total uang yang <strong>keluar</strong> dari dompet Anda bulan ini (belanja, tagihan, dll)
+                      <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
                     </div>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-rose-600">- Rp {currentExpense.toLocaleString('id-ID')}</p>
-
-                {prevExpense > 0 && (
-                  <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${expenseChange <= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                    <span>{expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%</span>
-                    <span className="opacity-75">vs bulan lalu</span>
-                  </div>
-                )}
               </div>
+              <p className="text-2xl font-bold text-rose-600">- Rp {currentExpense.toLocaleString('id-ID')}</p>
+
+              {prevExpense > 0 && (
+                <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${expenseChange <= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                  <span>{expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%</span>
+                  <span className="opacity-75">vs bulan lalu</span>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Gold Price */}
+        {/* 4. Transaction List (Desktop: Order 9 [Bottom], Mobile: Order 4 - MOVED UP!) */}
+        <div className="lg:col-span-12 order-4 lg:order-9 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative z-10">
+          <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-slate-500" />
+              Riwayat Transaksi
+            </h3>
+            <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">
+              {currentDate.toLocaleString('id-ID', { month: 'long' })}
+            </span>
+          </div>
+
+          <div className="max-h-[500px] overflow-y-auto">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                <p>Memuat data...</p>
+              </div>
+            ) : currentMonthTransactions.length === 0 ? (
+              <div className="text-center py-12 text-slate-400">
+                <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CreditCard className="w-8 h-8 text-slate-300" />
+                </div>
+                <p>Belum ada transaksi di bulan ini</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-50">
+                {currentMonthTransactions.map((t) => {
+                  const { Icon, color } = getCategoryIcon(t.category, t.type)
+                  const walletName = wallets.find(w => w.id === t.wallet_id)?.name
+                  return (
+                    <li key={t.id} className="flex justify-between items-center p-5 hover:bg-slate-50 transition-colors group">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800 text-base">{t.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${t.type === 'pemasukan' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                              {t.category}
+                            </span>
+                            {walletName && (
+                              <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <WalletIcon className="w-3 h-3" /> {walletName}
+                              </span>
+                            )}
+                            <span className="text-xs text-slate-400">•</span>
+                            <p className="text-xs text-slate-500">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex items-center gap-3">
+                        <div className="flex flex-col items-end">
+                          <p className={`font-bold text-base ${t.type === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {t.type === 'pemasukan' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+
+                        {/* Action Buttons (Visible on mobile/all) */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditClick(t)}
+                            className="p-2 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
+                            title="Edit"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteTransaction(t.id)}
+                            className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* 5. Chart (Desktop: Order 6, Mobile: Order 5) */}
+        <div className="lg:col-span-8 order-5 lg:order-6">
+          <FinancialChart income={currentIncome} expense={currentExpense} />
+        </div>
+
+        {/* 6. Calendar Widget (Desktop: Order 7, Mobile: Order 6) */}
+        <div className="lg:col-span-4 order-6 lg:order-7">
+          <CalendarCard />
+        </div>
+
+        {/* 7. Wallet Summary Mini (Desktop: Order 8, Mobile: Order 7) */}
+        <div className="lg:col-span-4 order-7 lg:order-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <WalletIcon className="w-5 h-5 text-blue-600" />
+            Dompet
+          </h3>
+          <div className="space-y-3">
+            {wallets.slice(0, 3).map(w => (
+              <div key={w.id} className="flex justify-between items-center text-sm">
+                <span className="text-slate-600">{w.name}</span>
+                <span className="font-bold text-slate-800">Rp {w.balance.toLocaleString('id-ID')}</span>
+              </div>
+            ))}
+            {wallets.length === 0 && <p className="text-xs text-slate-400">Belum ada dompet.</p>}
+          </div>
+        </div>
+
+        {/* 8. Gold Price (Desktop: Order 4, Mobile: Order 8) */}
+        <div className="lg:col-span-3 order-8 lg:order-4">
           <GoldPriceCard />
+        </div>
 
-          {/* Currency (USD) */}
+        {/* 9. Currency (Desktop: Order 5, Mobile: Order 9) */}
+        <div className="lg:col-span-3 order-9 lg:order-5">
           <CurrencyCard />
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Chart */}
-            <FinancialChart income={currentIncome} expense={currentExpense} />
-          </div>
-
-          <div className="lg:col-span-1 space-y-6">
-            {/* Calendar Widget */}
-            <CalendarCard />
-
-            {/* Wallet Summary Mini */}
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <WalletIcon className="w-5 h-5 text-blue-600" />
-                Dompet
-              </h3>
-              <div className="space-y-3">
-                {wallets.slice(0, 3).map(w => (
-                  <div key={w.id} className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600">{w.name}</span>
-                    <span className="font-bold text-slate-800">Rp {w.balance.toLocaleString('id-ID')}</span>
-                  </div>
-                ))}
-                {wallets.length === 0 && <p className="text-xs text-slate-400">Belum ada dompet.</p>}
-              </div>
-            </div>
-
-
-
-
-          </div>
-
-          <div className="lg:col-span-3">
-
-            {/* Transaction List */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative z-10">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-slate-500" />
-                  Riwayat Transaksi
-                </h3>
-                <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">
-                  {currentDate.toLocaleString('id-ID', { month: 'long' })}
-                </span>
-              </div>
-
-              <div className="max-h-[500px] overflow-y-auto">
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                    <p>Memuat data...</p>
-                  </div>
-                ) : currentMonthTransactions.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400">
-                    <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <CreditCard className="w-8 h-8 text-slate-300" />
-                    </div>
-                    <p>Belum ada transaksi di bulan ini</p>
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-slate-50">
-                    {currentMonthTransactions.map((t) => {
-                      const { Icon, color } = getCategoryIcon(t.category, t.type)
-                      const walletName = wallets.find(w => w.id === t.wallet_id)?.name
-                      return (
-                        <li key={t.id} className="flex justify-between items-center p-5 hover:bg-slate-50 transition-colors group">
-                          <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
-                              <Icon className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-slate-800 text-base">{t.title}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${t.type === 'pemasukan' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                  {t.category}
-                                </span>
-                                {walletName && (
-                                  <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <WalletIcon className="w-3 h-3" /> {walletName}
-                                  </span>
-                                )}
-                                <span className="text-xs text-slate-400">•</span>
-                                <p className="text-xs text-slate-500">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="text-right flex items-center gap-3">
-                            <div className="flex flex-col items-end">
-                              <p className={`font-bold text-base ${t.type === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                {t.type === 'pemasukan' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
-                              </p>
-                            </div>
-
-                            {/* Action Buttons (Visible on mobile/all) */}
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleEditClick(t)}
-                                className="p-2 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
-                                title="Edit"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => deleteTransaction(t.id)}
-                                className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all"
-                                title="Hapus"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Floating Action Button (Mobile & Desktop) */}
