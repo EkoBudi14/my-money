@@ -53,7 +53,8 @@ const FinancialChart = ({ income, expense }: FinancialChartProps) => {
                                 innerRadius={60}
                                 outerRadius={80}
                                 fill="#8884d8"
-                                paddingAngle={5}
+                                paddingAngle={2}
+                                minAngle={3} // Ensure small values are visible
                                 dataKey="value"
                             >
                                 {data.map((entry, index) => (

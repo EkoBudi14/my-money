@@ -212,8 +212,8 @@ export default function CalendarCard() {
                                 ${selected && !today ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500' : ''}
                                 ${isNationalHoliday && !today && !selected ? 'text-rose-600 font-bold bg-rose-50' : ''}
                                 ${sunday && !today && !selected && !isNationalHoliday ? 'text-rose-600 font-semibold' : ''}
-                                ${saturday && !today && !selected && !holiday && !sunday ? 'text-slate-400' : ''}
-                                ${!today && !selected && !holiday && !sunday && !saturday ? 'text-slate-700 hover:bg-slate-100' : ''}
+                                ${saturday && !today && !selected && !isNationalHoliday ? 'text-slate-400' : ''}
+                                ${!today && !selected && !isNationalHoliday && !sunday && !saturday ? 'text-slate-700 hover:bg-slate-100' : ''}
                             `}>
                                 {day}
                             </span>

@@ -4,14 +4,15 @@ import { supabase } from '@/lib/supabase'
 import FinancialChart from '@/components/FinancialChart'
 import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
-
 import CalendarCard from '@/components/CalendarCard'
+import MoneyInput from '@/components/MoneyInput'
+import { Wallet, Transaction, Goal } from '@/types'
 import {
   Plus,
   Trash2,
   TrendingUp,
   TrendingDown,
-  Wallet,
+  Wallet as WalletIcon,
   ChevronLeft,
   ChevronRight,
   X,
@@ -28,19 +29,13 @@ import {
   Briefcase,
   Gift,
   Landmark,
-  Pencil
+  Pencil,
+  Eye,
+  EyeOff,
+  Info
 } from 'lucide-react'
 
-// --- Types & Constants ---
-interface Transaction {
-  id: number
-  title: string
-  amount: number
-  type: 'pemasukan' | 'pengeluaran'
-  category: string
-  created_at: string
-}
-
+// --- Constants ---
 const CATEGORIES = {
   pengeluaran: [
     { name: 'Makanan', icon: Utensils, color: 'bg-orange-100 text-orange-600' },
@@ -62,12 +57,17 @@ const CATEGORIES = {
 
 export default function MoneyManager() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [wallets, setWallets] = useState<Wallet[]>([])
+  const [goals, setGoals] = useState<Goal[]>([])
+  const [showSavings, setShowSavings] = useState(false)
 
   // Form State
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [type, setType] = useState<'pemasukan' | 'pengeluaran'>('pemasukan')
   const [category, setCategory] = useState('')
+  const [selectedWalletId, setSelectedWalletId] = useState<string>('')
+  const [customDate, setCustomDate] = useState('')
 
   // Edit State
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -79,59 +79,64 @@ export default function MoneyManager() {
   // 1. Ambil data saat aplikasi dibuka
   useEffect(() => {
     fetchTransactions()
+    fetchWallets()
+    fetchGoals()
   }, [])
 
   const fetchTransactions = async () => {
     setLoading(true)
     const { data, error } = await supabase
       .from('transactions')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .select('*, wallets(name)') // Join to get wallet name if needed
+      .order('date', { ascending: false }) // Order by custom date
 
     if (error) {
-      console.error('Error fetching:', error)
+      console.error('Error fetching transactions:', error)
     } else {
-      setTransactions((data as any[])?.map((t: any) => ({
-        id: t.id,
-        title: t.title,
-        amount: t.amount,
-        type: t.type,
-        category: t.category || 'Lainnya',
-        created_at: t.created_at
-      })) || [])
+      setTransactions(data as any[] || [])
+      setLoading(false)
     }
-    setLoading(false)
+  }
+
+  // ... (fetchTransactions)
+
+  const fetchWallets = async () => {
+    const { data } = await supabase.from('wallets').select('*')
+    setWallets(data || [])
+  }
+
+  const fetchGoals = async () => {
+    const { data } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
+    setGoals(data || [])
   }
 
   // 2. Fungsi Simpan (Tambah/Edit) Transaksi
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Auto-fill title if empty but category is selected
     const finalTitle = title || category
-
-    if (!finalTitle || !amount || !category) return alert("Mohon lengkapi data!")
+    if (!finalTitle || !amount || !category || !selectedWalletId || !customDate) return alert("Mohon lengkapi data!")
 
     const payload = {
       title: finalTitle,
       amount: parseFloat(amount),
       type,
       category,
-      // If editing, don't update created_at, else set new
-      ...(editingId ? {} : { created_at: new Date().toISOString() })
+      wallet_id: parseInt(selectedWalletId),
+      date: new Date(customDate).toISOString(),
+      created_at: new Date().toISOString() // Fallback
     }
 
     let error;
     let data;
 
     if (editingId) {
-      // Update Mode
+      // Update Mode (Note: Balance update logic is complex for edits, simplified here)
       const res = await supabase
         .from('transactions')
         .update(payload)
         .eq('id', editingId)
         .select()
-
       error = res.error
       data = res.data
     } else {
@@ -140,32 +145,29 @@ export default function MoneyManager() {
         .from('transactions')
         .insert([payload])
         .select()
-
       error = res.error
       data = res.data
+
+      // Update Wallet Balance
+      if (!error) {
+        const wallet = wallets.find(w => w.id === parseInt(selectedWalletId))
+        if (wallet) {
+          const newBalance = type === 'pemasukan'
+            ? wallet.balance + parseFloat(amount)
+            : wallet.balance - parseFloat(amount)
+
+          await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
+          fetchWallets() // Refresh wallets
+        }
+      }
     }
 
     if (error) {
       console.error(error)
       alert("Gagal menyimpan transaksi")
     } else {
-      if (data && data.length > 0) {
-        const savedTransaction = data[0] as unknown as Transaction
-        // Ensure category fallback
-        savedTransaction.category = savedTransaction.category || category
-
-        if (editingId) {
-          // Update local state
-          setTransactions(transactions.map(t => t.id === editingId ? savedTransaction : t))
-        } else {
-          // Add to local state
-          setTransactions([savedTransaction, ...transactions])
-        }
-
-        resetForm()
-        // Force refresh to ensure data consistency
-        fetchTransactions()
-      }
+      fetchTransactions()
+      resetForm()
     }
   }
 
@@ -174,6 +176,8 @@ export default function MoneyManager() {
     setAmount('')
     setCategory('')
     setType('pemasukan')
+    setSelectedWalletId('')
+    setCustomDate(new Date().toISOString().split('T')[0])
     setEditingId(null)
     setIsModalOpen(false)
   }
@@ -184,12 +188,14 @@ export default function MoneyManager() {
     setAmount(t.amount.toString())
     setCategory(t.category)
     setType(t.type)
+    setSelectedWalletId(t.wallet_id?.toString() || '')
+    setCustomDate(new Date(t.date || t.created_at).toISOString().split('T')[0])
     setIsModalOpen(true)
   }
 
   // 3. Fungsi Hapus Transaksi
   const deleteTransaction = async (id: number) => {
-    if (!confirm('Apakah anda yakin ingin menghapus transaksi ini?')) return;
+    if (!confirm('Hapus transaksi? Saldo dompet tidak akan dikembalikan otomatis (Manual adjustment required).')) return;
 
     const { error } = await supabase
       .from('transactions')
@@ -197,7 +203,7 @@ export default function MoneyManager() {
       .eq('id', id)
 
     if (!error) {
-      setTransactions(transactions.filter((t) => t.id !== id))
+      fetchTransactions()
     }
   }
 
@@ -211,7 +217,7 @@ export default function MoneyManager() {
   // Helper: Filter & Totals
   const getTransactionsByMonth = (date: Date) => {
     return transactions.filter(t => {
-      const tDate = new Date(t.created_at)
+      const tDate = new Date(t.date || t.created_at) // Use custom date
       return tDate.getMonth() === date.getMonth() && tDate.getFullYear() === date.getFullYear()
     })
   }
@@ -247,8 +253,8 @@ export default function MoneyManager() {
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
   return (
-    <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6">
-      <div className="max-w-5xl mx-auto space-y-6 md:p-6 p-4">
+    <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
@@ -270,12 +276,57 @@ export default function MoneyManager() {
             </button>
           </div>
 
-          <div className="mt-6 md:mt-0 text-center md:text-right w-full md:w-auto bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl">
-            <p className="text-sm font-medium text-slate-500 mb-1">Total Saldo Bersih</p>
-            <p className={`text-3xl md:text-4xl font-extrabold tracking-tight ${(currentIncome - currentExpense) >= 0 ? 'text-blue-600' : 'text-rose-600'}`}>
-              Rp {(currentIncome - currentExpense).toLocaleString('id-ID')}
-            </p>
+
+
+
+          <div className="mt-6 md:mt-0 flex flex-col md:items-end gap-4 w-full md:w-auto bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl">
+            {/* Active Balance */}
+            <div className="text-center md:text-right">
+              <div className="flex items-center justify-center md:justify-end gap-1.5 mb-1">
+                <p className="text-sm font-medium text-slate-500">Uang Siap Pakai</p>
+                <div className="group relative">
+                  <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                  <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                    <div className="font-semibold mb-1">💰 Saldo Aktif</div>
+                    Total uang yang ada di semua dompet aktif Anda <strong>saat ini</strong>. Ini adalah uang yang siap digunakan kapan saja.
+                    <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-2xl md:text-3xl font-extrabold tracking-tight text-blue-600">
+                Rp {wallets.filter(w => w.category === 'active' || !w.category).reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}
+              </p>
+            </div>
+
+            {/* Savings Balance */}
+            <div className="text-center md:text-right border-t md:border-none pt-2 md:pt-0">
+              <div className="flex items-center justify-center md:justify-end gap-2 mb-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-slate-500">Total Tabungan</p>
+                  <div className="group relative">
+                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                      <div className="font-semibold mb-1">🏦 Tabungan</div>
+                      Uang yang disimpan untuk tujuan khusus. <strong>Tidak dihitung</strong> dalam saldo aktif.
+                      <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setShowSavings(!showSavings)} className="text-slate-400 hover:text-slate-600">
+                  {showSavings ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-xl md:text-2xl font-bold text-emerald-600">
+                {showSavings
+                  ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
+                  : 'Rp ••••••••'
+                }
+              </p>
+            </div>
           </div>
+
+
+
         </header>
 
         {/* Info Cards */}
@@ -288,7 +339,17 @@ export default function MoneyManager() {
                   <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
                     <TrendingUp className="w-5 h-5" />
                   </div>
-                  <p className="text-slate-600 font-medium">Pemasukan</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-slate-600 font-medium">Pemasukan Bulan Ini</p>
+                    <div className="group/tip relative">
+                      <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                        <div className="font-semibold mb-1">📈 Pemasukan</div>
+                        Total uang yang <strong>masuk</strong> ke dompet Anda bulan ini (gaji, bonus, dll)
+                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <p className="text-2xl font-bold text-emerald-600">+ Rp {currentIncome.toLocaleString('id-ID')}</p>
 
@@ -310,7 +371,17 @@ export default function MoneyManager() {
                   <div className="bg-rose-100 p-2 rounded-lg text-rose-600">
                     <TrendingDown className="w-5 h-5" />
                   </div>
-                  <p className="text-slate-600 font-medium">Pengeluaran</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-slate-600 font-medium">Pengeluaran Bulan Ini</p>
+                    <div className="group/tip relative">
+                      <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
+                        <div className="font-semibold mb-1">📉 Pengeluaran</div>
+                        Total uang yang <strong>keluar</strong> dari dompet Anda bulan ini (belanja, tagihan, dll)
+                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <p className="text-2xl font-bold text-rose-600">- Rp {currentExpense.toLocaleString('id-ID')}</p>
 
@@ -341,6 +412,27 @@ export default function MoneyManager() {
           <div className="lg:col-span-1 space-y-6">
             {/* Calendar Widget */}
             <CalendarCard />
+
+            {/* Wallet Summary Mini */}
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <WalletIcon className="w-5 h-5 text-blue-600" />
+                Dompet
+              </h3>
+              <div className="space-y-3">
+                {wallets.slice(0, 3).map(w => (
+                  <div key={w.id} className="flex justify-between items-center text-sm">
+                    <span className="text-slate-600">{w.name}</span>
+                    <span className="font-bold text-slate-800">Rp {w.balance.toLocaleString('id-ID')}</span>
+                  </div>
+                ))}
+                {wallets.length === 0 && <p className="text-xs text-slate-400">Belum ada dompet.</p>}
+              </div>
+            </div>
+
+
+
+
           </div>
 
           <div className="lg:col-span-3">
@@ -349,7 +441,7 @@ export default function MoneyManager() {
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative z-10">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <Wallet className="w-5 h-5 text-slate-500" />
+                  <CreditCard className="w-5 h-5 text-slate-500" />
                   Riwayat Transaksi
                 </h3>
                 <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">
@@ -374,6 +466,7 @@ export default function MoneyManager() {
                   <ul className="divide-y divide-slate-50">
                     {currentMonthTransactions.map((t) => {
                       const { Icon, color } = getCategoryIcon(t.category, t.type)
+                      const walletName = wallets.find(w => w.id === t.wallet_id)?.name
                       return (
                         <li key={t.id} className="flex justify-between items-center p-5 hover:bg-slate-50 transition-colors group">
                           <div className="flex items-center gap-4">
@@ -386,8 +479,13 @@ export default function MoneyManager() {
                                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${t.type === 'pemasukan' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                   {t.category}
                                 </span>
+                                {walletName && (
+                                  <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <WalletIcon className="w-3 h-3" /> {walletName}
+                                  </span>
+                                )}
                                 <span className="text-xs text-slate-400">•</span>
-                                <p className="text-xs text-slate-500">{new Date(t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                <p className="text-xs text-slate-500">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                               </div>
                             </div>
                           </div>
@@ -480,15 +578,40 @@ export default function MoneyManager() {
                 </button>
               </div>
 
+              {/* Date & Wallet Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tanggal</label>
+                  <input
+                    type="date"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={customDate}
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Dompet</label>
+                  <select
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={selectedWalletId}
+                    onChange={(e) => setSelectedWalletId(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Pilih Dompet</option>
+                    {wallets.map(w => (
+                      <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Amount Input */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Jumlah (Rp)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-bold text-2xl"
+                <MoneyInput
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={setAmount}
                   autoFocus={!editingId}
                 />
               </div>
