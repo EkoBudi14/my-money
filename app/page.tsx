@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 import FinancialChart from '@/components/FinancialChart'
 import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
+
+import CalendarCard from '@/components/CalendarCard'
 import {
   Plus,
   Trash2,
@@ -161,6 +163,8 @@ export default function MoneyManager() {
         }
 
         resetForm()
+        // Force refresh to ensure data consistency
+        fetchTransactions()
       }
     }
   }
@@ -329,15 +333,20 @@ export default function MoneyManager() {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-3 space-y-6">
-
+          <div className="lg:col-span-2 space-y-6">
             {/* Chart */}
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-              <FinancialChart income={currentIncome} expense={currentExpense} />
-            </div>
+            <FinancialChart income={currentIncome} expense={currentExpense} />
+          </div>
+
+          <div className="lg:col-span-1 space-y-6">
+            {/* Calendar Widget */}
+            <CalendarCard />
+          </div>
+
+          <div className="lg:col-span-3">
 
             {/* Transaction List */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative z-10">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-slate-500" />
