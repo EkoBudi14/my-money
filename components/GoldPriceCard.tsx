@@ -83,7 +83,7 @@ export default function GoldPriceCard() {
                                 <span className="text-xs font-medium">Beli</span>
                             </div>
                             <p className="text-xl font-bold text-slate-800 tracking-tight">
-                                Rp {buyPrice?.toLocaleString('id-ID')}
+                                Rp {buyPrice && buyPrice > 0 ? buyPrice.toLocaleString('id-ID') : '-'}
                             </p>
                         </div>
 
@@ -94,7 +94,7 @@ export default function GoldPriceCard() {
                                 <span className="text-xs font-medium">Jual</span>
                             </div>
                             <p className="text-lg font-bold text-slate-600 tracking-tight">
-                                Rp {sellPrice?.toLocaleString('id-ID')}
+                                Rp {sellPrice && sellPrice > 0 ? sellPrice.toLocaleString('id-ID') : '-'}
                             </p>
                         </div>
                     </div>

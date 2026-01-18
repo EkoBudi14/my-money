@@ -14,7 +14,9 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
     // Format display value: 10000 -> 10.000
     const formatDisplay = (val: string) => {
         if (!val) return ''
-        return parseInt(val).toLocaleString('id-ID')
+        const num = parseInt(val, 10)
+        if (isNaN(num)) return ''
+        return num.toLocaleString('id-ID')
     }
 
     // Handle input change: Remove non-digits

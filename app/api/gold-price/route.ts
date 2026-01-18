@@ -73,7 +73,9 @@ export async function GET() {
 
         const parsePrice = (txt: string) => {
             if (!txt) return 0
-            return parseInt(txt.replace(/[^0-9]/g, ''))
+            const cleaned = txt.replace(/[^0-9]/g, '')
+            const num = parseInt(cleaned, 10)
+            return isNaN(num) ? 0 : num
         }
 
         const buyPrice = parsePrice(buyPriceText)

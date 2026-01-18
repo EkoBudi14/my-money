@@ -81,7 +81,7 @@ export default function CurrencyCard() {
                             <span className="bg-emerald-50 px-2 py-1 rounded-md text-emerald-700 font-bold">IDR</span>
                         </div>
                         <p className="text-3xl font-extrabold text-slate-800 tracking-tight">
-                            Rp {rate?.toLocaleString('id-ID')}
+                            Rp {rate && rate > 0 ? rate.toLocaleString('id-ID') : '-'}
                         </p>
                     </div>
                 )}

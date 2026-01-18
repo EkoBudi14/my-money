@@ -20,6 +20,12 @@ export default function CalendarCard() {
     const [holidays, setHolidays] = useState<Holiday[]>([])
     const [loading, setLoading] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
+    const [isMounted, setIsMounted] = useState(false)
+
+    // Prevent hydration mismatch - only show clock after client mount
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     // Update time every second
     useEffect(() => {
@@ -145,12 +151,25 @@ export default function CalendarCard() {
             {/* Live Clock & Today's Info */}
             <div className="mb-4 pb-4 border-b border-slate-100">
                 <div className="text-center">
-                    <div className="text-3xl font-bold text-slate-800 tabular-nums tracking-tight">
-                        {String(currentTime.getHours()).padStart(2, '0')}:{String(currentTime.getMinutes()).padStart(2, '0')}:{String(currentTime.getSeconds()).padStart(2, '0')}
-                    </div>
-                    <div className="text-sm text-slate-500 mt-1">
-                        {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase()}
-                    </div>
+                    {isMounted ? (
+                        <>
+                            <div className="text-3xl font-bold text-slate-800 tabular-nums tracking-tight">
+                                {String(currentTime.getHours()).padStart(2, '0')}:{String(currentTime.getMinutes()).padStart(2, '0')}:{String(currentTime.getSeconds()).padStart(2, '0')}
+                            </div>
+                            <div className="text-sm text-slate-500 mt-1">
+                                {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase()}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-3xl font-bold text-slate-800 tabular-nums tracking-tight">
+                                --:--:--
+                            </div>
+                            <div className="text-sm text-slate-500 mt-1">
+                                Memuat...
+                            </div>
+                        </>
+                    )}
                     {todayHoliday && (
                         <div className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${todayHoliday.type === 'National holiday'
                             ? 'bg-rose-50 text-rose-700'

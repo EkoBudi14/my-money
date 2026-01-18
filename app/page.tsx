@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import FinancialChart from '@/components/FinancialChart'
 import GoldPriceCard from '@/components/GoldPriceCard'
@@ -75,12 +75,14 @@ export default function MoneyManager() {
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   // 1. Ambil data saat aplikasi dibuka
   useEffect(() => {
     fetchTransactions()
     fetchWallets()
     fetchGoals()
+    checkAndCreateDefaultWallets()
   }, [])
 
   const fetchTransactions = async () => {
@@ -98,8 +100,6 @@ export default function MoneyManager() {
     }
   }
 
-  // ... (fetchTransactions)
-
   const fetchWallets = async () => {
     const { data } = await supabase.from('wallets').select('*')
     setWallets(data || [])
@@ -110,16 +110,79 @@ export default function MoneyManager() {
     setGoals(data || [])
   }
 
+  // Check and create default wallets for first-time users
+  const hasCheckedWallets = useRef(false)
+  const checkAndCreateDefaultWallets = async () => {
+    if (hasCheckedWallets.current) return
+    hasCheckedWallets.current = true
+
+    const { data: existingWallets } = await supabase
+      .from('wallets')
+      .select('*')
+
+    if (!existingWallets || existingWallets.length === 0) {
+      const defaultWallets = [
+        {
+          name: 'Tunai 💵',
+          type: 'cash',
+          category: 'active',
+          balance: 0,
+          created_at: new Date().toISOString()
+        },
+        {
+          name: 'Rekening Bank 🏦',
+          type: 'bank',
+          category: 'active',
+          balance: 0,
+          created_at: new Date().toISOString()
+        }
+      ]
+
+      const { error } = await supabase
+        .from('wallets')
+        .insert(defaultWallets)
+
+      if (!error) {
+        await fetchWallets() // Refresh wallets
+        setShowWelcome(true) // Show welcome message
+      }
+    }
+  }
+
+  // Quick Savings Setup for Onboarding
+  const [welcomeStep, setWelcomeStep] = useState(1)
+  const createQuickSavingsWallet = async () => {
+    const { error } = await supabase
+      .from('wallets')
+      .insert({
+        name: 'Tabungan 🏦',
+        type: 'bank',
+        category: 'savings',
+        balance: 0,
+        created_at: new Date().toISOString()
+      })
+
+    if (!error) {
+      await fetchWallets()
+      setShowWelcome(false) // Close modal
+      alert('Dompet "Tabungan" berhasil dibuat! 🎉')
+    }
+  }
+
   // 2. Fungsi Simpan (Tambah/Edit) Transaksi
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const finalTitle = title || category
-    if (!finalTitle || !amount || !category || !selectedWalletId || !customDate) return alert("Mohon lengkapi data!")
+    const amountNum = parseFloat(amount)
+
+    if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate) {
+      return alert("Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.")
+    }
 
     const payload = {
       title: finalTitle,
-      amount: parseFloat(amount),
+      amount: amountNum,
       type,
       category,
       wallet_id: parseInt(selectedWalletId),
@@ -131,7 +194,14 @@ export default function MoneyManager() {
     let data;
 
     if (editingId) {
-      // Update Mode (Note: Balance update logic is complex for edits, simplified here)
+      // Get old transaction first to rollback the balance
+      const { data: oldTransaction } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', editingId)
+        .single()
+
+      // Update transaction
       const res = await supabase
         .from('transactions')
         .update(payload)
@@ -139,6 +209,30 @@ export default function MoneyManager() {
         .select()
       error = res.error
       data = res.data
+
+      // Update wallet balance if transaction updated successfully
+      if (!error && oldTransaction) {
+        const wallet = wallets.find(w => w.id === parseInt(selectedWalletId))
+        if (wallet) {
+          // Rollback old transaction
+          let newBalance = wallet.balance
+          if (oldTransaction.type === 'pemasukan') {
+            newBalance -= oldTransaction.amount
+          } else {
+            newBalance += oldTransaction.amount
+          }
+
+          // Apply new transaction
+          if (type === 'pemasukan') {
+            newBalance += amountNum
+          } else {
+            newBalance -= amountNum
+          }
+
+          await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
+          fetchWallets()
+        }
+      }
     } else {
       // Insert Mode
       const res = await supabase
@@ -195,14 +289,38 @@ export default function MoneyManager() {
 
   // 3. Fungsi Hapus Transaksi
   const deleteTransaction = async (id: number) => {
-    if (!confirm('Hapus transaksi? Saldo dompet tidak akan dikembalikan otomatis (Manual adjustment required).')) return;
+    if (!confirm('Hapus transaksi? Saldo dompet akan dikembalikan otomatis.')) return;
 
+    // Get transaction before delete to rollback balance
+    const { data: transaction } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (!transaction) {
+      alert('Transaksi tidak ditemukan')
+      return
+    }
+
+    // Delete transaction
     const { error } = await supabase
       .from('transactions')
       .delete()
       .eq('id', id)
 
     if (!error) {
+      // Rollback wallet balance
+      const wallet = wallets.find(w => w.id === transaction.wallet_id)
+      if (wallet) {
+        const newBalance = transaction.type === 'pemasukan'
+          ? wallet.balance - transaction.amount
+          : wallet.balance + transaction.amount
+
+        await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
+        fetchWallets()
+      }
+
       fetchTransactions()
     }
   }
@@ -251,6 +369,8 @@ export default function MoneyManager() {
 
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+
+
 
   return (
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
@@ -313,7 +433,10 @@ export default function MoneyManager() {
                   </div>
                 </div>
                 <button onClick={() => setShowSavings(!showSavings)} className="text-slate-400 hover:text-slate-600">
-                  {showSavings ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  {showSavings
+                    ? <Eye className="w-4 h-4" />
+                    : <EyeOff className="w-4 h-4" />
+                  }
                 </button>
               </div>
               <p className="text-xl md:text-2xl font-bold text-emerald-600">
@@ -324,8 +447,6 @@ export default function MoneyManager() {
               </p>
             </div>
           </div>
-
-
 
         </header>
 
@@ -662,6 +783,141 @@ export default function MoneyManager() {
                 {editingId ? 'Update Transaksi' : 'Simpan Transaksi'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Onboarding Wizard */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowWelcome(false)}
+          ></div>
+
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
+            {/* Steps Indicator */}
+            <div className="flex gap-2 mb-6 justify-center">
+              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200'}`}></div>
+              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 2 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200'}`}></div>
+            </div>
+
+            {welcomeStep === 1 ? (
+              /* STEP 1: ACTIVE WALLETS INTRO */
+              <div className="text-center">
+                <div className="text-6xl mb-4 animate-bounce">🎉</div>
+
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                  Selamat Datang di My Money!
+                </h2>
+                <p className="text-slate-600 mb-6 text-sm">
+                  Kami sudah siapkan 2 dompet untuk transaksi harian Anda:
+                </p>
+
+                {/* Active Wallets Preview */}
+                <div className="bg-slate-50 rounded-2xl p-4 mb-6 space-y-3 text-left">
+                  <div className="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div className="text-2xl mt-1">💵</div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <p className="font-bold text-slate-800">Tunai</p>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">Untuk uang cash sehari-hari</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div className="text-2xl mt-1">🏦</div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <p className="font-bold text-slate-800">Rekening Bank</p>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">Untuk transfer & belanja online</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Education Box */}
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left flex gap-3">
+                  <div className="text-xl">💡</div>
+                  <div>
+                    <p className="text-xs text-blue-900 font-bold mb-1">Info Penting</p>
+                    <p className="text-xs text-blue-800 leading-relaxed">
+                      <strong>Saldo Aktif</strong> adalah uang yang siap dibelanjakan. Pisahkan dari <strong>Tabungan</strong> agar tidak terpakai!
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setWelcomeStep(2)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                  >
+                    Lanjut: Setup Tabungan ➡️
+                  </button>
+                  <button
+                    onClick={() => setShowWelcome(false)}
+                    className="w-full bg-white hover:bg-slate-50 text-slate-600 font-medium py-3 rounded-2xl transition-colors text-sm"
+                  >
+                    Mulai Tracking Saja
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* STEP 2: SAVINGS SETUP (OPTIONAL) */
+              <div className="text-center animate-in slide-in-from-right-10 duration-300">
+                <div className="text-5xl mb-4">🏦</div>
+
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                  Setup Tabungan (Opsional)
+                </h2>
+                <p className="text-slate-600 mb-8 text-sm px-4">
+                  Pisahkan uang untuk kebutuhan darurat agar aman & tidak terpakai foya-foya!
+                </p>
+
+                {/* Savings Preview Card */}
+                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white text-left mb-8 shadow-xl shadow-blue-500/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">🛡️</div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <p className="text-blue-100 text-xs font-medium mb-1">Dompet Baru</p>
+                      <h3 className="text-xl font-bold">Tabungan 🏦</h3>
+                    </div>
+                    <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-medium border border-white/20">
+                      Tabungan
+                    </span>
+                  </div>
+                  <p className="text-3xl font-bold mb-1">Rp 0</p>
+                  <p className="text-blue-100 text-xs">Saldo awal</p>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-3">
+                  <button
+                    onClick={createQuickSavingsWallet}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2"
+                  >
+                    ✅ Buat Dompet Tabungan
+                  </button>
+                  <button
+                    onClick={() => setShowWelcome(false)}
+                    className="w-full bg-white hover:bg-slate-50 text-slate-500 font-medium py-3 rounded-2xl transition-colors text-sm"
+                  >
+                    Lewati, nanti saja
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setWelcomeStep(1)}
+                  className="mt-4 text-xs text-slate-400 hover:text-slate-600"
+                >
+                  ⬅️ Kembali
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
