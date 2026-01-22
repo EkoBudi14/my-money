@@ -445,14 +445,7 @@ export default function MoneyManager() {
             </div>
           </div>
 
-          {/* DEBUG: Demo Button Re-added for Mobile Testing */}
-          <button
-            onClick={() => { setWelcomeStep(1); setShowWelcome(true); }}
-            className="absolute top-0 right-0 m-2 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-600 px-2 py-1 rounded opacity-50 hover:opacity-100 transition-all z-20"
-            title="Preview Onboarding"
-          >
-            🔄 Demo Onboarding
-          </button>
+
         </header>
 
         {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
