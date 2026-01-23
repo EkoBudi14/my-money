@@ -105,13 +105,13 @@ export default function MainSavingsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Tabungan Inti</h1>
                     <p className="text-slate-500">Aset & Simpanan jangka panjang</p>
                 </div>
-                <div className="bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-4">
+                <div className="glass shadow-premium-lg text-white px-6 py-4 rounded-2xl backdrop-blur-xl border border-emerald-300/30 flex items-center gap-4 bg-gradient-to-r from-emerald-600 to-teal-600">
                     <div className="p-2 bg-emerald-500 rounded-xl">
                         <Landmark className="w-6 h-6" />
                     </div>
@@ -127,7 +127,7 @@ export default function MainSavingsPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {savingsWallets.map((wallet) => (
-                        <div key={wallet.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-md transition-all">
+                        <div key={wallet.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col justify-between group card-hover backdrop-blur-xl">
                             <div>
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
@@ -152,7 +152,7 @@ export default function MainSavingsPage() {
                     {/* Add New Card */}
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-all min-h-[200px]"
+                        className="glass border-2 border-dashed border-white/30 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-600 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all min-h-[200px] backdrop-blur-xl shadow-premium"
                     >
                         <div className="bg-white p-4 rounded-full shadow-sm">
                             <Plus className="w-8 h-8" />
@@ -165,7 +165,7 @@ export default function MainSavingsPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl p-6 shadow-premium-lg border border-white/20 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Aset' : 'Aset Baru'}</h3>
                             <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>

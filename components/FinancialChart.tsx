@@ -26,7 +26,7 @@ const FinancialChart = ({ income, expense }: FinancialChartProps) => {
         { name: 'Pengeluaran', value: expense },
     ]
 
-    const COLORS = ['#22c55e', '#ef4444']
+    const COLORS = ['#10b981', '#f43f5e']
 
     if (!isMounted) return <div className="h-64 w-full bg-slate-50 rounded-xl animate-pulse" />
 
@@ -35,7 +35,7 @@ const FinancialChart = ({ income, expense }: FinancialChartProps) => {
     const hasData = income > 0 || expense > 0
 
     return (
-        <div className="w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+        <div className="w-full glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col backdrop-blur-xl card-hover">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h3 className="text-lg font-bold text-slate-800">Analisis Keuangan</h3>

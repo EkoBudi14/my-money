@@ -41,7 +41,7 @@ export default function GoldPriceCard() {
     }, [])
 
     return (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all h-full">
+        <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden flex flex-col justify-between group card-hover h-full backdrop-blur-xl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
             <div className="flex justify-between items-start z-10 relative mb-4">

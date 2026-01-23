@@ -123,7 +123,7 @@ export default function WalletsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Dompet Saya</h1>
@@ -131,7 +131,7 @@ export default function WalletsPage() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-blue-500/20"
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-premium-lg hover:shadow-purple-500/50 hover:scale-105"
                 >
                     <Plus className="w-5 h-5" />
                     <span className="font-semibold">Tambah Dompet</span>
@@ -147,7 +147,7 @@ export default function WalletsPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {wallets.map((wallet) => (
-                        <div key={wallet.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-md transition-all">
+                        <div key={wallet.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col justify-between group card-hover backdrop-blur-xl">
                             <div>
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`p-3 rounded-2xl text-white ${getColor(wallet.type)}`}>
@@ -178,7 +178,7 @@ export default function WalletsPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200">
+                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Dompet' : 'Tambah Dompet'}</h3>
                             <button onClick={resetForm} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500">

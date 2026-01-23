@@ -129,7 +129,7 @@ export default function GoalsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Target Tabungan</h1>
@@ -144,7 +144,7 @@ export default function GoalsPage() {
                     {goals.map((goal) => {
                         const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
                         return (
-                            <div key={goal.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-md transition-all">
+                            <div key={goal.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col justify-between group card-hover backdrop-blur-xl">
                                 <div>
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="bg-blue-100 p-3 rounded-2xl text-blue-600">
@@ -191,7 +191,7 @@ export default function GoalsPage() {
                     {/* Add New Card */}
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-all min-h-[300px]"
+                        className="glass border-2 border-dashed border-white/30 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-600 hover:text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 transition-all min-h-[300px] backdrop-blur-xl shadow-premium"
                     >
                         <div className="bg-white p-4 rounded-full shadow-sm">
                             <Plus className="w-8 h-8" />
@@ -204,7 +204,7 @@ export default function GoalsPage() {
             {/* Main Modal (Add/Edit Goal) */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl p-6 shadow-premium-lg border border-white/20 relative">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Target' : 'Target Baru'}</h3>
                             <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
@@ -235,7 +235,7 @@ export default function GoalsPage() {
             {/* Quick Add Savings Modal */}
             {isQuickAddModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <div className="glass backdrop-blur-2xl w-full max-w-sm rounded-3xl p-6 shadow-premium-lg border border-white/20 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">Menabung</h3>
                             <button onClick={resetQuickAddForm}><X className="w-6 h-6 text-slate-400" /></button>

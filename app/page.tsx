@@ -373,11 +373,11 @@ export default function MoneyManager() {
 
 
   return (
-    <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+    <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* 1. Header Section (Desktop: Order 1, Mobile: Order 1) */}
-        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative">
+        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-center glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative backdrop-blur-xl card-hover">
           <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
             <button onClick={prevMonth} className="p-2 hover:bg-slate-50 rounded-full transition-colors active:scale-95">
               <ChevronLeft className="w-6 h-6 text-slate-600" />
@@ -449,7 +449,7 @@ export default function MoneyManager() {
         </header>
 
         {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
-        <div className="lg:col-span-3 order-2 lg:order-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+        <div className="lg:col-span-3 order-2 lg:order-2 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
           <div className="flex justify-between items-start z-10 relative">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -481,7 +481,7 @@ export default function MoneyManager() {
         </div>
 
         {/* 3. Expense Card (Desktop: Order 3, Mobile: Order 3) */}
-        <div className="lg:col-span-3 order-3 lg:order-3 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+        <div className="lg:col-span-3 order-3 lg:order-3 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
           <div className="flex justify-between items-start z-10 relative">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -513,7 +513,7 @@ export default function MoneyManager() {
         </div>
 
         {/* 4. Transaction List (Desktop: Order 9 [Bottom], Mobile: Order 4 - MOVED UP!) */}
-        <div className="lg:col-span-12 order-4 lg:order-9 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative z-10">
+        <div className="lg:col-span-12 order-4 lg:order-9 glass shadow-premium-lg rounded-3xl border border-white/20 overflow-hidden relative z-10 backdrop-blur-xl card-hover">
           <div className="p-6 border-b border-slate-100 flex justify-between items-center">
             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-slate-500" />
@@ -609,7 +609,7 @@ export default function MoneyManager() {
         </div>
 
         {/* 7. Wallet Summary Mini (Desktop: Order 8, Mobile: Order 7) */}
-        <div className="lg:col-span-4 order-7 lg:order-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div className="lg:col-span-4 order-7 lg:order-8 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 backdrop-blur-xl card-hover">
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <WalletIcon className="w-5 h-5 text-blue-600" />
             Dompet
@@ -643,7 +643,7 @@ export default function MoneyManager() {
           resetForm()
           setIsModalOpen(true)
         }}
-        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-blue-500/30 transition-all active:scale-90 z-40"
+        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
       >
         <Plus className="w-8 h-8" />
       </button>
@@ -656,7 +656,7 @@ export default function MoneyManager() {
             onClick={resetForm}
           ></div>
 
-          <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl z-50 p-6 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-200 h-[85vh] md:h-auto overflow-y-auto">
+          <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-200 h-[85vh] md:h-auto overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
@@ -785,7 +785,7 @@ export default function MoneyManager() {
             onClick={() => setShowWelcome(false)}
           ></div>
 
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
+          <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-3xl shadow-premium-lg border border-white/20 z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
             {/* Steps Indicator */}
             <div className="flex gap-2 mb-6 justify-center">
               <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200'}`}></div>

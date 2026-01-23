@@ -172,14 +172,14 @@ export default function BudgetsPage() {
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Manajemen Budget</h1>
                     <p className="text-slate-500">Atur batasan pengeluaran bulanan</p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-4 glass shadow-premium px-4 py-2 rounded-xl backdrop-blur-xl border border-white/20">
                     <button onClick={prevMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'<'}</button>
                     <span className="font-bold text-slate-700 w-32 text-center">
                         {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
@@ -194,7 +194,7 @@ export default function BudgetsPage() {
                 <div className="space-y-6">
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/30"
+                        className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-premium-lg hover:shadow-purple-500/50 hover:scale-105"
                     >
                         <Plus className="w-5 h-5" />
                         <span className="font-bold">Buat Budget Baru</span>
@@ -208,7 +208,7 @@ export default function BudgetsPage() {
                             const catColor = CATEGORIES.pengeluaran.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
 
                             return (
-                                <div key={budget.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative group flex flex-col justify-between hover:shadow-md transition-all">
+                                <div key={budget.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative group flex flex-col justify-between card-hover backdrop-blur-xl">
                                     <div>
                                         <div className="flex justify-between items-start mb-4">
                                             <div className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${catColor}`}>
@@ -268,7 +268,7 @@ export default function BudgetsPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200">
+                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
                             <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
@@ -308,7 +308,7 @@ export default function BudgetsPage() {
             {isQuickExpModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetQuickExpForm}></div>
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200">
+                    <div className="glass backdrop-blur-2xl w-full max-w-sm rounded-3xl p-6 shadow-premium-lg border border-white/20 z-50 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-800">Catat Pengeluaran</h3>

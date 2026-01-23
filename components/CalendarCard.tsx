@@ -147,7 +147,7 @@ export default function CalendarCard() {
     const todayHoliday = getTodayHoliday()
 
     return (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-full flex flex-col">
+        <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 h-full flex flex-col backdrop-blur-xl card-hover">
             {/* Live Clock & Today's Info */}
             <div className="mb-4 pb-4 border-b border-slate-100">
                 <div className="text-center">

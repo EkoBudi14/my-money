@@ -71,13 +71,13 @@ export default function AnalyticsPage() {
     const prevMonth = () => setDateFilter(new Date(dateFilter.getFullYear(), dateFilter.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Analitik Keuangan</h1>
                     <p className="text-slate-500">Laporan detail keuangan anda</p>
                 </div>
-                <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-4 glass shadow-premium px-4 py-2 rounded-xl backdrop-blur-xl border border-white/20">
                     <button onClick={prevMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'<'}</button>
                     <span className="font-bold text-slate-700 w-32 text-center">
                         {dateFilter.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     {/* Summary Chart */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
                         <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Ringkasan</h3>
                         <div className="w-full h-64">
                             <ResponsiveContainer width="100%" height="100%">
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
                     </div>
 
                     {/* Category Chart */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
                         <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Pengeluaran per Kategori</h3>
                         <div className="w-full h-64">
                             {categoryData.length > 0 ? (
@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
                     </div>
 
                     {/* Wallet Chart */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
                         <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Pengeluaran per Sumber Dana</h3>
                         <div className="w-full h-64">
                             {walletData.length > 0 ? (
