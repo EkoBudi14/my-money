@@ -576,7 +576,7 @@ export default function MoneyManager() {
                             <Icon className="w-6 h-6" />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-800 text-base truncate">{t.title}</p>
+                            <p className="font-semibold text-slate-800 text-base break-words">{t.title}</p>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${t.type === 'pemasukan' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                 {t.category}
