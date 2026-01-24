@@ -123,20 +123,21 @@ export default function WalletsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Dompet Saya</h1>
                     <p className="text-slate-500">Kelola sumber dana anda</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-premium-lg hover:shadow-purple-500/50 hover:scale-105"
-                >
-                    <Plus className="w-5 h-5" />
-                    <span className="font-semibold">Tambah Dompet</span>
-                </button>
             </header>
+
+            {/* Floating Action Button */}
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
+            >
+                <Plus className="w-8 h-8 !text-white" />
+            </button>
 
             {loading ? (
                 <div className="text-center py-12 text-slate-400">Loading...</div>

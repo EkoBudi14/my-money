@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
     const prevMonth = () => setDateFilter(new Date(dateFilter.getFullYear(), dateFilter.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Analitik Keuangan</h1>

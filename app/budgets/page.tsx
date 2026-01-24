@@ -172,7 +172,7 @@ export default function BudgetsPage() {
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Manajemen Budget</h1>
@@ -192,12 +192,12 @@ export default function BudgetsPage() {
                 <div className="text-center py-12 text-slate-400">Loading...</div>
             ) : (
                 <div className="space-y-6">
+                    {/* Floating Action Button */}
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="w-full md:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-premium-lg hover:shadow-purple-500/50 hover:scale-105"
+                        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
                     >
-                        <Plus className="w-5 h-5" />
-                        <span className="font-bold">Buat Budget Baru</span>
+                        <Plus className="w-8 h-8 !text-white" />
                     </button>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -296,7 +296,7 @@ export default function BudgetsPage() {
                                     onChange={setAmount}
                                 />
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all">
+                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95">
                                 Simpan
                             </button>
                         </form>

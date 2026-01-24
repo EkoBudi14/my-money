@@ -105,7 +105,7 @@ export default function MainSavingsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
             <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Tabungan Inti</h1>
@@ -194,7 +194,7 @@ export default function MainSavingsPage() {
                                 <label className="block text-sm font-bold text-slate-700 mb-1">Saldo Saat Ini (Rp)</label>
                                 <input type="number" className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none" value={balance} onChange={e => setBalance(e.target.value)} placeholder="0" />
                             </div>
-                            <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition-colors">Simpan</button>
+                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl hover:shadow-purple-500/50 transition-colors shadow-premium-lg">Simpan</button>
                         </form>
                     </div>
                 </div>

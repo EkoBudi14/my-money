@@ -413,80 +413,20 @@ export default function MoneyManager() {
 
 
   return (
-    <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main className="min-h-screen font-sans text-slate-900 pb-24 md:pb-8 ml-0 md:ml-72 p-6 md:p-8 transition-all duration-300">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         {/* 1. Header Section (Desktop: Order 1, Mobile: Order 1) */}
-        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-center glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative backdrop-blur-xl card-hover">
-          <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
-            <button onClick={prevMonth} className="p-2 hover:bg-slate-50 rounded-full transition-colors active:scale-95">
-              <ChevronLeft className="w-6 h-6 text-slate-600" />
-            </button>
-            <div className="text-center">
-              <h1 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
-                {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-              </h1>
-              <div className="flex items-center justify-center gap-1 text-slate-500 text-sm">
-                <Calendar className="w-3 h-3" />
-                <span>Periode Laporan</span>
-              </div>
-            </div>
-            <button onClick={nextMonth} className="p-2 hover:bg-slate-50 rounded-full transition-colors active:scale-95">
-              <ChevronRight className="w-6 h-6 text-slate-600" />
-            </button>
-          </div>
-
-          <div className="mt-6 md:mt-0 flex flex-col md:items-end gap-4 w-full md:w-auto bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl">
-            {/* Active Balance */}
-            <div className="text-center md:text-right">
-              <div className="flex items-center justify-center md:justify-end gap-1.5 mb-1">
-                <p className="text-sm font-medium text-slate-500">Uang Siap Pakai</p>
-                <div className="group relative">
-                  <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                  <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                    <div className="font-semibold mb-1">💰 Saldo Aktif</div>
-                    Total uang yang ada di semua dompet aktif Anda <strong>saat ini</strong>. Ini adalah uang yang siap digunakan kapan saja.
-                    <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                  </div>
-                </div>
-              </div>
-              <p className="text-2xl md:text-3xl font-extrabold tracking-tight text-blue-600">
-                Rp {wallets.filter(w => w.category === 'active' || !w.category).reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}
-              </p>
-            </div>
-
-            {/* Savings Balance */}
-            <div className="text-center md:text-right border-t md:border-none pt-2 md:pt-0">
-              <div className="flex items-center justify-center md:justify-end gap-2 mb-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-medium text-slate-500">Total Tabungan</p>
-                  <div className="group relative">
-                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                      <div className="font-semibold mb-1">🏦 Tabungan</div>
-                      Uang yang disimpan untuk tujuan khusus. <strong>Tidak dihitung</strong> dalam saldo aktif.
-                      <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                    </div>
-                  </div>
-                </div>
-                <button onClick={() => setShowSavings(!showSavings)} className="text-slate-400 hover:text-slate-600">
-                  {showSavings
-                    ? <Eye className="w-4 h-4" />
-                    : <EyeOff className="w-4 h-4" />
-                  }
-                </button>
-              </div>
-              <p className="text-xl md:text-2xl font-bold text-emerald-600">
-                {showSavings
-                  ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
-                  : 'Rp ••••••••'
-                }
-              </p>
-            </div>
+        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard</h1>
+            <p className="text-slate-500 text-sm">Hi, Welcome back to Eko</p>
           </div>
 
 
         </header>
+
+
 
         {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
         <div className="lg:col-span-3 order-2 lg:order-2 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
@@ -857,7 +797,7 @@ export default function MoneyManager() {
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30"
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-4 px-6 rounded-2xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-purple-500/30"
               >
                 {editingId ? 'Update Transaksi' : 'Simpan Transaksi'}
               </button>

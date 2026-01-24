@@ -129,7 +129,7 @@ export default function GoalsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-64 p-6">
+        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Target Tabungan</h1>
@@ -226,7 +226,7 @@ export default function GoalsPage() {
                                 <label className="block text-sm font-bold text-slate-700 mb-1">Batas Waktu</label>
                                 <input type="date" className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200" value={deadline} onChange={e => setDeadline(e.target.value)} />
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors">Simpan Target</button>
+                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl hover:shadow-purple-500/50 transition-colors shadow-premium-lg">Simpan Target</button>
                         </form>
                     </div>
                 </div>
@@ -250,7 +250,7 @@ export default function GoalsPage() {
                                 />
                                 <p className="text-xs text-slate-400 mt-2">Saldo akan ditambahkan ke total terkumpul.</p>
                             </div>
-                            <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30">
+                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl hover:shadow-purple-500/50 transition-colors shadow-lg shadow-emerald-500/30">
                                 + Masukkan Tabungan
                             </button>
                         </form>
