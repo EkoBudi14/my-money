@@ -192,14 +192,6 @@ export default function BudgetsPage() {
                 <div className="text-center py-12 text-slate-400">Loading...</div>
             ) : (
                 <div className="space-y-6">
-                    {/* Floating Action Button */}
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
-                    >
-                        <Plus className="w-8 h-8 !text-white" />
-                    </button>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {budgets.map(budget => {
                             const spent = getSpentAmount(budget.category)
@@ -254,99 +246,116 @@ export default function BudgetsPage() {
                                 </div>
                             )
                         })}
+                        {/* Add New Card */}
+                        <button
+                            onClick={() => { resetForm(); setIsModalOpen(true); }}
+                            className="glass border-2 border-dashed border-white/30 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-600 hover:text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 transition-all min-h-[300px] backdrop-blur-xl shadow-premium h-full"
+                        >
+                            <div className="bg-white p-4 rounded-full shadow-sm">
+                                <Plus className="w-8 h-8" />
+                            </div>
+                            <span className="font-bold">Buat Budget Baru</span>
+                        </button>
                     </div>
 
-                    {budgets.length === 0 && (
-                        <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
-                            <p>Belum ada budget untuk bulan ini.</p>
-                        </div>
-                    )}
-                </div>
-            )}
+                    {
+                        budgets.length === 0 && (
+                            <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
+                                <p>Belum ada budget untuk bulan ini.</p>
+                            </div>
+                        )
+                    }
+                </div >
+            )
+            }
 
             {/* Main Modal (Add/Edit Budget) */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetForm}></div>
-                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                            <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
-                        </div>
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori</label>
-                                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                                    {CATEGORIES.pengeluaran.map(cat => (
-                                        <button
-                                            key={cat.name}
-                                            type="button"
-                                            onClick={() => setCategory(cat.name)}
-                                            className={`p-2 rounded-xl text-sm font-medium border transition-all ${category === cat.name ? `bg-blue-50 border-blue-500 text-blue-700` : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                                        >
-                                            {cat.name}
-                                        </button>
-                                    ))}
+            {
+                isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetForm}></div>
+                        <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
+                                <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
+                            </div>
+                            <form onSubmit={handleSave} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori</label>
+                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                                        {CATEGORIES.pengeluaran.map(cat => (
+                                            <button
+                                                key={cat.name}
+                                                type="button"
+                                                onClick={() => setCategory(cat.name)}
+                                                className={`p-2 rounded-xl text-sm font-medium border transition-all ${category === cat.name ? `bg-blue-50 border-blue-500 text-blue-700` : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                {cat.name}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Batasan (Rp)</label>
-                                <MoneyInput
-                                    value={amount}
-                                    onChange={setAmount}
-                                />
-                            </div>
-                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95">
-                                Simpan
-                            </button>
-                        </form>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Batasan (Rp)</label>
+                                    <MoneyInput
+                                        value={amount}
+                                        onChange={setAmount}
+                                    />
+                                </div>
+                                <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95">
+                                    Simpan
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Quick Expense Modal */}
-            {isQuickExpModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetQuickExpForm}></div>
-                    <div className="glass backdrop-blur-2xl w-full max-w-sm rounded-3xl p-6 shadow-premium-lg border border-white/20 z-50 relative animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-800">Catat Pengeluaran</h3>
-                                <p className="text-sm text-slate-500">Kategori: <span className="font-bold text-slate-700">{quickExpCategory}</span></p>
+            {
+                isQuickExpModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetQuickExpForm}></div>
+                        <div className="glass backdrop-blur-2xl w-full max-w-sm rounded-3xl p-6 shadow-premium-lg border border-white/20 z-50 relative animate-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-800">Catat Pengeluaran</h3>
+                                    <p className="text-sm text-slate-500">Kategori: <span className="font-bold text-slate-700">{quickExpCategory}</span></p>
+                                </div>
+                                <button onClick={resetQuickExpForm}><X className="w-6 h-6 text-slate-400" /></button>
                             </div>
-                            <button onClick={resetQuickExpForm}><X className="w-6 h-6 text-slate-400" /></button>
+                            <form onSubmit={handleQuickExpenseSave} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Jumlah (Rp)</label>
+                                    <MoneyInput
+                                        value={quickExpAmount}
+                                        onChange={setQuickExpAmount}
+                                        autoFocus
+                                        className="focus:ring-rose-500" // Override focus color
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Ambil dari Dompet</label>
+                                    <select
+                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"
+                                        value={quickExpWalletId}
+                                        onChange={(e) => setQuickExpWalletId(e.target.value)}
+                                        required
+                                    >
+                                        <option value="" disabled>Pilih Dompet</option>
+                                        {wallets.map(w => (
+                                            <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <button type="submit" className="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/30">
+                                    Simpan Pengeluaran
+                                </button>
+                            </form>
                         </div>
-                        <form onSubmit={handleQuickExpenseSave} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Jumlah (Rp)</label>
-                                <MoneyInput
-                                    value={quickExpAmount}
-                                    onChange={setQuickExpAmount}
-                                    autoFocus
-                                    className="focus:ring-rose-500" // Override focus color
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Ambil dari Dompet</label>
-                                <select
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"
-                                    value={quickExpWalletId}
-                                    onChange={(e) => setQuickExpWalletId(e.target.value)}
-                                    required
-                                >
-                                    <option value="" disabled>Pilih Dompet</option>
-                                    {wallets.map(w => (
-                                        <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button type="submit" className="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/30">
-                                Simpan Pengeluaran
-                            </button>
-                        </form>
                     </div>
-                </div>
-            )}
-        </main>
+                )
+            }
+        </main >
     )
 }

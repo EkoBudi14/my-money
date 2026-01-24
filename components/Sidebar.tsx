@@ -40,9 +40,9 @@ export default function Sidebar() {
             {/* Mobile Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed z-[60] bottom-6 left-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95 hover:scale-110"
+                className="md:hidden fixed z-[60] bottom-10 left-6 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95 hover:scale-110"
             >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {isOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
             </button>
 
             {/* Overlay for mobile */}
