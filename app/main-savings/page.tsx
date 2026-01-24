@@ -111,13 +111,13 @@ export default function MainSavingsPage() {
                     <h1 className="text-3xl font-bold text-slate-800">Tabungan Inti</h1>
                     <p className="text-slate-500">Aset & Simpanan jangka panjang</p>
                 </div>
-                <div className="glass shadow-premium-lg text-white px-6 py-4 rounded-2xl backdrop-blur-xl border border-emerald-300/30 flex items-center gap-4 bg-gradient-to-r from-emerald-600 to-teal-600">
-                    <div className="p-2 bg-emerald-500 rounded-xl">
+                <div className="glass shadow-premium-lg px-6 py-4 rounded-2xl backdrop-blur-xl border border-emerald-100 flex items-center gap-4 bg-white">
+                    <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600">
                         <Landmark className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-xs text-emerald-100 font-medium uppercase tracking-wide">Total Aset</p>
-                        <p className="text-2xl font-bold">Rp {totalSavings.toLocaleString('id-ID')}</p>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wide">Total Aset</p>
+                        <p className="text-2xl font-bold text-slate-800">Rp {totalSavings.toLocaleString('id-ID')}</p>
                     </div>
                 </div>
             </header>

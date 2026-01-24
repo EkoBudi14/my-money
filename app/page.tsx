@@ -75,6 +75,7 @@ export default function MoneyManager() {
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const [loading, setLoading] = useState(true)
+  const [showBalance, setShowBalance] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
@@ -419,7 +420,7 @@ export default function MoneyManager() {
         {/* 1. Header Section (Desktop: Order 1, Mobile: Order 1) */}
         <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">CatatDuit</h1>
             <p className="text-slate-500 text-sm">Hi, Welcome back to Eko</p>
           </div>
 
@@ -427,6 +428,29 @@ export default function MoneyManager() {
         </header>
 
 
+
+        {/* 1. Total Balance Card (Desktop: Order 1, Mobile: Order 1) */}
+        <div className="lg:col-span-12 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
+          <div className="flex justify-between items-center relative z-10">
+            <div>
+              <p className="text-slate-500 font-medium mb-1">Total Tabungan Saya</p>
+              <div className="flex items-center gap-3">
+                <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+                  {showBalance ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+                </h2>
+                <button
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
+                >
+                  {showBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+              <WalletIcon className="w-7 h-7" />
+            </div>
+          </div>
+        </div>
 
         {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
         <div className="lg:col-span-3 order-2 lg:order-2 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">

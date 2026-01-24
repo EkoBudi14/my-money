@@ -26,7 +26,7 @@ export default function Sidebar() {
     }, [pathname])
 
     const menuItems = [
-        { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
+        { name: 'CatatDuit', icon: LayoutDashboard, href: '/' },
         { name: 'Dompet', icon: Wallet, href: '/wallets' },
         { name: 'Manajemen Budget', icon: CreditCard, href: '/budgets' },
         { name: 'Tabungan Saya', icon: Goal, href: '/goals' },
