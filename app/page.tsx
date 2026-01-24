@@ -430,12 +430,12 @@ export default function MoneyManager() {
 
 
         {/* 1. Total Balance Card (Desktop: Order 1, Mobile: Order 1) */}
-        <div className="lg:col-span-12 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
+        <div className="lg:col-span-6 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
           <div className="flex justify-between items-center relative z-10">
             <div>
               <p className="text-slate-500 font-medium mb-1">Total Tabungan Saya</p>
               <div className="flex items-center gap-3">
-                <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+                <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
                   {showBalance ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
                 </h2>
                 <button
@@ -448,6 +448,23 @@ export default function MoneyManager() {
             </div>
             <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
               <WalletIcon className="w-7 h-7" />
+            </div>
+          </div>
+        </div>
+
+        {/* 1b. Active Balance Card (Desktop: Order 1, Mobile: Order 1) */}
+        <div className="lg:col-span-6 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
+          <div className="flex justify-between items-center relative z-10">
+            <div>
+              <p className="text-slate-500 font-medium mb-1">Saldo Aktif Saya</p>
+              <div className="flex items-center gap-3">
+                <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
+                  Rp {wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}
+                </h2>
+              </div>
+            </div>
+            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600">
+              <CreditCard className="w-7 h-7" />
             </div>
           </div>
         </div>
