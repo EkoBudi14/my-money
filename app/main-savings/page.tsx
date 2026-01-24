@@ -134,10 +134,10 @@ export default function MainSavingsPage() {
                                         {getIcon(wallet.type)}
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(wallet)} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600">
+                                        <button onClick={() => handleEdit(wallet)} className="p-2 bg-slate-50 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
                                             <Pencil className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(wallet.id)} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-rose-600">
+                                        <button onClick={() => handleDelete(wallet.id)} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>

@@ -6,7 +6,7 @@ import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
-import { Wallet, Transaction, Goal } from '@/types'
+import { Wallet, Transaction, Goal, Budget } from '@/types'
 import {
   Plus,
   Trash2,
@@ -32,7 +32,8 @@ import {
   Pencil,
   Eye,
   EyeOff,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react'
 
 // --- Constants ---
@@ -59,6 +60,7 @@ export default function MoneyManager() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
+  const [budgets, setBudgets] = useState<Budget[]>([])
   const [showSavings, setShowSavings] = useState(false)
 
   // Form State
@@ -82,6 +84,7 @@ export default function MoneyManager() {
     fetchTransactions()
     fetchWallets()
     fetchGoals()
+    fetchBudgets()
     checkAndCreateDefaultWallets()
   }, [])
 
@@ -108,6 +111,15 @@ export default function MoneyManager() {
   const fetchGoals = async () => {
     const { data } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
     setGoals(data || [])
+  }
+
+  const fetchBudgets = async () => {
+    const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`
+    const { data } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('month', monthStr)
+    setBudgets(data || [])
   }
 
   // Check and create default wallets for first-time users
@@ -261,6 +273,7 @@ export default function MoneyManager() {
       alert("Gagal menyimpan transaksi")
     } else {
       fetchTransactions()
+      fetchBudgets() // Refresh budgets status
       resetForm()
     }
   }
@@ -369,6 +382,33 @@ export default function MoneyManager() {
 
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+
+  useEffect(() => {
+    fetchBudgets()
+  }, [currentDate])
+
+  // --- Budget Awareness Logic ---
+  const getBudgetInfo = (category: string) => {
+    if (type === 'pemasukan' || !category) return null
+
+    const budget = budgets.find(b => b.category === category)
+    if (!budget) return null
+
+    // Calculate current spent for this category (excluding current editing transaction if any)
+    const currentSpent = currentMonthTransactions
+      .filter(t => t.category === category && t.type === 'pengeluaran' && t.id !== editingId)
+      .reduce((acc, curr) => acc + curr.amount, 0)
+
+    const newAmount = parseFloat(amount) || 0
+    const totalProjected = currentSpent + newAmount
+    const remaining = budget.amount - totalProjected
+    const isOver = remaining < 0
+    const percent = Math.min((totalProjected / budget.amount) * 100, 100)
+
+    return { budget, currentSpent, totalProjected, remaining, isOver, percent }
+  }
+
+  const budgetInfo = getBudgetInfo(category)
 
 
 
@@ -656,7 +696,7 @@ export default function MoneyManager() {
             onClick={resetForm}
           ></div>
 
-          <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-200 h-[85vh] md:h-auto overflow-y-auto">
+          <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 pb-32 md:pb-10 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-200 h-[85vh] md:h-auto md:max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
@@ -751,6 +791,49 @@ export default function MoneyManager() {
                   })}
                 </div>
               </div>
+
+              {/* Budget Awareness Indicator */}
+              {budgetInfo && (
+                <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
+                    <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>
+                      {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-end mb-2">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-slate-400">Terpakai + Baru</span>
+                      <span className="font-bold text-slate-700">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs text-slate-400">Total Budget</span>
+                      <span className="font-bold text-slate-700">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`}
+                      style={{ width: `${budgetInfo.percent}%` }}
+                    />
+                  </div>
+
+                  {budgetInfo.isOver ? (
+                    <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 p-2 rounded-lg">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <p>
+                        Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-center text-slate-500">
+                      Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Title Input */}
               <div>

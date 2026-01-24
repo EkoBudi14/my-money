@@ -214,7 +214,7 @@ export default function BudgetsPage() {
                                             <div className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${catColor}`}>
                                                 {budget.category}
                                             </div>
-                                            <button onClick={() => handleDelete(budget.id)} className="p-2 hover:bg-rose-50 rounded-lg text-slate-300 hover:text-rose-600 transition-colors">
+                                            <button onClick={() => handleDelete(budget.id)} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-colors">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>

@@ -150,7 +150,7 @@ export default function GoalsPage() {
                                         <div className="bg-blue-100 p-3 rounded-2xl text-blue-600">
                                             <Target className="w-6 h-6" />
                                         </div>
-                                        <button onClick={() => handleDelete(goal.id)} className="p-2 hover:bg-rose-50 rounded-lg text-slate-300 hover:text-rose-600 transition-colors" title="Hapus">
+                                        <button onClick={() => handleDelete(goal.id)} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-colors" title="Hapus">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
