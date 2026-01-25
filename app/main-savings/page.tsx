@@ -12,6 +12,7 @@ import {
     CreditCard,
     Banknote
 } from 'lucide-react'
+import MoneyInput from '@/components/MoneyInput'
 
 export default function MainSavingsPage() {
     const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
@@ -192,7 +193,11 @@ export default function MainSavingsPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-1">Saldo Saat Ini (Rp)</label>
-                                <input type="number" className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none" value={balance} onChange={e => setBalance(e.target.value)} placeholder="0" />
+                                <MoneyInput
+                                    value={balance}
+                                    onChange={setBalance}
+                                    placeholder="0"
+                                />
                             </div>
                             <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl hover:shadow-purple-500/50 transition-colors shadow-premium-lg">Simpan</button>
                         </form>
