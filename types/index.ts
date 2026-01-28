@@ -5,6 +5,7 @@ export interface Wallet {
     category: 'active' | 'savings'
     balance: number
     created_at?: string
+    source_wallet_id?: number | null
 }
 
 export interface Budget {

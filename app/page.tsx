@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 import FinancialChart from '@/components/FinancialChart'
 import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
@@ -57,6 +59,9 @@ const CATEGORIES = {
 }
 
 export default function MoneyManager() {
+  const { showToast } = useToast()
+  const { showConfirm } = useConfirm()
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
@@ -75,6 +80,7 @@ export default function MoneyManager() {
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [showBalance, setShowBalance] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -94,7 +100,7 @@ export default function MoneyManager() {
     const { data, error } = await supabase
       .from('transactions')
       .select('*, wallets(name)') // Join to get wallet name if needed
-      .order('date', { ascending: false }) // Order by custom date
+      .order('created_at', { ascending: false }) // Order by actual creation time
 
     if (error) {
       console.error('Error fetching transactions:', error)
@@ -190,8 +196,23 @@ export default function MoneyManager() {
     const amountNum = parseFloat(amount)
 
     if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate) {
-      return alert("Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.")
+      showToast('warning', 'Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.')
+      return
     }
+
+    // Check wallet balance for expenses
+    const selectedWallet = wallets.find(w => w.id === parseInt(selectedWalletId))
+    if (!selectedWallet) {
+      showToast('error', 'Dompet tidak ditemukan!')
+      return
+    }
+
+    if (type === 'pengeluaran' && selectedWallet.balance < amountNum) {
+      showToast('error', `Saldo tidak mencukupi! Saldo ${selectedWallet.name}: Rp ${selectedWallet.balance.toLocaleString('id-ID')}`)
+      return
+    }
+
+    setSaving(true)
 
     const payload = {
       title: finalTitle,
@@ -213,6 +234,27 @@ export default function MoneyManager() {
         .select('*')
         .eq('id', editingId)
         .single()
+
+      if (!oldTransaction) {
+        showToast('error', 'Transaksi tidak ditemukan')
+        setSaving(false)
+        return
+      }
+
+      // Calculate what the balance will be after rollback
+      let balanceAfterRollback = selectedWallet.balance
+      if (oldTransaction.type === 'pemasukan') {
+        balanceAfterRollback -= oldTransaction.amount
+      } else {
+        balanceAfterRollback += oldTransaction.amount
+      }
+
+      // Check if new expense would exceed balance after rollback
+      if (type === 'pengeluaran' && balanceAfterRollback < amountNum) {
+        showToast('error', `Saldo tidak mencukupi setelah perubahan! Saldo tersedia: Rp ${balanceAfterRollback.toLocaleString('id-ID')}`)
+        setSaving(false)
+        return
+      }
 
       // Update transaction
       const res = await supabase
@@ -271,12 +313,15 @@ export default function MoneyManager() {
 
     if (error) {
       console.error(error)
-      alert("Gagal menyimpan transaksi")
+      showToast('error', 'Gagal menyimpan transaksi')
     } else {
+      showToast('success', editingId ? 'Transaksi berhasil diupdate!' : 'Transaksi berhasil ditambahkan!')
       fetchTransactions()
       fetchBudgets() // Refresh budgets status
       resetForm()
     }
+
+    setSaving(false)
   }
 
   const resetForm = () => {
@@ -303,7 +348,14 @@ export default function MoneyManager() {
 
   // 3. Fungsi Hapus Transaksi
   const deleteTransaction = async (id: number) => {
-    if (!confirm('Hapus transaksi? Saldo dompet akan dikembalikan otomatis.')) return;
+    const confirmed = await showConfirm({
+      title: 'Hapus Transaksi?',
+      message: 'Saldo dompet akan dikembalikan otomatis. Tindakan ini tidak dapat dibatalkan.',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal'
+    })
+
+    if (!confirmed) return
 
     // Get transaction before delete to rollback balance
     const { data: transaction } = await supabase
@@ -313,7 +365,7 @@ export default function MoneyManager() {
       .single()
 
     if (!transaction) {
-      alert('Transaksi tidak ditemukan')
+      showToast('error', 'Transaksi tidak ditemukan')
       return
     }
 
@@ -335,7 +387,10 @@ export default function MoneyManager() {
         fetchWallets()
       }
 
+      showToast('success', 'Transaksi berhasil dihapus!')
       fetchTransactions()
+    } else {
+      showToast('error', 'Gagal menghapus transaksi')
     }
   }
 
@@ -421,7 +476,7 @@ export default function MoneyManager() {
         <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">CatatDuit</h1>
-            <p className="text-slate-500 text-sm">Hi, Welcome back to Eko</p>
+            <p className="text-slate-500 text-sm">Hi, Welcome back Eko</p>
           </div>
 
 
@@ -587,7 +642,12 @@ export default function MoneyManager() {
                                 </span>
                               )}
                               <div className="hidden sm:block w-px h-3 bg-slate-300 mx-1"></div>
-                              <p className="text-xs text-slate-500 truncate">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                <p className="text-xs text-slate-500">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full whitespace-nowrap w-fit">
+                                  🕐 {new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -838,9 +898,13 @@ export default function MoneyManager() {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-4 px-6 rounded-2xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-purple-500/30"
+                disabled={saving}
+                className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                {editingId ? 'Update Transaksi' : 'Simpan Transaksi'}
+                {saving && (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : 'Simpan Transaksi')}
               </button>
             </form>
           </div>

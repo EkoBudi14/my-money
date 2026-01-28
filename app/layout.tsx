@@ -13,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "@/components/Sidebar";
+import { ToastProvider } from "@/hooks/useToast";
+import { ConfirmProvider } from "@/hooks/useConfirm";
 
 export default function RootLayout({
   children,
@@ -24,8 +26,12 @@ export default function RootLayout({
       <body
         className={`${quicksand.variable} antialiased bg-slate-50`}
       >
-        <Sidebar />
-        {children}
+        <ToastProvider>
+          <ConfirmProvider>
+            <Sidebar />
+            {children}
+          </ConfirmProvider>
+        </ToastProvider>
       </body>
     </html>
   );
