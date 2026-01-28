@@ -82,6 +82,8 @@ export default function MoneyManager() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showBalance, setShowBalance] = useState(false)
+  const [showActiveBalance, setShowActiveBalance] = useState(false)
+  const [showIncome, setShowIncome] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
@@ -514,8 +516,14 @@ export default function MoneyManager() {
               <p className="text-slate-500 font-medium mb-1">Saldo Aktif Saya</p>
               <div className="flex items-center gap-3">
                 <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
-                  Rp {wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}
+                  {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
                 </h2>
+                <button
+                  onClick={() => setShowActiveBalance(!showActiveBalance)}
+                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
+                >
+                  {showActiveBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
             <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600">
@@ -544,7 +552,17 @@ export default function MoneyManager() {
                   </div>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-emerald-600">+ Rp {currentIncome.toLocaleString('id-ID')}</p>
+              <div className="flex items-center gap-3">
+                <p className="text-2xl font-bold text-emerald-600">
+                  {showIncome ? `+ Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
+                </p>
+                <button
+                  onClick={() => setShowIncome(!showIncome)}
+                  className="p-2 rounded-xl hover:bg-emerald-50 text-emerald-400 hover:text-emerald-600 transition-all"
+                >
+                  {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
 
               {prevIncome > 0 && (
                 <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${incomeChange >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
