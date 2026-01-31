@@ -9,9 +9,30 @@ export default function GoldPriceCard() {
     const [error, setError] = useState(false)
     const [lastUpdate, setLastUpdate] = useState<string>('')
 
-    const fetchGoldPrice = async () => {
+    const CACHE_KEY = 'gold_price_cache'
+    const CACHE_DURATION = 4 * 60 * 60 * 1000 // 4 hours
+
+    const fetchGoldPrice = async (force = false) => {
         setLoading(true)
         setError(false)
+
+        // 1. Try Load from Cache
+        if (!force) {
+            const cached = localStorage.getItem(CACHE_KEY)
+            if (cached) {
+                const { buyPrice, sellPrice, lastUpdate, timestamp } = JSON.parse(cached)
+                const age = Date.now() - timestamp
+
+                if (age < CACHE_DURATION) {
+                    setBuyPrice(buyPrice)
+                    setSellPrice(sellPrice)
+                    setLastUpdate(lastUpdate)
+                    setLoading(false)
+                    return // EXIT NO FETCH
+                }
+            }
+        }
+
         try {
             const res = await fetch('/api/gold-price')
             if (!res.ok) throw new Error('API Error')
@@ -24,7 +45,17 @@ export default function GoldPriceCard() {
                 const now = new Date()
                 const datePart = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase()
                 const timePart = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-                setLastUpdate(`${datePart}, pukul ${timePart}`)
+                const newLastUpdate = `${datePart}, pukul ${timePart}`
+
+                setLastUpdate(newLastUpdate)
+
+                // Save to Cache
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    buyPrice: data.buyPrice,
+                    sellPrice: data.sellPrice,
+                    lastUpdate: newLastUpdate,
+                    timestamp: Date.now()
+                }))
             } else {
                 throw new Error('Data format error')
             }
@@ -55,7 +86,7 @@ export default function GoldPriceCard() {
                     </div>
                 </div>
                 <button
-                    onClick={fetchGoldPrice}
+                    onClick={() => fetchGoldPrice(true)}
                     disabled={loading}
                     className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-colors disabled:opacity-50"
                 >

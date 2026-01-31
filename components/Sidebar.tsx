@@ -10,7 +10,8 @@ import {
     Goal,
     PiggyBank,
     Menu,
-    X
+    X,
+    StickyNote
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -32,6 +33,7 @@ export default function Sidebar() {
         { name: 'Tabungan Saya', icon: Goal, href: '/goals' },
         { name: 'Tabungan Inti', icon: PiggyBank, href: '/main-savings' },
         { name: 'Analitik', icon: PieChart, href: '/analytics' },
+        { name: 'Catatan', icon: StickyNote, href: '/notes' },
         //{ name: 'Pengaturan', icon: Settings, href: '/settings' },
     ]
 

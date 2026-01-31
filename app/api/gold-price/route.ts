@@ -8,12 +8,17 @@ export async function GET() {
 
         console.log('[Gold API] Fetching data from:', url)
 
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 },
+            signal: controller.signal
         })
+        clearTimeout(timeoutId)
 
         console.log('[Gold API] Response status:', response.status)
 
@@ -115,8 +120,11 @@ export async function GET() {
         })
 
     } catch (error: any) {
-        console.error('[Gold API] Scrape Error:', error.message)
-        console.error('[Gold API] Full error:', error)
+        if (error.name === 'AbortError') {
+            console.warn('[Gold API] Connection timed out (5s limit). Using fallback data.')
+        } else {
+            console.error('[Gold API] Scrape Error:', error.message)
+        }
 
         // Return fallback data instead of error status
         return NextResponse.json({

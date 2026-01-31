@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
@@ -35,8 +36,17 @@ import {
   Eye,
   EyeOff,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  StickyNote
 } from 'lucide-react'
+
+interface Note {
+  id: number
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
+}
 
 // --- Constants ---
 const CATEGORIES = {
@@ -66,6 +76,8 @@ export default function MoneyManager() {
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
   const [budgets, setBudgets] = useState<Budget[]>([])
+  const [latestNote, setLatestNote] = useState<Note | null>(null)
+  const [noteCount, setNoteCount] = useState(0)
   const [showSavings, setShowSavings] = useState(false)
 
   // Form State
@@ -94,8 +106,30 @@ export default function MoneyManager() {
     fetchWallets()
     fetchGoals()
     fetchBudgets()
+    fetchLatestNote()
     checkAndCreateDefaultWallets()
   }, [])
+
+  const fetchLatestNote = async () => {
+    // 1. Get Latest Note
+    const { data } = await supabase
+      .from('notes')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (data) {
+      setLatestNote(data)
+
+      // 2. Get Total Count
+      const { count } = await supabase
+        .from('notes')
+        .select('*', { count: 'exact', head: true })
+
+      if (count !== null) setNoteCount(count)
+    }
+  }
 
   const fetchTransactions = async () => {
     setLoading(true)
@@ -531,6 +565,29 @@ export default function MoneyManager() {
             </div>
           </div>
         </div>
+
+        {/* 1c. Sticky Note Card (Conditional) */}
+        {latestNote && (
+          <Link href="/notes" className="lg:col-span-12 order-1 lg:order-1 glass shadow-premium bg-gradient-to-r from-amber-50 to-orange-50 p-5 rounded-3xl border border-amber-100 relative overflow-hidden group card-hover backdrop-blur-xl flex items-start gap-4 mb-4 transition-transform active:scale-[0.99] cursor-pointer">
+            <div className="bg-amber-100 p-3 rounded-xl text-amber-600 shrink-0 relative">
+              <StickyNote className="w-6 h-6" />
+              {noteCount > 1 && (
+                <div className="absolute -top-1 -right-1 bg-rose-100 text-rose-600 text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full shadow-sm ring-2 ring-white">
+                  {noteCount > 99 ? '99+' : noteCount}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start">
+                <h3 className="font-bold text-slate-800 mb-1 truncate pr-4">{latestNote.title}</h3>
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full whitespace-nowrap hidden sm:inline-block">
+                  {new Date(latestNote.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 line-clamp-4 whitespace-pre-wrap break-all">{latestNote.content}</p>
+            </div>
+          </Link>
+        )}
 
         {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
         <div className="lg:col-span-3 order-2 lg:order-2 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
