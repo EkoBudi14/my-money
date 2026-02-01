@@ -4,12 +4,17 @@ import { supabase } from '@/lib/supabase'
 import { Wallet } from '@/types'
 import { Plus, Wallet as WalletIcon, CreditCard, Banknote, Trash2, Pencil, X } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 
 export default function WalletsPage() {
     const [activeWallets, setActiveWallets] = useState<Wallet[]>([])
     const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const { showToast } = useToast()
+    const { showConfirm } = useConfirm()
 
     // Form State
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -33,6 +38,7 @@ export default function WalletsPage() {
 
         if (error) {
             console.error('Error fetching wallets:', error)
+            showToast('error', 'Gagal memuat data dompet')
         } else {
             const allWallets = data || []
             setActiveWallets(allWallets.filter(w => w.category === 'active'))
@@ -54,7 +60,7 @@ export default function WalletsPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name || balance === '') return alert('Mohon lengkapi data')
+        if (!name || balance === '') return showToast('error', 'Mohon lengkapi data')
 
         const currentBalance = parseFloat(balance)
         const payload: any = {
@@ -93,16 +99,16 @@ export default function WalletsPage() {
                                 savingsWallets.find(w => w.id === parseInt(effectiveSourceId))
 
                             if (sourceWallet) {
-                                if (sourceWallet.id === editingId) return alert("Tidak bisa mengambil dana dari dompet yang sedang diedit!")
+                                if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengambil dana dari dompet yang sedang diedit!")
 
                                 if (sourceWallet.balance < diff) {
-                                    return alert(`Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
+                                    return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
                                 }
                                 await supabase.from('wallets').update({
                                     balance: sourceWallet.balance - diff
                                 }).eq('id', sourceWallet.id)
                             } else {
-                                return alert("Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
+                                return showToast('error', "Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
                             }
                         }
                     } else if (diff < 0) {
@@ -112,14 +118,18 @@ export default function WalletsPage() {
                                 savingsWallets.find(w => w.id === oldWallet.source_wallet_id)
 
                             if (sourceWallet) {
-                                if (sourceWallet.id === editingId) return alert("Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
+                                if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
 
                                 const refundAmount = Math.abs(diff)
                                 await supabase.from('wallets').update({
                                     balance: sourceWallet.balance + refundAmount
                                 }).eq('id', sourceWallet.id)
                             } else {
-                                if (!confirm(`Sumber dana asli (ID: ${oldWallet.source_wallet_id}) sudah tidak ada. Dana Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak akan dikembalikan. Lanjutkan?`)) {
+                                const confirm = await showConfirm({
+                                    title: 'Sumber Dana Hilang',
+                                    message: `Sumber dana asli (ID: ${oldWallet.source_wallet_id}) sudah tidak ada. Dana Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak akan dikembalikan. Lanjutkan?`
+                                })
+                                if (!confirm) {
                                     return
                                 }
                             }
@@ -138,7 +148,7 @@ export default function WalletsPage() {
 
                 if (sourceWallet) {
                     if (sourceWallet.balance < currentBalance) {
-                        return alert(`Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
+                        return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
                     }
                     await supabase.from('wallets').update({
                         balance: sourceWallet.balance - currentBalance
@@ -152,31 +162,37 @@ export default function WalletsPage() {
 
         if (error) {
             console.error(error)
-            alert('Gagal menyimpan dompet')
+            showToast('error', 'Gagal menyimpan dompet')
         } else {
             fetchWallets()
             resetForm()
+            showToast('success', 'Berhasil menyimpan dompet')
         }
     }
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Hapus dompet ini? SEMUA RIWAYAT TRANSAKSI terkait dompet ini akan ikut TERHAPUS PERMANEN.')) return
+        const confirm = await showConfirm({
+            title: 'Hapus Dompet?',
+            message: 'Hapus dompet ini? SEMUA RIWAYAT TRANSAKSI terkait dompet ini akan ikut TERHAPUS PERMANEN.'
+        })
+        if (!confirm) return
 
         // 1. Delete associated transactions first
         const { error: txError } = await supabase.from('transactions').delete().eq('wallet_id', id)
 
         if (txError) {
             console.error(txError)
-            return alert('Gagal menghapus riwayat transaksi terkait')
+            return showToast('error', 'Gagal menghapus riwayat transaksi terkait')
         }
 
         // 2. Delete the wallet
         const { error } = await supabase.from('wallets').delete().eq('id', id)
 
         if (error) {
-            alert('Gagal menghapus dompet')
+            showToast('error', 'Gagal menghapus dompet')
         } else {
             fetchWallets()
+            showToast('success', 'Berhasil menghapus dompet')
         }
     }
 

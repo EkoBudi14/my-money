@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Transaction, Wallet } from '@/types'
 import {
@@ -10,12 +10,101 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts'
+import { Calendar, ChevronLeft, ChevronRight, Settings, X } from 'lucide-react'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [wallets, setWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
-    const [dateFilter, setDateFilter] = useState(new Date())
+
+    // State for Filter & Persistence (Synced with Dashboard)
+    const [currentDate, setCurrentDate] = useState(new Date())
+    const [showSettings, setShowSettings] = useState(false)
+    const [userId, setUserId] = useState<string | null>(null)
+    const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
+    const [customRange, setCustomRange] = useState({
+        start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+        end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+    })
+    const [isInitialized, setIsInitialized] = useState(false)
+
+    // Auth & Settings Sync
+    useEffect(() => {
+        // 1. Load from LocalStorage first
+        if (typeof window !== 'undefined') {
+            const savedMode = localStorage.getItem('money_manager_filter_mode')
+            if (savedMode === 'custom') setFilterMode('custom')
+
+            const savedRange = localStorage.getItem('money_manager_custom_range')
+            if (savedRange) {
+                setCustomRange(JSON.parse(savedRange))
+            }
+            setIsInitialized(true) // Mark as loaded so we don't overwrite with defaults
+        }
+
+        // 2. Load from DB
+        const initAuthAndSettings = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                setUserId(user.id)
+
+                const { data: settings } = await supabase
+                    .from('user_settings')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single()
+
+                if (settings) {
+                    if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+                    if (settings.custom_start_date && settings.custom_end_date) {
+                        setCustomRange({
+                            start: settings.custom_start_date,
+                            end: settings.custom_end_date
+                        })
+                    }
+                }
+            }
+        }
+        initAuthAndSettings()
+    }, [])
+
+    // Persistence Effects
+    useEffect(() => {
+        if (!isInitialized) return
+        if (typeof window !== 'undefined') localStorage.setItem('money_manager_filter_mode', filterMode)
+        saveSettingsToDB()
+    }, [filterMode, isInitialized])
+
+    useEffect(() => {
+        if (!isInitialized) return
+        if (typeof window !== 'undefined') localStorage.setItem('money_manager_custom_range', JSON.stringify(customRange))
+        saveSettingsToDB()
+    }, [customRange, isInitialized])
+
+    const saveSettingsToDB = async () => {
+        if (!userId) return
+
+        await supabase
+            .from('user_settings')
+            .upsert({
+                user_id: userId,
+                filter_mode: filterMode,
+                custom_start_date: customRange.start,
+                custom_end_date: customRange.end,
+                updated_at: new Date().toISOString()
+            })
+    }
+
+    // Helper: Get Period Date Range String
+    const getPeriodLabel = () => {
+        if (filterMode === 'monthly') {
+            return currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+        } else {
+            const s = new Date(customRange.start)
+            const e = new Date(customRange.end)
+            return `${s.getDate()} ${s.toLocaleString('id-ID', { month: 'short' })} - ${e.getDate()} ${e.toLocaleString('id-ID', { month: 'short' })} ${e.getFullYear()}`
+        }
+    }
 
     useEffect(() => {
         fetchData()
@@ -31,11 +120,23 @@ export default function AnalyticsPage() {
         setLoading(false)
     }
 
-    // Filter Logic
-    const filteredTxs = transactions.filter(t => {
-        const d = new Date(t.date || t.created_at)
-        return d.getMonth() === dateFilter.getMonth() && d.getFullYear() === dateFilter.getFullYear()
-    })
+    // Filter Logic (Memoized)
+    const filteredTxs = useMemo(() => {
+        return transactions.filter(t => {
+            const d = new Date(t.date || t.created_at)
+            d.setHours(0, 0, 0, 0)
+
+            if (filterMode === 'monthly') {
+                return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()
+            } else {
+                const start = new Date(customRange.start)
+                start.setHours(0, 0, 0, 0)
+                const end = new Date(customRange.end)
+                end.setHours(0, 0, 0, 0)
+                return d >= start && d <= end
+            }
+        })
+    }, [transactions, filterMode, currentDate, customRange])
 
     // 1. Income vs Expense
     const income = filteredTxs.filter(t => t.type === 'pemasukan').reduce((acc, c) => acc + c.amount, 0)
@@ -67,22 +168,126 @@ export default function AnalyticsPage() {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658']
     const SUMMARY_COLORS = ['#22c55e', '#ef4444']
 
-    const nextMonth = () => setDateFilter(new Date(dateFilter.getFullYear(), dateFilter.getMonth() + 1, 1))
-    const prevMonth = () => setDateFilter(new Date(dateFilter.getFullYear(), dateFilter.getMonth() - 1, 1))
+    const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+    const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
     return (
         <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
-            <header className="flex justify-between items-center mb-8">
+            {/* 1. Header Section */}
+            <header className="flex flex-row justify-between items-center gap-2 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Analitik Keuangan</h1>
                     <p className="text-slate-500">Laporan detail keuangan anda</p>
                 </div>
-                <div className="flex items-center gap-4 glass shadow-premium px-4 py-2 rounded-xl backdrop-blur-xl border border-white/20">
-                    <button onClick={prevMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'<'}</button>
-                    <span className="font-bold text-slate-700 w-32 text-center">
-                        {dateFilter.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                    </span>
-                    <button onClick={nextMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'>'}</button>
+
+                {/* Unified Control Bar */}
+                <div className="relative">
+                    <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl p-1.5 rounded-2xl shadow-sm border border-slate-200/60 shrink-0">
+                        {/* Date Navigator (Only in Monthly Mode) */}
+                        {filterMode === 'monthly' && (
+                            <button
+                                onClick={prevMonth}
+                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        {/* Date Label */}
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 rounded-xl border border-slate-100/50">
+                            <Calendar className="w-4 h-4 text-blue-500" />
+                            <div className="flex flex-col items-center">
+                                <span className="text-sm font-bold text-slate-700 whitespace-nowrap">
+                                    {getPeriodLabel()}
+                                </span>
+                                {filterMode === 'custom' && (
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Mode Custom</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Date Navigator (Only in Monthly Mode) */}
+                        {filterMode === 'monthly' && (
+                            <button
+                                onClick={nextMonth}
+                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        {/* Settings Toggle */}
+                        <div className="w-px h-6 bg-slate-200 mx-1" />
+                        <button
+                            onClick={() => setShowSettings(!showSettings)}
+                            className={`p-2 rounded-xl transition-all active:scale-95 ${showSettings ? 'bg-blue-100 text-blue-600 rotate-90' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <Settings className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Settings Popover */}
+                    {showSettings && (
+                        <>
+                            <div
+                                className="fixed inset-0 z-10"
+                                onClick={() => setShowSettings(false)}
+                            />
+                            <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-slate-700">Pengaturan Tampilan</h3>
+                                    <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* Filter Mode */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-400 uppercase">Mode Filter</label>
+                                        <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1 rounded-xl">
+                                            <button
+                                                onClick={() => setFilterMode('monthly')}
+                                                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                            >
+                                                Bulanan
+                                            </button>
+                                            <button
+                                                onClick={() => setFilterMode('custom')}
+                                                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                            >
+                                                Custom
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Custom Range Inputs */}
+                                    {filterMode === 'custom' && (
+                                        <div className="space-y-3 animate-in slide-in-from-top-2">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-slate-500">Dari Tanggal</label>
+                                                <input
+                                                    type="date"
+                                                    value={customRange.start}
+                                                    onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
+                                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-600"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-slate-500">Sampai Tanggal</label>
+                                                <input
+                                                    type="date"
+                                                    value={customRange.end}
+                                                    onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
+                                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-600"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </header>
 

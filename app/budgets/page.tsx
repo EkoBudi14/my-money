@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { Budget, Transaction, CATEGORIES, Wallet } from '@/types'
 import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -12,6 +14,9 @@ export default function BudgetsPage() {
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentDate, setCurrentDate] = useState(new Date())
+
+    const { showToast } = useToast()
+    const { showConfirm } = useConfirm()
 
     // Form State
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -39,10 +44,12 @@ export default function BudgetsPage() {
         // 1. Get Budgets for this month
         const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`
 
-        const { data: bData } = await supabase
+        const { data: bData, error: bError } = await supabase
             .from('budgets')
             .select('*')
             .eq('month', monthStr)
+
+        if (bError) showToast('error', 'Gagal memuat budget')
 
         // 2. Get Transactions for this month (to calc progress)
         const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString()
@@ -76,7 +83,7 @@ export default function BudgetsPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!category || !amount) return alert("Mohon lengkapi data")
+        if (!category || !amount) return showToast('error', "Mohon lengkapi data")
 
         const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`
 
@@ -93,7 +100,7 @@ export default function BudgetsPage() {
         } else {
             const existing = budgets.find(b => b.category === category)
             if (existing) {
-                return alert(`Budget untuk kategori ${category} sudah ada bulan ini.`)
+                return showToast('error', `Budget untuk kategori ${category} sudah ada bulan ini.`)
             }
 
             const res = await supabase.from('budgets').insert([payload])
@@ -102,19 +109,24 @@ export default function BudgetsPage() {
 
         if (error) {
             console.error(error)
-            alert("Gagal menyimpan budget")
+            showToast('error', "Gagal menyimpan budget")
         } else {
             fetchData()
             resetForm()
+            showToast('success', "Budget disimpan")
         }
     }
 
     const handleQuickExpenseSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickExpAmount || !quickExpWalletId) return alert("Mohon lengkapi data")
+        if (!quickExpAmount || !quickExpWalletId) return showToast('error', "Mohon lengkapi data")
 
         const wallet = wallets.find(w => w.id === parseInt(quickExpWalletId))
-        if (!wallet) return alert("Dompet tidak ditemukan")
+        if (!wallet) return showToast('error', "Dompet tidak ditemukan")
+
+        if (wallet.balance < parseFloat(quickExpAmount)) {
+            return showToast('error', "Saldo dompet tidak mencukupi")
+        }
 
         // 1. Insert Transaction
         const payload = {
@@ -131,7 +143,7 @@ export default function BudgetsPage() {
 
         if (txError) {
             console.error(txError)
-            return alert("Gagal menyimpan pengeluaran")
+            return showToast('error', "Gagal menyimpan pengeluaran")
         }
 
         // 2. Update Wallet Balance
@@ -141,12 +153,22 @@ export default function BudgetsPage() {
         fetchData()
         fetchWallets() // Refresh wallet balances
         resetQuickExpForm()
+        showToast('success', "Pengeluaran berhasil dicatat")
     }
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Hapus budget ini?")) return
+        const confirm = await showConfirm({
+            title: 'Hapus Budget?',
+            message: 'Yakin ingin menghapus budget ini?'
+        })
+        if (!confirm) return
         const { error } = await supabase.from('budgets').delete().eq('id', id)
-        if (!error) fetchData()
+        if (!error) {
+            fetchData()
+            showToast('success', 'Budget dihapus')
+        } else {
+            showToast('error', 'Gagal menghapus budget')
+        }
     }
 
     const handleEdit = (b: Budget) => {

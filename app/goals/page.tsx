@@ -12,11 +12,16 @@ import {
     X
 } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const { showToast } = useToast()
+    const { showConfirm } = useConfirm()
 
     // Form State
     const [name, setName] = useState('')
@@ -38,6 +43,7 @@ export default function GoalsPage() {
         setLoading(true)
         const { data, error } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
         if (data) setGoals(data)
+        if (error) showToast('error', 'Gagal memuat goals')
         setLoading(false)
     }
 
@@ -58,7 +64,7 @@ export default function GoalsPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name || !targetAmount) return alert("Mohon lengkapi nama dan target!")
+        if (!name || !targetAmount) return showToast('error', "Mohon lengkapi nama dan target!")
 
         const payload = {
             name,
@@ -80,14 +86,15 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetForm()
+            showToast('success', 'Target berhasil disimpan')
         } else {
-            alert("Gagal menyimpan target")
+            showToast('error', "Gagal menyimpan target")
         }
     }
 
     const handleQuickAddSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickAddId || !quickAddAmountValue) return alert("Mohon masukkan jumlah!")
+        if (!quickAddId || !quickAddAmountValue) return showToast('error', "Mohon masukkan jumlah!")
 
         const goalToUpdate = goals.find(g => g.id === quickAddId)
         if (!goalToUpdate) return
@@ -102,15 +109,26 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetQuickAddForm()
+            showToast('success', 'Tabungan berhasil ditambahkan!')
         } else {
-            alert("Gagal mengupdate saldo")
+            showToast('error', "Gagal mengupdate saldo")
         }
     }
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Hapus target ini?")) return
-        await supabase.from('goals').delete().eq('id', id)
-        fetchGoals()
+        const confirm = await showConfirm({
+            title: 'Hapus Target?',
+            message: 'Yakin ingin menghapus target ini?'
+        })
+        if (!confirm) return
+
+        const { error } = await supabase.from('goals').delete().eq('id', id)
+        if (!error) {
+            fetchGoals()
+            showToast('success', 'Target dihapus')
+        } else {
+            showToast('error', 'Gagal menghapus target')
+        }
     }
 
     const handleEdit = (g: Goal) => {

@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -37,7 +37,8 @@ import {
   EyeOff,
   Info,
   AlertTriangle,
-  StickyNote
+  StickyNote,
+  Settings
 } from 'lucide-react'
 
 interface Note {
@@ -99,6 +100,97 @@ export default function MoneyManager() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+
+  // Settings State
+  const [showSettings, setShowSettings] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Initialize with defaults (Hydration Safe)
+  const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
+  const [customRange, setCustomRange] = useState({
+    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+  })
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Auth & Settings Sync
+  useEffect(() => {
+    // 1. Load from LocalStorage first (Fast UILoad)
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('money_manager_filter_mode')
+      if (savedMode === 'custom') setFilterMode('custom')
+
+      const savedRange = localStorage.getItem('money_manager_custom_range')
+      if (savedRange) {
+        setCustomRange(JSON.parse(savedRange))
+      }
+      setIsInitialized(true) // Mark as initialized to prevent overwriting
+    }
+
+    // 2. Load from DB (Source of Truth)
+    const initAuthAndSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+
+        const { data: settings } = await supabase
+          .from('user_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (settings) {
+          if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+          if (settings.custom_start_date && settings.custom_end_date) {
+            setCustomRange({
+              start: settings.custom_start_date,
+              end: settings.custom_end_date
+            })
+          }
+        }
+      }
+    }
+    initAuthAndSettings()
+  }, [])
+
+  // Persistence Effects (DB + LocalStorage)
+  useEffect(() => {
+    if (!isInitialized) return
+    if (typeof window !== 'undefined') localStorage.setItem('money_manager_filter_mode', filterMode)
+    saveSettingsToDB()
+  }, [filterMode, isInitialized])
+
+  useEffect(() => {
+    if (!isInitialized) return
+    if (typeof window !== 'undefined') localStorage.setItem('money_manager_custom_range', JSON.stringify(customRange))
+    saveSettingsToDB()
+  }, [customRange, isInitialized])
+
+  const saveSettingsToDB = async () => {
+    if (!userId) return
+
+    await supabase
+      .from('user_settings')
+      .upsert({
+        user_id: userId,
+        filter_mode: filterMode,
+        custom_start_date: customRange.start,
+        custom_end_date: customRange.end,
+        updated_at: new Date().toISOString()
+      })
+  }
+
+
+  // Helper: Get Period Date Range String
+  const getPeriodLabel = () => {
+    if (filterMode === 'monthly') {
+      return currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+    } else {
+      const s = new Date(customRange.start)
+      const e = new Date(customRange.end)
+      return `${s.getDate()} ${s.toLocaleString('id-ID', { month: 'short' })} - ${e.getDate()} ${e.toLocaleString('id-ID', { month: 'short' })} ${e.getFullYear()}`
+    }
+  }
 
   // 1. Ambil data saat aplikasi dibuka
   useEffect(() => {
@@ -220,7 +312,7 @@ export default function MoneyManager() {
     if (!error) {
       await fetchWallets()
       setShowWelcome(false) // Close modal
-      alert('Dompet "Tabungan" berhasil dibuat! 🎉')
+      showToast('success', 'Dompet "Tabungan" berhasil dibuat! 🎉')
     }
   }
 
@@ -437,32 +529,59 @@ export default function MoneyManager() {
     return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 text-slate-600' }
   }
 
-  // Helper: Filter & Totals
-  const getTransactionsByMonth = (date: Date) => {
-    return transactions.filter(t => {
-      const tDate = new Date(t.date || t.created_at) // Use custom date
-      return tDate.getMonth() === date.getMonth() && tDate.getFullYear() === date.getFullYear()
-    })
-  }
+  // --- Derived Data with Performance Memoization ---
 
-  const calculateTotals = (txs: Transaction[]) => {
-    const income = txs
+  // 1. Filter Transactions
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const tDate = new Date(t.date || t.created_at)
+      tDate.setHours(0, 0, 0, 0)
+
+      if (filterMode === 'monthly') {
+        return tDate.getMonth() === currentDate.getMonth() && tDate.getFullYear() === currentDate.getFullYear()
+      } else {
+        const start = new Date(customRange.start)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(customRange.end)
+        end.setHours(0, 0, 0, 0)
+        return tDate >= start && tDate <= end
+      }
+    })
+  }, [transactions, filterMode, currentDate, customRange])
+
+  // 2. Calculate Totals
+  const { currentIncome, currentExpense } = useMemo(() => {
+    const income = filteredTransactions
       .filter(t => t.type === 'pemasukan')
       .reduce((acc, curr) => acc + curr.amount, 0)
 
-    const expense = txs
+    const expense = filteredTransactions
       .filter(t => t.type === 'pengeluaran')
       .reduce((acc, curr) => acc + curr.amount, 0)
 
-    return { income, expense }
-  }
+    return { currentIncome: income, currentExpense: expense }
+  }, [filteredTransactions])
 
-  const currentMonthTransactions = getTransactionsByMonth(currentDate)
-  const { income: currentIncome, expense: currentExpense } = calculateTotals(currentMonthTransactions)
+  // 3. Previous Period Stats (Monthly Only)
+  const { prevIncome, prevExpense } = useMemo(() => {
+    // Only calculate for monthly mode for now
+    const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
 
-  const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-  const prevMonthTransactions = getTransactionsByMonth(prevDate)
-  const { income: prevIncome, expense: prevExpense } = calculateTotals(prevMonthTransactions)
+    const prevTx = transactions.filter(t => {
+      const tDate = new Date(t.date || t.created_at)
+      return tDate.getMonth() === prevDate.getMonth() && tDate.getFullYear() === prevDate.getFullYear()
+    })
+
+    const income = prevTx
+      .filter(t => t.type === 'pemasukan')
+      .reduce((acc, curr) => acc + curr.amount, 0)
+
+    const expense = prevTx
+      .filter(t => t.type === 'pengeluaran')
+      .reduce((acc, curr) => acc + curr.amount, 0)
+
+    return { prevIncome: income, prevExpense: expense }
+  }, [transactions, currentDate])
 
   const getPercentageChange = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0
@@ -479,16 +598,34 @@ export default function MoneyManager() {
     fetchBudgets()
   }, [currentDate])
 
-  // --- Budget Awareness Logic ---
-  const getBudgetInfo = (category: string) => {
-    if (type === 'pemasukan' || !category) return null
+  // --- Budget Awareness Logic (Memoized) ---
+  const budgetInfo = useMemo(() => {
+    if (type === 'pemasukan' || !category || !customDate) return null
 
-    const budget = budgets.find(b => b.category === category)
+    // 1. Find budget for the Selected Date's month (not necessarily Current Dashboard Month)
+    // Note: 'budgets' state currently holds budgets for 'currentDate'. 
+    // If user selects a date outside 'currentDate' month, we might not have the budget loaded.
+    // In that case, we skip the warning (safe fallback).
+    const targetDate = new Date(customDate)
+    const budget = budgets.find(b => {
+      const bDate = new Date(b.month)
+      return bDate.getMonth() === targetDate.getMonth() && bDate.getFullYear() === targetDate.getFullYear()
+    })
+
     if (!budget) return null
 
-    // Calculate current spent for this category (excluding current editing transaction if any)
-    const currentSpent = currentMonthTransactions
-      .filter(t => t.category === category && t.type === 'pengeluaran' && t.id !== editingId)
+    // 2. Calculate actual spending for that specific month (ignoring dashboard filters)
+    const currentSpent = transactions
+      .filter(t => {
+        const tDate = new Date(t.date || t.created_at)
+        return (
+          t.category === category &&
+          t.type === 'pengeluaran' &&
+          t.id !== editingId &&
+          tDate.getMonth() === targetDate.getMonth() &&
+          tDate.getFullYear() === targetDate.getFullYear()
+        )
+      })
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     const newAmount = parseFloat(amount) || 0
@@ -498,9 +635,7 @@ export default function MoneyManager() {
     const percent = Math.min((totalProjected / budget.amount) * 100, 100)
 
     return { budget, currentSpent, totalProjected, remaining, isOver, percent }
-  }
-
-  const budgetInfo = getBudgetInfo(category)
+  }, [category, type, budgets, transactions, amount, editingId, customDate])
 
 
 
@@ -508,12 +643,176 @@ export default function MoneyManager() {
     <main className="min-h-screen font-sans text-slate-900 pb-24 md:pb-8 ml-0 md:ml-72 p-6 md:p-8 transition-all duration-300">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* 1. Header Section (Desktop: Order 1, Mobile: Order 1) */}
-        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+        {/* 1. Header Section */}
+        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-row justify-between items-center gap-2 mb-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">CatatDuit</h1>
             <p className="text-slate-500 text-sm">Hi, Welcome back Eko</p>
           </div>
+
+          {/* Unified Controls Container */}
+          <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl p-1.5 rounded-2xl shadow-sm border border-slate-200/60 shrink-0">
+
+            {/* Date Navigator */}
+            <div className="flex items-center">
+              {filterMode === 'monthly' && (
+                <button
+                  onClick={prevMonth}
+                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-all active:scale-95"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
+
+              <div className="flex flex-col items-center px-3">
+                <div className="flex items-center gap-2">
+                  {filterMode === 'custom' && <Calendar className="w-3 h-3 text-blue-500" />}
+                  <span className="text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap">
+                    {getPeriodLabel()}
+                  </span>
+                </div>
+                {filterMode === 'custom' && (
+                  <span className="text-[10px] text-slate-400 font-medium leading-none mt-0.5">
+                    Mode Custom
+                  </span>
+                )}
+              </div>
+
+              {filterMode === 'monthly' && (
+                <button
+                  onClick={nextMonth}
+                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-all active:scale-95"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Config Separator */}
+            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+
+            {/* Settings Trigger */}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2 rounded-xl transition-all ${showSettings ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
+              title="Filter & Periode"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Settings / Filter Popover */}
+          {showSettings && (
+            <div className="absolute top-20 right-4 z-50 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-slate-500" />
+                  Filter & Periode
+                </h3>
+                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+                <button
+                  onClick={() => setFilterMode('monthly')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Bulanan
+                </button>
+                <button
+                  onClick={() => setFilterMode('custom')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Custom Tanggal
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {filterMode === 'monthly' ? (
+                  /* Monthly Controls */
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Bulan</label>
+                      <select
+                        value={currentDate.getMonth()}
+                        onChange={(e) => {
+                          const newMonth = parseInt(e.target.value);
+                          const newDate = new Date(currentDate);
+                          newDate.setMonth(newMonth);
+                          setCurrentDate(newDate);
+                        }}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
+                          <option key={i} value={i}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Tahun</label>
+                      <select
+                        value={currentDate.getFullYear()}
+                        onChange={(e) => {
+                          const newYear = parseInt(e.target.value);
+                          const newDate = new Date(currentDate);
+                          newDate.setFullYear(newYear);
+                          setCurrentDate(newDate);
+                        }}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  /* Custom Controls */
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Dari Tanggal</label>
+                      <input
+                        type="date"
+                        value={customRange.start}
+                        onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Sampai Tanggal</label>
+                      <input
+                        type="date"
+                        value={customRange.end}
+                        onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Info & Reset */}
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                  <p className="text-[10px] text-blue-700 leading-relaxed">
+                    <strong>Preview:</strong> <br />
+                    {getPeriodLabel()}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setFilterMode('monthly')
+                    setCurrentDate(new Date())
+                  }}
+                  className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  Reset ke Bulan Ini
+                </button>
+              </div>
+            </div>
+          )}
 
 
         </header>
@@ -687,7 +986,7 @@ export default function MoneyManager() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
                   <p>Memuat data...</p>
                 </div>
-              ) : currentMonthTransactions.length === 0 ? (
+              ) : filteredTransactions.length === 0 ? (
                 <div className="text-center py-12 text-slate-400">
                   <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CreditCard className="w-8 h-8 text-slate-300" />
@@ -696,7 +995,7 @@ export default function MoneyManager() {
                 </div>
               ) : (
                 <ul className="divide-y divide-slate-50">
-                  {currentMonthTransactions.map((t) => {
+                  {filteredTransactions.map((t) => {
                     const { Icon, color } = getCategoryIcon(t.category, t.type)
                     const walletName = wallets.find(w => w.id === t.wallet_id)?.name
                     return (
@@ -770,12 +1069,12 @@ export default function MoneyManager() {
           </div>
 
           {/* Wallet Summary Mini */}
-          <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 backdrop-blur-xl card-hover flex-1">
+          <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 backdrop-blur-xl card-hover">
             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
               <WalletIcon className="w-5 h-5 text-blue-600" />
               Dompet
             </h3>
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               {wallets.map(w => (
                 <div key={w.id} className="flex justify-between items-center text-sm">
                   <span className="text-slate-600">{w.name}</span>

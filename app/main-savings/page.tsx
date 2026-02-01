@@ -13,12 +13,17 @@ import {
     Banknote
 } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 
 export default function MainSavingsPage() {
     const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
     const [activeWallets, setActiveWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const { showToast } = useToast()
+    const { showConfirm } = useConfirm()
 
     // Form State
     const [name, setName] = useState('')
@@ -53,6 +58,7 @@ export default function MainSavingsPage() {
             .order('created_at', { ascending: false })
 
         if (data) setSavingsWallets(data)
+        if (error) showToast('error', 'Gagal memuat tabungan')
         setLoading(false)
     }
 
@@ -69,7 +75,7 @@ export default function MainSavingsPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name) return alert("Mohon lengkapi nama tabungan!")
+        if (!name) return showToast('error', "Mohon lengkapi nama tabungan!")
 
         const currentBalance = parseFloat(balance || '0')
         const payload: any = {
@@ -110,17 +116,17 @@ export default function MainSavingsPage() {
                                 savingsWallets.find(w => w.id === parseInt(effectiveSourceId))
 
                             if (sourceWallet) {
-                                if (sourceWallet.id === editingId) return alert("Tidak bisa mengambil dana dari dompet yang sedang diedit!")
+                                if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengambil dana dari dompet yang sedang diedit!")
 
                                 if (sourceWallet.balance < diff) {
-                                    return alert(`Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
+                                    return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
                                 }
                                 // Deduct from source
                                 await supabase.from('wallets').update({
                                     balance: sourceWallet.balance - diff
                                 }).eq('id', sourceWallet.id)
                             } else {
-                                return alert("Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
+                                return showToast('error', "Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
                             }
                         }
                     } else if (diff < 0) {
@@ -130,7 +136,7 @@ export default function MainSavingsPage() {
                                 savingsWallets.find(w => w.id === oldWallet.source_wallet_id)
 
                             if (sourceWallet) {
-                                if (sourceWallet.id === editingId) return alert("Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
+                                if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
 
                                 const refundAmount = Math.abs(diff)
                                 // Add back to ORIGINAL source only
@@ -139,7 +145,11 @@ export default function MainSavingsPage() {
                                 }).eq('id', sourceWallet.id)
                             } else {
                                 // Source wallet deleted - warn user
-                                if (!confirm(`Sumber dana asli (ID: ${oldWallet.source_wallet_id}) sudah tidak ada. Dana Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak akan dikembalikan. Lanjutkan?`)) {
+                                const confirm = await showConfirm({
+                                    title: 'Sumber Dana Hilang',
+                                    message: `Sumber dana asli (ID: ${oldWallet.source_wallet_id}) sudah tidak ada. Dana Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak akan dikembalikan. Lanjutkan?`
+                                })
+                                if (!confirm) {
                                     return
                                 }
                             }
@@ -160,7 +170,7 @@ export default function MainSavingsPage() {
 
                 if (sourceWallet) {
                     if (sourceWallet.balance < currentBalance) {
-                        return alert(`Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
+                        return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
                     }
                     await supabase.from('wallets').update({
                         balance: sourceWallet.balance - currentBalance
@@ -176,16 +186,23 @@ export default function MainSavingsPage() {
             fetchSavings()
             fetchActiveWallets() // Refresh source wallet balances
             resetForm()
+            showToast('success', 'Aset berhasil disimpan')
         } else {
             console.error(error)
-            alert("Gagal menyimpan tabungan")
+            showToast('error', "Gagal menyimpan tabungan")
         }
     }
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Hapus tabungan ini?")) return
+        const confirm = await showConfirm({
+            title: 'Hapus Aset?',
+            message: 'Yakin ingin menghapus aset tabungan ini?'
+        })
+        if (!confirm) return
+
         await supabase.from('wallets').delete().eq('id', id)
         fetchSavings()
+        showToast('success', 'Aset berhasil dihapus')
     }
 
     const handleEdit = (w: Wallet) => {
