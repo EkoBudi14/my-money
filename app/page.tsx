@@ -9,7 +9,7 @@ import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
-import { Wallet, Transaction, Goal, Budget } from '@/types'
+import { Wallet, Transaction, Goal, Budget, Debt } from '@/types'
 import {
   Plus,
   Trash2,
@@ -38,7 +38,8 @@ import {
   Info,
   AlertTriangle,
   StickyNote,
-  Settings
+  Settings,
+  User
 } from 'lucide-react'
 
 interface Note {
@@ -80,6 +81,13 @@ export default function MoneyManager() {
   const [latestNote, setLatestNote] = useState<Note | null>(null)
   const [noteCount, setNoteCount] = useState(0)
   const [showSavings, setShowSavings] = useState(false)
+  // Debt State
+  const [debts, setDebts] = useState<Debt[]>([])
+  const [isSplitBill, setIsSplitBill] = useState(false)
+  const [splitEntries, setSplitEntries] = useState<{name: string, amount: string}[]>([{ name: '', amount: '' }])
+  const [showDebtModal, setShowDebtModal] = useState(false)
+  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
+  const [repayingWalletId, setRepayingWalletId] = useState<number | null>(null)
 
   // Form State
   const [title, setTitle] = useState('')
@@ -192,6 +200,8 @@ export default function MoneyManager() {
     fetchWallets()
     fetchGoals()
     fetchBudgets()
+    fetchBudgets()
+    fetchDebts() // Add fetch debts
     fetchLatestNote()
     checkAndCreateDefaultWallets()
   }, [])
@@ -249,6 +259,15 @@ export default function MoneyManager() {
       .select('*')
       .eq('month', monthStr)
     setBudgets(data || [])
+  }
+
+  const fetchDebts = async () => {
+    const { data } = await supabase
+      .from('debts')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    setDebts(data || [])
   }
 
   // Check and create default wallets for first-time users
@@ -437,6 +456,24 @@ export default function MoneyManager() {
       console.error(error)
       showToast('error', 'Gagal menyimpan transaksi')
     } else {
+      // Split Bill / Debt Creation
+      if (data && data.length > 0 && isSplitBill && type === 'pengeluaran') {
+        const validDebts = splitEntries.filter(e => e.name.trim() !== '' && parseFloat(e.amount) > 0)
+        
+        if (validDebts.length > 0) {
+          const debtPayloads = validDebts.map(d => ({
+            person_name: d.name,
+            amount: parseFloat(d.amount),
+            status: 'pending',
+            original_transaction_id: data[0].id,
+            created_at: new Date().toISOString()
+          }))
+
+          await supabase.from('debts').insert(debtPayloads)
+          fetchDebts()
+        }
+      }
+
       showToast('success', editingId ? 'Transaksi berhasil diupdate!' : 'Transaksi berhasil ditambahkan!')
       fetchTransactions()
       fetchBudgets() // Refresh budgets status
@@ -455,6 +492,9 @@ export default function MoneyManager() {
     setCustomDate(new Date().toISOString().split('T')[0])
     setEditingId(null)
     setIsModalOpen(false)
+    // Reset Debt Form
+    setIsSplitBill(false)
+    setSplitEntries([{ name: '', amount: '' }])
   }
 
   const handleEditClick = (t: Transaction) => {
@@ -491,6 +531,86 @@ export default function MoneyManager() {
       return
     }
 
+    // Check if this transaction is a Debt Payment (Income)
+    const { data: linkedDebtPayment } = await supabase
+      .from('debts')
+      .select('*')
+      .eq('payment_transaction_id', id)
+      .single()
+
+    if (linkedDebtPayment) {
+      // Revert debt status to pending
+      await supabase.from('debts').update({
+        status: 'pending',
+        payment_wallet_id: null,
+        payment_transaction_id: null,
+        paid_at: null
+      }).eq('id', linkedDebtPayment.id)
+    }
+
+    // Check if this transaction Created Debts (Expense)
+    const { data: createdDebts } = await supabase
+      .from('debts')
+      .select('*')
+      .eq('original_transaction_id', id)
+
+    if (createdDebts && createdDebts.length > 0) {
+      // Find payments linked to these debts (completed repayments)
+      const paymentTransactionIds = createdDebts
+        .map(d => d.payment_transaction_id)
+        .filter(pid => pid !== null) as number[]
+
+      const hasPayments = paymentTransactionIds.length > 0
+      
+      const confirmMessage = hasPayments
+        ? `Transaksi ini memiliki ${createdDebts.length} data piutang dan ${paymentTransactionIds.length} pelunasan yang sudah tercatat. Menghapus ini akan membatalkan pelunasan, mengembalikan saldo dompet, dan menghapus piutang. Lanjutkan?`
+        : `Transaksi ini memiliki ${createdDebts.length} data piutang terkait. Menghapus transaksi ini akan menghapus data piutang tersebut juga. Lanjutkan?`
+
+      const confirmDelete = await showConfirm({
+        title: 'Hapus Transaksi & Piutang?',
+        message: confirmMessage,
+        confirmText: 'Ya, Hapus Semua',
+        cancelText: 'Batal'
+      })
+
+      if (!confirmDelete) return
+
+      // 1. Handle Cascade Delete for Repayment Transactions (Rollback Balance First)
+      if (hasPayments) {
+         // Fetch payment transactions details for balance rollback
+         const { data: paymentTrx } = await supabase
+            .from('transactions')
+            .select('*')
+            .in('id', paymentTransactionIds)
+         
+         if (paymentTrx && paymentTrx.length > 0) {
+            for (const p of paymentTrx) {
+               // Rollback balance (Since Repayment is Income, we Subtract)
+               const wallet = wallets.find(w => w.id === p.wallet_id)
+               if (wallet) {
+                  const newBalance = wallet.balance - p.amount 
+                  await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
+               }
+            }
+         }
+      }
+
+      // 2. Delete the linked debts (Crucial: Delete this FIRST to remove FK references)
+      const { error: debtDelError } = await supabase.from('debts').delete().eq('original_transaction_id', id)
+      
+      if (debtDelError) {
+         console.error('Error deleting debts:', debtDelError)
+         showToast('error', 'Gagal menghapus sebagian data piutang')
+         return // Stop if critical failure
+      }
+
+      // 3. Now it is safe to delete Payment Transactions
+       if (hasPayments) {
+          const { error: delError } = await supabase.from('transactions').delete().in('id', paymentTransactionIds)
+          if (delError) console.error('Error deleting payment trx:', delError)
+       }
+    }
+
     // Delete transaction
     const { error } = await supabase
       .from('transactions')
@@ -511,8 +631,71 @@ export default function MoneyManager() {
 
       showToast('success', 'Transaksi berhasil dihapus!')
       fetchTransactions()
+      fetchDebts() // Refresh debts list (it might reappear as pending)
     } else {
-      showToast('error', 'Gagal menghapus transaksi')
+      console.error('Error deleting transaction:', error)
+      showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
+    }
+  }
+  const markDebtAsPaid = async (debt: Debt, targetWalletId: number) => {
+     setRepayingWalletId(targetWalletId)
+
+     // 1. Create Income Transaction
+     const { data: trx, error: trxError } = await supabase.from('transactions').insert({
+       title: `Pelunasan Piutang: ${debt.person_name}`,
+       amount: debt.amount,
+       type: 'pemasukan',
+       category: 'Lainnya',
+       wallet_id: targetWalletId,
+       created_at: new Date().toISOString()
+     }).select()
+
+     if (trxError) {
+       showToast('error', 'Gagal membuat transaksi pelunasan')
+       return
+     }
+
+     // 2. Update Debt Status
+     const { error: debtError } = await supabase.from('debts').update({
+       status: 'paid',
+       payment_wallet_id: targetWalletId,
+       payment_transaction_id: trx[0].id,
+       paid_at: new Date().toISOString()
+     }).eq('id', debt.id)
+
+     // 3. Update Wallet Balance
+     const wallet = wallets.find(w => w.id === targetWalletId)
+     if (wallet) {
+       await supabase.from('wallets').update({
+         balance: wallet.balance + debt.amount
+       }).eq('id', targetWalletId)
+     }
+
+     if (!debtError) {
+       showToast('success', 'Piutang berhasil ditandai lunas!')
+       fetchDebts()
+       fetchTransactions()
+       fetchWallets()
+       setShowDebtModal(false)
+     }
+     setRepayingWalletId(null)
+  }
+
+  // 5. Delete Debt
+  const deleteDebt = async (id: number) => {
+    const confirmed = await showConfirm({
+      title: 'Hapus Piutang?',
+      message: 'Data piutang akan dihapus permanen.',
+      confirmText: 'Hapus',
+      cancelText: 'Batal'
+    })
+    
+    if (!confirmed) return
+
+    const { error } = await supabase.from('debts').delete().eq('id', id)
+    if (!error) {
+      showToast('success', 'Piutang berhasil dihapus')
+      fetchDebts()
     }
   }
 
@@ -960,6 +1143,46 @@ export default function MoneyManager() {
 
         {/* 5. Left Column: Chart + Transaction List (Desktop: Order 5, Mobile: Order 5) */}
         <div className="lg:col-span-8 order-5 lg:order-6 flex flex-col gap-6">
+          
+          {/* Debt / Piutang Card */}
+          {debts.some(d => d.status === 'pending') && (
+            <div className="glass shadow-premium-lg p-5 rounded-3xl border border-white/20 relative overflow-hidden backdrop-blur-xl">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                  <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
+                    <User className="w-5 h-5" />
+                  </div>
+                  Daftar Piutang (Split Bill)
+                </h3>
+                <span className="text-xs font-bold bg-orange-100 text-orange-600 px-3 py-1 rounded-full">
+                  {debts.filter(d => d.status === 'pending').length} Belum Lunas
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {debts.filter(d => d.status === 'pending').map(debt => (
+                  <div key={debt.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group hover:border-orange-200 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">
+                        {debt.person_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">{debt.person_name}</p>
+                        <p className="text-xs text-slate-500">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }}
+                      className="text-xs font-bold bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+                    >
+                      Tandai Lunas
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <FinancialChart income={currentIncome} expense={currentExpense} />
 
           {/* Transaction List - Moved here to fill space */}
@@ -1181,6 +1404,96 @@ export default function MoneyManager() {
                   autoFocus={!editingId}
                 />
               </div>
+
+              {/* Split Bill Toggle */}
+              {type === 'pengeluaran' && (
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isSplitBill}
+                        onChange={(e) => setIsSplitBill(e.target.checked)}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <span>Ada yang nitip bayar? (Split Bill)</span>
+                    </label>
+                    {isSplitBill && <span className="text-xs text-blue-600 font-medium animate-pulse">Mode Aktif</span>}
+                  </div>
+
+                  {isSplitBill && (
+                    <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
+                      
+                      {splitEntries.map((entry, idx) => (
+                        <div key={idx} className="flex gap-2 items-start">
+                          <div className="flex-1 grid grid-cols-2 gap-2">
+                            <div>
+                              <input
+                                type="text"
+                                placeholder={`Nama Teman #${idx + 1}`}
+                                className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={entry.name}
+                                onChange={(e) => {
+                                  const newEntries = [...splitEntries]
+                                  newEntries[idx].name = e.target.value
+                                  setSplitEntries(newEntries)
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <MoneyInput
+                                placeholder="0"
+                                value={entry.amount}
+                                onChange={(val) => {
+                                  const newEntries = [...splitEntries]
+                                  newEntries[idx].amount = val
+                                  setSplitEntries(newEntries)
+                                }}
+                                className="!text-sm !p-3" 
+                              />
+                            </div>
+                          </div>
+                          {splitEntries.length > 1 && (
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const newEntries = splitEntries.filter((_, i) => i !== idx)
+                                setSplitEntries(newEntries)
+                              }}
+                              className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2"
+                      >
+                        <Plus className="w-3 h-3" /> Tambah Orang Lain
+                      </button>
+
+                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col gap-1 mt-2">
+                         <div className="flex justify-between items-center text-xs font-medium text-blue-900 border-b border-blue-100 pb-2 mb-1">
+                           <span>Total Piutang:</span>
+                           <span className="font-bold">Rp {splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0).toLocaleString('id-ID')}</span>
+                         </div>
+                         <div className="flex items-start gap-2">
+                           <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                           <p className="text-xs text-blue-700">
+                             Total pengeluaran tercatat: <strong>Rp {parseInt(amount || '0').toLocaleString('id-ID')}</strong>.
+                             <br/>
+                             Sisa (Bagian Anda): <strong>Rp {Math.max(0, parseInt(amount || '0') - splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0)).toLocaleString('id-ID')}</strong>.
+                           </p>
+                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Category Grid */}
               <div>
@@ -1410,6 +1723,67 @@ export default function MoneyManager() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Debt Repayment Modal */}
+      {showDebtModal && selectedDebt && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDebtModal(false)}></div>
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl z-50 p-6 animate-in zoom-in-95 duration-200">
+             <div className="text-center mb-6">
+               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                 💸
+               </div>
+               <h3 className="text-xl font-bold text-slate-800">Terima Pembayaran</h3>
+               <p className="text-slate-500 text-sm">
+                 {selectedDebt.person_name} akan membayar piutang sebesar <br/>
+                 <strong className="text-slate-800 text-lg">Rp {selectedDebt.amount.toLocaleString('id-ID')}</strong>
+               </p>
+             </div>
+
+             <div className="mb-6">
+               <label className="block text-sm font-bold text-slate-700 mb-2">Masuk ke Dompet Mana?</label>
+               <div className="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+                 {wallets.map(w => {
+                   const isProcessing = repayingWalletId === w.id
+                   return (
+                   <button
+                     key={w.id}
+                     onClick={() => !repayingWalletId && markDebtAsPaid(selectedDebt, w.id)}
+                     disabled={repayingWalletId !== null}
+                     className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${
+                       isProcessing 
+                         ? 'bg-blue-50 border-blue-500 cursor-wait' 
+                         : repayingWalletId !== null
+                           ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                           : 'bg-white border-slate-200 hover:border-green-500 hover:bg-green-50'
+                     }`}
+                   >
+                     <div className="flex items-center gap-3">
+                       {isProcessing && (
+                          <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></div>
+                       )}
+                       <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700'} group-hover:text-green-700`}>
+                         {w.name} {isProcessing && '(Memproses...)'}
+                       </span>
+                     </div>
+                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">
+                       Rp {w.balance.toLocaleString('id-ID')}
+                     </span>
+                   </button>
+                   )
+                 })}
+               </div>
+             </div>
+
+             <button
+               onClick={() => setShowDebtModal(false)}
+               className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors"
+             >
+               Batal
+             </button>
           </div>
         </div>
       )}

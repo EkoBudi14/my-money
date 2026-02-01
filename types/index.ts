@@ -36,6 +36,19 @@ export interface Transaction {
     created_at: string
 }
 
+export interface Debt {
+    id: number
+    person_name: string
+    amount: number
+    status: 'pending' | 'paid'
+    original_transaction_id?: number
+    payment_wallet_id?: number
+    payment_transaction_id?: number
+    note?: string
+    created_at: string
+    paid_at?: string
+}
+
 export const CATEGORIES = {
     pengeluaran: [
         { name: 'Makanan', color: 'bg-orange-100 text-orange-600' },
