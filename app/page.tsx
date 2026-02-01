@@ -103,7 +103,7 @@ export default function MoneyManager() {
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+
 
   // Initialize with defaults (Hydration Safe)
   const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
@@ -113,72 +113,66 @@ export default function MoneyManager() {
   })
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Auth & Settings Sync
+  // Settings Sync - Simplified (No Auth Required)
   useEffect(() => {
-    // 1. Load from LocalStorage first (Fast UILoad)
-    if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('money_manager_filter_mode')
-      if (savedMode === 'custom') setFilterMode('custom')
+    // Load settings from Supabase on mount
+    const loadSettings = async () => {
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('id', 1) // Use single row with id=1 for single-user app
+        .single()
 
-      const savedRange = localStorage.getItem('money_manager_custom_range')
-      if (savedRange) {
-        setCustomRange(JSON.parse(savedRange))
-      }
-      setIsInitialized(true) // Mark as initialized to prevent overwriting
-    }
-
-    // 2. Load from DB (Source of Truth)
-    const initAuthAndSettings = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUserId(user.id)
-
-        const { data: settings } = await supabase
-          .from('user_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-
-        if (settings) {
-          if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
-          if (settings.custom_start_date && settings.custom_end_date) {
-            setCustomRange({
-              start: settings.custom_start_date,
-              end: settings.custom_end_date
-            })
-          }
+      if (settings) {
+        if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+        if (settings.custom_start_date && settings.custom_end_date) {
+          setCustomRange({
+            start: settings.custom_start_date,
+            end: settings.custom_end_date
+          })
         }
+      } else {
+        // Create initial settings row if doesn't exist
+        await supabase
+          .from('user_settings')
+          .insert({
+            id: 1,
+            filter_mode: 'monthly',
+            custom_start_date: customRange.start,
+            custom_end_date: customRange.end,
+            updated_at: new Date().toISOString()
+          })
       }
+      setIsInitialized(true)
     }
-    initAuthAndSettings()
+
+    loadSettings()
   }, [])
 
-  // Persistence Effects (DB + LocalStorage)
+  // Save to Supabase when settings change (debounced to prevent excessive writes)
   useEffect(() => {
     if (!isInitialized) return
-    if (typeof window !== 'undefined') localStorage.setItem('money_manager_filter_mode', filterMode)
-    saveSettingsToDB()
-  }, [filterMode, isInitialized])
 
-  useEffect(() => {
-    if (!isInitialized) return
-    if (typeof window !== 'undefined') localStorage.setItem('money_manager_custom_range', JSON.stringify(customRange))
-    saveSettingsToDB()
-  }, [customRange, isInitialized])
+    const timeoutId = setTimeout(() => {
+      const saveSettings = async () => {
+        await supabase
+          .from('user_settings')
+          .update({
+            filter_mode: filterMode,
+            custom_start_date: customRange.start,
+            custom_end_date: customRange.end,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', 1)
+      }
 
-  const saveSettingsToDB = async () => {
-    if (!userId) return
+      saveSettings()
+    }, 500) // Debounce 500ms to batch rapid changes
 
-    await supabase
-      .from('user_settings')
-      .upsert({
-        user_id: userId,
-        filter_mode: filterMode,
-        custom_start_date: customRange.start,
-        custom_end_date: customRange.end,
-        updated_at: new Date().toISOString()
-      })
-  }
+    return () => clearTimeout(timeoutId)
+  }, [filterMode, customRange, isInitialized])
+
+
 
 
   // Helper: Get Period Date Range String

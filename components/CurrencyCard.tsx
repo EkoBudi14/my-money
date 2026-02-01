@@ -12,11 +12,12 @@ export default function CurrencyCard() {
         setLoading(true)
         setError(false)
         try {
-            const res = await fetch('https://open.er-api.com/v6/latest/USD')
+            // Using Frankfurter API - more reliable and has CORS support
+            const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=IDR')
             if (!res.ok) throw new Error('API Error')
 
             const data = await res.json()
-            // data format: { result: "success", rates: { IDR: 16000, ... } }
+            // data format: { amount: 1, base: "USD", date: "2024-01-01", rates: { IDR: 16000 } }
 
             if (data.rates && data.rates.IDR) {
                 setRate(data.rates.IDR)
@@ -89,7 +90,7 @@ export default function CurrencyCard() {
 
             <div className="mt-4 pt-3 flex justify-between items-center z-10 relative">
                 <span className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-full">Update: {lastUpdate}</span>
-                <span className="text-[10px] text-slate-400 font-medium">ExchangeRate-API</span>
+                <span className="text-[10px] text-slate-400 font-medium">Frankfurter API</span>
             </div>
         </div>
     )
