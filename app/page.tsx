@@ -9,6 +9,7 @@ import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
+import RecurringBillsList from '@/components/RecurringBillsList'
 import { Wallet, Transaction, Goal, Budget, Debt } from '@/types'
 import {
   Plus,
@@ -108,6 +109,11 @@ export default function MoneyManager() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [billsUpdateTrigger, setBillsUpdateTrigger] = useState(0)
+
+  const handleBillsUpdate = () => {
+    setBillsUpdateTrigger(prev => prev + 1)
+  }
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false)
@@ -1280,9 +1286,14 @@ export default function MoneyManager() {
 
         {/* 6 & 7. Right Column: Calendar + Wallet (Desktop: Order 6, Mobile: Order 6 & 7) */}
         <div className="lg:col-span-4 order-6 lg:order-7 flex flex-col gap-6">
+          {/* Recurring Bills Widget */}
+          <div>
+            <RecurringBillsList onUpdate={handleBillsUpdate} />
+          </div>
+
           {/* Calendar Widget */}
           <div>
-            <CalendarCard />
+            <CalendarCard refreshTrigger={billsUpdateTrigger} />
           </div>
 
           {/* Wallet Summary Mini */}

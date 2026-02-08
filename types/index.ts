@@ -67,3 +67,12 @@ export const CATEGORIES = {
         { name: 'Lainnya', color: 'bg-slate-100 text-slate-600' },
     ]
 }
+
+export interface RecurringBill {
+    id: number
+    name: string
+    amount: number
+    due_date: number // 1-31
+    category: string
+    created_at?: string
+}
