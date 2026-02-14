@@ -76,3 +76,12 @@ export interface RecurringBill {
     category: string
     created_at?: string
 }
+
+export interface CalendarEvent {
+    id: number
+    date: string // YYYY-MM-DD
+    title: string
+    type: 'note' | 'reminder'
+    color: 'blue' | 'red' | 'green' | 'yellow' | 'purple'
+    created_at?: string
+}

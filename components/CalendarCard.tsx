@@ -1,8 +1,12 @@
 'use client'
 import React, { useState, useMemo, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Trash2, Pencil } from 'lucide-react'
 import { getRecurringBills } from '@/lib/recurring-bills'
-import { RecurringBill } from '@/types'
+import { RecurringBill, CalendarEvent } from '@/types'
+import { supabase } from '@/lib/supabase'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
+import AddEventModal from './AddEventModal'
 
 interface Holiday {
     date: string
@@ -29,6 +33,12 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
     const [currentTime, setCurrentTime] = useState(new Date())
     const [isMounted, setIsMounted] = useState(false)
 
+    const [events, setEvents] = useState<CalendarEvent[]>([])
+    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+    const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false)
+    const { showToast } = useToast()
+    const { showConfirm } = useConfirm()
+
     // Prevent hydration mismatch
     useEffect(() => {
         setIsMounted(true)
@@ -41,6 +51,13 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
         }, 1000)
         return () => clearInterval(timer)
     }, [])
+
+    const fetchEvents = async () => {
+        const { data } = await supabase
+            .from('calendar_events')
+            .select('*')
+        if (data) setEvents(data)
+    }
 
     // Fetch data
     useEffect(() => {
@@ -57,6 +74,9 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                 // Fetch Recurring Bills
                 const billsData = await getRecurringBills()
                 setRecurringBills(billsData)
+
+                // Fetch Events
+                await fetchEvents()
 
             } catch (error) {
                 console.error('Error fetching calendar data:', error)
@@ -107,6 +127,34 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
         setSelectedDate(newDate)
     }
 
+    const handleEditEvent = (event: CalendarEvent) => {
+        setSelectedEvent(event)
+        setIsAddEventModalOpen(true)
+    }
+
+    const handleDeleteEvent = async (id: number) => {
+        const confirmed = await showConfirm({
+            title: 'Hapus Catatan?',
+            message: 'Catatan akan dihapus permanen.',
+            confirmText: 'Hapus',
+            cancelText: 'Batal'
+        })
+        
+        if (!confirmed) return
+
+        const { error } = await supabase
+            .from('calendar_events')
+            .delete()
+            .eq('id', id)
+
+        if (!error) {
+            showToast('success', 'Catatan dihapus')
+            fetchEvents()
+        } else {
+            showToast('error', 'Gagal menghapus catatan')
+        }
+    }
+
     // Grid Generation
     const grid = []
     for (let i = 0; i < firstDayOfMonth; i++) grid.push(null)
@@ -117,8 +165,9 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
         const dateStr = `${year}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
         const holiday = holidaysInMonth.find(h => h.date === dateStr)
         const bills = recurringBills.filter(b => b.due_date === day)
+        const dayEvents = events.filter(e => e.date === dateStr)
         
-        return { holiday, bills }
+        return { holiday, bills, dayEvents }
     }
 
     // Selected Date Info
@@ -133,6 +182,11 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
     const showTodayInfo = !selectedDate && currentDate.getMonth() === todayDate.getMonth() && currentDate.getFullYear() === todayDate.getFullYear()
     const displayDate = selectedDate || (showTodayInfo ? todayDate : null)
     const displayData = displayDate ? getDayData(displayDate.getDate()) : null
+
+    const handleAddClick = () => {
+        setSelectedEvent(null)
+        setIsAddEventModalOpen(true)
+    }
 
     return (
         <div className="glass shadow-premium-lg p-6 rounded-[2rem] border border-white/20 h-full flex flex-col backdrop-blur-xl card-hover relative overflow-hidden">
@@ -180,7 +234,7 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                 {grid.map((day, idx) => {
                     if (day === null) return <div key={`empty-${idx}`} />
 
-                    const { holiday, bills } = getDayData(day)
+                    const { holiday, bills, dayEvents } = getDayData(day)
                     const today = isToday(day)
                     const selected = selectedDate?.getDate() === day && selectedDate?.getMonth() === currentDate.getMonth()
                     
@@ -191,6 +245,7 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                     const hasBills = bills.length > 0
                     const isHoliday = !!holiday
                     const isNationalHoliday = holiday?.type === 'National holiday'
+                    const hasEvents = dayEvents.length > 0
 
                     // Determine text color with priority: selected > national holiday > weekend > today > default
                     let textColor: string | undefined = undefined
@@ -224,7 +279,7 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                             </span>
                             
                             {/* Indicators */}
-                            <div className="flex gap-1 mt-1 justify-center">
+                            <div className="flex gap-1 mt-1 justify-center h-1.5">
                                 {/* Blue dot for bills */}
                                 {hasBills && (
                                     <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-blue-500'}`}></span>
@@ -232,6 +287,10 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                                 {/* Red dot for holidays (National holiday or Observance/Cuti Bersama) */}
                                 {isHoliday && (
                                     <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white/70' : 'bg-rose-500'}`}></span>
+                                )}
+                                {/* Green dot for events */}
+                                {hasEvents && (
+                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white/70' : 'bg-emerald-500'}`}></span>
                                 )}
                             </div>
                         </div>
@@ -242,11 +301,19 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
             {/* Selected Date Info Panel */}
             {displayDate ? (
                  <div className="mt-auto border-t border-slate-100 pt-4 animate-in slide-in-from-bottom-2">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                        {displayDate.getDate()} {MONTHS[displayDate.getMonth()]}
-                    </p>
+                    <div className="flex justify-between items-center mb-3">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            {displayDate.getDate()} {MONTHS[displayDate.getMonth()]}
+                        </p>
+                        <button 
+                            onClick={handleAddClick}
+                            className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+                        >
+                            + Catatan
+                        </button>
+                    </div>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                         {/* Holiday Info */}
                         {displayData?.holiday && (
                             <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-100">
@@ -260,8 +327,52 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                             </div>
                         )}
 
+                        {/* Events Info */}
+                        {displayData?.dayEvents && displayData.dayEvents.length > 0 && (
+                            displayData.dayEvents.map(event => (
+                                <div key={event.id} className={`flex items-start gap-3 p-3 rounded-xl border group relative
+                                    ${event.color === 'blue' ? 'bg-blue-50 border-blue-100' : 
+                                      event.color === 'green' ? 'bg-emerald-50 border-emerald-100' :
+                                      event.color === 'yellow' ? 'bg-amber-50 border-amber-100' :
+                                      event.color === 'purple' ? 'bg-purple-50 border-purple-100' :
+                                      'bg-rose-50 border-rose-100'
+                                    }
+                                `}>
+                                    <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0
+                                        ${event.color === 'blue' ? 'bg-blue-500' : 
+                                          event.color === 'green' ? 'bg-emerald-500' :
+                                          event.color === 'yellow' ? 'bg-amber-500' :
+                                          event.color === 'purple' ? 'bg-purple-500' :
+                                          'bg-rose-500'
+                                        }
+                                    `}></div>
+                                    <div className="flex-1 pr-16 min-h-[40px]">
+                                        <p className="text-sm font-medium text-slate-700 break-words">{event.title}</p>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wide mt-0.5">{event.type === 'reminder' ? 'Pengingat' : 'Catatan'}</p>
+                                    </div>
+                                    
+                                    <div className="flex gap-2 absolute top-2 right-2">
+                                        <button 
+                                            onClick={() => handleEditEvent(event)}
+                                            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-100 rounded-xl transition-all"
+                                            aria-label="Edit catatan"
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteEvent(event.id)}
+                                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-100 rounded-xl transition-all"
+                                            aria-label="Hapus catatan"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+
                         {/* Bills Info */}
-                        {displayData?.bills && displayData.bills.length > 0 ? (
+                        {displayData?.bills && displayData.bills.length > 0 && (
                             displayData.bills.map(bill => (
                                 <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl bg-blue-50/50 border border-blue-100 group">
                                     <div className="flex items-center gap-3">
@@ -278,7 +389,9 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                                     </p>
                                 </div>
                             ))
-                        ) : !displayData?.holiday && (
+                        )}
+
+                        {!displayData?.holiday && (!displayData?.bills || displayData.bills.length === 0) && (!displayData?.dayEvents || displayData.dayEvents.length === 0) && (
                             <div className="text-center py-4 text-slate-400 text-sm">
                                 Tidak ada agenda tanggal ini
                             </div>
@@ -290,6 +403,14 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                     Pilih tanggal untuk melihat detail
                 </div>
             )}
+
+            <AddEventModal 
+                isOpen={isAddEventModalOpen}
+                onClose={() => setIsAddEventModalOpen(false)}
+                onSuccess={fetchEvents}
+                selectedDate={displayDate || new Date()}
+                initialData={selectedEvent}
+            />
         </div>
     )
 }
