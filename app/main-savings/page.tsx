@@ -10,7 +10,8 @@ import {
     X,
     Wallet as WalletIcon,
     CreditCard,
-    Banknote
+    Banknote,
+    Save
 } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
@@ -234,220 +235,278 @@ export default function MainSavingsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
-            <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+             <header className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Tabungan Inti</h1>
-                    <p className="text-slate-500">Aset & Simpanan jangka panjang</p>
+                     <h2 className="font-bold text-2xl text-[#080C1A]">Tabungan Inti</h2>
                 </div>
-                <div className="glass shadow-premium-lg px-6 py-4 rounded-2xl backdrop-blur-xl border border-emerald-100 flex items-center gap-4 bg-white">
-                    <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600">
-                        <Landmark className="w-6 h-6" />
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                    <div className="text-right">
+                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
                     </div>
-                    <div>
-                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wide">Total Aset</p>
-                        <p className="text-2xl font-bold text-slate-800">Rp {totalSavings.toLocaleString('id-ID')}</p>
+                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                        EB
                     </div>
                 </div>
             </header>
 
-            {loading ? (
-                <div className="text-center py-20 text-slate-400">Loading...</div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {savingsWallets.map((wallet) => (
-                        <div key={wallet.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col justify-between group card-hover backdrop-blur-xl">
-                            <div>
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="bg-emerald-100 p-3 rounded-2xl text-emerald-600">
-                                        {getIcon(wallet.type)}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(wallet)} className="p-2 bg-slate-50 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors">
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(wallet.id)} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-colors">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                                <h3 className="font-bold text-lg text-slate-800 mb-1">{wallet.name}</h3>
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">{wallet.type}</p>
-                                <p className="text-2xl font-bold text-emerald-600">Rp {wallet.balance.toLocaleString('id-ID')}</p>
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Add New Card */}
-                    <button
-                        onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
-                        className="glass border-2 border-dashed border-white/30 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-600 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all min-h-[200px] backdrop-blur-xl shadow-premium"
-                    >
-                        <div className="bg-white p-4 rounded-full shadow-sm">
-                            <Plus className="w-8 h-8" />
-                        </div>
-                        <span className="font-bold">Tambah Aset Baru</span>
-                    </button>
+            <div className="p-5 md:p-8 space-y-6">
+                {/* Summary Card */}
+                <div className="bg-white px-6 py-6 rounded-2xl border border-[#F3F4F3] flex items-center gap-5 shadow-sm">
+                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                        <Landmark className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <p className="text-sm text-[#6A7686] font-bold uppercase tracking-wide">Total Aset & Simpanan</p>
+                        <p className="text-3xl font-bold text-[#080C1A] mt-1">Rp {totalSavings.toLocaleString('id-ID')}</p>
+                    </div>
                 </div>
-            )}
+
+                {loading ? (
+                    <div className="text-center py-20 text-slate-400 animate-pulse">Memuat aset...</div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {savingsWallets.map((wallet) => (
+                            <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between card-hover relative overflow-hidden min-h-[240px]">
+                                <div>
+                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600">
+                                            {getIcon(wallet.type)}
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95">
+                                                <Pencil className="w-5 h-5" />
+                                            </button>
+                                            <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95">
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <h3 className="font-bold text-lg text-[#080C1A] mb-1 relative z-10">{wallet.name}</h3>
+                                    <p className="text-xs text-[#6A7686] uppercase tracking-wider mb-4 relative z-10">{wallet.type}</p>
+                                </div>
+                                <div className="relative z-10">
+                                     <p className="text-2xl font-bold text-emerald-600">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                </div>
+
+                                {/* Decorative Background */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-transparent rounded-bl-full opacity-50 -z-0"></div>
+                            </div>
+                        ))}
+
+                         {/* Add New Card */}
+                        <button
+                            onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
+                            className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[220px] group"
+                        >
+                            <div className="bg-slate-50 p-4 rounded-full group-hover:bg-blue-100 transition-colors">
+                                <Plus className="w-8 h-8 group-hover:text-[#165DFF] transition-colors" />
+                            </div>
+                            <span className="font-bold">Tambah Aset Baru</span>
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl p-6 shadow-premium-lg border border-white/20 relative animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Aset' : 'Aset Baru'}</h3>
-                            <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
+                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
+                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-[#F3F4F3] flex justify-between items-center bg-white sticky top-0 z-10">
+                            <h3 className="text-lg font-bold text-[#080C1A]">
+                                {editingId ? 'Edit Aset' : 'Aset Baru'}
+                            </h3>
+                            <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Nama Aset / Tabungan</label>
-                                <input type="text" className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none" value={name} onChange={e => setName(e.target.value)} placeholder="Contoh: Emas, Deposito, Tabungan Nikah" autoFocus />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Tipe</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {['bank', 'ewallet', 'cash'].map((t) => (
-                                        <button
-                                            key={t}
-                                            type="button"
-                                            onClick={() => setType(t as any)}
-                                            className={`py-2 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                                        >
-                                            {t.toUpperCase()}
-                                        </button>
-                                    ))}
+
+                        {/* Modal Body */}
+                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden bg-white">
+                            <div className="p-6 space-y-5 flex-1 overflow-y-auto custom-scrollbar">
+                                <div>
+                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Nama Aset / Tabungan</label>
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none font-bold text-[#080C1A] placeholder:text-slate-300 transition-all" 
+                                        value={name} 
+                                        onChange={e => setName(e.target.value)} 
+                                        placeholder="Contoh: Emas, Deposito" 
+                                        autoFocus 
+                                    />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Saldo Saat Ini (Rp)</label>
-                                <MoneyInput
-                                    value={balance}
-                                    onChange={setBalance}
-                                    placeholder="0"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Sumber Dana (Opsional)</label>
-                                {(() => {
-                                    // Check if we're in refund scenario (reducing balance)
-                                    const isRefundScenario: boolean = editingId ? (() => {
-                                        const oldWallet = savingsWallets.find(w => w.id === editingId)
-                                        if (!oldWallet) return false
-                                        const currentVal = parseFloat(balance || '0')
-                                        return currentVal < oldWallet.balance && !!oldWallet.source_wallet_id
-                                    })() : false
-
-                                    const isDisabled = isRefundScenario
-
-                                    return (
-                                        <>
-                                            <select
-                                                className={`w-full p-3 border rounded-xl outline-none text-slate-700 transition-colors ${isDisabled
-                                                    ? 'bg-slate-100 border-slate-300 cursor-not-allowed opacity-70'
-                                                    : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-emerald-500'
-                                                    }`}
-                                                value={sourceWalletId}
-                                                onChange={(e) => setSourceWalletId(e.target.value)}
-                                                disabled={isDisabled}
+                                <div>
+                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Tipe Aset</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['bank', 'ewallet', 'cash'].map((t) => (
+                                            <button
+                                                key={t}
+                                                type="button"
+                                                onClick={() => setType(t as any)}
+                                                className={`py-2.5 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 border-[#165DFF] text-[#165DFF]' : 'border-slate-200 text-[#6A7686] hover:bg-slate-50'}`}
                                             >
-                                                <option value="">Manual (Tidak terhubung)</option>
-                                                <optgroup label="Saldo Aktif">
-                                                    {activeWallets.map(w => (
-                                                        <option key={w.id} value={w.id}>
-                                                            {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                                                        </option>
-                                                    ))}
-                                                </optgroup>
-                                                <optgroup label="Tabungan Inti">
-                                                    {savingsWallets
-                                                        .filter(w => w.id !== editingId) // Exclude current wallet if editing
-                                                        .map(w => (
-                                                            <option key={w.id} value={w.id}>
-                                                                {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                                                            </option>
-                                                        ))}
-                                                </optgroup>
-                                            </select>
-                                            {isRefundScenario && (
-                                                <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
-                                                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                    <div className="text-xs">
-                                                        <p className="font-bold text-amber-800">Sumber Terkunci</p>
-                                                        <p className="text-amber-700 mt-0.5">Dana harus dikembalikan ke sumber asli. Sumber dana tidak dapat diubah saat mengurangi saldo.</p>
+                                                {t.toUpperCase()}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Nilai Saat Ini (Rp)</label>
+                                    <MoneyInput
+                                        value={balance}
+                                        onChange={setBalance}
+                                        placeholder="0"
+                                    />
+                                </div>
+
+                                <div className="pt-4 border-t border-[#F3F4F3]">
+                                    <label className="block text-sm font-bold text-[#080C1A] mb-2">Sumber Dana (Opsional)</label>
+                                    <p className="text-xs text-[#6A7686] mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
+                                    
+                                    {(() => {
+                                        // Check if we're in refund scenario (reducing balance)
+                                        const isRefundScenario: boolean = editingId ? (() => {
+                                            const oldWallet = savingsWallets.find(w => w.id === editingId)
+                                            if (!oldWallet) return false
+                                            const currentVal = parseFloat(balance || '0')
+                                            return currentVal < oldWallet.balance && !!oldWallet.source_wallet_id
+                                        })() : false
+
+                                        const isDisabled = isRefundScenario
+
+                                        return (
+                                            <>
+                                                <div className="relative">
+                                                    <select
+                                                        className={`w-full p-3 border rounded-xl outline-none text-[#080C1A] font-medium transition-colors appearance-none ${isDisabled
+                                                            ? 'bg-slate-100 border-slate-300 cursor-not-allowed opacity-70'
+                                                            : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]'
+                                                            }`}
+                                                        value={sourceWalletId}
+                                                        onChange={(e) => setSourceWalletId(e.target.value)}
+                                                        disabled={isDisabled}
+                                                    >
+                                                        <option value="">Manual (Tidak terhubung)</option>
+                                                        <optgroup label="Saldo Aktif">
+                                                            {activeWallets.map(w => (
+                                                                <option key={w.id} value={w.id}>
+                                                                    {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
+                                                                </option>
+                                                            ))}
+                                                        </optgroup>
+                                                        <optgroup label="Tabungan Inti Lainnya">
+                                                            {savingsWallets
+                                                                .filter(w => w.id !== editingId) // Exclude current wallet if editing
+                                                                .map(w => (
+                                                                    <option key={w.id} value={w.id}>
+                                                                        {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
+                                                                    </option>
+                                                                ))}
+                                                        </optgroup>
+                                                    </select>
+                                                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </>
-                                    )
-                                })()}
-                            </div>
 
-                            {/* Checkbox and Preview */}
-                            {sourceWalletId && (
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                    <label className="flex items-center gap-3 cursor-pointer mb-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={linkToSource}
-                                            onChange={e => setLinkToSource(e.target.checked)}
-                                            className="w-5 h-5 rounded-lg text-emerald-600 focus:ring-emerald-500 border-gray-300"
-                                        />
-                                        <span className="text-sm font-semibold text-slate-700">Sesuaikan saldo dompet sumber?</span>
-                                    </label>
+                                                {isRefundScenario && (
+                                                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                                                        <div className="p-1 bg-amber-100 rounded-full text-amber-600 mt-0.5">
+                                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                                        </div>
+                                                        <div className="text-xs">
+                                                            <p className="font-bold text-amber-800">Sumber Terkunci</p>
+                                                            <p className="text-amber-700 mt-0.5 leading-relaxed">Dana harus dikembalikan ke sumber asli. Sumber dana tidak dapat diubah saat mengurangi saldo.</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )
+                                    })()}
+                                </div>
 
-                                    {linkToSource && (
-                                        <div className="text-xs text-slate-500 pl-8">
-                                            {/* We can calculate preview here instead of state for simplicity if needed, but state is cleaner */}
-                                            {(() => {
-                                                // Determine which wallet will be affected
-                                                let targetWallet = activeWallets.find(w => w.id === parseInt(sourceWalletId)) || savingsWallets.find(w => w.id === parseInt(sourceWalletId))
+                                {/* Checkbox and Preview */}
+                                {sourceWalletId && (
+                                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                                        <label className="flex items-center gap-3 cursor-pointer mb-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={linkToSource}
+                                                onChange={e => setLinkToSource(e.target.checked)}
+                                                className="w-5 h-5 rounded-lg text-[#165DFF] focus:ring-[#165DFF] border-gray-300"
+                                            />
+                                            <span className="text-sm font-bold text-[#080C1A]">Sesuaikan saldo dompet sumber?</span>
+                                        </label>
 
-                                                const currentVal = parseFloat(balance || '0')
-                                                let diff = currentVal
-                                                let oldBal = 0
-                                                let oldWallet: Wallet | undefined = undefined
+                                        {linkToSource && (
+                                            <div className="text-xs text-slate-500 pl-8 leading-relaxed">
+                                                {(() => {
+                                                    // Determine which wallet will be affected
+                                                    let targetWallet = activeWallets.find(w => w.id === parseInt(sourceWalletId)) || savingsWallets.find(w => w.id === parseInt(sourceWalletId))
 
-                                                if (editingId) {
-                                                    oldWallet = savingsWallets.find(w => w.id === editingId)
-                                                    if (oldWallet) {
-                                                        oldBal = oldWallet.balance
-                                                        diff = currentVal - oldWallet.balance
+                                                    const currentVal = parseFloat(balance || '0')
+                                                    let diff = currentVal
+                                                    let oldBal = 0
+                                                    let oldWallet: Wallet | undefined = undefined
 
-                                                        // For refunds, use stored source_wallet_id instead of dropdown
-                                                        if (diff < 0 && oldWallet.source_wallet_id) {
-                                                            targetWallet = activeWallets.find(w => w.id === oldWallet!.source_wallet_id) ||
-                                                                savingsWallets.find(w => w.id === oldWallet!.source_wallet_id)
+                                                    if (editingId) {
+                                                        oldWallet = savingsWallets.find(w => w.id === editingId)
+                                                        if (oldWallet) {
+                                                            oldBal = oldWallet.balance
+                                                            diff = currentVal - oldWallet.balance
+
+                                                            // For refunds, use stored source_wallet_id instead of dropdown
+                                                            if (diff < 0 && oldWallet.source_wallet_id) {
+                                                                targetWallet = activeWallets.find(w => w.id === oldWallet!.source_wallet_id) ||
+                                                                    savingsWallets.find(w => w.id === oldWallet!.source_wallet_id)
+                                                            }
                                                         }
                                                     }
-                                                }
 
-                                                if (!targetWallet) return null
+                                                    if (!targetWallet) return null
 
-                                                if (diff > 0) {
-                                                    return (
-                                                        <span className="text-rose-500 font-bold">
-                                                            Akan MEMOTONG Rp {diff.toLocaleString('id-ID')} dari {targetWallet.name}.
-                                                        </span>
-                                                    )
-                                                } else if (diff < 0) {
-                                                    return (
-                                                        <span className="text-emerald-600 font-bold">
-                                                            ✓ Akan MENGEMBALIKAN Rp {Math.abs(diff).toLocaleString('id-ID')} ke {targetWallet.name} (sumber asli).
-                                                        </span>
-                                                    )
-                                                } else {
-                                                    return <span>Tidak ada perubahan saldo sumber.</span>
-                                                }
-                                            })()}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl hover:shadow-purple-500/50 transition-colors shadow-premium-lg">Simpan</button>
+                                                    if (diff > 0) {
+                                                        return (
+                                                            <span className="text-rose-500 font-bold block bg-rose-50 p-2 rounded-lg border border-rose-100 mt-2">
+                                                                - Akan MEMOTONG Rp {diff.toLocaleString('id-ID')} dari {targetWallet.name}.
+                                                            </span>
+                                                        )
+                                                    } else if (diff < 0) {
+                                                        return (
+                                                            <span className="text-emerald-600 font-bold block bg-emerald-50 p-2 rounded-lg border border-emerald-100 mt-2">
+                                                                + Akan MENGEMBALIKAN Rp {Math.abs(diff).toLocaleString('id-ID')} ke {targetWallet.name}.
+                                                            </span>
+                                                        )
+                                                    } else {
+                                                        return <span className="text-slate-400 italic">Tidak ada perubahan saldo sumber.</span>
+                                                    }
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-4 border-t border-[#F3F4F3] bg-white flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
+                                    className="px-5 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors text-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2.5 rounded-xl font-bold bg-[#165DFF] hover:bg-[#1455E5] text-white shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-sm"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    Simpan
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

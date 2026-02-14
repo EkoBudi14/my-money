@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Quicksand } from "next/font/google";
+import { Lexend_Deca } from "next/font/google";
 import "./globals.css";
 
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
+const lexendDeca = Lexend_Deca({
   subsets: ["latin"],
+  variable: "--font-lexend-deca",
 });
 
 export const metadata: Metadata = {
-  title: "Financify - Smart Money Management",
-  description: "Kelola keuangan Anda dengan bijak.",
+  title: "SwiftLog - Money Manager",
+  description: "Modern Logistics-style Money Management",
 };
 
 import Sidebar from "@/components/Sidebar";
@@ -24,12 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${quicksand.variable} antialiased bg-slate-50`}
+        className={`${lexendDeca.variable} antialiased bg-[#EFF2F7]`}
       >
         <ToastProvider>
           <ConfirmProvider>
-            <Sidebar />
-            {children}
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <div className="flex-1 md:ml-[280px]">
+                 {children}
+              </div>
+            </div>
           </ConfirmProvider>
         </ToastProvider>
       </body>

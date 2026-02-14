@@ -194,190 +194,217 @@ export default function BudgetsPage() {
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
-            <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Manajemen Budget</h1>
-                    <p className="text-slate-500">Atur batasan pengeluaran bulanan</p>
+        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+             {/* Top Header */}
+             <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+                <div className="flex items-center gap-4">
+                    <h2 className="font-bold text-2xl text-[#080C1A]">Manajemen Budget</h2>
                 </div>
 
-                <div className="flex items-center gap-4 glass shadow-premium px-4 py-2 rounded-xl backdrop-blur-xl border border-white/20">
-                    <button onClick={prevMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'<'}</button>
-                    <span className="font-bold text-slate-700 w-32 text-center">
-                        {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                    </span>
-                    <button onClick={nextMonth} className="text-slate-500 hover:text-blue-600 font-bold text-xl">{'>'}</button>
-                </div>
-            </header>
-
-            {loading ? (
-                <div className="text-center py-12 text-slate-400">Loading...</div>
-            ) : (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {budgets.map(budget => {
-                            const spent = getSpentAmount(budget.category)
-                            const percent = Math.min((spent / budget.amount) * 100, 100)
-                            const isOver = spent > budget.amount
-                            const catColor = CATEGORIES.pengeluaran.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
-
-                            return (
-                                <div key={budget.id} className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative group flex flex-col justify-between card-hover backdrop-blur-xl">
-                                    <div>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${catColor}`}>
-                                                {budget.category}
-                                            </div>
-                                            <button onClick={() => handleDelete(budget.id)} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-colors">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <div className="flex justify-between items-end mb-1">
-                                                <p className="text-2xl font-bold text-slate-800">Rp {spent.toLocaleString('id-ID')}</p>
-                                                <p className="text-sm font-semibold text-slate-400">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
-                                            </div>
-                                            {isOver && <div className="flex items-center gap-1 text-xs text-rose-500 font-bold mb-1"><AlertCircle className="w-3 h-3" /> Over Budget!</div>}
-                                            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-500' : 'bg-blue-600'}`}
-                                                    style={{ width: `${percent}%` }}
-                                                />
-                                            </div>
-                                            <p className="text-xs text-slate-400 mt-2">
-                                                Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
-                                        <button
-                                            onClick={() => handleEdit(budget)}
-                                            className="py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors flex justify-center items-center gap-2 text-sm"
-                                        >
-                                            <Pencil className="w-4 h-4" /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => openQuickExp(budget.category)}
-                                            className="py-2.5 bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition-colors text-sm flex justify-center items-center gap-2"
-                                        >
-                                            <Plus className="w-4 h-4" /> Pengeluaran
-                                        </button>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                        {/* Add New Card */}
-                        <button
-                            onClick={() => { resetForm(); setIsModalOpen(true); }}
-                            className="glass border-2 border-dashed border-white/30 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-600 hover:text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 transition-all min-h-[300px] backdrop-blur-xl shadow-premium h-full"
-                        >
-                            <div className="bg-white p-4 rounded-full shadow-sm">
-                                <Plus className="w-8 h-8" />
-                            </div>
-                            <span className="font-bold">Buat Budget Baru</span>
-                        </button>
+                <div className="flex items-center gap-3">
+                     {/* Month Navigation - Styled to match header */}
+                    <div className="flex items-center bg-[#F9FAFB] rounded-xl px-2 py-1 mr-4 border border-[#F3F4F3]">
+                         <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-500 hover:text-[#165DFF] transition-all">
+                             {'<'}
+                         </button>
+                         <span className="font-bold text-[#080C1A] text-sm w-32 text-center select-none">
+                            {currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-500 hover:text-[#165DFF] transition-all">
+                             {'>'}
+                         </button>
                     </div>
 
-                    {
-                        budgets.length === 0 && (
-                            <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
+                    <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3]">
+                        <div className="text-right">
+                            <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+                            {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                        </div>
+                        <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                            EB
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
+                {loading ? (
+                    <div className="text-center py-12 text-slate-400">Loading...</div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {budgets.map(budget => {
+                                const spent = getSpentAmount(budget.category)
+                                const percent = Math.min((spent / budget.amount) * 100, 100)
+                                const isOver = spent > budget.amount
+                                const catColor = CATEGORIES.pengeluaran.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
+
+                                return (
+                                    <div key={budget.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
+                                        <div>
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${catColor}`}>
+                                                    {budget.category}
+                                                </div>
+                                                <button onClick={() => handleDelete(budget.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
+
+                                            <div className="mb-6">
+                                                <div className="flex justify-between items-end mb-2">
+                                                    <p className="text-3xl font-extrabold text-[#080C1A]">Rp {spent.toLocaleString('id-ID')}</p>
+                                                </div>
+                                                <p className="text-sm font-medium text-[#6A7686] mb-3">
+                                                    Limit: Rp {budget.amount.toLocaleString('id-ID')}
+                                                </p>
+                                                
+                                                {isOver && (
+                                                    <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold mb-3 bg-rose-50 p-2 rounded-lg">
+                                                        <AlertCircle className="w-3.5 h-3.5" /> 
+                                                        <span>Over Budget!</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="w-full h-3 bg-[#F3F4F3] rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-500' : 'bg-[#165DFF]'}`}
+                                                        style={{ width: `${percent}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-[#6A7686] mt-3 font-medium">
+                                                    Sisa: <span className="text-[#080C1A]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#F3F4F3]">
+                                            <button
+                                                onClick={() => handleEdit(budget)}
+                                                className="py-3.5 bg-slate-50 text-slate-700 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                            >
+                                                <Pencil className="w-5 h-5" /> Edit
+                                            </button>
+                                            <button
+                                                onClick={() => openQuickExp(budget.category)}
+                                                className="py-3.5 bg-[#165DFF] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+                                            >
+                                                <Plus className="w-5 h-5 !text-white" /> Catat
+                                            </button>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                            
+                            {/* Add New Card */}
+                             <button
+                                onClick={() => { resetForm(); setIsModalOpen(true); }}
+                                className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[320px] group"
+                            >
+                                <div className="bg-[#F3F4F3] group-hover:bg-[#165DFF] p-4 rounded-full transition-colors">
+                                    <Plus className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                                </div>
+                                <span className="font-bold text-sm">Buat Budget Baru</span>
+                            </button>
+                        </div>
+
+                        {budgets.length === 0 && (
+                            <div className="text-center py-12 text-slate-400 border-2 border-dashed border-[#F3F4F3] rounded-3xl bg-white">
                                 <p>Belum ada budget untuk bulan ini.</p>
                             </div>
-                        )
-                    }
-                </div >
-            )
-            }
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* Main Modal (Add/Edit Budget) */}
-            {
-                isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetForm}></div>
-                        <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 relative animate-in zoom-in-95 duration-200">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                                <button onClick={resetForm}><X className="w-6 h-6 text-slate-400" /></button>
-                            </div>
-                            <form onSubmit={handleSave} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori</label>
-                                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                                        {CATEGORIES.pengeluaran.map(cat => (
-                                            <button
-                                                key={cat.name}
-                                                type="button"
-                                                onClick={() => setCategory(cat.name)}
-                                                className={`p-2 rounded-xl text-sm font-medium border transition-all ${category === cat.name ? `bg-blue-50 border-blue-500 text-blue-700` : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                                            >
-                                                {cat.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Batasan (Rp)</label>
-                                    <MoneyInput
-                                        value={amount}
-                                        onChange={setAmount}
-                                    />
-                                </div>
-                                <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-3 rounded-xl shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-95">
-                                    Simpan
-                                </button>
-                            </form>
+             {isModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
+                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-[#080C1A]">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
+                            <button onClick={resetForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
+                        <form onSubmit={handleSave} className="space-y-6">
+                             <div>
+                                <label className="block text-sm font-semibold text-[#080C1A] mb-3">Pilih Kategori</label>
+                                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                    {CATEGORIES.pengeluaran.map(cat => (
+                                        <button
+                                            key={cat.name}
+                                            type="button"
+                                            onClick={() => setCategory(cat.name)}
+                                            className={`p-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2 ${category === cat.name ? `bg-blue-50 border-[#165DFF] text-[#165DFF] ring-1 ring-[#165DFF]` : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                        >
+                                           <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
+                                            {cat.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Batasan (Rp)</label>
+                                <MoneyInput
+                                    value={amount}
+                                    onChange={setAmount}
+                                />
+                            </div>
+                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                                Simpan Budget
+                            </button>
+                        </form>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Quick Expense Modal */}
-            {
-                isQuickExpModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetQuickExpForm}></div>
-                        <div className="glass backdrop-blur-2xl w-full max-w-sm rounded-3xl p-6 shadow-premium-lg border border-white/20 z-50 relative animate-in zoom-in-95 duration-200">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h3 className="text-xl font-bold text-slate-800">Catat Pengeluaran</h3>
-                                    <p className="text-sm text-slate-500">Kategori: <span className="font-bold text-slate-700">{quickExpCategory}</span></p>
-                                </div>
-                                <button onClick={resetQuickExpForm}><X className="w-6 h-6 text-slate-400" /></button>
+            {isQuickExpModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm}></div>
+                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-[#080C1A]">Catat Pengeluaran</h3>
+                                <p className="text-sm text-slate-500 mt-1">Kategori: <span className="font-bold text-[#165DFF] bg-blue-50 px-2 py-0.5 rounded-md">{quickExpCategory}</span></p>
                             </div>
-                            <form onSubmit={handleQuickExpenseSave} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Jumlah (Rp)</label>
-                                    <MoneyInput
-                                        value={quickExpAmount}
-                                        onChange={setQuickExpAmount}
-                                        autoFocus
-                                        className="focus:ring-rose-500" // Override focus color
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Ambil dari Dompet</label>
-                                    <select
-                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"
-                                        value={quickExpWalletId}
-                                        onChange={(e) => setQuickExpWalletId(e.target.value)}
-                                        required
-                                    >
-                                        <option value="" disabled>Pilih Dompet</option>
-                                        {wallets.map(w => (
-                                            <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <button type="submit" className="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/30">
-                                    Simpan Pengeluaran
-                                </button>
-                            </form>
+                            <button onClick={resetQuickExpForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
+                        <form onSubmit={handleQuickExpenseSave} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Jumlah (Rp)</label>
+                                <MoneyInput
+                                    value={quickExpAmount}
+                                    onChange={setQuickExpAmount}
+                                    autoFocus
+                                    className="focus:ring-[#165DFF]" 
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Ambil dari Dompet</label>
+                                <select
+                                    className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                    value={quickExpWalletId}
+                                    onChange={(e) => setQuickExpWalletId(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>Pilih Dompet</option>
+                                    {wallets.map(w => (
+                                        <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
+                                Simpan Pengeluaran
+                            </button>
+                        </form>
                     </div>
-                )
-            }
-        </main >
+                </div>
+            )}
+        </main>
     )
 }

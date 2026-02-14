@@ -1,88 +1,67 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Lexend Deca', sans-serif;
+}
+
 :root {
-  /* Cuanlover Pastel Palette */
-  --primary: #8B5CF6;
-  /* Soft Purple */
-  --secondary: #A78BFA;
+  /* SwiftLog Palette */
+  --primary: #165DFF;
+  --primary-hover: #0E4BD9;
+  --foreground: #080C1A;
+  --secondary: #6A7686;
+  --muted: #EFF2F7;
+  --border: #F3F4F3;
+  --card-grey: #F1F3F6;
+  
+  /* Status Colors */
+  --success: #30B22D;
+  --success-light: #DCFCE7;
+  --error: #ED6B60;
+  --error-light: #FEE2E2;
+  --warning: #FED71F;
+  --warning-light: #FEF9C3;
 
-  /* Backgrounds */
-  --background-start: #E0C3FC;
-  --background-end: #CBB4F4;
-  /* Soft Lavender */
-
-  /* Text */
-  --foreground: #475569;
-  --foreground-heading: #1e293b;
-
-  /* Cards */
-  --card-bg: #ffffff;
-  --card-border: transparent;
-  --sidebar-bg: #ffffff;
+  /* Layout */
+  --sidebar-width: 280px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-quicksand);
-  --font-mono: var(--font-geist-mono);
-}
-
-/* Smooth Scrolling */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Soft Pastel Background */
+/* Base Styles */
 body {
-  background: linear-gradient(135deg, #e4e7fe 0%, #e8ddff 100%);
-  background-attachment: fixed;
+  background-color: var(--muted);
   color: var(--foreground);
-  font-family: var(--font-quicksand), sans-serif;
-  min-height: 100vh;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
-/* Floating Card Utility */
-.glass,
-.card-hover {
-  background: var(--card-bg) !important;
-  border: none !important;
-  box-shadow: 0 10px 40px -10px rgba(122, 97, 236, 0.1) !important;
-  backdrop-filter: none !important;
-  border-radius: 1.5rem !important;
+/* Typography Overrides */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--foreground);
+  font-weight: 700; /* Bold by default for headings in this theme */
 }
 
-/* Enhance Card Headers */
-h1,
-h2,
-h3,
-h4,
-.font-bold {
-  color: var(--foreground-heading);
-}
-
-/* Enhanced Shadows for depth */
-.shadow-premium {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+/* Custom Utilities */
+.glass {
+  background: white;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .shadow-premium-lg {
-  box-shadow: 0 10px 40px -10px rgba(122, 97, 236, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* Gradient Text */
-.gradient-text {
-  color: var(--primary);
-  background: none;
-  -webkit-text-fill-color: initial;
+.card-hover {
+  transition: all 0.3s ease;
 }
 
-/* Smooth Transitions */
-.transition-premium {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(22, 93, 255, 0.1);
+  border-color: var(--primary);
 }
 
-/* Custom Scrollbar - Purple Tint */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -93,34 +72,26 @@ h4,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C4B5FD;
+  background: #CBD5E1;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A78BFA;
+  background: #94A3B8;
 }
 
-/* Card Hover Effect - Subtle Lift */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Form Elements */
+input, select, textarea {
+  border-color: var(--border) !important;
+  border-radius: 0.75rem !important; /* rounded-xl */
 }
 
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -10px rgba(122, 97, 236, 0.2) !important;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.15) !important;
 }
 
-/* Input Fields Override */
-input,
-select {
-  background-color: #F8FAFC !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #334155 !important;
-}
-
-input:focus,
-select:focus {
-  border-color: #8B5CF6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+/* Button Radius Override */
+button {
+  border-radius: 0.75rem; /* Default to rounded-xl for most */
 }

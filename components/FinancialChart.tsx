@@ -1,76 +1,174 @@
 'use client'
 import { useEffect, useState } from 'react'
 import {
-    PieChart,
-    Pie,
-    Cell,
+    ComposedChart,
+    Line,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
     Tooltip,
     Legend,
-    ResponsiveContainer
+    ResponsiveContainer,
+    AreaChart
 } from 'recharts'
 
-interface FinancialChartProps {
+interface MonthlyData {
+    name: string
     income: number
     expense: number
 }
 
-const FinancialChart = ({ income, expense }: FinancialChartProps) => {
+interface FinancialChartProps {
+    data: MonthlyData[]
+}
+
+const FinancialChart = ({ data }: FinancialChartProps) => {
     const [isMounted, setIsMounted] = useState(false)
+    const [viewMode, setViewMode] = useState<'monthly' | 'quarterly'>('monthly')
 
     useEffect(() => {
         setIsMounted(true)
     }, [])
 
-    const data = [
-        { name: 'Pemasukan', value: income },
-        { name: 'Pengeluaran', value: expense },
-    ]
+    if (!isMounted) return <div className="h-80 w-full bg-slate-50 rounded-xl animate-pulse" />
 
-    const COLORS = ['#10b981', '#f43f5e']
+    // Custom Tooltip
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-2xl">
+                    <p className="font-bold text-slate-800 mb-2">{label}</p>
+                    <div className="space-y-1">
+                        <p className="text-sm font-medium text-[#165DFF]">
+                            Pemasukan: <span className="font-bold">Rp {payload.find((p: any) => p.dataKey === 'income')?.value.toLocaleString('id-ID')}</span>
+                        </p>
+                        <p className="text-sm font-medium text-slate-400">
+                            Pengeluaran: <span className="font-bold">Rp {payload.find((p: any) => p.dataKey === 'expense')?.value.toLocaleString('id-ID')}</span>
+                        </p>
+                    </div>
+                </div>
+            )
+        }
+        return null
+    }
 
-    if (!isMounted) return <div className="h-64 w-full bg-slate-50 rounded-xl animate-pulse" />
+    // Calculate totals
+    const totalIncome = data.reduce((acc, curr) => acc + curr.income, 0)
+    const totalExpense = data.reduce((acc, curr) => acc + curr.expense, 0)
 
-    // Calculate total for percentage if needed, but simple values are fine for now
-    // If both are 0, we might want to show an empty state or handle it gracefully
-    const hasData = income > 0 || expense > 0
+    // Format large numbers
+    const formatShort = (val: number) => {
+        if (val >= 1000000000) return `${(val / 1000000000).toFixed(1)}M`
+        if (val >= 1000000) return `${(val / 1000000).toFixed(1)}jt`
+        if (val >= 1000) return `${(val / 1000).toFixed(0)}rb`
+        return val.toLocaleString('id-ID')
+    }
+
+    // Custom Legend (unused now, kept for reference)
+    const renderLegend = (props: any) => {
+        const { payload } = props;
+        const formatShort = (val: number) => {
+            if (val >= 1000000000) return `${(val / 1000000000).toFixed(1)}M`
+            if (val >= 1000000) return `${(val / 1000000).toFixed(1)}jt`
+            if (val >= 1000) return `${(val / 1000).toFixed(0)}rb`
+            return val.toLocaleString('id-ID')
+        }
+        return (
+            <div className="flex flex-wrap justify-end gap-x-6">
+                {payload.map((entry: any, index: number) => {
+                    const isIncome = entry.value === 'Pemasukan'
+                    const total = isIncome ? totalIncome : totalExpense
+                    
+                    return (
+                        <div key={`item-${index}`} className="flex items-center gap-2">
+                            <div 
+                                className={`w-3 h-3 rounded-full border-2 ${isIncome ? 'border-[#165DFF]' : 'border-slate-400'}`}
+                                style={{ backgroundColor: 'transparent' }}
+                            />
+                            <span className="text-sm font-medium text-slate-600 whitespace-nowrap">
+                                {entry.value} <span className="text-slate-900 font-bold ml-1">Rp {formatShort(total)}</span>
+                            </span>
+                        </div>
+                    )
+                })}
+            </div>
+        );
+    }
 
     return (
-        <div className="w-full glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col backdrop-blur-xl card-hover">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h3 className="text-lg font-bold text-slate-800">Analisis Keuangan</h3>
-                    <p className="text-sm text-slate-500">Ringkasan Pemasukan & Pengeluaran</p>
-                </div>
-            </div>
-            <div className="w-full h-80">
-                {hasData ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                paddingAngle={2}
-                                minAngle={3} // Ensure small values are visible
-                                dataKey="value"
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`} />
-                            <Legend verticalAlign="bottom" height={36} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="h-full flex items-center justify-center text-slate-400">
-                        Belum ada data transaksi
+        <div className="w-full h-[350px]">
+            <div className="flex flex-wrap justify-end gap-x-6 mb-4">
+                {[{ name: 'Pemasukan', total: totalIncome, color: 'border-[#165DFF]' }, { name: 'Pengeluaran', total: totalExpense, color: 'border-[#F43F5E]' }].map((item, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full border-2 ${item.color}`} style={{ backgroundColor: 'transparent' }} />
+                        <span className="text-sm font-medium text-slate-600 whitespace-nowrap">
+                            {item.name} <span className="text-slate-900 font-bold ml-1">Rp {formatShort(item.total)}</span>
+                        </span>
                     </div>
-                )}
+                ))}
             </div>
+            
+            <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart
+                    data={data}
+                    margin={{
+                        top: 5,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                    }}
+                >
+                    <defs>
+                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#165DFF" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#165DFF" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} stroke="#F3F4F3" strokeDasharray="3 3" />
+                    <XAxis 
+                        dataKey="name" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }}
+                        dy={10}
+                    />
+                    <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748B', fontSize: 11 }}
+                        tickFormatter={(value) => {
+                            if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)}M` // Miliar
+                            if (value >= 1000000) return `${(value / 1000000).toFixed(1)}jt`
+                            if (value >= 1000) return `${(value / 1000).toFixed(0)}rb`
+                            return value
+                        }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    
+                    {/* Income Area */}
+                    <Area 
+                        type="monotone" 
+                        dataKey="income" 
+                        name="Pemasukan"
+                        stroke="#165DFF" 
+                        strokeWidth={3}
+                        fillOpacity={1} 
+                        fill="url(#colorIncome)" 
+                    />
+
+                    {/* Expense Line (Dashed) */}
+                    <Line 
+                        type="monotone" 
+                        dataKey="expense" 
+                        name="Pengeluaran"
+                        stroke="#F43F5E" 
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 6, fill: '#F43F5E', stroke: 'white', strokeWidth: 2 }}
+                    />
+                </ComposedChart>
+            </ResponsiveContainer>
         </div>
     )
 }

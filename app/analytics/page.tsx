@@ -8,9 +8,14 @@ import {
     Cell,
     Tooltip,
     Legend,
-    ResponsiveContainer
+    ResponsiveContainer,
+    BarChart, 
+    Bar, 
+    XAxis, 
+    YAxis, 
+    CartesianGrid
 } from 'recharts'
-import { Calendar, ChevronLeft, ChevronRight, Settings, X } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon } from 'lucide-react'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -28,14 +33,13 @@ export default function AnalyticsPage() {
     })
     const [isInitialized, setIsInitialized] = useState(false)
 
-    // Settings Sync - Simplified (No Auth Required) - Same as Dashboard
+    // Settings Sync
     useEffect(() => {
-        // Load settings from Supabase on mount
         const loadSettings = async () => {
             const { data: settings } = await supabase
                 .from('user_settings')
                 .select('*')
-                .eq('id', 1) // Use single row with id=1 for single-user app
+                .eq('id', 1)
                 .single()
 
             if (settings) {
@@ -47,7 +51,6 @@ export default function AnalyticsPage() {
                     })
                 }
             } else {
-                // Create initial settings row if doesn't exist
                 await supabase
                     .from('user_settings')
                     .insert({
@@ -64,7 +67,6 @@ export default function AnalyticsPage() {
         loadSettings()
     }, [])
 
-    // Save to Supabase when settings change (debounced to prevent excessive writes)
     useEffect(() => {
         if (!isInitialized) return
 
@@ -82,14 +84,11 @@ export default function AnalyticsPage() {
             }
 
             saveSettings()
-        }, 500) // Debounce 500ms to batch rapid changes
+        }, 500)
 
         return () => clearTimeout(timeoutId)
     }, [filterMode, customRange, isInitialized])
 
-
-
-    // Helper: Get Period Date Range String
     const getPeriodLabel = () => {
         if (filterMode === 'monthly') {
             return currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
@@ -114,7 +113,6 @@ export default function AnalyticsPage() {
         setLoading(false)
     }
 
-    // Filter Logic (Memoized)
     const filteredTxs = useMemo(() => {
         return transactions.filter(t => {
             const d = new Date(t.date || t.created_at)
@@ -135,9 +133,11 @@ export default function AnalyticsPage() {
     // 1. Income vs Expense
     const income = filteredTxs.filter(t => t.type === 'pemasukan').reduce((acc, c) => acc + c.amount, 0)
     const expense = filteredTxs.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
+    const netBalance = income - expense
+    
     const summaryData = [
-        { name: 'Pemasukan', value: income },
-        { name: 'Pengeluaran', value: expense }
+        { name: 'Pemasukan', value: income, fill: '#10B981' }, // Emerald-500
+        { name: 'Pengeluaran', value: expense, fill: '#EF4444' } // Red-500
     ]
 
     // 2. Expense by Category
@@ -147,7 +147,9 @@ export default function AnalyticsPage() {
         return acc
     }, {} as Record<string, number>)
 
-    const categoryData = Object.entries(categoryDataMap).map(([name, value]) => ({ name, value }))
+    const categoryData = Object.entries(categoryDataMap)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
 
     // 3. Expense by Wallet
     const walletDataMap = expenseTxs.reduce((acc, curr) => {
@@ -159,224 +161,279 @@ export default function AnalyticsPage() {
     const walletData = Object.entries(walletDataMap).map(([name, value]) => ({ name, value }))
 
     // Colors
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658']
-    const SUMMARY_COLORS = ['#22c55e', '#ef4444']
-
+    const COLORS = ['#165DFF', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658']
+    
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
     return (
-        <main className="min-h-screen bg-transparent font-sans text-slate-900 pb-24 md:pb-6 ml-0 md:ml-72 p-6 transition-all duration-300">
-            {/* 1. Header Section */}
-            <header className="flex flex-row justify-between items-center gap-2 mb-8">
+        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+             <header className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Analitik Keuangan</h1>
-                    <p className="text-slate-500">Laporan detail keuangan anda</p>
+                     <h2 className="font-bold text-2xl text-[#080C1A]">Analitik</h2>
                 </div>
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                    <div className="text-right">
+                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                    </div>
+                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                        EB
+                    </div>
+                </div>
+            </header>
 
-                {/* Unified Control Bar */}
-                <div className="relative">
-                    <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl p-1.5 rounded-2xl shadow-sm border border-slate-200/60 shrink-0">
-                        {/* Date Navigator (Only in Monthly Mode) */}
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={prevMonth}
-                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                        )}
-
-                        {/* Date Label */}
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 rounded-xl border border-slate-100/50">
-                            <Calendar className="w-4 h-4 text-blue-500" />
-                            <div className="flex flex-col items-center">
-                                <span className="text-sm font-bold text-slate-700 whitespace-nowrap">
+            <div className="p-5 md:p-8 space-y-8">
+                {/* Control Bar */}
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-[#F3F4F3] shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl">
+                            {filterMode === 'monthly' && (
+                                <button
+                                    onClick={prevMonth}
+                                    className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                            )}
+                            <div className="flex items-center gap-2 px-4 py-1.5">
+                                <Calendar className="w-4 h-4 text-[#165DFF]" />
+                                <span className="font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
                                     {getPeriodLabel()}
                                 </span>
+                            </div>
+                             {filterMode === 'monthly' && (
+                                <button
+                                    onClick={nextMonth}
+                                    className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setShowSettings(!showSettings)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[#165DFF] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                        >
+                            <Settings className="w-4 h-4" />
+                            <span>Filter</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Settings Panel */}
+                {showSettings && (
+                    <>
+                        <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowSettings(false)}
+                        />
+                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white rounded-2xl shadow-xl border border-[#F3F4F3] p-5 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="font-bold text-[#080C1A]">Pengaturan Filter</h3>
+                                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-5">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-[#6A7686] uppercase tracking-wider">Mode Tampilan</label>
+                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl">
+                                        <button
+                                            onClick={() => setFilterMode('monthly')}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            Bulanan
+                                        </button>
+                                        <button
+                                            onClick={() => setFilterMode('custom')}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            Custom
+                                        </button>
+                                    </div>
+                                </div>
+
                                 {filterMode === 'custom' && (
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Mode Custom</span>
+                                    <div className="space-y-4 pt-2 border-t border-[#F3F4F3]">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-[#6A7686]">Dari Tanggal</label>
+                                            <input
+                                                type="date"
+                                                value={customRange.start}
+                                                onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-[#6A7686]">Sampai Tanggal</label>
+                                            <input
+                                                type="date"
+                                                value={customRange.end}
+                                                onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                            />
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
+                    </>
+                )}
 
-                        {/* Date Navigator (Only in Monthly Mode) */}
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={nextMonth}
-                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        )}
-
-                        {/* Settings Toggle */}
-                        <div className="w-px h-6 bg-slate-200 mx-1" />
-                        <button
-                            onClick={() => setShowSettings(!showSettings)}
-                            className={`p-2 rounded-xl transition-all active:scale-95 ${showSettings ? 'bg-blue-100 text-blue-600 rotate-90' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <Settings className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    {/* Settings Popover */}
-                    {showSettings && (
-                        <>
-                            <div
-                                className="fixed inset-0 z-10"
-                                onClick={() => setShowSettings(false)}
-                            />
-                            <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-700">Pengaturan Tampilan</h3>
-                                    <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {/* Filter Mode */}
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-400 uppercase">Mode Filter</label>
-                                        <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1 rounded-xl">
-                                            <button
-                                                onClick={() => setFilterMode('monthly')}
-                                                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                            >
-                                                Bulanan
-                                            </button>
-                                            <button
-                                                onClick={() => setFilterMode('custom')}
-                                                className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                            >
-                                                Custom
-                                            </button>
-                                        </div>
+                {loading ? (
+                    <div className="text-center py-20 text-slate-400 animate-pulse">Memuat analitik...</div>
+                ) : (
+                    <>
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                        <TrendingUp className="w-6 h-6" />
                                     </div>
+                                    <h3 className="text-[#6A7686] font-medium">Total Pemasukan</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-[#080C1A]">Rp {income.toLocaleString('id-ID')}</p>
+                            </div>
 
-                                    {/* Custom Range Inputs */}
-                                    {filterMode === 'custom' && (
-                                        <div className="space-y-3 animate-in slide-in-from-top-2">
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-medium text-slate-500">Dari Tanggal</label>
-                                                <input
-                                                    type="date"
-                                                    value={customRange.start}
-                                                    onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
-                                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-600"
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 bg-rose-50 rounded-xl text-rose-600 group-hover:bg-rose-100 transition-colors">
+                                        <TrendingDown className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-[#6A7686] font-medium">Total Pengeluaran</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-[#080C1A]">Rp {expense.toLocaleString('id-ID')}</p>
+                            </div>
+
+                             <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 bg-blue-50 rounded-xl text-[#165DFF] group-hover:bg-blue-100 transition-colors">
+                                        <WalletIcon className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-[#6A7686] font-medium">Sisa Saldo Periode Ini</h3>
+                                </div>
+                                <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[#080C1A]' : 'text-rose-600'}`}>
+                                    Rp {netBalance.toLocaleString('id-ID')}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Charts Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Summary Pie Chart */}
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Ringkasan Arus Kas</h3>
+                                <div className="w-full h-[300px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={summaryData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={100}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                                stroke="none"
+                                            >
+                                                {summaryData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip 
+                                                formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
+                                                contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Category Bar Chart */}
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Pengeluaran per Kategori</h3>
+                                <div className="w-full h-[300px]">
+                                    {categoryData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F3" />
+                                                <XAxis type="number" hide />
+                                                <YAxis 
+                                                    dataKey="name" 
+                                                    type="category" 
+                                                    tick={{ fill: '#6A7686', fontSize: 12, fontWeight: 500 }} 
+                                                    width={100}
+                                                    axisLine={false}
+                                                    tickLine={false}
                                                 />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-medium text-slate-500">Sampai Tanggal</label>
-                                                <input
-                                                    type="date"
-                                                    value={customRange.end}
-                                                    onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
-                                                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-600"
+                                                <Tooltip 
+                                                    formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
+                                                    cursor={{ fill: '#F9FAFB' }}
+                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                                 />
+                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={24} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                                <TrendingDown className="w-5 h-5 opacity-20" />
                                             </div>
+                                            <span className="text-sm font-medium">Belum ada data pengeluaran</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </>
-                    )}
-                </div>
-            </header>
 
-            {loading ? (
-                <div className="text-center py-20 text-slate-400">Loading charts...</div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                    {/* Summary Chart */}
-                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
-                        <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Ringkasan</h3>
-                        <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={summaryData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={2}
-                                        minAngle={3}
-                                        dataKey="value"
-                                    >
-                                        {summaryData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={SUMMARY_COLORS[index]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`} />
-                                    <Legend verticalAlign="bottom" height={36} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                             {/* Wallet Distribution */}
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 lg:col-span-2">
+                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Pengeluaran Berdasarkan Sumber Dana</h3>
+                                <div className="w-full h-[300px]">
+                                    {walletData.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={walletData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    outerRadius={80}
+                                                    dataKey="value"
+                                                    label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                                                    labelLine={{ stroke: '#CBD5E1' }}
+                                                    stroke="none"
+                                                >
+                                                    {walletData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip 
+                                                    formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
+                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                                <WalletIcon className="w-5 h-5 opacity-20" />
+                                            </div>
+                                            <span className="text-sm font-medium">Belum ada data wallet</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Category Chart */}
-                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
-                        <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Pengeluaran per Kategori</h3>
-                        <div className="w-full h-64">
-                            {categoryData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={categoryData}
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={80}
-                                            dataKey="value"
-                                            label={({ percent }: any) => `${((percent || 0) * 100).toFixed(0)}%`}
-                                        >
-                                            {categoryData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`} />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-slate-400">No Data</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Wallet Chart */}
-                    <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 flex flex-col items-center backdrop-blur-xl card-hover">
-                        <h3 className="font-bold text-lg mb-4 text-slate-700 w-full text-left">Pengeluaran per Sumber Dana</h3>
-                        <div className="w-full h-64">
-                            {walletData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={walletData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={40}
-                                            outerRadius={80}
-                                            dataKey="value"
-                                        >
-                                            {walletData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`} />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-slate-400">No Data</div>
-                            )}
-                        </div>
-                    </div>
-
-                </div>
-            )}
+                    </>
+                )}
+            </div>
         </main>
     )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2, Calendar, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { RecurringBill } from '@/types'
 import { getRecurringBills, deleteRecurringBill } from '@/lib/recurring-bills'
+import { useConfirm } from '@/hooks/useConfirm'
 import AddBillModal from './AddBillModal'
 
 interface RecurringBillsListProps {
@@ -14,6 +15,7 @@ export default function RecurringBillsList({ onUpdate }: RecurringBillsListProps
     const [bills, setBills] = useState<RecurringBill[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [loading, setLoading] = useState(true)
+    const { showConfirm } = useConfirm()
 
     const [selectedBill, setSelectedBill] = useState<RecurringBill | null>(null)
 
@@ -38,7 +40,11 @@ export default function RecurringBillsList({ onUpdate }: RecurringBillsListProps
     }, [])
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Yakin ingin menghapus tagihan ini?')) return
+        const confirmed = await showConfirm({
+            title: 'Hapus Tagihan',
+            message: 'Yakin ingin menghapus tagihan ini?'
+        })
+        if (!confirmed) return
         try {
             await deleteRecurringBill(id)
             fetchBills()

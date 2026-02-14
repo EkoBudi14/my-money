@@ -777,6 +777,29 @@ export default function MoneyManager() {
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
+  // 4. Monthly Data for Chart (Current Year)
+  const monthlyData = useMemo(() => {
+    const currentYear = currentDate.getFullYear()
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+    
+    // Initialize all months with 0
+    const data = months.map(name => ({ name, income: 0, expense: 0 }))
+
+    transactions.forEach(t => {
+      const tDate = new Date(t.date || t.created_at)
+      if (tDate.getFullYear() === currentYear) {
+        const monthIndex = tDate.getMonth()
+        if (t.type === 'pemasukan') {
+          data[monthIndex].income += t.amount
+        } else {
+          data[monthIndex].expense += t.amount
+        }
+      }
+    })
+
+    return data
+  }, [transactions, currentDate])
+
   useEffect(() => {
     fetchBudgets()
   }, [currentDate])
@@ -823,508 +846,406 @@ export default function MoneyManager() {
 
 
   return (
-    <main className="min-h-screen font-sans text-slate-900 pb-24 md:pb-8 ml-0 md:ml-72 p-6 md:p-8 transition-all duration-300">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+      
+      {/* Top Header */}
+      <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+        <div className="flex items-center gap-4">
+             {/* Mobile toggle is handled in Sidebar.tsx, but we can add a spacer or title here */}
+             <h2 className="font-bold text-2xl text-[#080C1A]">Money Overview</h2>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Header Actions */}
+           <div className="hidden md:flex items-center gap-3 pl-3">
+            <div className="text-right">
+              <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+              {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+            </div>
+            <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+               EB
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* 1. Header Section */}
-        <header className="lg:col-span-12 order-1 lg:order-1 flex flex-row justify-between items-center gap-2 mb-4">
+      <div className="p-5 md:p-8 space-y-8">
+        
+        {/* Date Filter & Actions */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">CatatDuit</h1>
-            <p className="text-slate-500 text-sm">Hi, Welcome back Eko</p>
+            <h1 className="text-[#080C1A] text-2xl md:text-3xl font-bold mb-1">Performance Summary</h1>
+            <p className="text-[#6A7686] text-sm">Financial metrics for {getPeriodLabel()}.</p>
           </div>
-
-          {/* Unified Controls Container */}
-          <div className="flex items-center gap-1 bg-white/80 backdrop-blur-xl p-1.5 rounded-2xl shadow-sm border border-slate-200/60 shrink-0">
-
-            {/* Date Navigator */}
-            <div className="flex items-center">
-              {filterMode === 'monthly' && (
-                <button
-                  onClick={prevMonth}
-                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-all active:scale-95"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-              )}
-
-              <div className="flex flex-col items-center px-3">
-                <div className="flex items-center gap-2">
-                  {filterMode === 'custom' && <Calendar className="w-3 h-3 text-blue-500" />}
-                  <span className="text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap">
-                    {getPeriodLabel()}
-                  </span>
-                </div>
-                {filterMode === 'custom' && (
-                  <span className="text-[10px] text-slate-400 font-medium leading-none mt-0.5">
-                    Mode Custom
-                  </span>
-                )}
-              </div>
-
-              {filterMode === 'monthly' && (
-                <button
-                  onClick={nextMonth}
-                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-all active:scale-95"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Config Separator */}
-            <div className="w-px h-6 bg-slate-200 mx-1"></div>
-
-            {/* Settings Trigger */}
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 rounded-xl transition-all ${showSettings ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
-              title="Filter & Periode"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Settings / Filter Popover */}
-          {showSettings && (
-            <div className="absolute top-20 right-4 z-50 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-slate-500" />
-                  Filter & Periode
-                </h3>
-                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Mode Switcher */}
-              <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
-                <button
-                  onClick={() => setFilterMode('monthly')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Bulanan
-                </button>
-                <button
-                  onClick={() => setFilterMode('custom')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Custom Tanggal
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {filterMode === 'monthly' ? (
-                  /* Monthly Controls */
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Bulan</label>
-                      <select
-                        value={currentDate.getMonth()}
-                        onChange={(e) => {
-                          const newMonth = parseInt(e.target.value);
-                          const newDate = new Date(currentDate);
-                          newDate.setMonth(newMonth);
-                          setCurrentDate(newDate);
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                      >
-                        {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
-                          <option key={i} value={i}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Tahun</label>
-                      <select
-                        value={currentDate.getFullYear()}
-                        onChange={(e) => {
-                          const newYear = parseInt(e.target.value);
-                          const newDate = new Date(currentDate);
-                          newDate.setFullYear(newYear);
-                          setCurrentDate(newDate);
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                      >
-                        {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                ) : (
-                  /* Custom Controls */
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Dari Tanggal</label>
-                      <input
-                        type="date"
-                        value={customRange.start}
-                        onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 mb-1.5">Sampai Tanggal</label>
-                      <input
-                        type="date"
-                        value={customRange.end}
-                        onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Info & Reset */}
-                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                  <p className="text-[10px] text-blue-700 leading-relaxed">
-                    <strong>Preview:</strong> <br />
-                    {getPeriodLabel()}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setFilterMode('monthly')
-                    setCurrentDate(new Date())
-                  }}
-                  className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
-                >
-                  Reset ke Bulan Ini
-                </button>
-              </div>
-            </div>
-          )}
-
-
-        </header>
-
-
-
-        {/* 1. Total Balance Card (Desktop: Order 1, Mobile: Order 1) */}
-        <div className="lg:col-span-6 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
-          <div className="flex justify-between items-center relative z-10">
-            <div>
-              <p className="text-slate-500 font-medium mb-1">Total Tabungan Saya</p>
-              <div className="flex items-center gap-3">
-                <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
-                  {showBalance ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
-                </h2>
-                <button
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
-                >
-                  {showBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
-              <WalletIcon className="w-7 h-7" />
-            </div>
-          </div>
-        </div>
-
-        {/* 1b. Active Balance Card (Desktop: Order 1, Mobile: Order 1) */}
-        <div className="lg:col-span-6 order-1 lg:order-1 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl mb-4">
-          <div className="flex justify-between items-center relative z-10">
-            <div>
-              <p className="text-slate-500 font-medium mb-1">Saldo Aktif Saya</p>
-              <div className="flex items-center gap-3">
-                <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-800 tracking-tight">
-                  {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
-                </h2>
-                <button
-                  onClick={() => setShowActiveBalance(!showActiveBalance)}
-                  className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
-                >
-                  {showActiveBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600">
-              <CreditCard className="w-7 h-7" />
-            </div>
-          </div>
-        </div>
-
-        {/* 1c. Sticky Note Card (Conditional) */}
-        {latestNote && (
-          <Link href="/notes" className="lg:col-span-12 order-1 lg:order-1 glass shadow-premium bg-gradient-to-r from-amber-50 to-orange-50 p-5 rounded-3xl border border-amber-100 relative overflow-hidden group card-hover backdrop-blur-xl flex items-start gap-4 mb-4 transition-transform active:scale-[0.99] cursor-pointer">
-            <div className="bg-amber-100 p-3 rounded-xl text-amber-600 shrink-0 relative">
-              <StickyNote className="w-6 h-6" />
-              {noteCount > 1 && (
-                <div className="absolute -top-1 -right-1 bg-rose-100 text-rose-600 text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full shadow-sm ring-2 ring-white">
-                  {noteCount > 99 ? '99+' : noteCount}
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start">
-                <h3 className="font-bold text-slate-800 mb-1 truncate pr-4">{latestNote.title}</h3>
-                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full whitespace-nowrap hidden sm:inline-block">
-                  {new Date(latestNote.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                </span>
-              </div>
-              <p className="text-sm text-slate-600 line-clamp-4 whitespace-pre-wrap break-all">{latestNote.content}</p>
-            </div>
-          </Link>
-        )}
-
-        {/* 2. Income Card (Desktop: Order 2, Mobile: Order 2) */}
-        <div className="lg:col-span-3 order-2 lg:order-2 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
-          <div className="flex justify-between items-start z-10 relative">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-slate-600 font-medium">Pemasukan Bulan Ini</p>
-                  <div className="group/tip relative">
-                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                      <div className="font-semibold mb-1">📈 Pemasukan</div>
-                      Total uang yang <strong>masuk</strong> ke dompet Anda bulan ini (gaji, bonus, dll)
-                      <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <p className="text-2xl font-bold text-emerald-600">
-                  {showIncome ? `+ Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
-                </p>
-                <button
-                  onClick={() => setShowIncome(!showIncome)}
-                  className="p-2 rounded-xl hover:bg-emerald-50 text-emerald-400 hover:text-emerald-600 transition-all"
-                >
-                  {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {prevIncome > 0 && (
-                <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${incomeChange >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                  <span>{incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%</span>
-                  <span className="opacity-75">vs bulan lalu</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Expense Card (Desktop: Order 3, Mobile: Order 3) */}
-        <div className="lg:col-span-3 order-3 lg:order-3 glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden group card-hover backdrop-blur-xl">
-          <div className="flex justify-between items-start z-10 relative">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-rose-100 p-2 rounded-lg text-rose-600">
-                  <TrendingDown className="w-5 h-5" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-slate-600 font-medium">Pengeluaran Bulan Ini</p>
-                  <div className="group/tip relative">
-                    <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tip:block w-56 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-lg z-50">
-                      <div className="font-semibold mb-1">📉 Pengeluaran</div>
-                      Total uang yang <strong>keluar</strong> dari dompet Anda bulan ini (belanja, tagihan, dll)
-                      <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-800"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-rose-600">- Rp {currentExpense.toLocaleString('id-ID')}</p>
-
-              {prevExpense > 0 && (
-                <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${expenseChange <= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                  <span>{expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%</span>
-                  <span className="opacity-75">vs bulan lalu</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-
-
-        {/* 5. Left Column: Chart + Transaction List (Desktop: Order 5, Mobile: Order 5) */}
-        <div className="lg:col-span-8 order-5 lg:order-6 flex flex-col gap-6">
           
-          {/* Debt / Piutang Card */}
-          {debts.some(d => d.status === 'pending') && (
-            <div className="glass shadow-premium-lg p-5 rounded-3xl border border-white/20 relative overflow-hidden backdrop-blur-xl">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                  <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
-                    <User className="w-5 h-5" />
-                  </div>
-                  Daftar Piutang (Split Bill)
-                </h3>
-                <span className="text-xs font-bold bg-orange-100 text-orange-600 px-3 py-1 rounded-full">
-                  {debts.filter(d => d.status === 'pending').length} Belum Lunas
-                </span>
-              </div>
+          <div className="flex items-center gap-3 bg-white p-1.5 rounded-full border border-[#F3F4F3] shadow-sm">
+             <button 
+               onClick={prevMonth}
+               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+               disabled={filterMode === 'custom'}
+             >
+               <ChevronLeft className="w-5 h-5" />
+             </button>
+             
+             <div className="px-4 text-sm font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
+                {getPeriodLabel()}
+             </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {debts.filter(d => d.status === 'pending').map(debt => (
-                  <div key={debt.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group hover:border-orange-200 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">
-                        {debt.person_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">{debt.person_name}</p>
-                        <p className="text-xs text-slate-500">Rp {debt.amount.toLocaleString('id-ID')}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }}
-                      className="text-xs font-bold bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
-                    >
-                      Tandai Lunas
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+             <button 
+               onClick={nextMonth}
+               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+               disabled={filterMode === 'custom'}
+             >
+               <ChevronRight className="w-5 h-5" />
+             </button>
 
-          <FinancialChart income={currentIncome} expense={currentExpense} />
+             <div className="w-px h-6 bg-[#F3F4F3] mx-1"></div>
+             
+             <button
+               onClick={() => setShowSettings(!showSettings)}
+               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+             >
+                <Settings className="w-5 h-5" />
+             </button>
+          </div>
+        </div>
 
-          {/* Transaction List - Moved here to fill space */}
-          <div className="glass shadow-premium-lg rounded-3xl border border-white/20 overflow-hidden relative z-10 backdrop-blur-xl card-hover">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-slate-500" />
-                Riwayat Transaksi
+        {/* Settings / Filter Panel */}
+        {showSettings && (
+          <div className="w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-500" />
+                Filter & Periode
               </h3>
-              <span className="text-xs font-semibold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">
-                {currentDate.toLocaleString('id-ID', { month: 'long' })}
-              </span>
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                  <p>Memuat data...</p>
-                </div>
-              ) : filteredTransactions.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <CreditCard className="w-8 h-8 text-slate-300" />
+            {/* Mode Switcher */}
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+              <button
+                onClick={() => setFilterMode('monthly')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Bulanan
+              </button>
+              <button
+                onClick={() => setFilterMode('custom')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Custom
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {filterMode === 'monthly' ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Bulan</label>
+                    <select
+                      value={currentDate.getMonth()}
+                      onChange={(e) => {
+                        const newMonth = parseInt(e.target.value);
+                        const newDate = new Date(currentDate);
+                        newDate.setMonth(newMonth);
+                        setCurrentDate(newDate);
+                      }}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
+                        <option key={i} value={i}>{m}</option>
+                      ))}
+                    </select>
                   </div>
-                  <p>Belum ada transaksi di bulan ini</p>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Tahun</label>
+                    <select
+                      value={currentDate.getFullYear()}
+                      onChange={(e) => {
+                        const newYear = parseInt(e.target.value);
+                        const newDate = new Date(currentDate);
+                        newDate.setFullYear(newYear);
+                        setCurrentDate(newDate);
+                      }}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-50">
-                  {filteredTransactions.map((t) => {
-                    const { Icon, color } = getCategoryIcon(t.category, t.type)
-                    const walletName = wallets.find(w => w.id === t.wallet_id)?.name
-                    return (
-                      <li key={t.id} className="flex justify-between items-center p-5 border-b border-slate-200 last:border-0 hover:bg-slate-50 transition-colors group">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${color}`}>
-                            <Icon className="w-6 h-6" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-slate-800 text-base break-words">{t.title}</p>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${t.type === 'pemasukan' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                {t.category}
-                              </span>
-                              {walletName && (
-                                <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
-                                  <WalletIcon className="w-3 h-3" /> {walletName}
-                                </span>
-                              )}
-                              <div className="hidden sm:block w-px h-3 bg-slate-300 mx-1"></div>
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                <p className="text-xs text-slate-500">{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                                <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full whitespace-nowrap w-fit">
-                                  🕐 {new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Vertical Column Separator */}
-                        <div className="w-px h-12 bg-slate-200 mx-4 hidden sm:block"></div>
-
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          <p className={`font-bold text-base ${t.type === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {t.type === 'pemasukan' ? '+' : '-'} Rp {t.amount.toLocaleString('id-ID')}
-                          </p>
-
-                          {/* Action Buttons (Visible on mobile/all) */}
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleEditClick(t)}
-                              className="p-2 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
-                              title="Edit"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => deleteTransaction(t.id)}
-                              className="p-2 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all"
-                              title="Hapus"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 6 & 7. Right Column: Calendar + Wallet (Desktop: Order 6, Mobile: Order 6 & 7) */}
-        <div className="lg:col-span-4 order-6 lg:order-7 flex flex-col gap-6">
-          {/* Recurring Bills Widget */}
-          <div>
-            <RecurringBillsList onUpdate={handleBillsUpdate} />
-          </div>
-
-          {/* Calendar Widget */}
-          <div>
-            <CalendarCard refreshTrigger={billsUpdateTrigger} />
-          </div>
-
-          {/* Wallet Summary Mini */}
-          <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 backdrop-blur-xl card-hover">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <WalletIcon className="w-5 h-5 text-blue-600" />
-              Dompet
-            </h3>
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
-              {wallets.map(w => (
-                <div key={w.id} className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600">{w.name}</span>
-                  <span className="font-bold text-slate-800">Rp {w.balance.toLocaleString('id-ID')}</span>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Dari Tanggal</label>
+                    <input
+                      type="date"
+                      value={customRange.start}
+                      onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Sampai Tanggal</label>
+                    <input
+                      type="date"
+                      value={customRange.end}
+                      onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
-              ))}
-              {wallets.length === 0 && <p className="text-xs text-slate-400">Belum ada dompet.</p>}
+              )}
+              <button
+                onClick={() => {
+                  setFilterMode('monthly')
+                  setCurrentDate(new Date())
+                  setShowSettings(false)
+                }}
+                className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                Reset ke Bulan Ini
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {/* Card 1: Total Tabungan (Revenue style) */}
+          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-[6px]">
+                  <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
+                    <WalletIcon className="size-6 text-[#30B22D]" />
+                  </div>
+                  <p className="font-medium text-[#6A7686]">Total Tabungan</p>
+                </div>
+                <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                    {showBalance ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
+                </button>
+             </div>
+             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+                {showBalance ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+             </p>
+             <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
+          </div>
+
+          {/* Card 2: Saldo Aktif (Shipments style) */}
+          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-[6px]">
+                  <div className="size-11 bg-[#165DFF]/10 rounded-xl flex items-center justify-center shrink-0">
+                    <CreditCard className="size-6 text-[#165DFF]" />
+                  </div>
+                  <p className="font-medium text-[#6A7686]">Saldo Aktif</p>
+                </div>
+                <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                    {showActiveBalance ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
+                </button>
+             </div>
+             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+                {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+             </p>
+             <p className="text-xs text-[#6A7686]">Siap digunakan</p>
+          </div>
+
+          {/* Card 3: Pemasukan (On-Time Rate style) */}
+          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-[6px]">
+                  <div className="size-11 bg-[#FED71F]/10 rounded-xl flex items-center justify-center shrink-0">
+                    <TrendingUp className="size-6 text-[#DAA200]" />
+                  </div>
+                  <p className="font-medium text-[#6A7686]">Pemasukan</p>
+                </div>
+                {prevIncome > 0 && (
+                 <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${incomeChange >= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                   {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%
+                 </span>
+                )}
+             </div>
+             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+                 {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
+             </p>
+             <div className="flex justify-between items-center">
+                <p className="text-xs text-[#6A7686]">Bulan ini</p>
+                <button onClick={() => setShowIncome(!showIncome)} className="text-[#6A7686] hover:text-[#165DFF]">
+                    {showIncome ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                </button>
+             </div>
+          </div>
+
+          {/* Card 4: Pengeluaran (Active Fleet style) */}
+          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+             <div className="flex items-center justify-between">
+                <div className="flex items-center gap-[6px]">
+                  <div className="size-11 bg-[#ED6B60]/10 rounded-xl flex items-center justify-center shrink-0">
+                    <TrendingDown className="size-6 text-[#ED6B60]" />
+                  </div>
+                  <p className="font-medium text-[#6A7686]">Pengeluaran</p>
+                </div>
+                {prevExpense > 0 && (
+                 <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${expenseChange <= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                   {expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%
+                 </span>
+                )}
+             </div>
+             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+                 Rp {currentExpense.toLocaleString('id-ID')}
+             </p>
+             <p className="text-xs text-[#6A7686]">Bulan ini</p>
           </div>
         </div>
 
-        {/* 8. Gold Price (Desktop: Order 4, Mobile: Order 8) */}
-        <div className="lg:col-span-3 order-8 lg:order-4">
-          <GoldPriceCard />
+        {/* Note (Mobile Only - After Stats, Before Chart) */}
+        {latestNote && (
+            <div className="lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5">
+                 <div className="flex items-center gap-2 mb-2 text-[#B45309]">
+                    <StickyNote className="w-5 h-5" />
+                    <h3 className="font-bold">Catatan Terbaru</h3>
+                 </div>
+                 <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
+                 <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
+            </div>
+        )}
+
+        {/* Gold & Currency Cards (Desktop Only - Above Chart) */}
+        <div className="hidden lg:grid grid-cols-2 gap-6">
+            <GoldPriceCard />
+            <CurrencyCard />
         </div>
 
-        {/* 9. Currency (Desktop: Order 5, Mobile: Order 9) */}
-        <div className="lg:col-span-3 order-9 lg:order-5">
-          <CurrencyCard />
+        {/* Charts & Bills */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[#F3F4F3] p-6 bg-white">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="font-bold text-lg text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
+                        <p className="text-sm text-[#6A7686]">Analisis Perbandingan</p>
+                    </div>
+                </div>
+                <div className="w-full">
+                    {/* FinancialChart should be styled internally or wrap it */}
+                    <FinancialChart data={monthlyData} />
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-6">
+               {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
+               <div className="rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
+                  <div className="p-5 border-b border-[#F3F4F3]">
+                    <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+                  </div>
+                  <div className="p-2">
+                     <RecurringBillsList onUpdate={handleBillsUpdate} />
+                  </div>
+               </div>
+                
+                {/* Note (Desktop Only - Below Tagihan Rutin) */}
+                {latestNote && (
+                    <div className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5">
+                         <div className="flex items-center gap-2 mb-2 text-[#B45309]">
+                            <StickyNote className="w-5 h-5" />
+                            <h3 className="font-bold">Catatan Terbaru</h3>
+                         </div>
+                         <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
+                         <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* Transactions & Calendar */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Transactions List (Top Routes style) */}
+            <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
+                <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
+                    <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
+                    <span className="text-sm text-[#165DFF] font-semibold cursor-pointer">Lihat Semua</span>
+                </div>
+                <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
+                   {filteredTransactions.length === 0 ? (
+                        <div className="p-8 text-center text-[#6A7686]">Belum ada transaksi</div>
+                   ) : (
+                       filteredTransactions.map(t => {
+                           const { Icon, color } = getCategoryIcon(t.category, t.type)
+                           // Strip utility classes from color string and map to style if needed, or just use as is if compatible
+                           // The original logic returns tailwind classes like 'bg-orange-100 text-orange-600'
+                           // We might want to adjust these to be softer/SwiftLog style if possible, but let's keep for functionality
+                           return (
+                               <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[#F3F4F3] hover:bg-[#F9FAFB] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
+                                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                                       <Icon className="w-6 h-6" />
+                                   </div>
+                                   <div className="flex-1 min-w-0">
+                                       <div className="flex items-center gap-2 mb-1">
+                                           <span className="font-bold text-[#080C1A] truncate">{t.title}</span>
+                                       </div>
+                                       <p className="text-xs text-[#6A7686]">
+                                            {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {t.category}
+                                       </p>
+                                   </div>
+                                   <div className="text-right">
+                                       <p className={`font-bold ${t.type === 'pemasukan' ? 'text-[#30B22D]' : 'text-[#080C1A]'}`}>
+                                           {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
+                                       </p>
+                                       <button onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }} className="text-xs text-[#ED6B60] font-medium hover:underline">
+                                           Hapus
+                                       </button>
+                                   </div>
+                               </div>
+                           )
+                       })
+                   )}
+                </div>
+            </div>
+
+            {/* Calendar / Other Widgets */}
+            <div className="flex flex-col gap-6">
+                <CalendarCard refreshTrigger={billsUpdateTrigger} />
+            </div>
+        </div>
+
+        {/* Debts Section */}
+        {debts.some(d => d.status === 'pending') && (
+            <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
+                     <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
+                         {debts.filter(d => d.status === 'pending').length} Active
+                     </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {debts.filter(d => d.status === 'pending').map(debt => (
+                        <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
+                            <div>
+                                <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
+                                <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                            </div>
+                            <button
+                              onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }} 
+                              className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
+                            >
+                                Lunas
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Extras Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden">
+            <GoldPriceCard />
+            <CurrencyCard />
         </div>
 
       </div>
+
 
       {/* Floating Action Button (Mobile & Desktop) */}
       <button
@@ -1418,18 +1339,18 @@ export default function MoneyManager() {
 
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={isSplitBill}
-                        onChange={(e) => setIsSplitBill(e.target.checked)}
-                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <span>Ada yang nitip bayar? (Split Bill)</span>
-                    </label>
-                    {isSplitBill && <span className="text-xs text-blue-600 font-medium animate-pulse">Mode Aktif</span>}
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div 
+                    onClick={() => setIsSplitBill(!isSplitBill)}
+                    className="flex items-center justify-between cursor-pointer group select-none mb-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[#165DFF]' : 'border-slate-300 group-hover:border-slate-400'}`}>
+                        {isSplitBill && <div className="w-2.5 h-2.5 bg-[#165DFF] rounded-full animate-in zoom-in duration-200" />}
+                      </div>
+                      <span className={`text-sm font-bold transition-colors ${isSplitBill ? 'text-[#165DFF]' : 'text-slate-600 group-hover:text-slate-800'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                    </div>
+                    {isSplitBill && <span className="text-[10px] uppercase font-bold text-[#165DFF] bg-white px-2 py-1 rounded-lg shadow-sm border border-blue-100">Aktif</span>}
                   </div>
 
                   {isSplitBill && (
@@ -1741,28 +1662,35 @@ export default function MoneyManager() {
       {/* Debt Repayment Modal */}
       {showDebtModal && selectedDebt && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDebtModal(false)}></div>
-          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl z-50 p-6 animate-in zoom-in-95 duration-200">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-xl animate-in zoom-in-95 duration-200">
+             <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+               <X className="w-5 h-5"/>
+             </button>
+             
              <div className="text-center mb-6">
-               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                 💸
-               </div>
-               <h3 className="text-xl font-bold text-slate-800">Terima Pembayaran</h3>
-               <p className="text-slate-500 text-sm">
-                 {selectedDebt.person_name} akan membayar piutang sebesar <br/>
-                 <strong className="text-slate-800 text-lg">Rp {selectedDebt.amount.toLocaleString('id-ID')}</strong>
-               </p>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                   🧑‍🤝‍🧑
+                </div>
+                <h3 className="font-bold text-lg text-slate-800">Lunasi Piutang</h3>
+                <p className="text-sm text-slate-500">
+                  {selectedDebt ? `Pilih dompet penerima dana dari ${selectedDebt.person_name}` : 'Pilih dompet penerima dana'}
+                </p>
+                {selectedDebt && (
+                 <div className="mt-3 bg-blue-50 py-2 rounded-lg">
+                    <span className="text-blue-600 font-bold text-xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
+                 </div>
+                )}
              </div>
 
-             <div className="mb-6">
-               <label className="block text-sm font-bold text-slate-700 mb-2">Masuk ke Dompet Mana?</label>
-               <div className="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
+             <div className="space-y-3 mb-4">
+               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Masuk ke Dompet</p>
+               <div className="grid gap-2">
                  {wallets.map(w => {
                    const isProcessing = repayingWalletId === w.id
                    return (
                    <button
                      key={w.id}
-                     onClick={() => !repayingWalletId && markDebtAsPaid(selectedDebt, w.id)}
+                     onClick={() => selectedDebt && markDebtAsPaid(selectedDebt, w.id)}
                      disabled={repayingWalletId !== null}
                      className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${
                        isProcessing 
