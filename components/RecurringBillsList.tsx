@@ -18,6 +18,7 @@ export default function RecurringBillsList({ onUpdate }: RecurringBillsListProps
     const { showConfirm } = useConfirm()
 
     const [selectedBill, setSelectedBill] = useState<RecurringBill | null>(null)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const fetchBills = async () => {
         try {
@@ -45,12 +46,16 @@ export default function RecurringBillsList({ onUpdate }: RecurringBillsListProps
             message: 'Yakin ingin menghapus tagihan ini?'
         })
         if (!confirmed) return
+        
+        setDeletingId(id)
         try {
             await deleteRecurringBill(id)
             fetchBills()
             if (onUpdate) onUpdate()
         } catch (error) {
             alert('Gagal menghapus')
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -196,9 +201,14 @@ export default function RecurringBillsList({ onUpdate }: RecurringBillsListProps
                                                 e.stopPropagation()
                                                 handleDelete(bill.id)
                                             }}
-                                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                            disabled={deletingId === bill.id}
+                                            className={`p-2 rounded-xl transition-all ${deletingId === bill.id ? 'bg-rose-50 cursor-wait' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'}`}
                                         >
-                                            <Trash2 size={16} />
+                                            {deletingId === bill.id ? (
+                                                <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <Trash2 size={16} />
+                                            )}
                                         </button>
                                     </div>
                                 </div>

@@ -100,6 +100,7 @@ export default function MoneyManager() {
 
   // Edit State
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -110,6 +111,7 @@ export default function MoneyManager() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
   const [billsUpdateTrigger, setBillsUpdateTrigger] = useState(0)
+  const [creatingWallet, setCreatingWallet] = useState(false)
 
   const handleBillsUpdate = () => {
     setBillsUpdateTrigger(prev => prev + 1)
@@ -315,9 +317,9 @@ export default function MoneyManager() {
     }
   }
 
-  // Quick Savings Setup for Onboarding
   const [welcomeStep, setWelcomeStep] = useState(1)
   const createQuickSavingsWallet = async () => {
+    setCreatingWallet(true)
     const { error } = await supabase
       .from('wallets')
       .insert({
@@ -333,6 +335,7 @@ export default function MoneyManager() {
       setShowWelcome(false) // Close modal
       showToast('success', 'Dompet "Tabungan" berhasil dibuat! 🎉')
     }
+    setCreatingWallet(false)
   }
 
   // 2. Fungsi Simpan (Tambah/Edit) Transaksi
@@ -581,6 +584,8 @@ export default function MoneyManager() {
 
       if (!confirmDelete) return
 
+      setDeletingId(id)
+
       // 1. Handle Cascade Delete for Repayment Transactions (Rollback Balance First)
       if (hasPayments) {
          // Fetch payment transactions details for balance rollback
@@ -607,6 +612,7 @@ export default function MoneyManager() {
       if (debtDelError) {
          console.error('Error deleting debts:', debtDelError)
          showToast('error', 'Gagal menghapus sebagian data piutang')
+         setDeletingId(null)
          return // Stop if critical failure
       }
 
@@ -615,6 +621,14 @@ export default function MoneyManager() {
           const { error: delError } = await supabase.from('transactions').delete().in('id', paymentTransactionIds)
           if (delError) console.error('Error deleting payment trx:', delError)
        }
+    } else {
+        // If not a debt creation transaction, handle simple debt payment check or simple transaction
+        // Check if this transaction is a Debt Payment (Income) - moved logic slightly but keeping existing flow structure
+    }
+
+    // Set deletingId for simple transactions too if not set above (logic is slightly complex due to nested if, let's simplify: set it once after confirm)
+    if (!createdDebts || createdDebts.length === 0) {
+        setDeletingId(id)
     }
 
     // Delete transaction
@@ -642,6 +656,7 @@ export default function MoneyManager() {
       console.error('Error deleting transaction:', error)
       showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
     }
+    setDeletingId(null)
   }
   const markDebtAsPaid = async (debt: Debt, targetWalletId: number) => {
      setRepayingWalletId(targetWalletId)
@@ -852,7 +867,7 @@ export default function MoneyManager() {
       <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
         <div className="flex items-center gap-4">
              {/* Mobile toggle is handled in Sidebar.tsx, but we can add a spacer or title here */}
-             <h2 className="font-bold text-2xl text-[#080C1A]">Money Overview</h2>
+             <h2 className="font-bold text-2xl text-[#080C1A]">CatatDuit</h2>
         </div>
         
         <div className="flex items-center gap-3">
@@ -874,7 +889,7 @@ export default function MoneyManager() {
         {/* Date Filter & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-[#080C1A] text-2xl md:text-3xl font-bold mb-1">Performance Summary</h1>
+            <h1 className="text-[#080C1A] text-2xl md:text-3xl font-bold mb-1">Hemat Yuk !!!</h1>
             <p className="text-[#6A7686] text-sm">Financial metrics for {getPeriodLabel()}.</p>
           </div>
           
@@ -1029,7 +1044,7 @@ export default function MoneyManager() {
                 </button>
              </div>
              <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
-                {showBalance ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+                {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
              </p>
              <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
           </div>
@@ -1103,14 +1118,19 @@ export default function MoneyManager() {
 
         {/* Note (Mobile Only - After Stats, Before Chart) */}
         {latestNote && (
-            <div className="lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5">
+            <Link href="/notes" className="block lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+                 {noteCount > 1 && (
+                    <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+                        {noteCount > 99 ? '99+' : noteCount}
+                    </div>
+                 )}
                  <div className="flex items-center gap-2 mb-2 text-[#B45309]">
                     <StickyNote className="w-5 h-5" />
                     <h3 className="font-bold">Catatan Terbaru</h3>
                  </div>
                  <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
                  <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
-            </div>
+            </Link>
         )}
 
         {/* Gold & Currency Cards (Desktop Only - Above Chart) */}
@@ -1147,14 +1167,19 @@ export default function MoneyManager() {
                 
                 {/* Note (Desktop Only - Below Tagihan Rutin) */}
                 {latestNote && (
-                    <div className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5">
+                    <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+                         {noteCount > 1 && (
+                            <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+                                {noteCount > 99 ? '99+' : noteCount}
+                            </div>
+                         )}
                          <div className="flex items-center gap-2 mb-2 text-[#B45309]">
                             <StickyNote className="w-5 h-5" />
                             <h3 className="font-bold">Catatan Terbaru</h3>
                          </div>
                          <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
                          <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
-                    </div>
+                    </Link>
                 )}
             </div>
         </div>
@@ -1165,7 +1190,7 @@ export default function MoneyManager() {
             <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
                     <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
-                    <span className="text-sm text-[#165DFF] font-semibold cursor-pointer">Lihat Semua</span>
+                    <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
                 </div>
                 <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
                    {filteredTransactions.length === 0 ? (
@@ -1193,8 +1218,17 @@ export default function MoneyManager() {
                                        <p className={`font-bold ${t.type === 'pemasukan' ? 'text-[#30B22D]' : 'text-[#080C1A]'}`}>
                                            {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                                        </p>
-                                       <button onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }} className="text-xs text-[#ED6B60] font-medium hover:underline">
-                                           Hapus
+                                       <button 
+                                         onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }} 
+                                         disabled={deletingId === t.id}
+                                         className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
+                                       >
+                                           {deletingId === t.id ? (
+                                              <span className="flex items-center gap-1">
+                                                <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                                                Hapus...
+                                              </span>
+                                           ) : 'Hapus'}
                                        </button>
                                    </div>
                                </div>
@@ -1635,9 +1669,17 @@ export default function MoneyManager() {
                 <div className="space-y-3">
                   <button
                     onClick={createQuickSavingsWallet}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2"
+                    disabled={creatingWallet}
+                    className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 ${creatingWallet ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    ✅ Buat Dompet Tabungan
+                    {creatingWallet ? (
+                        <>
+                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                           Membuat Dompet...
+                        </>
+                    ) : (
+                        <>✅ Buat Dompet Tabungan</>
+                    )}
                   </button>
                   <button
                     onClick={() => setShowWelcome(false)}
