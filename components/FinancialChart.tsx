@@ -97,8 +97,8 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
     }
 
     return (
-        <div className="w-full h-[350px]">
-            <div className="flex flex-wrap justify-end gap-x-6 mb-4">
+        <div className="w-full h-[350px] flex flex-col">
+            <div className="flex flex-wrap justify-end gap-x-6 mb-4 shrink-0">
                 {[{ name: 'Pemasukan', total: totalIncome, color: 'border-[#165DFF]' }, { name: 'Pengeluaran', total: totalExpense, color: 'border-[#F43F5E]' }].map((item, index) => (
                     <div key={index} className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full border-2 ${item.color}`} style={{ backgroundColor: 'transparent' }} />
@@ -109,66 +109,66 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
                 ))}
             </div>
             
-            <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                    data={data}
-                    margin={{
-                        top: 5,
-                        right: 0,
-                        bottom: 0,
-                        left: 0,
-                    }}
-                >
-                    <defs>
-                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#165DFF" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#165DFF" stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} stroke="#F3F4F3" strokeDasharray="3 3" />
-                    <XAxis 
-                        dataKey="name" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }}
-                        dy={10}
-                    />
-                    <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#64748B', fontSize: 11 }}
-                        tickFormatter={(value) => {
-                            if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)}M` // Miliar
-                            if (value >= 1000000) return `${(value / 1000000).toFixed(1)}jt`
-                            if (value >= 1000) return `${(value / 1000).toFixed(0)}rb`
-                            return value
+            <div className="flex-1 min-h-0 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                        data={data}
+                        margin={{
+                            top: 5,
+                            right: 0,
+                            bottom: 0,
+                            left: -20, // Adjusted left margin to prevent Y-axis label clipping if needed, or stick to 0
                         }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    
-                    {/* Income Area */}
-                    <Area 
-                        type="monotone" 
-                        dataKey="income" 
-                        name="Pemasukan"
-                        stroke="#165DFF" 
-                        strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorIncome)" 
-                    />
+                    >
+                        <defs>
+                            <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#165DFF" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#165DFF" stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} stroke="#F3F4F3" strokeDasharray="3 3" />
+                        <XAxis 
+                            dataKey="name" 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }}
+                            dy={10}
+                        />
+                        <YAxis 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#64748B', fontSize: 11 }}
+                            tickFormatter={(value) => {
+                                if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)}M`
+                                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}jt`
+                                if (value >= 1000) return `${(value / 1000).toFixed(0)}rb`
+                                return value
+                            }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        
+                        <Area 
+                            type="monotone" 
+                            dataKey="income" 
+                            name="Pemasukan"
+                            stroke="#165DFF" 
+                            strokeWidth={3}
+                            fillOpacity={1} 
+                            fill="url(#colorIncome)" 
+                        />
 
-                    {/* Expense Line (Dashed) */}
-                    <Line 
-                        type="monotone" 
-                        dataKey="expense" 
-                        name="Pengeluaran"
-                        stroke="#F43F5E" 
-                        strokeWidth={2}
-                        dot={false}
-                        activeDot={{ r: 6, fill: '#F43F5E', stroke: 'white', strokeWidth: 2 }}
-                    />
-                </ComposedChart>
-            </ResponsiveContainer>
+                        <Line 
+                            type="monotone" 
+                            dataKey="expense" 
+                            name="Pengeluaran"
+                            stroke="#F43F5E" 
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 6, fill: '#F43F5E', stroke: 'white', strokeWidth: 2 }}
+                        />
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     )
 }
