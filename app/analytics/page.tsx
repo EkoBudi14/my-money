@@ -13,7 +13,8 @@ import {
     Bar, 
     XAxis, 
     YAxis, 
-    CartesianGrid
+    CartesianGrid,
+    LabelList
 } from 'recharts'
 import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon } from 'lucide-react'
 
@@ -378,7 +379,14 @@ export default function AnalyticsPage() {
                                                     cursor={{ fill: '#F9FAFB' }}
                                                     contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                                 />
-                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={24} />
+                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={24}>
+                                                    <LabelList 
+                                                        dataKey="value" 
+                                                        position="right" 
+                                                        formatter={(val: any) => `Rp ${(val || 0).toLocaleString('id-ID')}`}
+                                                        style={{ fontSize: '11px', fill: '#64748B', fontWeight: 600 }}
+                                                    />
+                                                </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (

@@ -266,7 +266,7 @@ export default function WalletsPage() {
                     <div className="text-center py-12 text-slate-400">Loading...</div>
                     ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[...activeWallets, ...savingsWallets].map((wallet: Wallet) => (
+                        {activeWallets.map((wallet: Wallet) => (
                             <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
                                      <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">

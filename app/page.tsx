@@ -1022,7 +1022,7 @@ export default function MoneyManager() {
                   <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
                     <WalletIcon className="size-6 text-[#30B22D]" />
                   </div>
-                  <p className="font-medium text-[#6A7686]">Total Tabungan</p>
+                  <p className="font-medium text-[#6A7686]">Total Semua Uang</p>
                 </div>
                 <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
                     {showBalance ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
