@@ -85,3 +85,13 @@ export interface CalendarEvent {
     color: 'blue' | 'red' | 'green' | 'yellow' | 'purple'
     created_at?: string
 }
+
+export interface BillPayment {
+    id: number
+    bill_id: number
+    month: string // YYYY-MM
+    paid_at: string
+    transaction_id?: number
+    created_at: string
+}
+

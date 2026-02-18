@@ -115,6 +115,8 @@ export default function MoneyManager() {
 
   const handleBillsUpdate = () => {
     setBillsUpdateTrigger(prev => prev + 1)
+    fetchTransactions() // Refresh transactions list
+    fetchWallets()      // Refresh wallet balances
   }
 
   // Settings State
@@ -1161,7 +1163,7 @@ export default function MoneyManager() {
                     <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
                   </div>
                   <div className="p-2">
-                     <RecurringBillsList onUpdate={handleBillsUpdate} />
+                     <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
                   </div>
                </div>
                 
@@ -1190,7 +1192,17 @@ export default function MoneyManager() {
             <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
                     <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
-                    <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={fetchTransactions} 
+                            disabled={loading}
+                            className={`p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
+                            title="Refresh Data"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        </button>
+                        <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+                    </div>
                 </div>
                 <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
                    {filteredTransactions.length === 0 ? (
@@ -1240,7 +1252,7 @@ export default function MoneyManager() {
 
             {/* Calendar / Other Widgets */}
             <div className="flex flex-col gap-6">
-                <CalendarCard refreshTrigger={billsUpdateTrigger} />
+                <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
             </div>
         </div>
 

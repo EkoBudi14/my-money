@@ -1,12 +1,13 @@
 'use client'
 import React, { useState, useMemo, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Trash2, Pencil } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, MapPin, Trash2, Pencil, CheckCircle2, X } from 'lucide-react'
 import { getRecurringBills } from '@/lib/recurring-bills'
-import { RecurringBill, CalendarEvent } from '@/types'
+import { RecurringBill, CalendarEvent, Wallet } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import AddEventModal from './AddEventModal'
+import MoneyInput from './MoneyInput'
 
 interface Holiday {
     date: string
@@ -22,9 +23,10 @@ const MONTHS = [
 
 interface CalendarCardProps {
     refreshTrigger?: number
+    onUpdate?: () => void
 }
 
-export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) {
+export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarCardProps) {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [holidays, setHolidays] = useState<Holiday[]>([])
@@ -36,6 +38,17 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
     const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false)
+    const [billPayments, setBillPayments] = useState<Record<number, boolean>>({})
+    
+    // Payment Modal State
+    const [wallets, setWallets] = useState<Wallet[]>([])
+    const [showPaymentModal, setShowPaymentModal] = useState(false)
+    const [selectedPaymentBill, setSelectedPaymentBill] = useState<RecurringBill | null>(null)
+    const [selectedWalletId, setSelectedWalletId] = useState<number | null>(null)
+    const [paymentAmount, setPaymentAmount] = useState<string>('')
+    const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0])
+    const [payingBillId, setPayingBillId] = useState<number | null>(null)
+    
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
 
@@ -59,6 +72,18 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
         if (data) setEvents(data)
     }
 
+    const checkBillPayments = async () => {
+        const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+        const { data } = await supabase
+            .from('bill_payments')
+            .select('bill_id')
+            .eq('month', currentMonth)
+        
+        const paymentsMap: Record<number, boolean> = {}
+        data?.forEach(p => paymentsMap[p.bill_id] = true)
+        setBillPayments(paymentsMap)
+    }
+
     // Fetch data
     useEffect(() => {
         const fetchData = async () => {
@@ -78,6 +103,13 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                 // Fetch Events
                 await fetchEvents()
 
+                // Check Bill Payments
+                await checkBillPayments()
+
+                // Fetch Wallets
+                const { data: walletsData } = await supabase.from('wallets').select('*')
+                setWallets(walletsData || [])
+
             } catch (error) {
                 console.error('Error fetching calendar data:', error)
             } finally {
@@ -86,6 +118,150 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
         }
         fetchData()
     }, [currentDate.getFullYear(), refreshTrigger])
+
+    const handleCalendarPayBill = (bill: RecurringBill) => {
+        setSelectedPaymentBill(bill)
+        setPaymentAmount(bill.amount.toString())
+        setPaymentDate(new Date().toISOString().split('T')[0])
+        setSelectedWalletId(null)
+        setShowPaymentModal(true)
+    }
+
+    const handleConfirmCalendarPayment = async () => {
+        if (!selectedPaymentBill || !selectedWalletId || !paymentAmount || !paymentDate) return
+        
+        const amountNum = parseFloat(paymentAmount)
+        if (isNaN(amountNum) || amountNum <= 0) {
+            showToast('error', 'Jumlah pembayaran tidak valid')
+            return
+        }
+        
+        const wallet = wallets.find(w => w.id === selectedWalletId)
+        if (!wallet) {
+            showToast('error', 'Dompet tidak ditemukan')
+            return
+        }
+        
+        if (wallet.balance < amountNum) {
+            showToast('error', `Saldo tidak mencukupi! Saldo ${wallet.name}: Rp ${wallet.balance.toLocaleString('id-ID')}`)
+            return
+        }
+        
+        setPayingBillId(selectedPaymentBill.id)
+        try {
+            const paymentMonth = new Date(paymentDate).toISOString().slice(0, 7)
+            
+            const { data: txData, error: txError } = await supabase.from('transactions').insert({
+                title: selectedPaymentBill.name,
+                amount: amountNum,
+                type: 'pengeluaran',
+                category: 'Tagihan',
+                wallet_id: selectedWalletId,
+                date: new Date(paymentDate).toISOString(),
+                created_at: new Date().toISOString()
+            }).select().single()
+            
+            if (txError) throw txError
+            if (!txData) throw new Error('Transaction created but no data returned')
+            
+            await supabase.from('wallets').update({
+                balance: wallet.balance - amountNum
+            }).eq('id', selectedWalletId)
+            
+            await supabase.from('bill_payments').insert({
+                bill_id: selectedPaymentBill.id,
+                month: paymentMonth,
+                paid_at: new Date().toISOString(),
+                transaction_id: txData.id
+            })
+            
+            showToast('success', 'Tagihan berhasil dibayar!')
+            
+            // Refresh data
+            const { data: walletsData } = await supabase.from('wallets').select('*')
+            setWallets(walletsData || [])
+            await checkBillPayments()
+            if (onUpdate) onUpdate()
+            
+            setShowPaymentModal(false)
+        } catch (error) {
+            console.error(error)
+            showToast('error', 'Gagal membayar tagihan')
+        } finally {
+            setPayingBillId(null)
+        }
+    }
+
+    const handleDeleteBillPayment = async (billId: number) => {
+        const confirmed = await showConfirm({
+            title: 'Batalkan Pembayaran?',
+            message: 'Pembayaran akan dihapus dan dana akan dikembalikan ke dompet (jika data transaksi ditemukan).',
+            confirmText: 'Batalkan Bayar',
+            cancelText: 'Kembali'
+        })
+        
+        if (!confirmed) return
+
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7)
+            
+            // 1. Get the payment record to find transaction_id
+            const { data: existingPayment } = await supabase
+                .from('bill_payments')
+                .select('*')
+                .eq('bill_id', billId)
+                .eq('month', currentMonth)
+                .single()
+            
+            if (existingPayment?.transaction_id) {
+                // 2. Fetch transaction to get amount and wallet
+                const { data: transaction } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('id', existingPayment.transaction_id)
+                    .single()
+                
+                if (transaction) {
+                    // 3. Refund wallet
+                    const { data: wallet } = await supabase
+                        .from('wallets')
+                        .select('balance')
+                        .eq('id', transaction.wallet_id)
+                        .single()
+                        
+                    if (wallet) {
+                        await supabase.from('wallets').update({
+                            balance: wallet.balance + transaction.amount
+                        }).eq('id', transaction.wallet_id)
+                    }
+
+                    // 4. Delete transaction
+                    await supabase.from('transactions').delete().eq('id', transaction.id)
+                }
+            }
+
+            // 5. Delete bill payment record
+            const { error } = await supabase
+                .from('bill_payments')
+                .delete()
+                .eq('bill_id', billId)
+                .eq('month', currentMonth)
+
+            if (error) throw error
+            
+            showToast('success', 'Pembayaran dibatalkan')
+            
+            // Refresh data
+            const { data: walletsData } = await supabase.from('wallets').select('*')
+            setWallets(walletsData || [])
+            await checkBillPayments()
+            if (onUpdate) onUpdate()
+            
+        } catch (error) {
+            console.error('Error deleting bill payment:', error)
+            showToast('error', 'Gagal membatalkan pembayaran')
+        }
+    }
 
     const { daysInMonth, firstDayOfMonth, monthName, year, holidaysInMonth, billsInMonth } = useMemo(() => {
         const year = currentDate.getFullYear()
@@ -373,22 +549,52 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
 
                         {/* Bills Info */}
                         {displayData?.bills && displayData.bills.length > 0 && (
-                            displayData.bills.map(bill => (
-                                <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl bg-blue-50/50 border border-blue-100 group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                                            {bill.name.charAt(0)}
+                            displayData.bills.map(bill => {
+                                const isPaid = billPayments[bill.id]
+                                return (
+                                    <div key={bill.id} className={`flex items-center justify-between p-3 rounded-xl border ${
+                                        isPaid ? 'bg-green-50/50 border-green-100' : 'bg-blue-50/50 border-blue-100'
+                                    } group`}>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                                                isPaid ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                                            }`}>
+                                                {isPaid ? <CheckCircle2 size={16} /> : bill.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{bill.name}</p>
+                                                <p className="text-xs text-slate-500">
+                                                    {isPaid ? 'Sudah dibayar' : 'Tagihan Rutin'}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-800">{bill.name}</p>
-                                            <p className="text-xs text-slate-500">Tagihan Rutin</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className={`text-sm font-bold ${
+                                                isPaid ? 'text-green-600' : 'text-blue-600'
+                                            }`}>
+                                                Rp {bill.amount.toLocaleString('id-ID')}
+                                            </p>
+                                            
+                                            {isPaid ? (
+                                                <button
+                                                    onClick={() => handleDeleteBillPayment(bill.id)}
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                                                    title="Batalkan Pembayaran"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleCalendarPayBill(bill)}
+                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                                                >
+                                                    Bayar
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <p className="text-sm font-bold text-blue-600">
-                                        Rp {bill.amount.toLocaleString('id-ID')}
-                                    </p>
-                                </div>
-                            ))
+                                )
+                            })
                         )}
 
                         {!displayData?.holiday && (!displayData?.bills || displayData.bills.length === 0) && (!displayData?.dayEvents || displayData.dayEvents.length === 0) && (
@@ -411,6 +617,97 @@ export default function CalendarCard({ refreshTrigger = 0 }: CalendarCardProps) 
                 selectedDate={displayDate || new Date()}
                 initialData={selectedEvent}
             />
+
+            {/* Payment Modal */}
+            {showPaymentModal && selectedPaymentBill && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-slate-800">
+                                Bayar Tagihan
+                            </h3>
+                            <button 
+                                onClick={() => setShowPaymentModal(false)}
+                                className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5">
+                            <p className="text-sm text-slate-600">Tagihan</p>
+                            <p className="text-lg font-bold text-slate-800">{selectedPaymentBill.name}</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Jumlah Pembayaran (Rp)
+                                </label>
+                                <MoneyInput
+                                    value={paymentAmount}
+                                    onChange={setPaymentAmount}
+                                    placeholder={selectedPaymentBill.amount.toString()}
+                                />
+                                <p className="text-xs text-slate-400 mt-1">
+                                    Default: Rp {selectedPaymentBill.amount.toLocaleString('id-ID')}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Tanggal Pembayaran
+                                </label>
+                                <input
+                                    type="date"
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Bayar dari Dompet
+                                </label>
+                                <select
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    value={selectedWalletId || ''}
+                                    onChange={(e) => setSelectedWalletId(Number(e.target.value))}
+                                >
+                                    <option value="">Pilih Dompet</option>
+                                    {wallets.map(w => (
+                                        <option key={w.id} value={w.id}>
+                                            {w.name} - Rp {w.balance.toLocaleString('id-ID')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleConfirmCalendarPayment}
+                                disabled={!selectedWalletId || !paymentAmount || payingBillId !== null}
+                                className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {payingBillId ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                ) : (
+                                    'Bayar'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

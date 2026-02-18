@@ -171,13 +171,42 @@ export default function WalletsPage() {
     }
 
     const handleDelete = async (id: number) => {
+        // 1. Fetch wallet details first to check for source_wallet_id and balance
+        const { data: walletToDelete } = await supabase.from('wallets').select('*').eq('id', id).single()
+        
+        if (!walletToDelete) {
+            return showToast('error', 'Dompet not found')
+        }
+
+        let refundMessage = ''
+
+        // 2. Check logic for refund
+        if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
+             const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
+             
+             if (sourceWallet) {
+                 refundMessage = `Sisa saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} akan dikembalikan ke ${sourceWallet.name}.`
+             }
+        }
+
         const confirm = await showConfirm({
             title: 'Hapus Dompet?',
-            message: 'Hapus dompet ini? SEMUA RIWAYAT TRANSAKSI terkait dompet ini akan ikut TERHAPUS PERMANEN.'
+            message: `Hapus dompet "${walletToDelete.name}"? SEMUA RIWAYAT TRANSAKSI terkait akan TERHAPUS. ${refundMessage}`
         })
         if (!confirm) return
 
-        // 1. Delete associated transactions first
+        // 3. Process Refund if confirmed and applicable
+        if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
+            const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
+             
+            if (sourceWallet) {
+                const newBalance = sourceWallet.balance + walletToDelete.balance
+                await supabase.from('wallets').update({ balance: newBalance }).eq('id', sourceWallet.id)
+                showToast('success', `Saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} dikembalikan ke ${sourceWallet.name}`)
+            }
+        }
+
+        // 4. Delete associated transactions first
         const { error: txError } = await supabase.from('transactions').delete().eq('wallet_id', id)
 
         if (txError) {
@@ -185,7 +214,7 @@ export default function WalletsPage() {
             return showToast('error', 'Gagal menghapus riwayat transaksi terkait')
         }
 
-        // 2. Delete the wallet
+        // 5. Delete the wallet
         const { error } = await supabase.from('wallets').delete().eq('id', id)
 
         if (error) {
