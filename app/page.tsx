@@ -658,6 +658,71 @@ export default function MoneyManager() {
       console.error('Error deleting transaction:', error)
       showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
     }
+    
+    // Check if this was a bill payment and delete the record if so
+    // This ensures the bill status resets to "Unpaid"
+    console.log('Checking for linked bill payments for transaction:', id)
+    const { data: deletedBills, error: billPayError } = await supabase
+        .from('bill_payments')
+        .delete()
+        .eq('transaction_id', id)
+        .select()
+    
+    if (billPayError) {
+        console.error('Error deleting bill payment:', billPayError)
+    }
+
+    // FALLBACK: If standard delete failed (legacy data), try to find by name and month
+    let finalDeletedBills = deletedBills
+    if (!billPayError && (!deletedBills || deletedBills.length === 0)) {
+        console.log('No direct link found. Trying fallback by name and month...', transaction)
+        
+        if (transaction && transaction.title && transaction.date) {
+             const txMonth = new Date(transaction.date).toISOString().slice(0, 7)
+             const txTitle = transaction.title.trim()
+
+             // 1. Find bill by name
+             const { data: foundBill } = await supabase
+                .from('recurring_bills')
+                .select('id')
+                .eq('name', txTitle)
+                .single()
+             
+             if (foundBill) {
+                 console.log('Found potential bill match:', foundBill)
+                 // 2. Find and delete payment for this bill in this month
+                 // Only if transaction_id is NULL (safe to delete, implies legacy)
+                 // OR just delete it because we are deleting the transaction anyway?
+                 // Safer: delete where bill_id and month matches.
+                  const { data: fallbackDeleted, error: fallbackError } = await supabase
+                    .from('bill_payments')
+                    .delete()
+                    .eq('bill_id', foundBill.id)
+                    .eq('month', txMonth)
+                    .select()
+                  
+                  if (!fallbackError && fallbackDeleted && fallbackDeleted.length > 0) {
+                      console.log('Fallback delete successful:', fallbackDeleted)
+                      finalDeletedBills = fallbackDeleted
+                  }
+             } else {
+                 console.log('No bill found with name:', txTitle)
+             }
+        }
+    }
+
+    if (finalDeletedBills && finalDeletedBills.length > 0) {
+        console.log('Deleted bill payment:', finalDeletedBills)
+        showToast('success', 'Status tagihan terkait berhasil di-reset!')
+        // If a bill payment was deleted, trigger update to refresh RecurringBillsList
+        setBillsUpdateTrigger(prev => prev + 1)
+    } else {
+        console.log('No linked bill payment found for this transaction.')
+        // Setup fallback: try to find by bill_id/month if transaction_id is missing? 
+        // No, let's just trigger update anyway to be safe.
+        setBillsUpdateTrigger(prev => prev + 1)
+    }
+
     setDeletingId(null)
   }
   const markDebtAsPaid = async (debt: Debt, targetWalletId: number) => {
