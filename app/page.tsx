@@ -97,6 +97,9 @@ export default function MoneyManager() {
   const [category, setCategory] = useState('')
   const [selectedWalletId, setSelectedWalletId] = useState<string>('')
   const [customDate, setCustomDate] = useState('')
+  // Piutang State
+  const [isPiutang, setIsPiutang] = useState(false)
+  const [piutangPerson, setPiutangPerson] = useState('')
 
   // Edit State
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -373,7 +376,9 @@ export default function MoneyManager() {
       category,
       wallet_id: parseInt(selectedWalletId),
       date: new Date(customDate).toISOString(),
-      created_at: new Date().toISOString() // Fallback
+      created_at: new Date().toISOString(), // Fallback
+      is_piutang: type === 'pemasukan' ? isPiutang : false,
+      piutang_person: type === 'pemasukan' && isPiutang ? piutangPerson.trim() : null
     }
 
     let error;
@@ -506,6 +511,9 @@ export default function MoneyManager() {
     // Reset Debt Form
     setIsSplitBill(false)
     setSplitEntries([{ name: '', amount: '' }])
+    // Reset Piutang Form
+    setIsPiutang(false)
+    setPiutangPerson('')
   }
 
   const handleEditClick = (t: Transaction) => {
@@ -516,6 +524,9 @@ export default function MoneyManager() {
     setType(t.type)
     setSelectedWalletId(t.wallet_id?.toString() || '')
     setCustomDate(new Date(t.date || t.created_at).toISOString().split('T')[0])
+    // Load Piutang State
+    setIsPiutang(t.is_piutang || false)
+    setPiutangPerson(t.piutang_person || '')
     setIsModalOpen(true)
   }
 
@@ -814,10 +825,10 @@ export default function MoneyManager() {
     })
   }, [transactions, filterMode, currentDate, customRange])
 
-  // 2. Calculate Totals
+  // 2. Calculate Totals (piutang TIDAK dihitung sebagai pemasukan nyata)
   const { currentIncome, currentExpense } = useMemo(() => {
     const income = filteredTransactions
-      .filter(t => t.type === 'pemasukan')
+      .filter(t => t.type === 'pemasukan' && !t.is_piutang)
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     const expense = filteredTransactions
@@ -838,7 +849,7 @@ export default function MoneyManager() {
     })
 
     const income = prevTx
-      .filter(t => t.type === 'pemasukan')
+      .filter(t => t.type === 'pemasukan' && !t.is_piutang)
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     const expense = prevTx
@@ -871,9 +882,9 @@ export default function MoneyManager() {
       const tDate = new Date(t.date || t.created_at)
       if (tDate.getFullYear() === currentYear) {
         const monthIndex = tDate.getMonth()
-        if (t.type === 'pemasukan') {
+        if (t.type === 'pemasukan' && !t.is_piutang) {
           data[monthIndex].income += t.amount
-        } else {
+        } else if (t.type === 'pengeluaran') {
           data[monthIndex].expense += t.amount
         }
       }
@@ -1286,13 +1297,18 @@ export default function MoneyManager() {
                                    <div className="flex-1 min-w-0">
                                        <div className="flex items-center gap-2 mb-1">
                                            <span className="font-bold text-[#080C1A] truncate">{t.title}</span>
+                                           {t.is_piutang && (
+                                               <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                                                   💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
+                                               </span>
+                                           )}
                                        </div>
                                        <p className="text-xs text-[#6A7686]">
                                             {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {t.category}
                                        </p>
                                    </div>
                                    <div className="text-right">
-                                       <p className={`font-bold ${t.type === 'pemasukan' ? 'text-[#30B22D]' : 'text-[#080C1A]'}`}>
+                                       <p className={`font-bold ${t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]') : 'text-[#080C1A]'}`}>
                                            {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                                        </p>
                                        <button 
@@ -1447,6 +1463,42 @@ export default function MoneyManager() {
                   autoFocus={!editingId}
                 />
               </div>
+
+              {/* Piutang Toggle - hanya untuk Pemasukan */}
+              {type === 'pemasukan' && (
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div
+                    onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }}
+                    className="flex items-center justify-between cursor-pointer group select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isPiutang ? 'border-amber-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
+                        {isPiutang && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-in zoom-in duration-200" />}
+                      </div>
+                      <span className={`text-sm font-bold transition-colors ${isPiutang ? 'text-amber-700' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                        💸 Ini adalah Piutang?
+                      </span>
+                    </div>
+                    {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
+                  </div>
+
+                  {isPiutang && (
+                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                      <input
+                        type="text"
+                        placeholder="Nama peminjam (Opsional)"
+                        className="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium"
+                        value={piutangPerson}
+                        onChange={(e) => setPiutangPerson(e.target.value)}
+                      />
+                      <p className="text-xs text-amber-600 mt-2 flex items-start gap-1.5">
+                        <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        Nominal akan masuk ke saldo dompet, tapi <strong>tidak dihitung</strong> sebagai pemasukan di statistik.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (

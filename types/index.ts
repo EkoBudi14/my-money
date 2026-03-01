@@ -34,6 +34,8 @@ export interface Transaction {
     wallet_id?: number
     date: string // ISO string
     created_at: string
+    is_piutang?: boolean
+    piutang_person?: string
 }
 
 export interface Debt {

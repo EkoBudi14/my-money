@@ -131,9 +131,9 @@ export default function AnalyticsPage() {
         })
     }, [transactions, filterMode, currentDate, customRange])
 
-    // 1. Income vs Expense (memoized)
+    // 1. Income vs Expense (memoized) - piutang tidak dihitung sebagai pemasukan nyata
     const { income, expense, netBalance, summaryData } = useMemo(() => {
-        const inc = filteredTxs.filter(t => t.type === 'pemasukan').reduce((acc, c) => acc + c.amount, 0)
+        const inc = filteredTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
         const exp = filteredTxs.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
         return {
             income: inc,
@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
                 return td.getMonth() === month && td.getFullYear() === year
             })
 
-            const monthIncome = txsInMonth.filter(t => t.type === 'pemasukan').reduce((acc, c) => acc + c.amount, 0)
+            const monthIncome = txsInMonth.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
             const monthExpense = txsInMonth.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
 
             result.push({
