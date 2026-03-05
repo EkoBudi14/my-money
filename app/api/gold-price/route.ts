@@ -90,8 +90,8 @@ export async function GET() {
             // Return fallback data instead of throwing error
             return NextResponse.json({
                 success: true,
-                buyPrice: 1480000, // Fallback approximate price
-                sellPrice: 1395000,
+                buyPrice: 1750000, // Fallback approximate price (updated Maret 2026)
+                sellPrice: 1700000,
                 source: 'Fallback Data',
                 lastUpdate: new Date().toISOString(),
                 note: 'Scraping failed, showing approximate price'
@@ -129,8 +129,8 @@ export async function GET() {
         // Return fallback data instead of error status
         return NextResponse.json({
             success: true,
-            buyPrice: 1480000, // Fallback approximate price
-            sellPrice: 1395000,
+            buyPrice: 1750000, // Fallback approximate price (updated Maret 2026)
+            sellPrice: 1700000,
             source: 'Fallback Data',
             lastUpdate: new Date().toISOString(),
             error: error.message,

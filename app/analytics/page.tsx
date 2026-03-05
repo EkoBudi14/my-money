@@ -16,7 +16,7 @@ import {
     CartesianGrid,
     LabelList
 } from 'recharts'
-import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info } from 'lucide-react'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -176,15 +176,230 @@ export default function AnalyticsPage() {
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
-    // 4. Monthly Comparison Data (Januari s/d bulan ini)
-    const monthlyComparison = useMemo(() => {
+    // 4b. Previous period transactions (for Spending Insights comparison)
+    const prevPeriodTxs = useMemo(() => {
+        if (filterMode === 'monthly') {
+            const prev = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+            return transactions.filter(t => {
+                const d = new Date(t.date || t.created_at)
+                return d.getMonth() === prev.getMonth() && d.getFullYear() === prev.getFullYear()
+            })
+        } else {
+            // Same duration, shifted back
+            const start = new Date(customRange.start)
+            const end = new Date(customRange.end)
+            const duration = end.getTime() - start.getTime()
+            const prevEnd = new Date(start.getTime() - 1)
+            const prevStart = new Date(prevEnd.getTime() - duration)
+            return transactions.filter(t => {
+                const d = new Date(t.date || t.created_at)
+                d.setHours(12, 0, 0, 0)
+                return d >= prevStart && d <= prevEnd
+            })
+        }
+    }, [transactions, filterMode, currentDate, customRange])
+
+    // 4c. Spending Insights
+    const insights = useMemo(() => {
+        type Insight = { type: 'positive' | 'negative' | 'warning' | 'info'; emoji: string; title: string; desc: string }
+        const result: Insight[] = []
+        if (!income && !expense) return result
+
+        const prevIncome = prevPeriodTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((a, c) => a + c.amount, 0)
+        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran').reduce((a, c) => a + c.amount, 0)
+
+        // --- Saving rate ---
+        const savingRate = income > 0 ? ((income - expense) / income) * 100 : 0
+        const prevSavingRate = prevIncome > 0 ? ((prevIncome - prevExpense) / prevIncome) * 100 : 0
+        const savingDiff = savingRate - prevSavingRate
+        if (income > 0) {
+            if (savingRate >= 20) {
+                result.push({ type: 'positive', emoji: '🎉', title: `Saving rate ${savingRate.toFixed(1)}%`, desc: savingDiff > 0 && prevIncome > 0 ? `Naik ${savingDiff.toFixed(1)}% dari periode lalu. Pertahankan!` : 'Kondisi keuangan kamu sehat!' })
+            } else if (savingRate > 0) {
+                result.push({ type: 'warning', emoji: '⚠️', title: `Saving rate hanya ${savingRate.toFixed(1)}%`, desc: 'Coba kurangi pengeluaran agar bisa menabung lebih banyak.' })
+            } else {
+                result.push({ type: 'negative', emoji: '🚨', title: 'Pengeluaran melebihi pemasukan!', desc: `Kamu minus Rp ${Math.abs(netBalance).toLocaleString('id-ID')} periode ini. Tinjau kembali pengeluaranmu.` })
+            }
+        }
+
+        // --- Top category ---
+        if (categoryData.length > 0) {
+            const top = categoryData[0]
+            const pct = expense > 0 ? (top.value / expense * 100).toFixed(0) : '0'
+            result.push({ type: 'info', emoji: '📊', title: `Terbesar: ${top.name}`, desc: `Menyumbang ${pct}% dari total pengeluaran (Rp ${top.value.toLocaleString('id-ID')}).` })
+        }
+
+        // --- Category comparison ---
+        if (prevPeriodTxs.length > 0) {
+            const prevCatMap: Record<string, number> = {}
+            prevPeriodTxs.filter(t => t.type === 'pengeluaran').forEach(t => {
+                prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
+            })
+            let biggestRise: { cat: string; pct: number; amount: number } | null = null
+            let biggestDrop: { cat: string; pct: number; amount: number } | null = null
+            categoryData.forEach(({ name, value }) => {
+                const prev = prevCatMap[name] || 0
+                if (prev > 0) {
+                    const pct = ((value - prev) / prev) * 100
+                    if (pct > 10 && (!biggestRise || pct > biggestRise.pct))
+                        biggestRise = { cat: name, pct, amount: value - prev }
+                    if (pct < -10 && (!biggestDrop || pct < biggestDrop.pct))
+                        biggestDrop = { cat: name, pct, amount: prev - value }
+                }
+            })
+            if (biggestRise) {
+                const r = biggestRise as { cat: string; pct: number; amount: number }
+                result.push({ type: 'negative', emoji: '📈', title: `${r.cat} naik ${r.pct.toFixed(0)}%`, desc: `Pengeluaran ${r.cat} bertambah Rp ${r.amount.toLocaleString('id-ID')} dibanding periode lalu.` })
+            }
+            if (biggestDrop) {
+                const d = biggestDrop as { cat: string; pct: number; amount: number }
+                result.push({ type: 'positive', emoji: '📉', title: `${d.cat} turun ${Math.abs(d.pct).toFixed(0)}%`, desc: `Kamu hemat Rp ${d.amount.toLocaleString('id-ID')} di ${d.cat} dibanding periode lalu. Bagus!` })
+            }
+
+            // --- Income comparison ---
+            if (prevIncome > 0 && income > 0) {
+                const incDiff = ((income - prevIncome) / prevIncome) * 100
+                if (Math.abs(incDiff) >= 5) {
+                    result.push(incDiff > 0
+                        ? { type: 'positive', emoji: '💰', title: `Pemasukan naik ${incDiff.toFixed(0)}%`, desc: `Bertambah Rp ${(income - prevIncome).toLocaleString('id-ID')} dari periode sebelumnya.` }
+                        : { type: 'warning', emoji: '💸', title: `Pemasukan turun ${Math.abs(incDiff).toFixed(0)}%`, desc: `Berkurang Rp ${(prevIncome - income).toLocaleString('id-ID')} dari periode sebelumnya.` }
+                    )
+                }
+            }
+        } else if (income > 0 || expense > 0) {
+            result.push({ type: 'info', emoji: '🆕', title: 'Belum ada data pembanding', desc: 'Insights perbandingan akan muncul setelah ada data dari periode sebelumnya.' })
+        }
+
+        return result
+    }, [income, expense, netBalance, categoryData, prevPeriodTxs])
+
+    // 4d. Period Comparison (side-by-side current vs previous)
+    const periodComparison = useMemo(() => {
+        // --- Labels ---
+        const fmtDate = (d: Date) =>
+            `${d.getDate()} ${d.toLocaleString('id-ID', { month: 'short' })} ${d.getFullYear()}`
+        let currentLabel: string
+        let prevLabel: string
+
+        if (filterMode === 'monthly') {
+            const prev = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+            currentLabel = currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+            prevLabel = prev.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+        } else {
+            const start = new Date(customRange.start)
+            const end = new Date(customRange.end)
+            const duration = end.getTime() - start.getTime()
+            const prevEnd = new Date(start.getTime() - 1)
+            const prevStart = new Date(prevEnd.getTime() - duration)
+            currentLabel = `${fmtDate(start)} – ${fmtDate(end)}`
+            prevLabel = `${fmtDate(prevStart)} – ${fmtDate(prevEnd)}`
+        }
+
+        // --- Current stats ---
+        const currIncome = income
+        const currExpense = expense
+        const currNet = netBalance
+        const currSavingRate = currIncome > 0 ? ((currIncome - currExpense) / currIncome) * 100 : 0
+
+        // --- Previous stats ---
+        const prevIncome = prevPeriodTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((a, c) => a + c.amount, 0)
+        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran').reduce((a, c) => a + c.amount, 0)
+        const prevNet = prevIncome - prevExpense
+        const prevSavingRate = prevIncome > 0 ? ((prevIncome - prevExpense) / prevIncome) * 100 : 0
+
+        // --- Category rows ---
+        const prevCatMap: Record<string, number> = {}
+        prevPeriodTxs.filter(t => t.type === 'pengeluaran').forEach(t => {
+            prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
+        })
+        const allCats = new Set([...categoryData.map(c => c.name), ...Object.keys(prevCatMap)])
+        const categoryRows = Array.from(allCats).map(cat => {
+            const curr = categoryData.find(c => c.name === cat)?.value || 0
+            const prev = prevCatMap[cat] || 0
+            const diff = curr - prev
+            const pct = prev > 0 ? (diff / prev) * 100 : null
+            return { name: cat, curr, prev, diff, pct }
+        }).sort((a, b) => b.curr - a.curr)
+
+        const hasPrevData = prevPeriodTxs.length > 0
+
+        const pctDiff = (curr: number, prev: number) =>
+            prev > 0 ? ((curr - prev) / prev) * 100 : null
+
+        return {
+            currentLabel, prevLabel,
+            currIncome, currExpense, currNet, currSavingRate,
+            prevIncome, prevExpense, prevNet, prevSavingRate,
+            categoryRows, hasPrevData, pctDiff
+        }
+    }, [filterMode, currentDate, customRange, income, expense, netBalance, categoryData, prevPeriodTxs])
+
+    // 4. Comparison Data — respects active filter
+    const comparisonData = useMemo(() => {
+        if (filterMode === 'custom') {
+            // Break down by month within the custom range — each row shows the actual date sub-range
+            const rangeStart = new Date(customRange.start)
+            rangeStart.setHours(0, 0, 0, 0)
+            const rangeEnd = new Date(customRange.end)
+            rangeEnd.setHours(23, 59, 59, 999)
+
+            const result = []
+            let cursor = new Date(rangeStart)
+
+            while (cursor <= rangeEnd) {
+                const sliceStart = new Date(cursor)
+                // End of this month slice: last day of cursor's month, or rangeEnd — whichever is earlier
+                const endOfMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0)
+                endOfMonth.setHours(23, 59, 59, 999)
+                const sliceEnd = endOfMonth < rangeEnd ? endOfMonth : new Date(rangeEnd)
+
+                const days = Math.round((sliceEnd.getTime() - sliceStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                const isPartial = sliceStart.getDate() !== 1 || sliceEnd.getDate() !== endOfMonth.getDate()
+
+                const txsInSlice = transactions.filter(t => {
+                    const td = new Date(t.date || t.created_at)
+                    td.setHours(12, 0, 0, 0) // normalise to noon to avoid TZ edge
+                    return td >= sliceStart && td <= sliceEnd
+                })
+
+                const sliceIncome = txsInSlice.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
+                const sliceExpense = txsInSlice.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
+
+                const fmt = (d: Date) => `${d.getDate()} ${d.toLocaleString('id-ID', { month: 'short' })}`
+                const monthLabel = sliceStart.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+                const rangeLabel = isPartial
+                    ? `${fmt(sliceStart)} – ${fmt(sliceEnd)} ${sliceEnd.getFullYear()}`
+                    : monthLabel
+
+                result.push({
+                    label: rangeLabel,
+                    fullLabel: rangeLabel,
+                    monthLabel,
+                    days,
+                    isPartial,
+                    income: sliceIncome,
+                    expense: sliceExpense,
+                    net: sliceIncome - sliceExpense,
+                    month: cursor.getMonth(),
+                    year: cursor.getFullYear(),
+                    isCustom: true
+                })
+
+                // Move cursor to 1st of next month
+                cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)
+            }
+
+            return result
+        }
+
+        // Monthly mode: per-bulan untuk tahun yang dipilih
         const result = []
         const now = new Date()
-        const currentMonth = now.getMonth()
-        const currentYear = now.getFullYear()
+        const selectedYear = currentDate.getFullYear()
+        const maxMonth = selectedYear === now.getFullYear() ? now.getMonth() : 11
 
-        for (let m = 0; m <= currentMonth; m++) {
-            const d = new Date(currentYear, m, 1)
+        for (let m = 0; m <= maxMonth; m++) {
+            const d = new Date(selectedYear, m, 1)
             const month = d.getMonth()
             const year = d.getFullYear()
 
@@ -203,11 +418,12 @@ export default function AnalyticsPage() {
                 expense: monthExpense,
                 net: monthIncome - monthExpense,
                 month,
-                year
+                year,
+                isCustom: false
             })
         }
         return result
-    }, [transactions])
+    }, [transactions, filterMode, currentDate, customRange])
 
 
     return (
@@ -368,205 +584,173 @@ export default function AnalyticsPage() {
                             </div>
                         </div>
 
-                        {/* Monthly Comparison Table */}
-                        <div className="bg-white rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 overflow-hidden">
-                            <div className="p-6 border-b border-[#F3F4F3]">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-lg text-[#080C1A]">Perbandingan Bulanan</h3>
-                                        <p className="text-sm text-[#6A7686] mt-0.5">Rekap pemasukan & pengeluaran tahun {new Date().getFullYear()}</p>
-                                    </div>
+                        {/* Spending Insights */}
+                        {insights.length > 0 && (
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-4 h-4 text-[#165DFF]" />
+                                    <h3 className="font-bold text-[#080C1A]">Spending Insights</h3>
+                                    <span className="text-xs text-[#6A7686] font-medium">— analisis otomatis periode ini</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {insights.map((ins, i) => (
+                                        <div
+                                            key={i}
+                                            className={`p-4 rounded-2xl border flex items-start gap-3 transition-all hover:shadow-sm ${
+                                                ins.type === 'positive' ? 'bg-emerald-50 border-emerald-100' :
+                                                ins.type === 'negative' ? 'bg-rose-50 border-rose-100' :
+                                                ins.type === 'warning' ? 'bg-amber-50 border-amber-100' :
+                                                'bg-blue-50 border-blue-100'
+                                            }`}
+                                        >
+                                            <span className="text-xl mt-0.5 shrink-0">{ins.emoji}</span>
+                                            <div className="min-w-0">
+                                                <p className={`font-bold text-sm ${
+                                                    ins.type === 'positive' ? 'text-emerald-700' :
+                                                    ins.type === 'negative' ? 'text-rose-700' :
+                                                    ins.type === 'warning' ? 'text-amber-700' :
+                                                    'text-blue-700'
+                                                }`}>{ins.title}</p>
+                                                <p className={`text-xs mt-1 leading-relaxed ${
+                                                    ins.type === 'positive' ? 'text-emerald-600' :
+                                                    ins.type === 'negative' ? 'text-rose-600' :
+                                                    ins.type === 'warning' ? 'text-amber-600' :
+                                                    'text-blue-600'
+                                                }`}>{ins.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
+                        )}
 
-                            {/* Desktop Table */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full">
+                        {/* Period Comparison Table */}
+                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden">
+                            <div className="p-5 border-b border-[#F3F4F3] flex items-center gap-2">
+                                <ArrowUpRight className="w-4 h-4 text-[#165DFF]" />
+                                <h3 className="font-bold text-[#080C1A]">Perbandingan Periode</h3>
+                                <span className="text-xs text-[#6A7686] font-medium ml-1">— otomatis vs periode sebelumnya</span>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-slate-50">
-                                            <th className="text-left px-6 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Bulan</th>
-                                            <th className="text-right px-6 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Pemasukan</th>
-                                            <th className="text-right px-6 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Pengeluaran</th>
-                                            <th className="text-right px-6 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Selisih</th>
-                                            <th className="text-right px-6 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Saving Rate</th>
+                                            <th className="text-left px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider w-36">Item</th>
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#080C1A] uppercase tracking-wider">
+                                                <div>Periode Ini</div>
+                                                <div className="text-[10px] font-medium text-[#165DFF] normal-case mt-0.5">{periodComparison.currentLabel}</div>
+                                            </th>
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                                                <div>Periode Lalu</div>
+                                                <div className="text-[10px] font-medium text-slate-400 normal-case mt-0.5">{periodComparison.prevLabel}</div>
+                                            </th>
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Perubahan</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#F3F4F3]">
-                                        {(() => { const now = new Date(); return monthlyComparison.map((row, idx) => {
-                                            const prevRow = idx > 0 ? monthlyComparison[idx - 1] : null
-                                            const expenseDiff = prevRow ? row.expense - prevRow.expense : 0
-                                            const savingRate = row.income > 0 ? ((row.income - row.expense) / row.income * 100) : 0
-                                            const isCurrentMonth = row.month === now.getMonth() && row.year === now.getFullYear()
-
+                                        {/* Summary rows */}
+                                        {([
+                                            { label: 'Pemasukan', curr: periodComparison.currIncome, prev: periodComparison.prevIncome, color: 'text-emerald-600', positive: true },
+                                            { label: 'Pengeluaran', curr: periodComparison.currExpense, prev: periodComparison.prevExpense, color: 'text-rose-500', positive: false },
+                                            { label: 'Selisih', curr: periodComparison.currNet, prev: periodComparison.prevNet, color: periodComparison.currNet >= 0 ? 'text-[#080C1A]' : 'text-rose-600', positive: true },
+                                        ] as const).map(row => {
+                                            const pct = periodComparison.pctDiff(row.curr, row.prev)
+                                            const isGood = row.positive ? (pct !== null && pct > 0) : (pct !== null && pct < 0)
                                             return (
-                                                <tr
-                                                    key={idx}
-                                                    className={`transition-colors hover:bg-slate-50/70 ${
-                                                        isCurrentMonth ? 'bg-blue-50/40' : ''
-                                                    }`}
-                                                >
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-semibold text-[#080C1A] capitalize">{row.fullLabel}</span>
-                                                            {isCurrentMonth && (
-                                                                <span className="text-[10px] font-bold bg-[#165DFF] text-white px-2 py-0.5 rounded-full">Bulan ini</span>
-                                                            )}
-                                                        </div>
+                                                <tr key={row.label} className="hover:bg-slate-50/60 transition-colors">
+                                                    <td className="px-5 py-3.5 font-semibold text-[#080C1A]">{row.label}</td>
+                                                    <td className={`px-5 py-3.5 text-right font-bold ${row.color}`}>
+                                                        {row.curr >= 0 ? '+' : ''}Rp {row.curr.toLocaleString('id-ID')}
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <span className="font-semibold text-emerald-600">
-                                                            Rp {row.income.toLocaleString('id-ID')}
-                                                        </span>
+                                                    <td className="px-5 py-3.5 text-right text-[#6A7686] font-medium">
+                                                        {periodComparison.hasPrevData ? (
+                                                            <>Rp {row.prev.toLocaleString('id-ID')}</>
+                                                        ) : <span className="text-slate-300">—</span>}
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-1.5">
-                                                            <span className="font-semibold text-rose-500">
-                                                                Rp {row.expense.toLocaleString('id-ID')}
+                                                    <td className="px-5 py-3.5 text-right">
+                                                        {pct !== null && periodComparison.hasPrevData ? (
+                                                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                                                                isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                            }`}>
+                                                                {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                                {Math.abs(pct).toFixed(1)}%
                                                             </span>
-                                                            {prevRow && expenseDiff !== 0 && (
-                                                                <span className={`text-[10px] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${
-                                                                    expenseDiff > 0
-                                                                        ? 'text-rose-600 bg-rose-50'
-                                                                        : 'text-emerald-600 bg-emerald-50'
-                                                                }`}>
-                                                                    {expenseDiff > 0
-                                                                        ? <ArrowUpRight className="w-3 h-3" />
-                                                                        : <ArrowDownRight className="w-3 h-3" />}
-                                                                    {Math.abs(expenseDiff).toLocaleString('id-ID')}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <span className={`font-bold ${
-                                                            row.net >= 0 ? 'text-[#080C1A]' : 'text-rose-600'
-                                                        }`}>
-                                                            {row.net >= 0 ? '+' : ''}Rp {row.net.toLocaleString('id-ID')}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        {row.income > 0 ? (
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                                    <div
-                                                                        className={`h-full rounded-full ${
-                                                                            savingRate >= 20 ? 'bg-emerald-500' :
-                                                                            savingRate >= 0 ? 'bg-amber-400' : 'bg-rose-500'
-                                                                        }`}
-                                                                        style={{ width: `${Math.min(Math.max(savingRate, 0), 100)}%` }}
-                                                                    />
-                                                                </div>
-                                                                <span className={`text-sm font-bold min-w-[40px] text-right ${
-                                                                    savingRate >= 20 ? 'text-emerald-600' :
-                                                                    savingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
-                                                                }`}>
-                                                                    {savingRate.toFixed(1)}%
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-slate-300 text-sm">—</span>
-                                                        )}
+                                                        ) : <span className="text-slate-300 text-xs">—</span>}
                                                     </td>
                                                 </tr>
                                             )
-                                        }) })()}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr className="bg-slate-50 border-t-2 border-[#F3F4F3]">
-                                            <td className="px-6 py-4 font-bold text-[#080C1A] text-sm">Total {currentDate.getFullYear()}</td>
-                                            <td className="px-6 py-4 text-right font-bold text-emerald-600">
-                                                Rp {monthlyComparison.reduce((s, r) => s + r.income, 0).toLocaleString('id-ID')}
+                                        })}
+                                        {/* Saving Rate row */}
+                                        <tr className="hover:bg-slate-50/60 transition-colors">
+                                            <td className="px-5 py-3.5 font-semibold text-[#080C1A]">Saving Rate</td>
+                                            <td className={`px-5 py-3.5 text-right font-bold ${
+                                                periodComparison.currSavingRate >= 20 ? 'text-emerald-600' :
+                                                periodComparison.currSavingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
+                                            }`}>{periodComparison.currSavingRate.toFixed(1)}%</td>
+                                            <td className="px-5 py-3.5 text-right text-[#6A7686] font-medium">
+                                                {periodComparison.hasPrevData ? `${periodComparison.prevSavingRate.toFixed(1)}%` : <span className="text-slate-300">—</span>}
                                             </td>
-                                            <td className="px-6 py-4 text-right font-bold text-rose-500">
-                                                Rp {monthlyComparison.reduce((s, r) => s + r.expense, 0).toLocaleString('id-ID')}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {(() => {
-                                                    const totalNet = monthlyComparison.reduce((s, r) => s + r.net, 0)
+                                            <td className="px-5 py-3.5 text-right">
+                                                {periodComparison.hasPrevData ? (() => {
+                                                    const diff = periodComparison.currSavingRate - periodComparison.prevSavingRate
                                                     return (
-                                                        <span className={`font-bold ${
-                                                            totalNet >= 0 ? 'text-[#080C1A]' : 'text-rose-600'
+                                                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                                                            diff >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
                                                         }`}>
-                                                            {totalNet >= 0 ? '+' : ''}Rp {totalNet.toLocaleString('id-ID')}
+                                                            {diff >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                            {Math.abs(diff).toFixed(1)}%
                                                         </span>
                                                     )
-                                                })()}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {(() => {
-                                                    const totalIncome = monthlyComparison.reduce((s, r) => s + r.income, 0)
-                                                    const totalExpense = monthlyComparison.reduce((s, r) => s + r.expense, 0)
-                                                    const avgRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100) : 0
-                                                    return (
-                                                        <span className={`font-bold ${
-                                                            avgRate >= 20 ? 'text-emerald-600' :
-                                                            avgRate >= 0 ? 'text-amber-500' : 'text-rose-600'
-                                                        }`}>
-                                                            {avgRate.toFixed(1)}%
-                                                        </span>
-                                                    )
-                                                })()}
+                                                })() : <span className="text-slate-300 text-xs">—</span>}
                                             </td>
                                         </tr>
-                                    </tfoot>
+
+                                        {/* Category rows separator */}
+                                        {periodComparison.categoryRows.length > 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="px-5 pt-4 pb-1">
+                                                    <p className="text-[10px] font-bold text-[#6A7686] uppercase tracking-widest">Per Kategori (Pengeluaran)</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                        {periodComparison.categoryRows.map(row => {
+                                            const pct = row.pct
+                                            const isGood = pct !== null && pct < 0  // spending down = good
+                                            return (
+                                                <tr key={row.name} className="hover:bg-slate-50/60 transition-colors">
+                                                    <td className="px-5 py-3 text-[#080C1A] font-medium">{row.name}</td>
+                                                    <td className="px-5 py-3 text-right font-semibold text-rose-500">
+                                                        Rp {row.curr.toLocaleString('id-ID')}
+                                                    </td>
+                                                    <td className="px-5 py-3 text-right text-[#6A7686] font-medium">
+                                                        {periodComparison.hasPrevData && row.prev > 0
+                                                            ? `Rp ${row.prev.toLocaleString('id-ID')}`
+                                                            : <span className="text-slate-300">—</span>}
+                                                    </td>
+                                                    <td className="px-5 py-3 text-right">
+                                                        {pct !== null && periodComparison.hasPrevData ? (
+                                                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                                                                isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                            }`}>
+                                                                {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                                {Math.abs(pct).toFixed(0)}%
+                                                            </span>
+                                                        ) : <span className="text-slate-300 text-xs">—</span>}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
                                 </table>
-                            </div>
-
-                            {/* Mobile Cards */}
-                            <div className="md:hidden divide-y divide-[#F3F4F3]">
-                                {(() => { const now = new Date(); return monthlyComparison.map((row, idx) => {
-                                    const isCurrentMonth = row.month === now.getMonth() && row.year === now.getFullYear()
-                                    const savingRate = row.income > 0 ? ((row.income - row.expense) / row.income * 100) : 0
-
-                                    return (
-                                        <div key={idx} className={`p-4 ${ isCurrentMonth ? 'bg-blue-50/40' : '' }`}>
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-[#080C1A] capitalize">{row.fullLabel}</span>
-                                                    {isCurrentMonth && (
-                                                        <span className="text-[10px] font-bold bg-[#165DFF] text-white px-2 py-0.5 rounded-full">Bulan ini</span>
-                                                    )}
-                                                </div>
-                                                <span className={`font-bold text-sm ${
-                                                    row.net >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                                                }`}>
-                                                    {row.net >= 0 ? '+' : ''}Rp {row.net.toLocaleString('id-ID')}
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <div className="bg-emerald-50 rounded-xl p-3">
-                                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Pemasukan</p>
-                                                    <p className="font-bold text-emerald-700 text-sm">Rp {row.income.toLocaleString('id-ID')}</p>
-                                                </div>
-                                                <div className="bg-rose-50 rounded-xl p-3">
-                                                    <p className="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-0.5">Pengeluaran</p>
-                                                    <p className="font-bold text-rose-600 text-sm">Rp {row.expense.toLocaleString('id-ID')}</p>
-                                                </div>
-                                            </div>
-                                            {row.income > 0 && (
-                                                <div className="mt-2 flex items-center gap-2">
-                                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${
-                                                                savingRate >= 20 ? 'bg-emerald-500' :
-                                                                savingRate >= 0 ? 'bg-amber-400' : 'bg-rose-500'
-                                                            }`}
-                                                            style={{ width: `${Math.min(Math.max(savingRate, 0), 100)}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className={`text-xs font-bold ${
-                                                        savingRate >= 20 ? 'text-emerald-600' :
-                                                        savingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
-                                                    }`}>
-                                                        Saving {savingRate.toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                }) })()}
+                                {!periodComparison.hasPrevData && (
+                                    <div className="text-center py-4 text-xs text-slate-400 border-t border-[#F3F4F3]">
+                                        Belum ada data dari periode sebelumnya ({periodComparison.prevLabel})
+                                    </div>
+                                )}
                             </div>
                         </div>
+
 
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -606,7 +790,7 @@ export default function AnalyticsPage() {
                                 <div className="w-full h-[300px]">
                                     {categoryData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                                            <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 5, left: 40, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F3" />
                                                 <XAxis type="number" hide />
                                                 <YAxis 
@@ -622,12 +806,12 @@ export default function AnalyticsPage() {
                                                     cursor={{ fill: '#F9FAFB' }}
                                                     contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                                 />
-                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={24}>
+                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={28}>
                                                     <LabelList 
                                                         dataKey="value" 
-                                                        position="right" 
+                                                        position="insideEnd" 
                                                         formatter={(val: any) => `Rp ${(val || 0).toLocaleString('id-ID')}`}
-                                                        style={{ fontSize: '11px', fill: '#64748B', fontWeight: 600 }}
+                                                        style={{ fontSize: '11px', fill: '#ffffff', fontWeight: 700 }}
                                                     />
                                                 </Bar>
                                             </BarChart>

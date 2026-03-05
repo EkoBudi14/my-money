@@ -213,30 +213,35 @@ export default function MoneyManager() {
     fetchWallets()
     fetchGoals()
     fetchBudgets()
-    fetchBudgets()
-    fetchDebts() // Add fetch debts
+    fetchDebts()
     fetchLatestNote()
     checkAndCreateDefaultWallets()
   }, [])
 
   const fetchLatestNote = async () => {
     // 1. Get Latest Note
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('notes')
       .select('*')
       .order('updated_at', { ascending: false })
       .limit(1)
       .single()
 
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = no rows found, not a real error
+      console.error('Error fetching latest note:', error)
+      return
+    }
+
     if (data) {
       setLatestNote(data)
 
       // 2. Get Total Count
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from('notes')
         .select('*', { count: 'exact', head: true })
 
-      if (count !== null) setNoteCount(count)
+      if (!countError && count !== null) setNoteCount(count)
     }
   }
 
@@ -343,40 +348,51 @@ export default function MoneyManager() {
     setCreatingWallet(false)
   }
 
+  // Helper: Fetch saldo wallet terbaru langsung dari DB (anti race condition)
+  const fetchFreshWalletBalance = async (walletId: number): Promise<number | null> => {
+    const { data, error } = await supabase
+      .from('wallets')
+      .select('balance')
+      .eq('id', walletId)
+      .single()
+    if (error || !data) return null
+    return data.balance
+  }
+
   // 2. Fungsi Simpan (Tambah/Edit) Transaksi
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const finalTitle = title || category
     const amountNum = parseFloat(amount)
+    const newWalletId = parseInt(selectedWalletId)
 
     if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate) {
       showToast('warning', 'Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.')
       return
     }
 
-    // Check wallet balance for expenses
-    const selectedWallet = wallets.find(w => w.id === parseInt(selectedWalletId))
-    if (!selectedWallet) {
-      showToast('error', 'Dompet tidak ditemukan!')
-      return
-    }
-
-    if (type === 'pengeluaran' && selectedWallet.balance < amountNum) {
-      showToast('error', `Saldo tidak mencukupi! Saldo ${selectedWallet.name}: Rp ${selectedWallet.balance.toLocaleString('id-ID')}`)
-      return
-    }
-
     setSaving(true)
+
+    // Fetch saldo wallet baru langsung dari DB (anti race condition)
+    const freshNewWalletBalance = await fetchFreshWalletBalance(newWalletId)
+    if (freshNewWalletBalance === null) {
+      showToast('error', 'Dompet tidak ditemukan!')
+      setSaving(false)
+      return
+    }
+
+    // Fix Bug #9: Timezone-safe date — pakai T12:00:00 agar tidak shift 1 hari di WIB
+    const safeDate = new Date(`${customDate}T12:00:00`).toISOString()
 
     const payload = {
       title: finalTitle,
       amount: amountNum,
       type,
       category,
-      wallet_id: parseInt(selectedWalletId),
-      date: new Date(customDate).toISOString(),
-      created_at: new Date().toISOString(), // Fallback
+      wallet_id: newWalletId,
+      date: safeDate,
+      created_at: new Date().toISOString(),
       is_piutang: type === 'pemasukan' ? isPiutang : false,
       piutang_person: type === 'pemasukan' && isPiutang ? piutangPerson.trim() : null
     }
@@ -398,73 +414,105 @@ export default function MoneyManager() {
         return
       }
 
-      // Calculate what the balance will be after rollback
-      let balanceAfterRollback = selectedWallet.balance
-      if (oldTransaction.type === 'pemasukan') {
-        balanceAfterRollback -= oldTransaction.amount
+      const oldWalletId = oldTransaction.wallet_id
+      const isSameWallet = oldWalletId === newWalletId
+
+      // Fix Bug #2: Selalu fetch saldo fresh dari DB sebelum update
+      // Fix Bug #1: Handle kasus wallet lama ≠ wallet baru
+      if (isSameWallet) {
+        // Rollback & apply di wallet yang sama
+        // Saldo setelah rollback transaksi lama
+        let balanceAfterRollback = freshNewWalletBalance
+        if (oldTransaction.type === 'pemasukan') {
+          balanceAfterRollback -= oldTransaction.amount
+        } else {
+          balanceAfterRollback += oldTransaction.amount
+        }
+
+        // Cek saldo cukup setelah rollback
+        if (type === 'pengeluaran' && balanceAfterRollback < amountNum) {
+          showToast('error', `Saldo tidak mencukupi setelah perubahan! Saldo tersedia: Rp ${balanceAfterRollback.toLocaleString('id-ID')}`)
+          setSaving(false)
+          return
+        }
+
+        // Update transaksi
+        const res = await supabase.from('transactions').update(payload).eq('id', editingId).select()
+        error = res.error
+        data = res.data
+
+        if (!error) {
+          let finalBalance = balanceAfterRollback
+          if (type === 'pemasukan') finalBalance += amountNum
+          else finalBalance -= amountNum
+          await supabase.from('wallets').update({ balance: finalBalance }).eq('id', newWalletId)
+          fetchWallets()
+        }
       } else {
-        balanceAfterRollback += oldTransaction.amount
-      }
+        // Fix Bug #1: Wallet BERBEDA — harus rollback wallet lama & apply ke wallet baru
+        // Fetch saldo wallet lama dari DB
+        const freshOldWalletBalance = await fetchFreshWalletBalance(oldWalletId)
+        if (freshOldWalletBalance === null) {
+          showToast('error', 'Wallet lama tidak ditemukan!')
+          setSaving(false)
+          return
+        }
 
-      // Check if new expense would exceed balance after rollback
-      if (type === 'pengeluaran' && balanceAfterRollback < amountNum) {
-        showToast('error', `Saldo tidak mencukupi setelah perubahan! Saldo tersedia: Rp ${balanceAfterRollback.toLocaleString('id-ID')}`)
-        setSaving(false)
-        return
-      }
+        // Cek saldo wallet baru cukup untuk pengeluaran
+        if (type === 'pengeluaran' && freshNewWalletBalance < amountNum) {
+          const walletName = wallets.find(w => w.id === newWalletId)?.name || 'Dompet baru'
+          showToast('error', `Saldo tidak mencukupi! Saldo ${walletName}: Rp ${freshNewWalletBalance.toLocaleString('id-ID')}`)
+          setSaving(false)
+          return
+        }
 
-      // Update transaction
-      const res = await supabase
-        .from('transactions')
-        .update(payload)
-        .eq('id', editingId)
-        .select()
-      error = res.error
-      data = res.data
+        // Update transaksi
+        const res = await supabase.from('transactions').update(payload).eq('id', editingId).select()
+        error = res.error
+        data = res.data
 
-      // Update wallet balance if transaction updated successfully
-      if (!error && oldTransaction) {
-        const wallet = wallets.find(w => w.id === parseInt(selectedWalletId))
-        if (wallet) {
-          // Rollback old transaction
-          let newBalance = wallet.balance
+        if (!error) {
+          // 1. Rollback saldo wallet LAMA (undo dampak transaksi lama)
+          let oldWalletNewBalance = freshOldWalletBalance
           if (oldTransaction.type === 'pemasukan') {
-            newBalance -= oldTransaction.amount
+            oldWalletNewBalance -= oldTransaction.amount
           } else {
-            newBalance += oldTransaction.amount
+            oldWalletNewBalance += oldTransaction.amount
           }
+          await supabase.from('wallets').update({ balance: oldWalletNewBalance }).eq('id', oldWalletId)
 
-          // Apply new transaction
+          // 2. Apply transaksi baru ke wallet BARU
+          let newWalletNewBalance = freshNewWalletBalance
           if (type === 'pemasukan') {
-            newBalance += amountNum
+            newWalletNewBalance += amountNum
           } else {
-            newBalance -= amountNum
+            newWalletNewBalance -= amountNum
           }
+          await supabase.from('wallets').update({ balance: newWalletNewBalance }).eq('id', newWalletId)
 
-          await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
           fetchWallets()
         }
       }
     } else {
-      // Insert Mode
-      const res = await supabase
-        .from('transactions')
-        .insert([payload])
-        .select()
+      // Insert Mode: cek saldo fresh dari DB
+      if (type === 'pengeluaran' && freshNewWalletBalance < amountNum) {
+        const walletName = wallets.find(w => w.id === newWalletId)?.name || 'Dompet'
+        showToast('error', `Saldo tidak mencukupi! Saldo ${walletName}: Rp ${freshNewWalletBalance.toLocaleString('id-ID')}`)
+        setSaving(false)
+        return
+      }
+
+      const res = await supabase.from('transactions').insert([payload]).select()
       error = res.error
       data = res.data
 
-      // Update Wallet Balance
+      // Fix Bug #2: Update saldo berdasarkan nilai fresh dari DB
       if (!error) {
-        const wallet = wallets.find(w => w.id === parseInt(selectedWalletId))
-        if (wallet) {
-          const newBalance = type === 'pemasukan'
-            ? wallet.balance + parseFloat(amount)
-            : wallet.balance - parseFloat(amount)
-
-          await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
-          fetchWallets() // Refresh wallets
-        }
+        const newBalance = type === 'pemasukan'
+          ? freshNewWalletBalance + amountNum
+          : freshNewWalletBalance - amountNum
+        await supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
+        fetchWallets()
       }
     }
 
@@ -492,7 +540,7 @@ export default function MoneyManager() {
 
       showToast('success', editingId ? 'Transaksi berhasil diupdate!' : 'Transaksi berhasil ditambahkan!')
       fetchTransactions()
-      fetchBudgets() // Refresh budgets status
+      fetchBudgets()
       resetForm()
     }
 
@@ -609,11 +657,11 @@ export default function MoneyManager() {
          
          if (paymentTrx && paymentTrx.length > 0) {
             for (const p of paymentTrx) {
-               // Rollback balance (Since Repayment is Income, we Subtract)
-               const wallet = wallets.find(w => w.id === p.wallet_id)
-               if (wallet) {
-                  const newBalance = wallet.balance - p.amount 
-                  await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
+               // Fix Bug #3: Fetch saldo fresh dari DB (bukan dari state lokal)
+               const freshBalance = await fetchFreshWalletBalance(p.wallet_id)
+               if (freshBalance !== null) {
+                  // Rollback: Repayment adalah Pemasukan, maka dikurangi
+                  await supabase.from('wallets').update({ balance: freshBalance - p.amount }).eq('id', p.wallet_id)
                }
             }
          }
@@ -651,20 +699,21 @@ export default function MoneyManager() {
       .eq('id', id)
 
     if (!error) {
-      // Rollback wallet balance
-      const wallet = wallets.find(w => w.id === transaction.wallet_id)
-      if (wallet) {
-        const newBalance = transaction.type === 'pemasukan'
-          ? wallet.balance - transaction.amount
-          : wallet.balance + transaction.amount
-
-        await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
-        fetchWallets()
+      // Fix Bug #3: Rollback saldo pakai fetch fresh dari DB, bukan state lokal
+      if (transaction.wallet_id) {
+        const freshBalance = await fetchFreshWalletBalance(transaction.wallet_id)
+        if (freshBalance !== null) {
+          const restoredBalance = transaction.type === 'pemasukan'
+            ? freshBalance - transaction.amount
+            : freshBalance + transaction.amount
+          await supabase.from('wallets').update({ balance: restoredBalance }).eq('id', transaction.wallet_id)
+        }
       }
+      fetchWallets()
 
       showToast('success', 'Transaksi berhasil dihapus!')
       fetchTransactions()
-      fetchDebts() // Refresh debts list (it might reappear as pending)
+      fetchDebts()
     } else {
       console.error('Error deleting transaction:', error)
       showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
@@ -746,11 +795,13 @@ export default function MoneyManager() {
        type: 'pemasukan',
        category: 'Lainnya',
        wallet_id: targetWalletId,
+       date: new Date().toISOString(),
        created_at: new Date().toISOString()
      }).select()
 
      if (trxError) {
        showToast('error', 'Gagal membuat transaksi pelunasan')
+       setRepayingWalletId(null)
        return
      }
 
@@ -762,11 +813,11 @@ export default function MoneyManager() {
        paid_at: new Date().toISOString()
      }).eq('id', debt.id)
 
-     // 3. Update Wallet Balance
-     const wallet = wallets.find(w => w.id === targetWalletId)
-     if (wallet) {
+     // 3. Fix Bug #2: Update saldo pakai fresh balance dari DB
+     const freshBalance = await fetchFreshWalletBalance(targetWalletId)
+     if (freshBalance !== null) {
        await supabase.from('wallets').update({
-         balance: wallet.balance + debt.amount
+         balance: freshBalance + debt.amount
        }).eq('id', targetWalletId)
      }
 

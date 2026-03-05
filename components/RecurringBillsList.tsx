@@ -120,20 +120,36 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             return
         }
         
-        const wallet = wallets.find(w => w.id === selectedWalletId)
-        if (!wallet) {
+        // Verifikasi wallet ada di state (untuk nama tampilan)
+        const walletInfo = wallets.find(w => w.id === selectedWalletId)
+        if (!walletInfo) {
             showToast('error', 'Dompet tidak ditemukan')
             return
         }
         
-        if (wallet.balance < amountNum) {
-            showToast('error', `Saldo tidak mencukupi! Saldo ${wallet.name}: Rp ${wallet.balance.toLocaleString('id-ID')}`)
+        // Fix: Fetch saldo langsung dari DB (anti race condition / stale state)
+        const { data: freshWalletData, error: walletFetchError } = await supabase
+            .from('wallets')
+            .select('balance')
+            .eq('id', selectedWalletId)
+            .single()
+        
+        if (walletFetchError || !freshWalletData) {
+            showToast('error', 'Gagal memverifikasi saldo dompet')
+            return
+        }
+
+        const freshBalance = freshWalletData.balance
+        if (freshBalance < amountNum) {
+            showToast('error', `Saldo tidak mencukupi! Saldo ${walletInfo.name}: Rp ${freshBalance.toLocaleString('id-ID')}`)
             return
         }
         
         setPayingBillId(selectedPaymentBill.id)
         try {
-            const paymentMonth = new Date(paymentDate).toISOString().slice(0, 7)
+            // Fix: Timezone-safe date (T12:00:00 agar tidak shift 1 hari di WIB)
+            const safePaymentDate = new Date(`${paymentDate}T12:00:00`).toISOString()
+            const paymentMonth = safePaymentDate.slice(0, 7)
             
             // Create transaction
             const { data: txData, error: txError } = await supabase.from('transactions').insert({
@@ -142,16 +158,16 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 type: 'pengeluaran',
                 category: 'Tagihan',
                 wallet_id: selectedWalletId,
-                date: new Date(paymentDate).toISOString(),
+                date: safePaymentDate,
                 created_at: new Date().toISOString()
             }).select().single()
             
             if (txError) throw txError
             if (!txData) throw new Error('Transaction created but no data returned')
             
-            // Update wallet balance
+            // Fix: Update saldo berdasarkan freshBalance dari DB
             await supabase.from('wallets').update({
-                balance: wallet.balance - amountNum
+                balance: freshBalance - amountNum
             }).eq('id', selectedWalletId)
             
             // Mark as paid
@@ -164,7 +180,6 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             
             showToast('success', 'Tagihan berhasil dibayar!')
             
-            // Call onUpdate immediately to refresh parent's transaction list
             if (onUpdate) onUpdate()
             
             await fetchBills()
