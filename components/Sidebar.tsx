@@ -75,7 +75,7 @@ export default function Sidebar() {
 
             {/* Sidebar Content */}
             <aside className={`
-                fixed left-0 top-0 h-screen w-[280px] bg-white border-r border-[#F3F4F3] z-50 flex flex-col
+                fixed left-0 top-0 h-[100dvh] w-[280px] bg-white border-r border-[#F3F4F3] z-50 flex flex-col overflow-hidden
                 transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
             `}>

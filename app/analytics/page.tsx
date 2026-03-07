@@ -102,6 +102,8 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         fetchData()
+        // Scroll to top when analytics page first loads on mobile
+        window.scrollTo({ top: 0, behavior: 'instant' })
     }, [])
 
     const fetchData = async () => {
@@ -428,7 +430,7 @@ export default function AnalyticsPage() {
 
     return (
         <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
                 <div>
                      <h2 className="font-bold text-2xl text-[#080C1A]">Analitik</h2>
                 </div>
@@ -443,7 +445,7 @@ export default function AnalyticsPage() {
                 </div>
             </header>
 
-            <div className="p-5 pb-24 md:p-8 md:pb-8 space-y-8">
+            <div className="p-4 pb-28 md:p-8 md:pb-8 space-y-6 md:space-y-8">
                 {/* Control Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-[#F3F4F3] shadow-sm">
                     <div className="flex items-center gap-4">

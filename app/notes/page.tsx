@@ -155,7 +155,7 @@ export default function NotesPage() {
 
     return (
         <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
                 <div>
                      <h2 className="font-bold text-2xl text-[#080C1A]">Catatan Keuangan</h2>
                 </div>
