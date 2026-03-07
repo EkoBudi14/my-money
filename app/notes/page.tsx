@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, X, StickyNote, Calendar, Save } from 'lucide-reac
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 interface Note {
     id: number
@@ -16,6 +17,7 @@ interface Note {
 export default function NotesPage() {
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
+    const { showSuccess } = useSuccessModal()
     const [notes, setNotes] = useState<Note[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -76,7 +78,10 @@ export default function NotesPage() {
                 showToast('error', 'Gagal mengupdate catatan')
                 console.error(error)
             } else {
-                showToast('success', 'Catatan berhasil diupdate')
+                showSuccess({
+                    type: 'edit',
+                    message: 'Catatan berhasil diperbarui!'
+                })
             }
         } else {
             // Insert
@@ -93,7 +98,10 @@ export default function NotesPage() {
                 showToast('error', 'Gagal menyimpan catatan')
                 console.error(error)
             } else {
-                showToast('success', 'Catatan berhasil disimpan')
+                showSuccess({
+                    type: 'create',
+                    message: 'Catatan baru berhasil disimpan!'
+                })
             }
         }
 
@@ -119,7 +127,10 @@ export default function NotesPage() {
                 showToast('error', 'Gagal menghapus catatan')
                 console.error(error)
             } else {
-                showToast('success', 'Catatan berhasil dihapus')
+                showSuccess({
+                    type: 'delete',
+                    message: 'Catatan berhasil dihapus.'
+                })
                 fetchNotes()
             }
         }

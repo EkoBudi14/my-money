@@ -14,6 +14,7 @@ import {
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([])
@@ -22,6 +23,7 @@ export default function GoalsPage() {
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
+    const { showSuccess } = useSuccessModal()
 
     // Form State
     const [name, setName] = useState('')
@@ -86,7 +88,10 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetForm()
-            showToast('success', 'Target berhasil disimpan')
+            showSuccess({
+                type: editingId ? 'edit' : 'create',
+                message: editingId ? 'Target tabungan berhasil diperbarui!' : 'Target tabungan baru berhasil ditambahkan!'
+            })
         } else {
             showToast('error', "Gagal menyimpan target")
         }
@@ -109,7 +114,11 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetQuickAddForm()
-            showToast('success', 'Tabungan berhasil ditambahkan!')
+            showSuccess({
+                type: 'edit',
+                title: 'Tabungan Bertambah!',
+                message: `Dana berhasil ditambahkan ke tabungan kamu 🎉`
+            })
         } else {
             showToast('error', "Gagal mengupdate saldo")
         }
@@ -125,7 +134,10 @@ export default function GoalsPage() {
         const { error } = await supabase.from('goals').delete().eq('id', id)
         if (!error) {
             fetchGoals()
-            showToast('success', 'Target dihapus')
+            showSuccess({
+                type: 'delete',
+                message: 'Target tabungan berhasil dihapus.'
+            })
         } else {
             showToast('error', 'Gagal menghapus target')
         }

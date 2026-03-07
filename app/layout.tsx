@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 import Sidebar from "@/components/Sidebar";
 import { ToastProvider } from "@/hooks/useToast";
 import { ConfirmProvider } from "@/hooks/useConfirm";
+import { SuccessModalProvider } from "@/hooks/useSuccessModal";
 
 export default function RootLayout({
   children,
@@ -28,12 +29,14 @@ export default function RootLayout({
       >
         <ToastProvider>
           <ConfirmProvider>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <div className="flex-1 md:ml-[280px] min-w-0 overflow-x-hidden">
-                 {children}
+            <SuccessModalProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <div className="flex-1 md:ml-[280px]">
+                   {children}
+                </div>
               </div>
-            </div>
+            </SuccessModalProvider>
           </ConfirmProvider>
         </ToastProvider>
       </body>

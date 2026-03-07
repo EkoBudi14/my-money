@@ -6,6 +6,7 @@ import { Plus, Wallet as WalletIcon, CreditCard, Banknote, Trash2, Pencil, X } f
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function WalletsPage() {
     const [activeWallets, setActiveWallets] = useState<Wallet[]>([])
@@ -15,6 +16,7 @@ export default function WalletsPage() {
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
+    const { showSuccess } = useSuccessModal()
 
     // Form State
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -166,7 +168,10 @@ export default function WalletsPage() {
         } else {
             fetchWallets()
             resetForm()
-            showToast('success', 'Berhasil menyimpan dompet')
+            showSuccess({
+                type: editingId ? 'edit' : 'create',
+                message: editingId ? 'Dompet berhasil diperbarui!' : 'Dompet baru berhasil ditambahkan!'
+            })
         }
     }
 
@@ -221,7 +226,10 @@ export default function WalletsPage() {
             showToast('error', 'Gagal menghapus dompet')
         } else {
             fetchWallets()
-            showToast('success', 'Berhasil menghapus dompet')
+            showSuccess({
+                type: 'delete',
+                message: 'Dompet berhasil dihapus beserta seluruh riwayat transaksinya.'
+            })
         }
     }
 

@@ -6,6 +6,7 @@ import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon } from 'luci
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -17,6 +18,7 @@ export default function BudgetsPage() {
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
+    const { showSuccess } = useSuccessModal()
 
     // Form State
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -113,7 +115,10 @@ export default function BudgetsPage() {
         } else {
             fetchData()
             resetForm()
-            showToast('success', "Budget disimpan")
+            showSuccess({
+                type: editingId ? 'edit' : 'create',
+                message: editingId ? 'Budget berhasil diperbarui!' : 'Budget baru berhasil ditambahkan!'
+            })
         }
     }
 
@@ -153,7 +158,11 @@ export default function BudgetsPage() {
         fetchData()
         fetchWallets() // Refresh wallet balances
         resetQuickExpForm()
-        showToast('success', "Pengeluaran berhasil dicatat")
+        showSuccess({
+            type: 'create',
+            title: 'Pengeluaran Dicatat!',
+            message: 'Pengeluaran cepat berhasil dicatat dan saldo dompet diperbarui.'
+        })
     }
 
     const handleDelete = async (id: number) => {
@@ -165,7 +174,10 @@ export default function BudgetsPage() {
         const { error } = await supabase.from('budgets').delete().eq('id', id)
         if (!error) {
             fetchData()
-            showToast('success', 'Budget dihapus')
+            showSuccess({
+                type: 'delete',
+                message: 'Budget berhasil dihapus dari daftar.'
+            })
         } else {
             showToast('error', 'Gagal menghapus budget')
         }

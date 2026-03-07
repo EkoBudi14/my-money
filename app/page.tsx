@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 import FinancialChart from '@/components/FinancialChart'
 import GoldPriceCard from '@/components/GoldPriceCard'
 import CurrencyCard from '@/components/CurrencyCard'
@@ -74,6 +75,7 @@ const CATEGORIES = {
 export default function MoneyManager() {
   const { showToast } = useToast()
   const { showConfirm } = useConfirm()
+  const { showSuccess } = useSuccessModal()
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [wallets, setWallets] = useState<Wallet[]>([])
@@ -538,7 +540,10 @@ export default function MoneyManager() {
         }
       }
 
-      showToast('success', editingId ? 'Transaksi berhasil diupdate!' : 'Transaksi berhasil ditambahkan!')
+      showSuccess({
+        type: editingId ? 'edit' : 'create',
+        message: editingId ? 'Transaksi berhasil diperbarui!' : 'Transaksi baru berhasil dicatat!'
+      })
       fetchTransactions()
       fetchBudgets()
       resetForm()
@@ -711,7 +716,10 @@ export default function MoneyManager() {
       }
       fetchWallets()
 
-      showToast('success', 'Transaksi berhasil dihapus!')
+      showSuccess({
+        type: 'delete',
+        message: 'Transaksi berhasil dihapus dan saldo dompet dikembalikan.'
+      })
       fetchTransactions()
       fetchDebts()
     } else {
@@ -822,7 +830,11 @@ export default function MoneyManager() {
      }
 
      if (!debtError) {
-       showToast('success', 'Piutang berhasil ditandai lunas!')
+       showSuccess({
+         type: 'general',
+         title: 'Piutang Lunas! 🎉',
+         message: 'Piutang berhasil ditandai lunas dan saldo dompet diperbarui.'
+       })
        fetchDebts()
        fetchTransactions()
        fetchWallets()
@@ -844,7 +856,10 @@ export default function MoneyManager() {
 
     const { error } = await supabase.from('debts').delete().eq('id', id)
     if (!error) {
-      showToast('success', 'Piutang berhasil dihapus')
+      showSuccess({
+        type: 'delete',
+        message: 'Data piutang berhasil dihapus.'
+      })
       fetchDebts()
     }
   }

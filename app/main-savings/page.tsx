@@ -16,6 +16,7 @@ import {
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function MainSavingsPage() {
     const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
@@ -25,6 +26,7 @@ export default function MainSavingsPage() {
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
+    const { showSuccess } = useSuccessModal()
 
     // Form State
     const [name, setName] = useState('')
@@ -187,7 +189,10 @@ export default function MainSavingsPage() {
             fetchSavings()
             fetchActiveWallets() // Refresh source wallet balances
             resetForm()
-            showToast('success', 'Aset berhasil disimpan')
+            showSuccess({
+                type: editingId ? 'edit' : 'create',
+                message: editingId ? 'Aset tabungan berhasil diperbarui!' : 'Aset tabungan baru berhasil ditambahkan!'
+            })
         } else {
             console.error(error)
             showToast('error', "Gagal menyimpan tabungan")
@@ -203,7 +208,10 @@ export default function MainSavingsPage() {
 
         await supabase.from('wallets').delete().eq('id', id)
         fetchSavings()
-        showToast('success', 'Aset berhasil dihapus')
+        showSuccess({
+            type: 'delete',
+            message: 'Aset tabungan berhasil dihapus.'
+        })
     }
 
     const handleEdit = (w: Wallet) => {
