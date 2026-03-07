@@ -30,7 +30,7 @@ export default function RootLayout({
           <ConfirmProvider>
             <div className="flex min-h-screen">
               <Sidebar />
-              <div className="flex-1 md:ml-[280px]">
+              <div className="flex-1 md:ml-[280px] min-w-0 overflow-x-hidden">
                  {children}
               </div>
             </div>
