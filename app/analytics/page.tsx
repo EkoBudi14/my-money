@@ -103,7 +103,19 @@ export default function AnalyticsPage() {
     useEffect(() => {
         fetchData()
         // Scroll to top when analytics page first loads on mobile
-        window.scrollTo({ top: 0, behavior: 'instant' })
+        // Use requestAnimationFrame to ensure DOM is painted before scrolling
+        const resetScroll = () => {
+            window.scrollTo({ top: 0, behavior: 'instant' })
+            document.documentElement.scrollTop = 0
+            document.body.scrollTop = 0
+        }
+        resetScroll()
+        requestAnimationFrame(() => {
+            resetScroll()
+        })
+        // Fallback timeout for slow hydration
+        const t = setTimeout(resetScroll, 100)
+        return () => clearTimeout(t)
     }, [])
 
     const fetchData = async () => {
