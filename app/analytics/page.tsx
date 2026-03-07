@@ -639,7 +639,7 @@ export default function AnalyticsPage() {
                         )}
 
                         {/* Period Comparison Table */}
-                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
                             <div className="p-5 border-b border-[#F3F4F3] flex items-center gap-2">
                                 <ArrowUpRight className="w-4 h-4 text-[#165DFF]" />
                                 <h3 className="font-bold text-[#080C1A]">Perbandingan Periode</h3>
@@ -647,7 +647,7 @@ export default function AnalyticsPage() {
                             </div>
 
                             <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
+                                <table className="w-full text-sm min-w-[600px]">
                                     <thead>
                                         <tr className="bg-slate-50">
                                             <th className="text-left px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider w-36">Item</th>
