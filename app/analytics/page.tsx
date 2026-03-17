@@ -549,14 +549,15 @@ export default function AnalyticsPage() {
 
                 {/* Search Bar */}
                 <div className="relative">
-                    <div className="flex items-center gap-3 bg-white border border-[#F3F4F3] rounded-2xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-[#165DFF] transition-all">
+                    <div className="flex items-center gap-3 bg-white border border-[#F3F4F3] rounded-2xl px-4 py-3 shadow-sm">
                         <Search className="w-4 h-4 text-[#6A7686] shrink-0" />
                         <input
                             type="text"
+                            data-no-ring=""
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Cari transaksi berdasarkan nama, kategori, atau dompet..."
-                            className="flex-1 bg-transparent text-sm text-[#080C1A] placeholder-slate-400 outline-none font-medium"
+                            className="flex-1 bg-white text-[16px] md:text-sm text-[#080C1A] placeholder-slate-400 outline-none font-medium"
                         />
                         {searchQuery && (
                             <button
