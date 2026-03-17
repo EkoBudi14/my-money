@@ -16,7 +16,7 @@ import {
     CartesianGrid,
     LabelList
 } from 'recharts'
-import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info, ChevronDown } from 'lucide-react'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -26,6 +26,7 @@ export default function AnalyticsPage() {
     // State for Filter & Persistence (Synced with Dashboard)
     const [currentDate, setCurrentDate] = useState(new Date())
     const [showSettings, setShowSettings] = useState(false)
+    const [expandedWallet, setExpandedWallet] = useState<string | null>(null)
 
     const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
     const [customRange, setCustomRange] = useState({
@@ -182,6 +183,32 @@ export default function AnalyticsPage() {
             return acc
         }, {} as Record<string, number>)
         return Object.entries(walletDataMap).map(([name, value]) => ({ name, value }))
+    }, [filteredTxs, wallets])
+
+    // 4. Wallet Transaction Breakdown (grouped by wallet, all tx types)
+    const walletTransactionBreakdown = useMemo(() => {
+        const walletMap = new Map(wallets.map(w => [w.id, w.name]))
+        const grouped: Record<string, { walletName: string; transactions: Transaction[]; totalIncome: number; totalExpense: number }> = {}
+
+        filteredTxs.forEach(t => {
+            const wName = (t.wallet_id != null ? walletMap.get(t.wallet_id) : undefined) || 'Tidak Diketahui'
+            if (!grouped[wName]) {
+                grouped[wName] = { walletName: wName, transactions: [], totalIncome: 0, totalExpense: 0 }
+            }
+            grouped[wName].transactions.push(t)
+            if (t.type === 'pemasukan') grouped[wName].totalIncome += t.amount
+            else grouped[wName].totalExpense += t.amount
+        })
+
+        // Sort transactions within each wallet by date descending
+        return Object.values(grouped)
+            .map(g => ({
+                ...g,
+                transactions: g.transactions.sort((a, b) =>
+                    new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime()
+                )
+            }))
+            .sort((a, b) => b.totalExpense - a.totalExpense)
     }, [filteredTxs, wallets])
 
     // Colors
@@ -881,6 +908,110 @@ export default function AnalyticsPage() {
                             </div>
                         </div>
 
+                        {/* Wallet Transaction Breakdown */}
+                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden">
+                            <div className="p-5 border-b border-[#F3F4F3] flex items-center gap-2">
+                                <WalletIcon className="w-4 h-4 text-[#165DFF]" />
+                                <h3 className="font-bold text-[#080C1A]">Transaksi Per Dompet</h3>
+                                <span className="text-xs text-[#6A7686] font-medium ml-1">— rincian per sumber dana</span>
+                            </div>
+
+                            {walletTransactionBreakdown.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
+                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                        <WalletIcon className="w-5 h-5 opacity-20" />
+                                    </div>
+                                    <span className="text-sm font-medium">Belum ada transaksi di periode ini</span>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-[#F3F4F3]">
+                                    {walletTransactionBreakdown.map((walletGroup) => {
+                                        const isExpanded = expandedWallet === walletGroup.walletName
+                                        return (
+                                            <div key={walletGroup.walletName}>
+                                                {/* Wallet Header — clickable accordion toggle */}
+                                                <button
+                                                    onClick={() => setExpandedWallet(isExpanded ? null : walletGroup.walletName)}
+                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-50/70 transition-colors text-left group"
+                                                >
+                                                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                                        <WalletIcon className="w-4 h-4 text-[#165DFF]" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-[#080C1A] text-sm">{walletGroup.walletName}</p>
+                                                        <div className="flex items-center gap-3 mt-0.5">
+                                                            <span className="text-xs text-emerald-600 font-medium">+Rp {walletGroup.totalIncome.toLocaleString('id-ID')}</span>
+                                                            <span className="text-xs text-rose-500 font-medium">-Rp {walletGroup.totalExpense.toLocaleString('id-ID')}</span>
+                                                            <span className="text-xs text-[#6A7686]">{walletGroup.transactions.length} transaksi</span>
+                                                        </div>
+                                                    </div>
+                                                    <ChevronDown
+                                                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                                                            isExpanded ? 'rotate-180' : ''
+                                                        }`}
+                                                    />
+                                                </button>
+
+                                                {/* Transaction List */}
+                                                {isExpanded && (
+                                                    <div className="bg-slate-50/50 border-t border-[#F3F4F3]">
+                                                        {walletGroup.transactions.map((tx, idx) => {
+                                                            const txDate = new Date(tx.date || tx.created_at)
+                                                            const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                            const isIncome = tx.type === 'pemasukan'
+                                                            return (
+                                                                <div
+                                                                    key={tx.id}
+                                                                    className={`flex items-center gap-3 px-5 py-3.5 ${
+                                                                        idx !== walletGroup.transactions.length - 1
+                                                                            ? 'border-b border-[#F3F4F3]'
+                                                                            : ''
+                                                                    } hover:bg-white transition-colors`}
+                                                                >
+                                                                    {/* Type indicator */}
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                                        isIncome ? 'bg-emerald-50' : 'bg-rose-50'
+                                                                    }`}>
+                                                                        {isIncome
+                                                                            ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                                                                            : <ArrowDownRight className="w-4 h-4 text-rose-500" />
+                                                                        }
+                                                                    </div>
+
+                                                                    {/* Info */}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-semibold text-[#080C1A] truncate">{tx.title}</p>
+                                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                                            <span className="text-xs text-[#6A7686]">{dateStr}</span>
+                                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                                                {tx.category}
+                                                                            </span>
+                                                                            {tx.is_talangan && (
+                                                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>
+                                                                            )}
+                                                                            {tx.is_piutang && (
+                                                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Amount */}
+                                                                    <p className={`text-sm font-bold shrink-0 ${
+                                                                        isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                                    }`}>
+                                                                        {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                                    </p>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
 
                     </>
                 )}
