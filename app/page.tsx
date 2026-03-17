@@ -118,8 +118,15 @@ export default function MoneyManager() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [welcomeStep, setWelcomeStep] = useState(1)
   const [billsUpdateTrigger, setBillsUpdateTrigger] = useState(0)
   const [creatingWallet, setCreatingWallet] = useState(false)
+
+  // Tooltip States
+  const [showTotalTooltip, setShowTotalTooltip] = useState(false)
+  const [showActiveTooltip, setShowActiveTooltip] = useState(false)
+  const [showIncomeTooltip, setShowIncomeTooltip] = useState(false)
+  const [showExpenseTooltip, setShowExpenseTooltip] = useState(false)
 
   const handleBillsUpdate = () => {
     setBillsUpdateTrigger(prev => prev + 1)
@@ -332,7 +339,6 @@ export default function MoneyManager() {
     }
   }
 
-  const [welcomeStep, setWelcomeStep] = useState(1)
   const createQuickSavingsWallet = async () => {
     setCreatingWallet(true)
     const { error } = await supabase
@@ -1195,14 +1201,42 @@ export default function MoneyManager() {
                   </div>
                   <p className="font-medium text-[#6A7686]">Total Semua Uang</p>
                 </div>
-                <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
-                    {showBalance ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
-                </button>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowTotalTooltip(!showTotalTooltip)}
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                        >
+                            <Info className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {/* Invisible overlay */}
+                        {showTotalTooltip && (
+                            <div className="fixed inset-0 z-10" onClick={() => setShowTotalTooltip(false)} />
+                        )}
+
+                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                            showTotalTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                        }`}>
+                            <p>Total saldo dari semua dompet bertipe <span className="text-emerald-400 font-bold">Tabungan</span>.</p>
+                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                <p className="text-slate-300">Uang yang disimpan dan tidak untuk pengeluaran harian.</p>
+                            </div>
+                            {/* Arrow up */}
+                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                        </div>
+                    </div>
+                </div>
              </div>
              <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
                 {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
              </p>
-             <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
+             <div className="flex justify-between items-center">
+                 <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
+                 <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                     {showBalance ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                 </button>
+             </div>
           </div>
 
           {/* Card 2: Saldo Aktif (Shipments style) */}
@@ -1214,14 +1248,42 @@ export default function MoneyManager() {
                   </div>
                   <p className="font-medium text-[#6A7686]">Saldo Aktif</p>
                 </div>
-                <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
-                    {showActiveBalance ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
-                </button>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowActiveTooltip(!showActiveTooltip)}
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                        >
+                            <Info className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {/* Invisible overlay */}
+                        {showActiveTooltip && (
+                            <div className="fixed inset-0 z-10" onClick={() => setShowActiveTooltip(false)} />
+                        )}
+
+                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                            showActiveTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                        }`}>
+                            <p>Total sisa saldo dari dompet bertipe <span className="text-[#165DFF] font-bold">Aktif</span>.</p>
+                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                <p className="text-slate-300">Uang yang siap digunakan untuk transaksi sehari-hari.</p>
+                            </div>
+                            {/* Arrow up */}
+                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                        </div>
+                    </div>
+                </div>
              </div>
              <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
                 {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
              </p>
-             <p className="text-xs text-[#6A7686]">Siap digunakan</p>
+             <div className="flex justify-between items-center">
+                 <p className="text-xs text-[#6A7686]">Siap digunakan</p>
+                 <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                     {showActiveBalance ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                 </button>
+             </div>
           </div>
 
           {/* Card 3: Pemasukan (On-Time Rate style) */}
@@ -1233,11 +1295,37 @@ export default function MoneyManager() {
                   </div>
                   <p className="font-medium text-[#6A7686]">Pemasukan</p>
                 </div>
-                {prevIncome > 0 && (
-                 <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${incomeChange >= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
-                   {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%
-                 </span>
-                )}
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                        >
+                            <Info className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {/* Invisible overlay */}
+                        {showIncomeTooltip && (
+                            <div className="fixed inset-0 z-10" onClick={() => setShowIncomeTooltip(false)} />
+                        )}
+
+                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                            showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                        }`}>
+                            <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada bulan ini.</p>
+                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> tidak dihitung sebagai pemasukan.</p>
+                            </div>
+                            {/* Arrow up */}
+                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                        </div>
+                    </div>
+                    {prevIncome > 0 && (
+                     <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${incomeChange >= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                       {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%
+                     </span>
+                    )}
+                </div>
              </div>
              <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
                  {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
@@ -1259,11 +1347,37 @@ export default function MoneyManager() {
                   </div>
                   <p className="font-medium text-[#6A7686]">Pengeluaran</p>
                 </div>
-                {prevExpense > 0 && (
-                 <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${expenseChange <= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
-                   {expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%
-                 </span>
-                )}
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
+                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                        >
+                            <Info className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        {/* Invisible overlay */}
+                        {showExpenseTooltip && (
+                            <div className="fixed inset-0 z-10" onClick={() => setShowExpenseTooltip(false)} />
+                        )}
+
+                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                            showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                        }`}>
+                            <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada bulan ini.</p>
+                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> tidak dihitung sebagai pengeluaran.</p>
+                            </div>
+                            {/* Arrow up */}
+                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                        </div>
+                    </div>
+                    {prevExpense > 0 && (
+                     <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${expenseChange <= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                       {expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%
+                     </span>
+                    )}
+                </div>
              </div>
              <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
                  Rp {currentExpense.toLocaleString('id-ID')}

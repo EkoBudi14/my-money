@@ -16,7 +16,7 @@ import {
     CartesianGrid,
     LabelList
 } from 'recharts'
-import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info, ChevronDown } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info, ChevronDown, Search } from 'lucide-react'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -27,6 +27,10 @@ export default function AnalyticsPage() {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [showSettings, setShowSettings] = useState(false)
     const [expandedWallet, setExpandedWallet] = useState<string | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [showTooltip, setShowTooltip] = useState(false) // Net balance tooltip
+    const [showIncomeTooltip, setShowIncomeTooltip] = useState(false)
+    const [showExpenseTooltip, setShowExpenseTooltip] = useState(false)
 
     const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
     const [customRange, setCustomRange] = useState({
@@ -210,6 +214,24 @@ export default function AnalyticsPage() {
             }))
             .sort((a, b) => b.totalExpense - a.totalExpense)
     }, [filteredTxs, wallets])
+
+    // 5. Search Results — searches across ALL transactions (not period-filtered)
+    const searchResults = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase()
+        if (!q) return []
+        const walletMap = new Map(wallets.map(w => [w.id, w.name]))
+        return transactions
+            .filter(t => {
+                const walletName = (t.wallet_id != null ? walletMap.get(t.wallet_id) : undefined) || ''
+                return (
+                    t.title.toLowerCase().includes(q) ||
+                    t.category.toLowerCase().includes(q) ||
+                    walletName.toLowerCase().includes(q)
+                )
+            })
+            .sort((a, b) => new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime())
+            .slice(0, 50) // cap at 50 results for performance
+    }, [searchQuery, transactions, wallets])
 
     // Colors
     const COLORS = useMemo(() => ['#165DFF', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'], [])
@@ -525,6 +547,99 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
+                {/* Search Bar */}
+                <div className="relative">
+                    <div className="flex items-center gap-3 bg-white border border-[#F3F4F3] rounded-2xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-[#165DFF] transition-all">
+                        <Search className="w-4 h-4 text-[#6A7686] shrink-0" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder="Cari transaksi berdasarkan nama, kategori, atau dompet..."
+                            className="flex-1 bg-transparent text-sm text-[#080C1A] placeholder-slate-400 outline-none font-medium"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Search Results Panel */}
+                    {searchQuery.trim() && (
+                        <div className="mt-2 bg-white rounded-2xl border border-[#F3F4F3] shadow-lg overflow-hidden">
+                            <div className="px-4 py-3 border-b border-[#F3F4F3] flex items-center justify-between">
+                                <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                                    {searchResults.length > 0 ? `${searchResults.length} hasil ditemukan` : 'Tidak ada hasil'}
+                                </span>
+                                {searchResults.length === 50 && (
+                                    <span className="text-xs text-slate-400">Menampilkan 50 teratas</span>
+                                )}
+                            </div>
+
+                            {searchResults.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+                                    <Search className="w-8 h-8 opacity-20" />
+                                    <p className="text-sm font-medium">Transaksi tidak ditemukan</p>
+                                    <p className="text-xs">Coba kata kunci lain</p>
+                                </div>
+                            ) : (
+                                <div className="max-h-[400px] overflow-y-auto divide-y divide-[#F3F4F3]">
+                                    {(() => {
+                                        const walletMap = new Map(wallets.map(w => [w.id, w.name]))
+                                        return searchResults.map(tx => {
+                                        const walletName = (tx.wallet_id != null ? walletMap.get(tx.wallet_id) : undefined) || 'Tidak Diketahui'
+                                        const txDate = new Date(tx.date || tx.created_at)
+                                        const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                                        const isIncome = tx.type === 'pemasukan'
+                                        return (
+                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                                                {/* Type icon */}
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                    isIncome ? 'bg-emerald-50' : 'bg-rose-50'
+                                                }`}>
+                                                    {isIncome
+                                                        ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                                                        : <ArrowDownRight className="w-4 h-4 text-rose-500" />
+                                                    }
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-semibold text-[#080C1A] truncate">{tx.title}</p>
+                                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                        <span className="text-xs text-[#6A7686]">{dateStr}</span>
+                                                        <span className="text-xs text-[#6A7686] flex items-center gap-1">
+                                                            <WalletIcon className="w-3 h-3" />
+                                                            {walletName}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                            {tx.category}
+                                                        </span>
+                                                        {tx.is_talangan && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>}
+                                                        {tx.is_piutang && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>}
+                                                    </div>
+                                                </div>
+
+                                                {/* Amount */}
+                                                <p className={`text-sm font-bold shrink-0 ${
+                                                    isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                }`}>
+                                                    {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                </p>
+                                            </div>
+                                        )
+                                    })
+                                    })()} 
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {/* Settings Panel */}
                 {showSettings && (
                     <>
@@ -593,31 +708,118 @@ export default function AnalyticsPage() {
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
-                                        <TrendingUp className="w-6 h-6" />
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                            <TrendingUp className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-[#6A7686] font-medium">Total Pemasukan</h3>
                                     </div>
-                                    <h3 className="text-[#6A7686] font-medium">Total Pemasukan</h3>
+                                    <div className="relative">
+                                        <button 
+                                            onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
+                                            className="p-1 text-slate-400 hover:text-emerald-500 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                        >
+                                            <Info className="w-4 h-4" />
+                                        </button>
+                                        
+                                        {/* Invisible overlay */}
+                                        {showIncomeTooltip && (
+                                            <div 
+                                                className="fixed inset-0 z-10" 
+                                                onClick={() => setShowIncomeTooltip(false)}
+                                            />
+                                        )}
+
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                                            showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        }`}>
+                                            <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada rentang tanggal yang dipilih.</p>
+                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                                <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> (uang yang dikembalikan orang lain ke kamu) tidak dihitung sebagai pemasukan.</p>
+                                            </div>
+                                            {/* Arrow up */}
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p className="text-2xl font-bold text-[#080C1A]">Rp {income.toLocaleString('id-ID')}</p>
                             </div>
 
                             <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="p-3 bg-rose-50 rounded-xl text-rose-600 group-hover:bg-rose-100 transition-colors">
-                                        <TrendingDown className="w-6 h-6" />
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-rose-50 rounded-xl text-rose-600 group-hover:bg-rose-100 transition-colors">
+                                            <TrendingDown className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-[#6A7686] font-medium">Total Pengeluaran</h3>
                                     </div>
-                                    <h3 className="text-[#6A7686] font-medium">Total Pengeluaran</h3>
+                                    <div className="relative">
+                                        <button 
+                                            onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
+                                            className="p-1 text-slate-400 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                        >
+                                            <Info className="w-4 h-4" />
+                                        </button>
+                                        
+                                        {/* Invisible overlay */}
+                                        {showExpenseTooltip && (
+                                            <div 
+                                                className="fixed inset-0 z-10" 
+                                                onClick={() => setShowExpenseTooltip(false)}
+                                            />
+                                        )}
+
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                                            showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        }`}>
+                                            <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada rentang tanggal yang dipilih.</p>
+                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                                <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> (membayarin orang terlebih dahulu) tidak dihitung sebagai pengeluaran.</p>
+                                            </div>
+                                            {/* Arrow up */}
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p className="text-2xl font-bold text-[#080C1A]">Rp {expense.toLocaleString('id-ID')}</p>
                             </div>
 
-                             <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="p-3 bg-blue-50 rounded-xl text-[#165DFF] group-hover:bg-blue-100 transition-colors">
-                                        <WalletIcon className="w-6 h-6" />
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-blue-50 rounded-xl text-[#165DFF] group-hover:bg-blue-100 transition-colors">
+                                            <WalletIcon className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-[#6A7686] font-medium">Sisa Saldo Periode Ini</h3>
                                     </div>
-                                    <h3 className="text-[#6A7686] font-medium">Sisa Saldo Periode Ini</h3>
+                                    <div className="relative">
+                                        <button 
+                                            onClick={() => setShowTooltip(!showTooltip)}
+                                            className="p-1 text-slate-400 hover:text-[#165DFF] transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                        >
+                                            <Info className="w-4 h-4" />
+                                        </button>
+                                        
+                                        {/* Invisible overlay to close tooltip when clicking outside */}
+                                        {showTooltip && (
+                                            <div 
+                                                className="fixed inset-0 z-10" 
+                                                onClick={() => setShowTooltip(false)}
+                                            />
+                                        )}
+
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
+                                            showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        }`}>
+                                            <p>Selisih antara <span className="text-emerald-400 font-bold">Pemasukan</span> dan <span className="text-rose-400 font-bold">Pengeluaran</span> murni pada periode ini.</p>
+                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                                <p className="text-slate-300">Catatan: Tidak menghitung transaksi Piutang atau Talangan.</p>
+                                            </div>
+                                            {/* Arrow up */}
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[#080C1A]' : 'text-rose-600'}`}>
                                     Rp {netBalance.toLocaleString('id-ID')}
