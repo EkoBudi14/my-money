@@ -32,7 +32,7 @@ export default function RootLayout({
             <SuccessModalProvider>
               <div className="flex min-h-screen">
                 <Sidebar />
-                <div className="flex-1 md:ml-[280px]">
+                <div className="flex-1 min-w-0 overflow-x-hidden md:ml-[280px]">
                    {children}
                 </div>
               </div>
