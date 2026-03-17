@@ -102,6 +102,9 @@ export default function MoneyManager() {
   // Piutang State
   const [isPiutang, setIsPiutang] = useState(false)
   const [piutangPerson, setPiutangPerson] = useState('')
+  // Talangan State
+  const [isTalangan, setIsTalangan] = useState(false)
+  const [talanganPerson, setTalanganPerson] = useState('')
 
   // Edit State
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -396,7 +399,9 @@ export default function MoneyManager() {
       date: safeDate,
       created_at: new Date().toISOString(),
       is_piutang: type === 'pemasukan' ? isPiutang : false,
-      piutang_person: type === 'pemasukan' && isPiutang ? piutangPerson.trim() : null
+      piutang_person: type === 'pemasukan' && isPiutang ? piutangPerson.trim() : null,
+      is_talangan: type === 'pengeluaran' ? isTalangan : false,
+      talangan_person: type === 'pengeluaran' && isTalangan ? talanganPerson.trim() : null
     }
 
     let error;
@@ -567,6 +572,9 @@ export default function MoneyManager() {
     // Reset Piutang Form
     setIsPiutang(false)
     setPiutangPerson('')
+    // Reset Talangan Form
+    setIsTalangan(false)
+    setTalanganPerson('')
   }
 
   const handleEditClick = (t: Transaction) => {
@@ -580,6 +588,9 @@ export default function MoneyManager() {
     // Load Piutang State
     setIsPiutang(t.is_piutang || false)
     setPiutangPerson(t.piutang_person || '')
+    // Load Talangan State
+    setIsTalangan(t.is_talangan || false)
+    setTalanganPerson(t.talangan_person || '')
     setIsModalOpen(true)
   }
 
@@ -891,14 +902,14 @@ export default function MoneyManager() {
     })
   }, [transactions, filterMode, currentDate, customRange])
 
-  // 2. Calculate Totals (piutang TIDAK dihitung sebagai pemasukan nyata)
+  // 2. Calculate Totals (piutang TIDAK dihitung sebagai pemasukan nyata, talangan TIDAK dihitung sebagai pengeluaran pribadi)
   const { currentIncome, currentExpense } = useMemo(() => {
     const income = filteredTransactions
       .filter(t => t.type === 'pemasukan' && !t.is_piutang)
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     const expense = filteredTransactions
-      .filter(t => t.type === 'pengeluaran')
+      .filter(t => t.type === 'pengeluaran' && !t.is_talangan)
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     return { currentIncome: income, currentExpense: expense }
@@ -919,7 +930,7 @@ export default function MoneyManager() {
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     const expense = prevTx
-      .filter(t => t.type === 'pengeluaran')
+      .filter(t => t.type === 'pengeluaran' && !t.is_talangan)
       .reduce((acc, curr) => acc + curr.amount, 0)
 
     return { prevIncome: income, prevExpense: expense }
@@ -950,7 +961,7 @@ export default function MoneyManager() {
         const monthIndex = tDate.getMonth()
         if (t.type === 'pemasukan' && !t.is_piutang) {
           data[monthIndex].income += t.amount
-        } else if (t.type === 'pengeluaran') {
+        } else if (t.type === 'pengeluaran' && !t.is_talangan) {
           data[monthIndex].expense += t.amount
         }
       }
@@ -986,6 +997,7 @@ export default function MoneyManager() {
         return (
           t.category === category &&
           t.type === 'pengeluaran' &&
+          !t.is_talangan &&
           t.id !== editingId &&
           tDate.getMonth() === targetDate.getMonth() &&
           tDate.getFullYear() === targetDate.getFullYear()
@@ -1368,13 +1380,22 @@ export default function MoneyManager() {
                                                    💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
                                                </span>
                                            )}
+                                           {t.is_talangan && (
+                                               <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+                                                   🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
+                                               </span>
+                                           )}
                                        </div>
                                        <p className="text-xs text-[#6A7686]">
                                             {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {t.category}
                                        </p>
                                    </div>
                                    <div className="text-right">
-                                       <p className={`font-bold ${t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]') : 'text-[#080C1A]'}`}>
+                                       <p className={`font-bold ${
+                                         t.type === 'pemasukan'
+                                           ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
+                                           : (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                                       }`}>
                                            {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                                        </p>
                                        <button 
@@ -1656,7 +1677,43 @@ export default function MoneyManager() {
                 </div>
               )}
 
-              {/* Category Grid */}
+              {/* Talangan Toggle - hanya untuk Pengeluaran */}
+              {type === 'pengeluaran' && (
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50/60 border-purple-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div
+                    onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }}
+                    className="flex items-center justify-between cursor-pointer group select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isTalangan ? 'border-purple-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
+                        {isTalangan && <div className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-in zoom-in duration-200" />}
+                      </div>
+                      <span className={`text-sm font-bold transition-colors ${isTalangan ? 'text-purple-700' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                        🤝 Ini Talangan (bayarin orang lain)?
+                      </span>
+                    </div>
+                    {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-purple-100">Aktif</span>}
+                  </div>
+
+                  {isTalangan && (
+                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                      <input
+                        type="text"
+                        placeholder="Nama orang yang ditalangin (Opsional)"
+                        className="w-full p-2.5 bg-white border border-purple-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium"
+                        value={talanganPerson}
+                        onChange={(e) => setTalanganPerson(e.target.value)}
+                      />
+                      <p className="text-xs text-purple-600 mt-2 flex items-start gap-1.5">
+                        <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        Saldo dompet tetap berkurang, tapi <strong>tidak dihitung</strong> sebagai pengeluaran pribadi di statistik.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
                 <div className="grid grid-cols-4 gap-3">

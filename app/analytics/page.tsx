@@ -145,10 +145,10 @@ export default function AnalyticsPage() {
         })
     }, [transactions, filterMode, currentDate, customRange])
 
-    // 1. Income vs Expense (memoized) - piutang tidak dihitung sebagai pemasukan nyata
+    // 1. Income vs Expense (memoized) - piutang tidak dihitung sebagai pemasukan nyata, talangan tidak dihitung sebagai pengeluaran pribadi
     const { income, expense, netBalance, summaryData } = useMemo(() => {
         const inc = filteredTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
-        const exp = filteredTxs.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
+        const exp = filteredTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((acc, c) => acc + c.amount, 0)
         return {
             income: inc,
             expense: exp,
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
 
     // 2. Expense by Category (memoized)
     const categoryData = useMemo(() => {
-        const expenseTxs = filteredTxs.filter(t => t.type === 'pengeluaran')
+        const expenseTxs = filteredTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan)
         const categoryDataMap = expenseTxs.reduce((acc, curr) => {
             acc[curr.category] = (acc[curr.category] || 0) + curr.amount
             return acc
@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
     // 3. Expense by Wallet (memoized, O(1) wallet lookup)
     const walletData = useMemo(() => {
         const walletMap = new Map(wallets.map(w => [w.id, w.name]))
-        const expenseTxs = filteredTxs.filter(t => t.type === 'pengeluaran')
+        const expenseTxs = filteredTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan)
         const walletDataMap = expenseTxs.reduce((acc, curr) => {
             const wName = (curr.wallet_id != null ? walletMap.get(curr.wallet_id) : undefined) || 'Unknown'
             acc[wName] = (acc[wName] || 0) + curr.amount
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
         if (!income && !expense) return result
 
         const prevIncome = prevPeriodTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((a, c) => a + c.amount, 0)
-        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran').reduce((a, c) => a + c.amount, 0)
+        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((a, c) => a + c.amount, 0)
 
         // --- Saving rate ---
         const savingRate = income > 0 ? ((income - expense) / income) * 100 : 0
@@ -246,7 +246,7 @@ export default function AnalyticsPage() {
         // --- Category comparison ---
         if (prevPeriodTxs.length > 0) {
             const prevCatMap: Record<string, number> = {}
-            prevPeriodTxs.filter(t => t.type === 'pengeluaran').forEach(t => {
+            prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).forEach(t => {
                 prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
             })
             let biggestRise: { cat: string; pct: number; amount: number } | null = null
@@ -317,13 +317,13 @@ export default function AnalyticsPage() {
 
         // --- Previous stats ---
         const prevIncome = prevPeriodTxs.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((a, c) => a + c.amount, 0)
-        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran').reduce((a, c) => a + c.amount, 0)
+        const prevExpense = prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((a, c) => a + c.amount, 0)
         const prevNet = prevIncome - prevExpense
         const prevSavingRate = prevIncome > 0 ? ((prevIncome - prevExpense) / prevIncome) * 100 : 0
 
         // --- Category rows ---
         const prevCatMap: Record<string, number> = {}
-        prevPeriodTxs.filter(t => t.type === 'pengeluaran').forEach(t => {
+        prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).forEach(t => {
             prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
         })
         const allCats = new Set([...categoryData.map(c => c.name), ...Object.keys(prevCatMap)])
@@ -377,7 +377,7 @@ export default function AnalyticsPage() {
                 })
 
                 const sliceIncome = txsInSlice.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
-                const sliceExpense = txsInSlice.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
+                const sliceExpense = txsInSlice.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((acc, c) => acc + c.amount, 0)
 
                 const fmt = (d: Date) => `${d.getDate()} ${d.toLocaleString('id-ID', { month: 'short' })}`
                 const monthLabel = sliceStart.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
@@ -423,7 +423,7 @@ export default function AnalyticsPage() {
             })
 
             const monthIncome = txsInMonth.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((acc, c) => acc + c.amount, 0)
-            const monthExpense = txsInMonth.filter(t => t.type === 'pengeluaran').reduce((acc, c) => acc + c.amount, 0)
+            const monthExpense = txsInMonth.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((acc, c) => acc + c.amount, 0)
 
             result.push({
                 label: d.toLocaleString('id-ID', { month: 'short', year: '2-digit' }),

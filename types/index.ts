@@ -36,6 +36,8 @@ export interface Transaction {
     created_at: string
     is_piutang?: boolean
     piutang_person?: string
+    is_talangan?: boolean
+    talangan_person?: string
 }
 
 export interface Debt {
