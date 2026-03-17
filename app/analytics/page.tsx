@@ -587,7 +587,7 @@ export default function AnalyticsPage() {
                                     <p className="text-xs">Coba kata kunci lain</p>
                                 </div>
                             ) : (
-                                <div className="max-h-[400px] overflow-y-auto divide-y divide-[#F3F4F3]">
+                                <div className="max-h-[400px] overflow-y-auto overflow-x-hidden divide-y divide-[#F3F4F3]">
                                     {(() => {
                                         const walletMap = new Map(wallets.map(w => [w.id, w.name]))
                                         return searchResults.map(tx => {
@@ -596,7 +596,7 @@ export default function AnalyticsPage() {
                                         const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                                         const isIncome = tx.type === 'pemasukan'
                                         return (
-                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors w-full min-w-0">
                                                 {/* Type icon */}
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                                                     isIncome ? 'bg-emerald-50' : 'bg-rose-50'
@@ -1156,7 +1156,7 @@ export default function AnalyticsPage() {
 
                                                 {/* Transaction List */}
                                                 {isExpanded && (
-                                                    <div className="bg-slate-50/50 border-t border-[#F3F4F3]">
+                                                    <div className="bg-slate-50/50 border-t border-[#F3F4F3] overflow-x-hidden">
                                                         {walletGroup.transactions.map((tx, idx) => {
                                                             const txDate = new Date(tx.date || tx.created_at)
                                                             const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -1164,7 +1164,7 @@ export default function AnalyticsPage() {
                                                             return (
                                                                 <div
                                                                     key={tx.id}
-                                                                    className={`flex items-center gap-3 px-5 py-3.5 ${
+                                                                    className={`flex items-center gap-3 px-5 py-3.5 w-full min-w-0 ${
                                                                         idx !== walletGroup.transactions.length - 1
                                                                             ? 'border-b border-[#F3F4F3]'
                                                                             : ''
