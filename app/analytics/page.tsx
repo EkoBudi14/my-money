@@ -596,13 +596,16 @@ export default function AnalyticsPage() {
                                         const txDate = new Date(tx.date || tx.created_at)
                                         const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
                                         const isIncome = tx.type === 'pemasukan'
+                                        const isTopup = tx.type === 'topup'
                                         return (
                                             <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors w-full min-w-0">
                                                 {/* Type icon */}
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                    isIncome ? 'bg-emerald-50' : 'bg-rose-50'
+                                                    isTopup ? 'bg-blue-50' : isIncome ? 'bg-emerald-50' : 'bg-rose-50'
                                                 }`}>
-                                                    {isIncome
+                                                    {isTopup
+                                                        ? <Zap className="w-4 h-4 text-blue-500" />
+                                                        : isIncome
                                                         ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
                                                         : <ArrowDownRight className="w-4 h-4 text-rose-500" />
                                                     }
@@ -610,7 +613,11 @@ export default function AnalyticsPage() {
 
                                                 {/* Info */}
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-[#080C1A] truncate">{tx.title}</p>
+                                                    <p className="text-sm font-semibold text-[#080C1A] truncate">
+                                                         {isTopup && tx.source_wallet_id 
+                                                            ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
+                                                            : tx.title}
+                                                    </p>
                                                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                                         <span className="text-xs text-[#6A7686]">{dateStr}</span>
                                                         <span className="text-xs text-[#6A7686] flex items-center gap-1">
@@ -627,9 +634,9 @@ export default function AnalyticsPage() {
 
                                                 {/* Amount */}
                                                 <p className={`text-sm font-bold shrink-0 ${
-                                                    isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                    isTopup ? 'text-blue-600' : isIncome ? 'text-emerald-600' : 'text-rose-500'
                                                 }`}>
-                                                    {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                    {isIncome || isTopup ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
                                                 </p>
                                             </div>
                                         )

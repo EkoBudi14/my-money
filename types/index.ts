@@ -29,9 +29,10 @@ export interface Transaction {
     id: number
     title: string
     amount: number
-    type: 'pemasukan' | 'pengeluaran'
+    type: 'pemasukan' | 'pengeluaran' | 'topup'
     category: string
     wallet_id?: number
+    source_wallet_id?: number
     date: string // ISO string
     created_at: string
     is_piutang?: boolean

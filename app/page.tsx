@@ -95,9 +95,11 @@ export default function MoneyManager() {
   // Form State
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
-  const [type, setType] = useState<'pemasukan' | 'pengeluaran'>('pemasukan')
+  const [adminFee, setAdminFee] = useState('')
+  const [type, setType] = useState<'pemasukan' | 'pengeluaran' | 'topup'>('pemasukan')
   const [category, setCategory] = useState('')
   const [selectedWalletId, setSelectedWalletId] = useState<string>('')
+  const [sourceWalletId, setSourceWalletId] = useState<string>('')
   const [customDate, setCustomDate] = useState('')
   // Piutang State
   const [isPiutang, setIsPiutang] = useState(false)
@@ -261,11 +263,13 @@ export default function MoneyManager() {
     setLoading(true)
     const { data, error } = await supabase
       .from('transactions')
-      .select('*, wallets(name)') // Join to get wallet name if needed
+      .select('*')
       .order('created_at', { ascending: false }) // Order by actual creation time
 
     if (error) {
       console.error('Error fetching transactions:', error)
+      showToast('error', `Gagal memuat transaksi: ${error.message || 'Coba refresh halaman'}`)
+      setLoading(false)
     } else {
       setTransactions(data as any[] || [])
       setLoading(false)
@@ -374,12 +378,18 @@ export default function MoneyManager() {
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const finalTitle = title || category
+    const finalTitle = type === 'topup' ? (title || 'Topup Saldo') : (title || category)
     const amountNum = parseFloat(amount)
+    const adminFeeNum = type === 'topup' && adminFee ? parseFloat(adminFee) : 0
     const newWalletId = parseInt(selectedWalletId)
 
-    if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate) {
+    if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate || (type === 'topup' && !sourceWalletId)) {
       showToast('warning', 'Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.')
+      return
+    }
+
+    if (type === 'topup' && sourceWalletId === selectedWalletId) {
+      showToast('warning', 'Sumber dana dan dompet tujuan tidak boleh sama!')
       return
     }
 
@@ -393,6 +403,21 @@ export default function MoneyManager() {
       return
     }
 
+    let freshSourceWalletBalance: number | null = null
+    if (type === 'topup') {
+      freshSourceWalletBalance = await fetchFreshWalletBalance(parseInt(sourceWalletId))
+      if (freshSourceWalletBalance === null) {
+        showToast('error', 'Sumber dana tidak ditemukan!')
+        setSaving(false)
+        return
+      }
+      if (freshSourceWalletBalance < (amountNum + adminFeeNum)) {
+        showToast('error', `Saldo sumber dana tidak mencukupi!`)
+        setSaving(false)
+        return
+      }
+    }
+
     // Fix Bug #9: Timezone-safe date — pakai T12:00:00 agar tidak shift 1 hari di WIB
     const safeDate = new Date(`${customDate}T12:00:00`).toISOString()
 
@@ -402,6 +427,7 @@ export default function MoneyManager() {
       type,
       category,
       wallet_id: newWalletId,
+      source_wallet_id: type === 'topup' ? parseInt(sourceWalletId) : null,
       date: safeDate,
       created_at: new Date().toISOString(),
       is_piutang: type === 'pemasukan' ? isPiutang : false,
@@ -428,7 +454,27 @@ export default function MoneyManager() {
       }
 
       const oldWalletId = oldTransaction.wallet_id
-      const isSameWallet = oldWalletId === newWalletId
+      const oldSourceWalletId = oldTransaction.source_wallet_id
+      const isSameWallet = oldWalletId === newWalletId && (type !== 'topup' || oldSourceWalletId === parseInt(sourceWalletId))
+
+      // Fix Bug: Jika topup lama memiliki Biaya Admin, cari & hapus transaksi tersebut
+      // lalu rollback jumlahnya ke saldo source wallet
+      let oldAdminFeeAmount = 0
+      if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
+        const { data: adminFeeTrx } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('wallet_id', oldTransaction.source_wallet_id)
+          .eq('title', 'Biaya Admin')
+          .eq('type', 'pengeluaran')
+          .eq('date', oldTransaction.date)
+          .limit(1)
+
+        if (adminFeeTrx && adminFeeTrx.length > 0) {
+          oldAdminFeeAmount = adminFeeTrx[0].amount
+          await supabase.from('transactions').delete().eq('id', adminFeeTrx[0].id)
+        }
+      }
 
       // Fix Bug #2: Selalu fetch saldo fresh dari DB sebelum update
       // Fix Bug #1: Handle kasus wallet lama ≠ wallet baru
@@ -436,10 +482,16 @@ export default function MoneyManager() {
         // Rollback & apply di wallet yang sama
         // Saldo setelah rollback transaksi lama
         let balanceAfterRollback = freshNewWalletBalance
-        if (oldTransaction.type === 'pemasukan') {
+        let sourceBalanceAfterRollback = freshSourceWalletBalance || 0
+
+        if (oldTransaction.type === 'pemasukan' || oldTransaction.type === 'topup') {
           balanceAfterRollback -= oldTransaction.amount
         } else {
           balanceAfterRollback += oldTransaction.amount
+        }
+
+        if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
+            sourceBalanceAfterRollback += oldTransaction.amount + oldAdminFeeAmount
         }
 
         // Cek saldo cukup setelah rollback
@@ -456,9 +508,29 @@ export default function MoneyManager() {
 
         if (!error) {
           let finalBalance = balanceAfterRollback
-          if (type === 'pemasukan') finalBalance += amountNum
+          if (type === 'pemasukan' || type === 'topup') finalBalance += amountNum
           else finalBalance -= amountNum
           await supabase.from('wallets').update({ balance: finalBalance }).eq('id', newWalletId)
+          
+          if (type === 'topup') {
+              await supabase.from('wallets').update({ balance: sourceBalanceAfterRollback - amountNum }).eq('id', parseInt(sourceWalletId))
+              // Re-apply admin fee baru jika ada
+              if (adminFeeNum > 0) {
+                const adminPayload = {
+                  title: 'Biaya Admin',
+                  amount: adminFeeNum,
+                  type: 'pengeluaran',
+                  category: 'Lainnya',
+                  wallet_id: parseInt(sourceWalletId),
+                  date: safeDate,
+                  created_at: new Date().toISOString(),
+                  is_piutang: false,
+                  is_talangan: false
+                }
+                await supabase.from('transactions').insert([adminPayload])
+                await supabase.from('wallets').update({ balance: sourceBalanceAfterRollback - amountNum - adminFeeNum }).eq('id', parseInt(sourceWalletId))
+              }
+          }
           fetchWallets()
         }
       } else {
@@ -487,21 +559,32 @@ export default function MoneyManager() {
         if (!error) {
           // 1. Rollback saldo wallet LAMA (undo dampak transaksi lama)
           let oldWalletNewBalance = freshOldWalletBalance
-          if (oldTransaction.type === 'pemasukan') {
+          if (oldTransaction.type === 'pemasukan' || oldTransaction.type === 'topup') {
             oldWalletNewBalance -= oldTransaction.amount
           } else {
             oldWalletNewBalance += oldTransaction.amount
           }
           await supabase.from('wallets').update({ balance: oldWalletNewBalance }).eq('id', oldWalletId)
 
+          if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
+             const freshOldSourceBal = await fetchFreshWalletBalance(oldTransaction.source_wallet_id)
+             if (freshOldSourceBal !== null) {
+                 await supabase.from('wallets').update({ balance: freshOldSourceBal + oldTransaction.amount + oldAdminFeeAmount }).eq('id', oldTransaction.source_wallet_id)
+             }
+          }
+
           // 2. Apply transaksi baru ke wallet BARU
           let newWalletNewBalance = freshNewWalletBalance
-          if (type === 'pemasukan') {
+          if (type === 'pemasukan' || type === 'topup') {
             newWalletNewBalance += amountNum
           } else {
             newWalletNewBalance -= amountNum
           }
           await supabase.from('wallets').update({ balance: newWalletNewBalance }).eq('id', newWalletId)
+
+          if (type === 'topup' && freshSourceWalletBalance !== null) {
+             await supabase.from('wallets').update({ balance: freshSourceWalletBalance - amountNum }).eq('id', parseInt(sourceWalletId))
+          }
 
           fetchWallets()
         }
@@ -521,17 +604,38 @@ export default function MoneyManager() {
 
       // Fix Bug #2: Update saldo berdasarkan nilai fresh dari DB
       if (!error) {
-        const newBalance = type === 'pemasukan'
+        let newBalance = type === 'pemasukan' || type === 'topup'
           ? freshNewWalletBalance + amountNum
           : freshNewWalletBalance - amountNum
+          
+        if (type === 'topup' && freshSourceWalletBalance !== null) {
+            let srcNewBalance = freshSourceWalletBalance - amountNum
+            if (adminFeeNum > 0) {
+                srcNewBalance -= adminFeeNum
+                const adminPayload = {
+                    title: 'Biaya Admin',
+                    amount: adminFeeNum,
+                    type: 'pengeluaran',
+                    category: 'Lainnya',
+                    wallet_id: parseInt(sourceWalletId),
+                    date: safeDate, // maintain the same safeDate
+                    created_at: new Date().toISOString(),
+                    is_piutang: false,
+                    is_talangan: false
+                }
+                await supabase.from('transactions').insert([adminPayload])
+            }
+            await supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId))
+        }
+
         await supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
         fetchWallets()
       }
     }
 
     if (error) {
-      console.error(error)
-      showToast('error', 'Gagal menyimpan transaksi')
+      console.error("Supabase Error Full:", error)
+      showToast('error', `Gagal menyimpan: ${error.message || 'Cek console untuk detail'}`)
     } else {
       // Split Bill / Debt Creation
       if (data && data.length > 0 && isSplitBill && type === 'pengeluaran') {
@@ -566,9 +670,11 @@ export default function MoneyManager() {
   const resetForm = () => {
     setTitle('')
     setAmount('')
+    setAdminFee('')
     setCategory('')
     setType('pemasukan')
     setSelectedWalletId('')
+    setSourceWalletId('')
     setCustomDate(new Date().toISOString().split('T')[0])
     setEditingId(null)
     setIsModalOpen(false)
@@ -587,9 +693,11 @@ export default function MoneyManager() {
     setEditingId(t.id)
     setTitle(t.title)
     setAmount(t.amount.toString())
+    setAdminFee('') // admin fee cannot be directly edited via parent topup 
     setCategory(t.category)
     setType(t.type)
     setSelectedWalletId(t.wallet_id?.toString() || '')
+    setSourceWalletId(t.source_wallet_id?.toString() || '')
     setCustomDate(new Date(t.date || t.created_at).toISOString().split('T')[0])
     // Load Piutang State
     setIsPiutang(t.is_piutang || false)
@@ -725,10 +833,33 @@ export default function MoneyManager() {
       if (transaction.wallet_id) {
         const freshBalance = await fetchFreshWalletBalance(transaction.wallet_id)
         if (freshBalance !== null) {
-          const restoredBalance = transaction.type === 'pemasukan'
+          const restoredBalance = transaction.type === 'pemasukan' || transaction.type === 'topup'
             ? freshBalance - transaction.amount
             : freshBalance + transaction.amount
           await supabase.from('wallets').update({ balance: restoredBalance }).eq('id', transaction.wallet_id)
+        }
+        
+        if (transaction.type === 'topup' && transaction.source_wallet_id) {
+           // Cari dan hapus transaksi Biaya Admin terkait (jika ada)
+           let adminFeeRollback = 0
+           const { data: adminFeeTrx } = await supabase
+             .from('transactions')
+             .select('*')
+             .eq('wallet_id', transaction.source_wallet_id)
+             .eq('title', 'Biaya Admin')
+             .eq('type', 'pengeluaran')
+             .eq('date', transaction.date)
+             .limit(1)
+
+           if (adminFeeTrx && adminFeeTrx.length > 0) {
+             adminFeeRollback = adminFeeTrx[0].amount
+             await supabase.from('transactions').delete().eq('id', adminFeeTrx[0].id)
+           }
+
+           const freshSource = await fetchFreshWalletBalance(transaction.source_wallet_id)
+           if (freshSource !== null) {
+               await supabase.from('wallets').update({ balance: freshSource + transaction.amount + adminFeeRollback }).eq('id', transaction.source_wallet_id)
+           }
         }
       }
       fetchWallets()
@@ -882,7 +1013,8 @@ export default function MoneyManager() {
   }
 
   // Helper: Get Icon Component based on category name
-  const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran') => {
+  const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran' | 'topup') => {
+    if (type === 'topup') return { Icon: WalletIcon, color: 'bg-blue-100 text-blue-600' }
     const allCats = [...CATEGORIES.pemasukan, ...CATEGORIES.pengeluaran]
     const found = allCats.find(c => c.name === catName)
     return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 text-slate-600' }
@@ -1488,7 +1620,11 @@ export default function MoneyManager() {
                                    </div>
                                    <div className="flex-1 min-w-0">
                                        <div className="flex items-center gap-2 mb-1">
-                                           <span className="font-bold text-[#080C1A] truncate">{t.title}</span>
+                                           <span className="font-bold text-[#080C1A] truncate">
+                                              {t.type === 'topup' && t.source_wallet_id 
+                                                ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
+                                                : t.title}
+                                           </span>
                                            {t.is_piutang && (
                                                <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
                                                    💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
@@ -1506,6 +1642,7 @@ export default function MoneyManager() {
                                    </div>
                                    <div className="text-right">
                                        <p className={`font-bold ${
+                                         t.type === 'topup' ? 'text-blue-600' :
                                          t.type === 'pemasukan'
                                            ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
                                            : (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
@@ -1625,11 +1762,18 @@ export default function MoneyManager() {
                 >
                   Pengeluaran
                 </button>
+                <button
+                  type="button"
+                  onClick={() => { setType('topup'); setCategory('Topup'); }}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'topup' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Topup
+                </button>
               </div>
 
               {/* Date & Wallet Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
+                <div className={type === 'topup' ? 'md:col-span-1' : ''}>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Tanggal</label>
                   <input
                     type="date"
@@ -1639,30 +1783,78 @@ export default function MoneyManager() {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Dompet</label>
-                  <select
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                    value={selectedWalletId}
-                    onChange={(e) => setSelectedWalletId(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Pilih Dompet</option>
-                    {wallets.map(w => (
-                      <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                    ))}
-                  </select>
-                </div>
+                {type === 'topup' ? (
+                  <>
+                     <div className="border border-slate-200 p-3 rounded-xl bg-slate-50 relative">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sumber Dana</label>
+                        <select
+                          className="w-full bg-transparent outline-none font-semibold text-slate-800 text-sm"
+                          value={sourceWalletId}
+                          onChange={(e) => setSourceWalletId(e.target.value)}
+                          required
+                        >
+                          <option value="" disabled>Pilih Sumber</option>
+                          {wallets.map(w => (
+                            <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                          ))}
+                        </select>
+                     </div>
+                     <div className="border border-blue-200 p-3 rounded-xl bg-blue-50/50">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
+                        <select
+                          className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm"
+                          value={selectedWalletId}
+                          onChange={(e) => setSelectedWalletId(e.target.value)}
+                          required
+                        >
+                          <option value="" disabled>Pilih Tujuan</option>
+                          {wallets.map(w => (
+                            <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                          ))}
+                        </select>
+                     </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Dompet</label>
+                    <select
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      value={selectedWalletId}
+                      onChange={(e) => setSelectedWalletId(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Pilih Dompet</option>
+                      {wallets.map(w => (
+                        <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Amount Input */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Jumlah (Rp)</label>
-                <MoneyInput
-                  value={amount}
-                  onChange={setAmount}
-                  autoFocus={!editingId}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    {type === 'topup' ? 'Nominal Topup (Rp)' : 'Jumlah (Rp)'}
+                  </label>
+                  <MoneyInput
+                    value={amount}
+                    onChange={setAmount}
+                    autoFocus={!editingId}
+                  />
+                </div>
+
+                {type === 'topup' && (
+                  <div className="animate-in slide-in-from-top-2 duration-200">
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Biaya Admin (Opsional)</label>
+                    <MoneyInput
+                      value={adminFee}
+                      onChange={setAdminFee}
+                      placeholder="0"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Piutang Toggle - hanya untuk Pemasukan */}
@@ -1828,10 +2020,11 @@ export default function MoneyManager() {
               )}
 
 
+              {type !== 'topup' && (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
                 <div className="grid grid-cols-4 gap-3">
-                  {CATEGORIES[type].map((cat) => {
+                  {CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map((cat) => {
                     const isSelected = category === cat.name
                     return (
                       <button
@@ -1851,6 +2044,7 @@ export default function MoneyManager() {
                   })}
                 </div>
               </div>
+              )}
 
               {/* Budget Awareness Indicator */}
               {budgetInfo && (
