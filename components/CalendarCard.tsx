@@ -73,7 +73,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
     }
 
     const checkBillPayments = async () => {
-        const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+        const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}` // YYYY-MM
         const { data } = await supabase
             .from('bill_payments')
             .select('bill_id')
@@ -117,7 +117,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             }
         }
         fetchData()
-    }, [currentDate.getFullYear(), refreshTrigger])
+    }, [currentDate.getFullYear(), currentDate.getMonth(), refreshTrigger])
 
     const handleCalendarPayBill = (bill: RecurringBill) => {
         setSelectedPaymentBill(bill)
@@ -149,7 +149,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
         
         setPayingBillId(selectedPaymentBill.id)
         try {
-            const paymentMonth = new Date(paymentDate).toISOString().slice(0, 7)
+            const paymentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
             
             const { data: txData, error: txError } = await supabase.from('transactions').insert({
                 title: selectedPaymentBill.name,
@@ -203,7 +203,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
         if (!confirmed) return
 
         try {
-            const currentMonth = new Date().toISOString().slice(0, 7)
+            const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
             
             // 1. Get the payment record to find transaction_id
             const { data: existingPayment } = await supabase
