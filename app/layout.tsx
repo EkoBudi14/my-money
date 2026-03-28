@@ -10,6 +10,15 @@ const lexendDeca = Lexend_Deca({
 export const metadata: Metadata = {
   title: "SwiftLog - Money Manager",
   description: "Modern Logistics-style Money Management",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SwiftLog",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 import Sidebar from "@/components/Sidebar";
