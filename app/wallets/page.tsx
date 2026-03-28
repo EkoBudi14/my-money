@@ -109,6 +109,22 @@ export default function WalletsPage() {
                                 await supabase.from('wallets').update({
                                     balance: sourceWallet.balance - diff
                                 }).eq('id', sourceWallet.id)
+
+                                // Create Transaction History (Topup)
+                                const topupPayload = {
+                                    title: `Isi saldo dari ${sourceWallet.name}`,
+                                    amount: diff,
+                                    type: 'topup',
+                                    category: 'Lainnya',
+                                    wallet_id: editingId,
+                                    source_wallet_id: sourceWallet.id,
+                                    date: new Date().toISOString(),
+                                    created_at: new Date().toISOString(),
+                                    is_piutang: false,
+                                    is_talangan: false
+                                }
+                                await supabase.from('transactions').insert([topupPayload])
+
                             } else {
                                 return showToast('error', "Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
                             }
@@ -126,6 +142,23 @@ export default function WalletsPage() {
                                 await supabase.from('wallets').update({
                                     balance: sourceWallet.balance + refundAmount
                                 }).eq('id', sourceWallet.id)
+
+                                // Create Transaction History (Refund / Kembalikan Topup)
+                                // PERMINTAAN USER: Tidak usah dicatat "Kembalikan saldo", cukup hapus riwayat "Isi saldo" nya saja.
+                                console.log("Menghapus history lama, tidak membuat history baru");
+                                const { data: oldTx } = await supabase
+                                    .from('transactions')
+                                    .select('id')
+                                    .eq('wallet_id', editingId)
+                                    .eq('source_wallet_id', sourceWallet.id)
+                                    .eq('type', 'topup')
+                                    .order('created_at', { ascending: false })
+                                    .limit(1)
+
+                                if (oldTx && oldTx.length > 0) {
+                                    await supabase.from('transactions').delete().eq('id', oldTx[0].id)
+                                }
+
                             } else {
                                 const confirm = await showConfirm({
                                     title: 'Sumber Dana Hilang',
@@ -143,6 +176,7 @@ export default function WalletsPage() {
             const res = await supabase.from('wallets').update(payload).eq('id', editingId)
             error = res.error
         } else {
+            let sourceWalletToDeduct: any = null
             // Deduct from source if selected and linked
             if (sourceWalletId && linkToSource) {
                 const sourceWallet = activeWallets.find(w => w.id === parseInt(sourceWalletId)) ||
@@ -155,11 +189,30 @@ export default function WalletsPage() {
                     await supabase.from('wallets').update({
                         balance: sourceWallet.balance - currentBalance
                     }).eq('id', sourceWallet.id)
+                    sourceWalletToDeduct = sourceWallet
                 }
             }
 
-            const res = await supabase.from('wallets').insert([payload])
+            const res = await supabase.from('wallets').insert([payload]).select()
             error = res.error
+            
+            // Create Transaction History if successful
+            if (!error && res.data && res.data.length > 0 && sourceWalletToDeduct) {
+                const newWalletId = res.data[0].id
+                const topupPayload = {
+                    title: `Isi saldo awal dari ${sourceWalletToDeduct.name}`,
+                    amount: currentBalance,
+                    type: 'topup',
+                    category: 'Lainnya',
+                    wallet_id: newWalletId,
+                    source_wallet_id: sourceWalletToDeduct.id,
+                    date: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
+                    is_piutang: false,
+                    is_talangan: false
+                }
+                await supabase.from('transactions').insert([topupPayload])
+            }
         }
 
         if (error) {
