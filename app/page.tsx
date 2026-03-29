@@ -461,6 +461,8 @@ export default function MoneyManager() {
       // lalu rollback jumlahnya ke saldo source wallet
       let oldAdminFeeAmount = 0
       if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
+        // Fix BUG #5: Tambah order created_at desc agar admin fee yang diambil
+        // adalah milik topup ini (paling dekat waktunya), bukan topup lain di hari sama
         const { data: adminFeeTrx } = await supabase
           .from('transactions')
           .select('*')
@@ -468,6 +470,7 @@ export default function MoneyManager() {
           .eq('title', 'Biaya Admin')
           .eq('type', 'pengeluaran')
           .eq('date', oldTransaction.date)
+          .order('created_at', { ascending: false })
           .limit(1)
 
         if (adminFeeTrx && adminFeeTrx.length > 0) {
@@ -513,7 +516,9 @@ export default function MoneyManager() {
           await supabase.from('wallets').update({ balance: finalBalance }).eq('id', newWalletId)
           
           if (type === 'topup') {
-              await supabase.from('wallets').update({ balance: sourceBalanceAfterRollback - amountNum }).eq('id', parseInt(sourceWalletId))
+              // Fix BUG #4: Tidak lakukan dua kali update - langsung hitung final saldo termasuk adminFee
+              const finalSourceBalance = sourceBalanceAfterRollback - amountNum - adminFeeNum
+              await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
               // Re-apply admin fee baru jika ada
               if (adminFeeNum > 0) {
                 const adminPayload = {
@@ -528,7 +533,6 @@ export default function MoneyManager() {
                   is_talangan: false
                 }
                 await supabase.from('transactions').insert([adminPayload])
-                await supabase.from('wallets').update({ balance: sourceBalanceAfterRollback - amountNum - adminFeeNum }).eq('id', parseInt(sourceWalletId))
               }
           }
           fetchWallets()
@@ -583,7 +587,23 @@ export default function MoneyManager() {
           await supabase.from('wallets').update({ balance: newWalletNewBalance }).eq('id', newWalletId)
 
           if (type === 'topup' && freshSourceWalletBalance !== null) {
-             await supabase.from('wallets').update({ balance: freshSourceWalletBalance - amountNum }).eq('id', parseInt(sourceWalletId))
+             // Fix BUG #7: Admin fee juga di-apply saat edit topup dengan wallet berbeda
+             const finalSourceBalance = freshSourceWalletBalance - amountNum - adminFeeNum
+             await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
+             if (adminFeeNum > 0) {
+               const adminPayload = {
+                 title: 'Biaya Admin',
+                 amount: adminFeeNum,
+                 type: 'pengeluaran',
+                 category: 'Lainnya',
+                 wallet_id: parseInt(sourceWalletId),
+                 date: safeDate,
+                 created_at: new Date().toISOString(),
+                 is_piutang: false,
+                 is_talangan: false
+               }
+               await supabase.from('transactions').insert([adminPayload])
+             }
           }
 
           fetchWallets()
@@ -842,6 +862,8 @@ export default function MoneyManager() {
         if (transaction.type === 'topup' && transaction.source_wallet_id) {
            // Cari dan hapus transaksi Biaya Admin terkait (jika ada)
            let adminFeeRollback = 0
+           // Fix BUG #5: Tambah order created_at desc agar admin fee yang diambil
+           // adalah milik topup ini (paling dekat waktunya), bukan topup lain di hari sama
            const { data: adminFeeTrx } = await supabase
              .from('transactions')
              .select('*')
@@ -849,6 +871,7 @@ export default function MoneyManager() {
              .eq('title', 'Biaya Admin')
              .eq('type', 'pengeluaran')
              .eq('date', transaction.date)
+             .order('created_at', { ascending: false })
              .limit(1)
 
            if (adminFeeTrx && adminFeeTrx.length > 0) {

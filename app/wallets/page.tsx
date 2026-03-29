@@ -103,11 +103,16 @@ export default function WalletsPage() {
                             if (sourceWallet) {
                                 if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengambil dana dari dompet yang sedang diedit!")
 
-                                if (sourceWallet.balance < diff) {
-                                    return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
+                                // Fix BUG #1: Fetch fresh balance dari DB sebelum deduct (anti race condition)
+                                const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
+                                if (!freshSourceData) return showToast('error', 'Sumber dana tidak ditemukan!')
+                                const freshSourceBalance = freshSourceData.balance
+
+                                if (freshSourceBalance < diff) {
+                                    return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${freshSourceBalance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
                                 }
                                 await supabase.from('wallets').update({
-                                    balance: sourceWallet.balance - diff
+                                    balance: freshSourceBalance - diff
                                 }).eq('id', sourceWallet.id)
 
                                 // Create Transaction History (Topup)
@@ -139,24 +144,34 @@ export default function WalletsPage() {
                                 if (sourceWallet.id === editingId) return showToast('error', "Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
 
                                 const refundAmount = Math.abs(diff)
+
+                                // Fix BUG #1: Fetch fresh balance dari DB sebelum update (anti race condition)
+                                const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
+                                if (!freshSourceData) return showToast('error', 'Sumber dana tidak ditemukan!')
+                                const freshSourceBalance = freshSourceData.balance
+
                                 await supabase.from('wallets').update({
-                                    balance: sourceWallet.balance + refundAmount
+                                    balance: freshSourceBalance + refundAmount
                                 }).eq('id', sourceWallet.id)
 
                                 // Create Transaction History (Refund / Kembalikan Topup)
                                 // PERMINTAAN USER: Tidak usah dicatat "Kembalikan saldo", cukup hapus riwayat "Isi saldo" nya saja.
+                                // Fix BUG #2: Hapus history topup yang amount-nya paling mendekati refundAmount
+                                // (bukan sembarang yang terbaru, agar partial refund tidak menghapus record yang salah)
                                 console.log("Menghapus history lama, tidak membuat history baru");
-                                const { data: oldTx } = await supabase
+                                const { data: oldTxList } = await supabase
                                     .from('transactions')
-                                    .select('id')
+                                    .select('id, amount')
                                     .eq('wallet_id', editingId)
                                     .eq('source_wallet_id', sourceWallet.id)
                                     .eq('type', 'topup')
                                     .order('created_at', { ascending: false })
-                                    .limit(1)
 
-                                if (oldTx && oldTx.length > 0) {
-                                    await supabase.from('transactions').delete().eq('id', oldTx[0].id)
+                                if (oldTxList && oldTxList.length > 0) {
+                                    // Cari yang amount-nya paling mendekati refundAmount, jika tidak ada yang persis, ambil terbaru
+                                    const exactMatch = oldTxList.find(tx => tx.amount === refundAmount)
+                                    const txToDelete = exactMatch || oldTxList[0]
+                                    await supabase.from('transactions').delete().eq('id', txToDelete.id)
                                 }
 
                             } else {
@@ -183,11 +198,16 @@ export default function WalletsPage() {
                     savingsWallets.find(w => w.id === parseInt(sourceWalletId))
 
                 if (sourceWallet) {
-                    if (sourceWallet.balance < currentBalance) {
-                        return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${sourceWallet.balance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
+                    // Fix BUG #1: Fetch fresh balance dari DB sebelum deduct (anti race condition)
+                    const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
+                    if (!freshSourceData) return showToast('error', 'Sumber dana tidak ditemukan!')
+                    const freshSourceBalance = freshSourceData.balance
+
+                    if (freshSourceBalance < currentBalance) {
+                        return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${freshSourceBalance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
                     }
                     await supabase.from('wallets').update({
-                        balance: sourceWallet.balance - currentBalance
+                        balance: freshSourceBalance - currentBalance
                     }).eq('id', sourceWallet.id)
                     sourceWalletToDeduct = sourceWallet
                 }

@@ -201,7 +201,8 @@ export default function AnalyticsPage() {
             }
             grouped[wName].transactions.push(t)
             if (t.type === 'pemasukan') grouped[wName].totalIncome += t.amount
-            else grouped[wName].totalExpense += t.amount
+            // Fix BUG #6: Topup tidak dihitung sebagai pengeluaran di breakdown per dompet
+            else if (t.type === 'pengeluaran') grouped[wName].totalExpense += t.amount
         })
 
         // Sort transactions within each wallet by date descending
