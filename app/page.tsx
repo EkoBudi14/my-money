@@ -1137,7 +1137,7 @@ export default function MoneyManager() {
 
   // --- Budget Awareness Logic (Memoized) ---
   const budgetInfo = useMemo(() => {
-    if (type === 'pemasukan' || !category || !customDate) return null
+    if (type === 'pemasukan' || type === 'topup' || !category || !customDate) return null
 
     // 1. Find budget for the Selected Date's month (not necessarily Current Dashboard Month)
     // Note: 'budgets' state currently holds budgets for 'currentDate'. 
