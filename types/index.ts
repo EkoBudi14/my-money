@@ -56,19 +56,23 @@ export interface Debt {
 
 export const CATEGORIES = {
     pengeluaran: [
-        { name: 'Makanan', color: 'bg-orange-100 text-orange-600' },
-        { name: 'Transport', color: 'bg-blue-100 text-blue-600' },
-        { name: 'Belanja', color: 'bg-purple-100 text-purple-600' },
+        { name: 'Kebutuhan Dapur', color: 'bg-orange-100 text-orange-600' },
+        { name: 'Makan di Luar', color: 'bg-rose-100 text-rose-600' },
+        { name: 'Transportasi', color: 'bg-blue-100 text-blue-600' },
+        { name: 'Tempat Tinggal', color: 'bg-teal-100 text-teal-600' },
         { name: 'Tagihan', color: 'bg-yellow-100 text-yellow-600' },
-        { name: 'Rumah', color: 'bg-teal-100 text-teal-600' },
-        { name: 'Hiburan', color: 'bg-pink-100 text-pink-600' },
+        { name: 'Belanja', color: 'bg-purple-100 text-purple-600' },
         { name: 'Kesehatan', color: 'bg-red-100 text-red-600' },
+        { name: 'Cicilan & Utang', color: 'bg-stone-100 text-stone-600' },
+        { name: 'Pribadi & Hiburan', color: 'bg-pink-100 text-pink-600' },
+        { name: 'Edukasi & Donasi', color: 'bg-indigo-100 text-indigo-600' },
         { name: 'Lainnya', color: 'bg-slate-100 text-slate-600' },
     ],
     pemasukan: [
         { name: 'Gaji', color: 'bg-emerald-100 text-emerald-600' },
-        { name: 'Hadiah', color: 'bg-pink-100 text-pink-600' },
+        { name: 'Bonus & Hadiah', color: 'bg-pink-100 text-pink-600' },
         { name: 'Investasi', color: 'bg-indigo-100 text-indigo-600' },
+        { name: 'Penjualan', color: 'bg-amber-100 text-amber-600' },
         { name: 'Lainnya', color: 'bg-slate-100 text-slate-600' },
     ]
 }
@@ -99,4 +103,9 @@ export interface BillPayment {
     transaction_id?: number
     created_at: string
 }
-
+export interface CustomCategoryDef {
+    id?: string
+    name: string
+    iconName: string
+    color: string
+}

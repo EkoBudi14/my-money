@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
 
     const fetchData = async () => {
         setLoading(true)
-        const { data: txs } = await supabase.from('transactions').select('*')
+        const { data: txs } = await supabase.from('transactions').select('*').order('created_at', { ascending: false })
         const { data: wlls } = await supabase.from('wallets').select('*')
 
         if (txs) setTransactions(txs as unknown as Transaction[])
@@ -209,9 +209,11 @@ export default function AnalyticsPage() {
         return Object.values(grouped)
             .map(g => ({
                 ...g,
-                transactions: g.transactions.sort((a, b) =>
-                    new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime()
-                )
+                transactions: g.transactions.sort((a, b) => {
+                    const timeDiff = new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime()
+                    if (timeDiff !== 0) return timeDiff
+                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                })
             }))
             .sort((a, b) => b.totalExpense - a.totalExpense)
     }, [filteredTxs, wallets])
@@ -230,9 +232,31 @@ export default function AnalyticsPage() {
                     walletName.toLowerCase().includes(q)
                 )
             })
-            .sort((a, b) => new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime())
+            .sort((a, b) => {
+                const timeDiff = new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime()
+                if (timeDiff !== 0) return timeDiff
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            })
             .slice(0, 50) // cap at 50 results for performance
     }, [searchQuery, transactions, wallets])
+
+    // 6. Top Expenses & Recent Activity for this period
+    const { topExpenses, recentActivity } = useMemo(() => {
+        const expenses = filteredTxs
+            .filter(t => t.type === 'pengeluaran' && !t.is_talangan)
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 5)
+
+        const recent = [...filteredTxs]
+            .sort((a, b) => {
+                const timeDiff = new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime()
+                if (timeDiff !== 0) return timeDiff
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            })
+            .slice(0, 5)
+
+        return { topExpenses: expenses, recentActivity: recent }
+    }, [filteredTxs])
 
     // Colors
     const COLORS = useMemo(() => ['#165DFF', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'], [])
@@ -299,35 +323,53 @@ export default function AnalyticsPage() {
             prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).forEach(t => {
                 prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
             })
-            let biggestRise: { cat: string; pct: number; amount: number } | null = null
-            let biggestDrop: { cat: string; pct: number; amount: number } | null = null
-            categoryData.forEach(({ name, value }) => {
-                const prev = prevCatMap[name] || 0
-                if (prev > 0) {
-                    const pct = ((value - prev) / prev) * 100
-                    if (pct > 10 && (!biggestRise || pct > biggestRise.pct))
-                        biggestRise = { cat: name, pct, amount: value - prev }
-                    if (pct < -10 && (!biggestDrop || pct < biggestDrop.pct))
-                        biggestDrop = { cat: name, pct, amount: prev - value }
+                let biggestRise: { cat: string; pct: number; amount: number } | null = null
+                let biggestDrop: { cat: string; pct: number; amount: number } | null = null
+                
+                const allInsightCats = new Set([...categoryData.map(c => c.name), ...Object.keys(prevCatMap)])
+                allInsightCats.forEach(name => {
+                    const curr = categoryData.find(c => c.name === name)?.value || 0
+                    const prev = prevCatMap[name] || 0
+                    if (prev > 0) {
+                        const pct = ((curr - prev) / prev) * 100
+                        if (pct > 10 && (!biggestRise || pct > biggestRise.pct))
+                            biggestRise = { cat: name, pct, amount: curr - prev }
+                        if (pct < -10 && (!biggestDrop || pct < biggestDrop.pct))
+                            biggestDrop = { cat: name, pct, amount: prev - curr }
+                    }
+                })
+
+                if (biggestRise) {
+                    const r = biggestRise as { cat: string; pct: number; amount: number }
+                    const multiplier = (r.pct / 100) + 1
+                    const titleText = multiplier >= 2 
+                        ? `${r.cat} naik ${multiplier.toLocaleString('id-ID', { maximumFractionDigits: 1 })}x lipat`
+                        : `${r.cat} naik ${r.pct.toFixed(0)}%`
+                    result.push({ type: 'negative', emoji: '📈', title: titleText, desc: `Pengeluaran ${r.cat} bertambah Rp ${r.amount.toLocaleString('id-ID')} dibanding periode lalu.` })
                 }
-            })
-            if (biggestRise) {
-                const r = biggestRise as { cat: string; pct: number; amount: number }
-                result.push({ type: 'negative', emoji: '📈', title: `${r.cat} naik ${r.pct.toFixed(0)}%`, desc: `Pengeluaran ${r.cat} bertambah Rp ${r.amount.toLocaleString('id-ID')} dibanding periode lalu.` })
-            }
-            if (biggestDrop) {
-                const d = biggestDrop as { cat: string; pct: number; amount: number }
-                result.push({ type: 'positive', emoji: '📉', title: `${d.cat} turun ${Math.abs(d.pct).toFixed(0)}%`, desc: `Kamu hemat Rp ${d.amount.toLocaleString('id-ID')} di ${d.cat} dibanding periode lalu. Bagus!` })
-            }
+                if (biggestDrop) {
+                    const d = biggestDrop as { cat: string; pct: number; amount: number }
+                    const absPct = Math.abs(d.pct)
+                    const titleText = absPct >= 99.5 
+                        ? `Pengeluaran ${d.cat} bersih (turun 100%)` 
+                        : `${d.cat} turun ${absPct.toFixed(0)}%`
+                    
+                    result.push({ type: 'positive', emoji: '📉', title: titleText, desc: `Kamu hemat Rp ${d.amount.toLocaleString('id-ID')} di ${d.cat} dibanding periode lalu. Bagus!` })
+                }
 
             // --- Income comparison ---
             if (prevIncome > 0 && income > 0) {
                 const incDiff = ((income - prevIncome) / prevIncome) * 100
                 if (Math.abs(incDiff) >= 5) {
-                    result.push(incDiff > 0
-                        ? { type: 'positive', emoji: '💰', title: `Pemasukan naik ${incDiff.toFixed(0)}%`, desc: `Bertambah Rp ${(income - prevIncome).toLocaleString('id-ID')} dari periode sebelumnya.` }
-                        : { type: 'warning', emoji: '💸', title: `Pemasukan turun ${Math.abs(incDiff).toFixed(0)}%`, desc: `Berkurang Rp ${(prevIncome - income).toLocaleString('id-ID')} dari periode sebelumnya.` }
-                    )
+                    if (incDiff > 0) {
+                        const multiplier = (incDiff / 100) + 1
+                        const titleText = multiplier >= 2
+                            ? `Pemasukan naik ${multiplier.toLocaleString('id-ID', { maximumFractionDigits: 1 })}x lipat`
+                            : `Pemasukan naik ${incDiff.toFixed(0)}%`
+                        result.push({ type: 'positive', emoji: '💰', title: titleText, desc: `Bertambah Rp ${(income - prevIncome).toLocaleString('id-ID')} dari periode sebelumnya.` })
+                    } else {
+                        result.push({ type: 'warning', emoji: '💸', title: `Pemasukan turun ${Math.abs(incDiff).toFixed(0)}%`, desc: `Berkurang Rp ${(prevIncome - income).toLocaleString('id-ID')} dari periode sebelumnya.` })
+                    }
                 }
             }
         } else if (income > 0 || expense > 0) {
@@ -595,7 +637,8 @@ export default function AnalyticsPage() {
                                         return searchResults.map(tx => {
                                         const walletName = (tx.wallet_id != null ? walletMap.get(tx.wallet_id) : undefined) || 'Tidak Diketahui'
                                         const txDate = new Date(tx.date || tx.created_at)
-                                        const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                                        const txTime = new Date(tx.created_at)
+                                        const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
                                         const isIncome = tx.type === 'pemasukan'
                                         const isTopup = tx.type === 'topup'
                                         return (
@@ -833,6 +876,83 @@ export default function AnalyticsPage() {
                                 <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[#080C1A]' : 'text-rose-600'}`}>
                                     Rp {netBalance.toLocaleString('id-ID')}
                                 </p>
+                            </div>
+                        </div>
+
+                        {/* Quick Insights Row (Top Expenses & Recent Activity) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Top Expenses */}
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className="p-2 bg-rose-50 rounded-lg text-rose-500">
+                                        <TrendingDown className="w-5 h-5" />
+                                    </div>
+                                    <h3 className="font-bold text-[#080C1A]">Pengeluaran Terbesar</h3>
+                                </div>
+                                {topExpenses.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {topExpenses.map((tx, idx) => (
+                                            <div key={tx.id} className="flex justify-between items-center group">
+                                                <div className="flex items-center gap-3 min-w-0 pr-4">
+                                                    <span className="text-xs font-black text-slate-300 w-4">{idx + 1}.</span>
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
+                                                        <div className="flex gap-2 items-center mt-1">
+                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                                {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p className="font-bold text-sm text-rose-600 shrink-0">-Rp {tx.amount.toLocaleString('id-ID')}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                                        <p className="text-sm font-medium">Belum ada pengeluaran</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Recent Activity */}
+                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                                <div className="flex items-center gap-3 mb-5">
+                                    <div className="p-2 bg-[#165DFF]/10 rounded-lg text-[#165DFF]">
+                                        <Zap className="w-5 h-5" />
+                                    </div>
+                                    <h3 className="font-bold text-[#080C1A]">Aktivitas Terakhir</h3>
+                                </div>
+                                {recentActivity.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {recentActivity.map(tx => {
+                                            const isIncome = tx.type === 'pemasukan' || tx.type === 'topup'
+                                            return (
+                                                <div key={tx.id} className="flex justify-between items-center group">
+                                                    <div className="min-w-0 pr-4">
+                                                        <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
+                                                        <div className="flex gap-2 items-center mt-1">
+                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                                {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                        </div>
+                                                    </div>
+                                                    <p className={`font-bold text-sm shrink-0 ${
+                                                        isIncome ? 'text-emerald-600' : 'text-rose-600'
+                                                    }`}>
+                                                        {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                    </p>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                                        <p className="text-sm font-medium">Belum ada aktivitas</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -1168,7 +1288,8 @@ export default function AnalyticsPage() {
                                                     <div className="bg-slate-50/50 border-t border-[#F3F4F3] overflow-x-hidden">
                                                         {walletGroup.transactions.map((tx, idx) => {
                                                             const txDate = new Date(tx.date || tx.created_at)
-                                                            const dateStr = txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                            const txTime = new Date(tx.created_at)
+                                                            const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
                                                             const isIncome = tx.type === 'pemasukan'
                                                             return (
                                                                 <div

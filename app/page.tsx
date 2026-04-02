@@ -11,7 +11,7 @@ import CurrencyCard from '@/components/CurrencyCard'
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
 import RecurringBillsList from '@/components/RecurringBillsList'
-import { Wallet, Transaction, Goal, Budget, Debt } from '@/types'
+import { Wallet, Transaction, Goal, Budget, Debt, CustomCategoryDef } from '@/types'
 import {
   Plus,
   Trash2,
@@ -41,8 +41,43 @@ import {
   AlertTriangle,
   StickyNote,
   Settings,
-  User
+  User,
+  Coffee,
+  Plane,
+  Gamepad2,
+  Tv,
+  Smartphone,
+  Book,
+  Scissors,
+  Music,
+  Shirt,
+  Smile,
+  Globe,
+  Dumbbell,
+  GraduationCap
 } from 'lucide-react'
+
+// --- Definitions ---
+export const AVAILABLE_ICONS: Record<string, any> = {
+  Home, ShoppingBag, Utensils, Car, Zap, Package, HeartPulse, CreditCard, Film, Gift, 
+  Briefcase, TrendingUp, Landmark, Coffee, Plane, Gamepad2, Tv, Smartphone, Book, 
+  Scissors, Music, Shirt, Smile, Globe, Dumbbell, GraduationCap
+}
+
+export const COLOR_PALETTES = [
+  'bg-emerald-100 text-emerald-600',
+  'bg-rose-100 text-rose-600',
+  'bg-blue-100 text-blue-600',
+  'bg-teal-100 text-teal-600',
+  'bg-yellow-100 text-yellow-600',
+  'bg-purple-100 text-purple-600',
+  'bg-red-100 text-red-600',
+  'bg-stone-100 text-stone-600',
+  'bg-pink-100 text-pink-600',
+  'bg-indigo-100 text-indigo-600',
+  'bg-amber-100 text-amber-600',
+  'bg-slate-100 text-slate-600'
+]
 
 interface Note {
   id: number
@@ -55,19 +90,23 @@ interface Note {
 // --- Constants ---
 const CATEGORIES = {
   pengeluaran: [
-    { name: 'Makanan', icon: Utensils, color: 'bg-orange-100 text-orange-600' },
-    { name: 'Transport', icon: Car, color: 'bg-blue-100 text-blue-600' },
-    { name: 'Belanja', icon: ShoppingBag, color: 'bg-purple-100 text-purple-600' },
+    { name: 'Kebutuhan Dapur', icon: ShoppingBag, color: 'bg-orange-100 text-orange-600' },
+    { name: 'Makan di Luar', icon: Utensils, color: 'bg-rose-100 text-rose-600' },
+    { name: 'Transportasi', icon: Car, color: 'bg-blue-100 text-blue-600' },
+    { name: 'Tempat Tinggal', icon: Home, color: 'bg-teal-100 text-teal-600' },
     { name: 'Tagihan', icon: Zap, color: 'bg-yellow-100 text-yellow-600' },
-    { name: 'Rumah', icon: Home, color: 'bg-teal-100 text-teal-600' },
-    { name: 'Hiburan', icon: Film, color: 'bg-pink-100 text-pink-600' },
+    { name: 'Belanja', icon: Package, color: 'bg-purple-100 text-purple-600' },
     { name: 'Kesehatan', icon: HeartPulse, color: 'bg-red-100 text-red-600' },
+    { name: 'Cicilan & Utang', icon: CreditCard, color: 'bg-stone-100 text-stone-600' },
+    { name: 'Pribadi & Hiburan', icon: Film, color: 'bg-pink-100 text-pink-600' },
+    { name: 'Edukasi & Donasi', icon: Gift, color: 'bg-indigo-100 text-indigo-600' },
     { name: 'Lainnya', icon: Package, color: 'bg-slate-100 text-slate-600' },
   ],
   pemasukan: [
     { name: 'Gaji', icon: Briefcase, color: 'bg-emerald-100 text-emerald-600' },
-    { name: 'Hadiah', icon: Gift, color: 'bg-pink-100 text-pink-600' },
+    { name: 'Bonus & Hadiah', icon: Gift, color: 'bg-pink-100 text-pink-600' },
     { name: 'Investasi', icon: TrendingUp, color: 'bg-indigo-100 text-indigo-600' },
+    { name: 'Penjualan', icon: TrendingUp, color: 'bg-amber-100 text-amber-600' },
     { name: 'Lainnya', icon: Landmark, color: 'bg-slate-100 text-slate-600' },
   ]
 }
@@ -148,6 +187,108 @@ export default function MoneyManager() {
   })
   const [isInitialized, setIsInitialized] = useState(false)
 
+  // User Custom Categories
+  const [customCategories, setCustomCategories] = useState<{pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]}>({pengeluaran: [], pemasukan: []})
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryIcon, setNewCategoryIcon] = useState('Package')
+  const [newCategoryColor, setNewCategoryColor] = useState(COLOR_PALETTES[0])
+  const [editingCategoryName, setEditingCategoryName] = useState<string | null>(null)
+
+  const resetCategoryForm = () => {
+    setShowAddCategory(false)
+    setNewCategoryName('')
+    setNewCategoryIcon('Package')
+    setNewCategoryColor(COLOR_PALETTES[0])
+    setEditingCategoryName(null)
+  }
+
+  const handleSaveCustomCategory = async () => {
+    if (!newCategoryName.trim()) return
+    const currentType = type as 'pemasukan' | 'pengeluaran'
+    if (type === 'topup') return
+
+    const getName = (c: string | CustomCategoryDef) => typeof c === 'string' ? c : c.name
+    const oldNameObj = editingCategoryName
+    const finalName = newCategoryName.trim()
+
+    if (!oldNameObj && customCategories[currentType].map(getName).map(n => n.toLowerCase()).includes(finalName.toLowerCase())) {
+        showToast('warning', 'Kategori ini sudah ada!')
+        return
+    }
+
+    let updatedList = [...customCategories[currentType]]
+    const newDef: CustomCategoryDef = {
+        name: finalName,
+        iconName: newCategoryIcon,
+        color: newCategoryColor
+    }
+
+    if (oldNameObj) {
+        updatedList = updatedList.map(c => getName(c) === oldNameObj ? newDef : c)
+        if (oldNameObj !== finalName) {
+            await supabase.from('transactions').update({ category: finalName }).eq('category', oldNameObj)
+        }
+    } else {
+        updatedList.push(newDef)
+    }
+
+    const updated = {
+        ...customCategories,
+        [currentType]: updatedList
+    }
+
+    const { error } = await supabase.from('user_settings').update({ custom_categories: updated }).eq('id', 1)
+    
+    if (!error) {
+        setCustomCategories(updated)
+        setCategory(finalName)
+        resetCategoryForm()
+        setBillsUpdateTrigger(prev => prev + 1)
+        showToast('success', oldNameObj ? 'Kategori diperbarui!' : 'Kategori ditambahkan!')
+    } else {
+        showToast('error', 'Gagal menyimpan kategori')
+    }
+  }
+
+  const handleDeleteCustomCategory = async (catName: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const currentType = type as 'pemasukan' | 'pengeluaran'
+    
+    const confirmed = await showConfirm({
+        title: 'Hapus Kategori?',
+        message: `Hapus kategori "${catName}"? Histori asli di database akan tetap aman namun logonya akan tereset menjadi default.`,
+        confirmText: 'Hapus',
+        cancelText: 'Batal'
+    })
+    
+    if (!confirmed) return
+
+    const getName = (c: string | CustomCategoryDef) => typeof c === 'string' ? c : c.name
+    const updatedList = customCategories[currentType].filter(c => getName(c) !== catName)
+    
+    const updated = { ...customCategories, [currentType]: updatedList }
+    const { error } = await supabase.from('user_settings').update({ custom_categories: updated }).eq('id', 1)
+    
+    if (!error) {
+        setCustomCategories(updated)
+        if (category === catName) setCategory('')
+        showToast('success', 'Kategori dihapus')
+    } else {
+        showToast('error', 'Gagal menghapus kategori')
+    }
+  }
+
+  const openEditCategory = (c: string | CustomCategoryDef, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const isStr = typeof c === 'string'
+    setEditingCategoryName(isStr ? c : c.name)
+    setNewCategoryName(isStr ? c : c.name)
+    setNewCategoryIcon(isStr ? 'Package' : c.iconName)
+    setNewCategoryColor(isStr ? COLOR_PALETTES[0] : c.color)
+    setShowAddCategory(true)
+  }
+
   // Settings Sync - Simplified (No Auth Required)
   useEffect(() => {
     // Load settings from Supabase on mount
@@ -160,6 +301,7 @@ export default function MoneyManager() {
 
       if (settings) {
         if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+        if (settings.custom_categories) setCustomCategories(settings.custom_categories as {pengeluaran: string[], pemasukan: string[]})
         if (settings.custom_start_date && settings.custom_end_date) {
           setCustomRange({
             start: settings.custom_start_date,
@@ -707,6 +849,9 @@ export default function MoneyManager() {
     // Reset Talangan Form
     setIsTalangan(false)
     setTalanganPerson('')
+    // Reset Custom Category Form
+    setShowAddCategory(false)
+    setNewCategoryName('')
   }
 
   const handleEditClick = (t: Transaction) => {
@@ -1038,6 +1183,18 @@ export default function MoneyManager() {
   // Helper: Get Icon Component based on category name
   const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran' | 'topup') => {
     if (type === 'topup') return { Icon: WalletIcon, color: 'bg-blue-100 text-blue-600' }
+    
+    // 1. Check Custom Categories
+    const customList = customCategories[type] || []
+    const foundCustom = customList.find(c => (typeof c === 'string' ? c : c.name) === catName)
+    if (foundCustom) {
+        if (typeof foundCustom === 'object') {
+            return { Icon: AVAILABLE_ICONS[foundCustom.iconName] || Package, color: foundCustom.color }
+        }
+        return { Icon: Package, color: 'bg-slate-100 text-slate-600' }
+    }
+
+    // 2. Check Standard Categories
     const allCats = [...CATEGORIES.pemasukan, ...CATEGORIES.pengeluaran]
     const found = allCats.find(c => c.name === catName)
     return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 text-slate-600' }
@@ -1659,9 +1816,18 @@ export default function MoneyManager() {
                                                </span>
                                            )}
                                        </div>
-                                       <p className="text-xs text-[#6A7686]">
-                                            {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • {t.category}
-                                       </p>
+                                       <div className="flex flex-col gap-1.5 mt-1">
+                                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#8C9AAA]">
+                                                <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 inline-block uppercase tracking-wider">
+                                                    {t.category}
+                                                </span>
+                                            </div>
+                                       </div>
                                    </div>
                                    <div className="text-right">
                                        <p className={`font-bold ${
@@ -2047,25 +2213,116 @@ export default function MoneyManager() {
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
                 <div className="grid grid-cols-4 gap-3">
-                  {CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map((cat) => {
+                  {[
+                    ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({...c, isCustom: false, originalObj: null}))),
+                    ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
+                        if (typeof c === 'string') return { name: c, color: 'bg-slate-100 text-slate-600', icon: Package, isCustom: true, originalObj: c };
+                        return { name: c.name, color: c.color, icon: AVAILABLE_ICONS[c.iconName] || Package, isCustom: true, originalObj: c };
+                    })
+                  ].map((cat) => {
                     const isSelected = category === cat.name
                     return (
-                      <button
-                        key={cat.name}
-                        type="button"
-                        onClick={() => setCategory(cat.name)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-slate-50'}`}
-                      >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color}`}>
-                          <cat.icon className="w-5 h-5" />
-                        </div>
-                        <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600'}`}>
-                          {cat.name}
-                        </span>
-                      </button>
+                      <div key={cat.name} className="relative group">
+                          <button
+                            type="button"
+                            onClick={() => setCategory(cat.name)}
+                            className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-slate-50'}`}
+                          >
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color}`}>
+                              <cat.icon className="w-5 h-5" />
+                            </div>
+                            <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600'}`}>
+                              {cat.name}
+                            </span>
+                          </button>
+                      </div>
                     )
                   })}
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 text-slate-400">
+                      <Plus className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-center leading-tight text-slate-500">Custom</span>
+                  </button>
                 </div>
+                
+                {showAddCategory && (
+                  <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
+                    <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
+                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                    </div>
+
+                    {/* Existing Custom Categories List */}
+                    {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
+                        <div className="mb-6 space-y-2">
+                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                                 {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
+                                      const isStr = typeof c === 'string'
+                                      const name = isStr ? c : c.name
+                                      const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
+                                      return (
+                                          <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
+                                              <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}>
+                                                    <Ico className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-sm font-bold text-slate-700 px-1">{name}</span>
+                                              </div>
+                                              <div className="flex items-center border-l border-slate-100 pl-2">
+                                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                              </div>
+                                          </div>
+                                      )
+                                 })}
+                             </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-4 border-t border-slate-200 pt-4">
+                        <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                        {/* Name */}
+                        <div>
+                            <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                        </div>
+                        {/* Icon Picker */}
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
+                            <div className="flex flex-wrap gap-2">
+                                {Object.keys(AVAILABLE_ICONS).map(iconKey => {
+                                    const Ico = AVAILABLE_ICONS[iconKey]
+                                    const isSelected = newCategoryIcon === iconKey
+                                    return (
+                                        <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`p-2 rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
+                                            <Ico className="w-5 h-5" />
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                        {/* Color Picker */}
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
+                            <div className="flex flex-wrap gap-2">
+                                {COLOR_PALETTES.map((colorSet, idx) => {
+                                    const isSelected = newCategoryColor === colorSet
+                                    return (
+                                        <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
+                                            {isSelected && <div className="w-3 h-3 bg-current rounded-full" />}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-slate-200">
+                            <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                        </div>
+                    </div>
+                  </div>
+                )}
               </div>
               )}
 

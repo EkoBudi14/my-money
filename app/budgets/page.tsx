@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Budget, Transaction, CATEGORIES, Wallet } from '@/types'
+import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
 import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
@@ -10,6 +10,7 @@ import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
+    const [customCategories, setCustomCategories] = useState<{pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]}>({pengeluaran: [], pemasukan: []})
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [wallets, setWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
@@ -66,6 +67,14 @@ export default function BudgetsPage() {
 
         if (bData) setBudgets(bData)
         if (tData) setTransactions(tData as unknown as Transaction[])
+        
+        const { data: settings } = await supabase.from('user_settings').select('*').eq('id', 1).single()
+        if (settings && settings.custom_categories) {
+            try {
+                setCustomCategories(settings.custom_categories as {pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]})
+            } catch(e) {}
+        }
+
         setLoading(false)
     }
 
@@ -249,7 +258,11 @@ export default function BudgetsPage() {
                                 const spent = getSpentAmount(budget.category)
                                 const percent = Math.min((spent / budget.amount) * 100, 100)
                                 const isOver = spent > budget.amount
-                                const catColor = CATEGORIES.pengeluaran.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
+                                const allCats = [
+                                    ...CATEGORIES.pengeluaran, 
+                                    ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 text-slate-600'} : {name: c.name, color: c.color})
+                                ]
+                                const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
 
                                 return (
                                     <div key={budget.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
@@ -344,7 +357,10 @@ export default function BudgetsPage() {
                              <div>
                                 <label className="block text-sm font-semibold text-[#080C1A] mb-3">Pilih Kategori</label>
                                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-                                    {CATEGORIES.pengeluaran.map(cat => (
+                                    {[
+                                        ...CATEGORIES.pengeluaran,
+                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 text-slate-600'} : {name: c.name, color: c.color})
+                                    ].map(cat => (
                                         <button
                                             key={cat.name}
                                             type="button"
