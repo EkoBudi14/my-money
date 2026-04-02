@@ -58,13 +58,13 @@ import {
 } from 'lucide-react'
 
 // --- Definitions ---
-export const AVAILABLE_ICONS: Record<string, any> = {
+const AVAILABLE_ICONS: Record<string, any> = {
   Home, ShoppingBag, Utensils, Car, Zap, Package, HeartPulse, CreditCard, Film, Gift, 
   Briefcase, TrendingUp, Landmark, Coffee, Plane, Gamepad2, Tv, Smartphone, Book, 
   Scissors, Music, Shirt, Smile, Globe, Dumbbell, GraduationCap
 }
 
-export const COLOR_PALETTES = [
+const COLOR_PALETTES = [
   'bg-emerald-100 text-emerald-600',
   'bg-rose-100 text-rose-600',
   'bg-blue-100 text-blue-600',
