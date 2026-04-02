@@ -2290,12 +2290,12 @@ export default function MoneyManager() {
                         {/* Icon Picker */}
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="grid grid-cols-7 gap-2">
                                 {Object.keys(AVAILABLE_ICONS).map(iconKey => {
                                     const Ico = AVAILABLE_ICONS[iconKey]
                                     const isSelected = newCategoryIcon === iconKey
                                     return (
-                                        <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`p-2 rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
+                                        <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
                                             <Ico className="w-5 h-5" />
                                         </button>
                                     )
@@ -2305,11 +2305,11 @@ export default function MoneyManager() {
                         {/* Color Picker */}
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="grid grid-cols-6 gap-2">
                                 {COLOR_PALETTES.map((colorSet, idx) => {
                                     const isSelected = newCategoryColor === colorSet
                                     return (
-                                        <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
+                                        <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
                                             {isSelected && <div className="w-3 h-3 bg-current rounded-full" />}
                                         </button>
                                     )
