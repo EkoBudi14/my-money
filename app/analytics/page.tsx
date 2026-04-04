@@ -31,6 +31,7 @@ export default function AnalyticsPage() {
     const [showTooltip, setShowTooltip] = useState(false) // Net balance tooltip
     const [showIncomeTooltip, setShowIncomeTooltip] = useState(false)
     const [showExpenseTooltip, setShowExpenseTooltip] = useState(false)
+    const [showChangeTooltip, setShowChangeTooltip] = useState(false)
 
     const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
     const [customRange, setCustomRange] = useState({
@@ -1017,7 +1018,36 @@ export default function AnalyticsPage() {
                                                 <div>Periode Lalu</div>
                                                 <div className="text-[10px] font-medium text-slate-400 normal-case mt-0.5">{periodComparison.prevLabel}</div>
                                             </th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">Perubahan</th>
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    Perubahan
+                                                    <div className="relative inline-flex">
+                                                        <button 
+                                                            onClick={() => setShowChangeTooltip(!showChangeTooltip)}
+                                                            className="text-slate-400 hover:text-[#165DFF] transition-colors rounded-full"
+                                                        >
+                                                            <Info className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        
+                                                        {showChangeTooltip && (
+                                                            <div 
+                                                                className="fixed inset-0 z-10" 
+                                                                onClick={() => setShowChangeTooltip(false)}
+                                                            />
+                                                        )}
+
+                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${
+                                                            showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                                        }`}>
+                                                            <p>Persentase selisih lompatan nilai dari periode lalu.</p>
+                                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
+                                                                <p className="text-slate-300">💡 <span className="font-bold text-emerald-400">Catatan:</span> Persentase kenaikan <b>bisa melebihi 100%</b> jika lonjakan terjadi cukup besar. (Misal: nominal awal 100rb menjadi 500rb adalah naik 400%).</p>
+                                                            </div>
+                                                            <div className="absolute -top-1.5 right-1 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#F3F4F3]">
@@ -1042,12 +1072,19 @@ export default function AnalyticsPage() {
                                                     </td>
                                                     <td className="px-5 py-3.5 text-right">
                                                         {pct !== null && periodComparison.hasPrevData ? (
-                                                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
-                                                            }`}>
-                                                                {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                                {Math.abs(pct).toFixed(1)}%
-                                                            </span>
+                                                            <div className="flex flex-col items-end gap-1">
+                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                                                                    isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                                }`}>
+                                                                    {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                                    {Math.abs(pct).toFixed(1)}%
+                                                                </span>
+                                                                {pct > 100 && (
+                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                        (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         ) : <span className="text-slate-300 text-xs">—</span>}
                                                     </td>
                                                 </tr>
@@ -1102,12 +1139,19 @@ export default function AnalyticsPage() {
                                                     </td>
                                                     <td className="px-5 py-3 text-right">
                                                         {pct !== null && periodComparison.hasPrevData ? (
-                                                            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
-                                                            }`}>
-                                                                {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                                {Math.abs(pct).toFixed(0)}%
-                                                            </span>
+                                                            <div className="flex flex-col items-end gap-1">
+                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                                                                    isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                                }`}>
+                                                                    {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                                    {Math.abs(pct).toFixed(0)}%
+                                                                </span>
+                                                                {pct > 100 && (
+                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                        (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         ) : <span className="text-slate-300 text-xs">—</span>}
                                                     </td>
                                                 </tr>
