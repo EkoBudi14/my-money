@@ -898,7 +898,7 @@ export default function AnalyticsPage() {
                                                     <span className="text-xs font-black text-slate-300 w-4">{idx + 1}.</span>
                                                     <div className="min-w-0">
                                                         <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
-                                                        <div className="flex gap-2 items-center mt-1">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
                                                             <span className="text-[10px] font-bold text-slate-400">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
@@ -933,7 +933,7 @@ export default function AnalyticsPage() {
                                                 <div key={tx.id} className="flex justify-between items-center group">
                                                     <div className="min-w-0 pr-4">
                                                         <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
-                                                        <div className="flex gap-2 items-center mt-1">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
                                                             <span className="text-[10px] font-bold text-slate-400">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
