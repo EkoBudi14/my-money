@@ -2566,7 +2566,7 @@ export default function MoneyManager() {
 
              <div className="space-y-3 mb-4">
                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Masuk ke Dompet</p>
-               <div className="grid gap-2">
+               <div className="grid gap-2 max-h-64 overflow-y-auto pr-2">
                  {wallets.map(w => {
                    const isProcessing = repayingWalletId === w.id
                    return (
