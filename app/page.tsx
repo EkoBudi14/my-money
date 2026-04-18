@@ -2415,7 +2415,7 @@ export default function MoneyManager() {
                       <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Tanggal</label>
                       <input
                         type="date"
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
                         required
@@ -2424,7 +2424,7 @@ export default function MoneyManager() {
                     <div>
                       <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Dompet</label>
                       <select
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all appearance-none"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all appearance-none"
                         value={selectedWalletId}
                         onChange={(e) => setSelectedWalletId(e.target.value)}
                         required
@@ -2450,7 +2450,7 @@ export default function MoneyManager() {
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
-                          className="w-28 text-right bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-sm text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
+                          className="w-28 text-right bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-base text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
                           value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                           onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
                         />
@@ -2476,7 +2476,7 @@ export default function MoneyManager() {
                     {/* Date - full width */}
                     <div>
                       <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Tanggal</label>
-                      <input type="date" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                      <input type="date" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                     </div>
                   </div>
                 )}
@@ -2495,7 +2495,7 @@ export default function MoneyManager() {
                       </div>
                     </div>
                     {isPiutang && (
-                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-amber-200 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
                     )}
                   </div>
                 )}
@@ -2514,7 +2514,7 @@ export default function MoneyManager() {
                         {splitEntries.map((entry, idx) => (
                           <div key={idx} className="flex gap-2 items-start">
                             <div className="flex-1 grid grid-cols-2 gap-2">
-                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
+                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
                               <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n); }} className="!text-sm !p-3" />
                             </div>
                             {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
@@ -2536,7 +2536,7 @@ export default function MoneyManager() {
                       </div>
                     </div>
                     {isTalangan && (
-                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-purple-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
                     )}
                   </div>
                 )}
@@ -2608,7 +2608,7 @@ export default function MoneyManager() {
                         )}
                         <div className="space-y-4 border-t border-slate-200 pt-4">
                           <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
                             <div className="grid grid-cols-7 gap-2">
@@ -2648,7 +2648,7 @@ export default function MoneyManager() {
                   <input
                     type="text"
                     placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all font-medium text-base"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
