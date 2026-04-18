@@ -363,49 +363,172 @@ export default function WalletsPage() {
                 </div>
             </div>
 
-            <div className="p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
-                {/* Floating Action Button */}
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="fixed bottom-10 right-6 md:bottom-10 md:right-10 bg-[#165DFF] hover:bg-[#1455E5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 z-40 flex items-center justify-center"
-                >
-                    <Plus className="w-6 h-6" />
-                </button>
+            <div className="relative min-h-[calc(100vh-90px)]">
 
-                {loading ? (
-                    <div className="text-center py-12 text-slate-400">Loading...</div>
-                    ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {activeWallets.map((wallet: Wallet) => (
-                            <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
-                                     <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
-                                        <Pencil className="w-5 h-5" />
-                                    </button>
-                                    <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                                
-                                <div className="z-10 mt-2">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 ${getColor(wallet.type)} shadow-lg shadow-blue-500/20`}>
-                                        {getIcon(wallet.type)}
+                {/* ===== MOBILE VIEW ===== */}
+                <div className="md:hidden pb-[80px]">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-16 text-slate-400">
+                            <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : (() => {
+                        const totalBalance = activeWallets.reduce((acc, w) => acc + w.balance, 0)
+                        const cashCount = activeWallets.filter(w => w.type === 'cash').length
+                        const ewalletCount = activeWallets.filter(w => w.type === 'ewallet').length
+                        const bankCount = activeWallets.filter(w => w.type === 'bank').length
+
+                        return (
+                            <>
+                                {/* Summary Card */}
+                                <div className="mx-4 mt-4 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#0E4BD9] p-5 relative overflow-hidden shadow-lg shadow-blue-500/25">
+                                    <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
+                                    <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
+                                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Total Semua Dompet</p>
+                                    <p className="text-white font-extrabold text-3xl mb-4 relative z-10">Rp {totalBalance.toLocaleString('id-ID')}</p>
+                                    <div className="flex items-center gap-2 flex-wrap relative z-10">
+                                        {cashCount > 0 && (
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                                <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full" />
+                                                {cashCount} Cash
+                                            </span>
+                                        )}
+                                        {ewalletCount > 0 && (
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                                <span className="w-1.5 h-1.5 bg-purple-300 rounded-full" />
+                                                {ewalletCount} E-Wallet
+                                            </span>
+                                        )}
+                                        {bankCount > 0 && (
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                                <span className="w-1.5 h-1.5 bg-blue-200 rounded-full" />
+                                                {bankCount} Bank
+                                            </span>
+                                        )}
                                     </div>
-                                    <h3 className="font-bold text-xl text-[#080C1A] mb-1">{wallet.name}</h3>
-                                    <span className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-[#6A7686] border border-slate-100">{wallet.type}</span>
                                 </div>
-                                
-                                <div className="z-10 mt-6">
-                                    <p className="text-sm font-medium text-[#6A7686] mb-1">Saldo Saat Ini</p>
-                                    <p className="text-3xl font-extrabold text-[#080C1A] tracking-tight">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+
+                                {/* Info Bar */}
+                                <div className="flex items-center justify-between px-4 mt-5 mb-2">
+                                    <p className="text-sm font-bold text-[#080C1A]">{activeWallets.length} dompet aktif</p>
+                                    <p className="text-[11px] text-[#6A7686]">Tap untuk edit / hapus</p>
                                 </div>
-                                
-                                {/* Decorative circle */}
-                                <div className={`absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-10 ${getColor(wallet.type)}`}></div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+
+                                {/* Wallet List */}
+                                <div className="mx-4 bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+                                    {activeWallets.map((wallet, idx) => {
+                                        const pct = totalBalance > 0 ? Math.round((wallet.balance / totalBalance) * 100) : 0
+                                        const isLast = idx === activeWallets.length - 1
+                                        return (
+                                            <div
+                                                key={wallet.id}
+                                                className={`px-4 py-3.5 flex items-center gap-3 active:bg-[#F9FAFB] transition-colors ${!isLast ? 'border-b border-[#F3F4F3]' : ''}`}
+                                            >
+                                                {/* Icon */}
+                                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${getColor(wallet.type)}`}>
+                                                    {getIcon(wallet.type)}
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between mb-0.5">
+                                                        <p className="font-bold text-[#080C1A] text-sm truncate">{wallet.name}</p>
+                                                        <p className="font-bold text-sm text-[#080C1A] shrink-0 ml-2">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
+                                                            wallet.type === 'bank' ? 'bg-blue-50 text-blue-600' :
+                                                            wallet.type === 'ewallet' ? 'bg-purple-50 text-purple-600' :
+                                                            'bg-emerald-50 text-emerald-600'
+                                                        }`}>{wallet.type}</span>
+                                                        <p className="text-[11px] text-[#6A7686]">{pct}% dari total</p>
+                                                    </div>
+                                                    {/* Progress bar */}
+                                                    <div className="w-full h-1.5 bg-[#F3F4F3] rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full rounded-full bg-[#165DFF] transition-all duration-500"
+                                                            style={{ width: `${pct}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="flex flex-col gap-1.5 shrink-0">
+                                                    <button onClick={() => handleEdit(wallet)} className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-blue-500 active:scale-90 transition-all">
+                                                        <Pencil className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(wallet.id)} className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-rose-400 active:scale-90 transition-all">
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+
+                                {/* Tambah Dompet Button */}
+                                <button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                        <Plus className="w-4 h-4" />
+                                    </div>
+                                    <span className="font-bold text-sm">Tambah Dompet Baru</span>
+                                </button>
+                            </>
+                        )
+                    })()}
+                </div>
+
+                {/* ===== DESKTOP VIEW ===== */}
+                <div className="hidden md:block p-8">
+                    {loading ? (
+                        <div className="text-center py-12 text-slate-400">Loading...</div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {activeWallets.map((wallet: Wallet) => (
+                                <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
+                                         <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
+                                            <Pencil className="w-5 h-5" />
+                                        </button>
+                                        <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="z-10 mt-2">
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 ${getColor(wallet.type)} shadow-lg shadow-blue-500/20`}>
+                                            {getIcon(wallet.type)}
+                                        </div>
+                                        <h3 className="font-bold text-xl text-[#080C1A] mb-1">{wallet.name}</h3>
+                                        <span className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-[#6A7686] border border-slate-100">{wallet.type}</span>
+                                    </div>
+                                    
+                                    <div className="z-10 mt-6">
+                                        <p className="text-sm font-medium text-[#6A7686] mb-1">Saldo Saat Ini</p>
+                                        <p className="text-3xl font-extrabold text-[#080C1A] tracking-tight">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    
+                                    {/* Decorative circle */}
+                                    <div className={`absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-10 ${getColor(wallet.type)}`}></div>
+                                </div>
+                            ))}
+                        
+                            {/* Add New Wallet Card */}
+                            <button
+                                onClick={() => { setIsModalOpen(true) }}
+                                className="border-2 border-dashed border-[#E2E8F0] rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[220px] group"
+                            >
+                                <div className="bg-[#F3F4F3] group-hover:bg-[#165DFF] p-4 rounded-full transition-colors">
+                                    <Plus className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                                </div>
+                                <span className="font-bold text-sm">Tambah Dompet Baru</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+
             </div>
 
             {/* Modal */}

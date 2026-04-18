@@ -1337,28 +1337,379 @@ export default function MoneyManager() {
   return (
     <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
       
-      {/* Top Header */}
-      <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+      {/* ============= DESKTOP TOP HEADER ============= */}
+      <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-8">
         <div className="flex items-center gap-4">
-             {/* Mobile toggle is handled in Sidebar.tsx, but we can add a spacer or title here */}
-             <h2 className="font-bold text-2xl text-[#080C1A]">CatatDuit</h2>
+          <h2 className="font-bold text-2xl text-[#080C1A]">CatatDuit</h2>
         </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Header Actions */}
-           <div className="hidden md:flex items-center gap-3 pl-3">
-            <div className="text-right">
-              <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-              {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
-            </div>
-            <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
-               EB
-            </div>
+        <div className="flex items-center gap-3 pl-3">
+          <div className="text-right">
+            <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+          </div>
+          <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+            EB
           </div>
         </div>
       </div>
 
-      <div className="p-5 md:p-8 space-y-8">
+      {/* ============= MOBILE DASHBOARD ============= */}
+      <div className="md:hidden flex flex-col pb-[80px]">
+
+        {/* Mobile Top Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 bg-white border-b border-[#F3F4F3]">
+          <div>
+            <p className="text-xs font-semibold text-[#6A7686] uppercase tracking-wider">CatatDuit</p>
+            <h1 className="font-bold text-xl text-[#080C1A]">Hemat Yuk! 💪</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#EFF2F7] text-[#6A7686] active:scale-90 transition-all"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            <div className="w-9 h-9 bg-[#165DFF] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+              EB
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Settings Panel */}
+        {showSettings && (
+          <div className="mx-4 mt-3 bg-white rounded-2xl shadow-lg border border-slate-100 p-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-500" />
+                Filter & Periode
+              </h3>
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
+              <button onClick={() => setFilterMode('monthly')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>Bulanan</button>
+              <button onClick={() => setFilterMode('custom')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>Custom</button>
+            </div>
+            {filterMode === 'monthly' ? (
+              <div className="grid grid-cols-2 gap-2">
+                <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+                  {['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
+                </select>
+                <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+                  {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({...customRange, start: e.target.value})} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
+                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({...customRange, end: e.target.value})} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
+              </div>
+            )}
+            <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-2 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">Reset ke Bulan Ini</button>
+          </div>
+        )}
+
+        {/* Mobile Hero Card */}
+        <div className="mx-4 mt-4 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#0E4BD9] p-5 shadow-lg shadow-blue-500/20 relative overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
+          <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
+
+          {/* Period Row */}
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+              <button onClick={prevMonth} disabled={filterMode==='custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-white/90 text-xs font-semibold">{getPeriodLabel()}</span>
+              <button onClick={nextMonth} disabled={filterMode==='custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <button onClick={() => setShowBalance(!showBalance)} className="text-white/70 active:scale-90 transition-all">
+              {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {/* Total Balance */}
+          <div className="mb-1 relative z-10">
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Total Semua Uang</p>
+            <p className="text-white font-bold text-3xl leading-tight">
+              {showBalance
+                ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
+                : 'Rp ••••••••'}
+            </p>
+          </div>
+
+          {/* Income & Expense mini stats */}
+          <div className="grid grid-cols-2 gap-3 mt-5 relative z-10">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
+                <p className="text-white/70 text-[10px] font-semibold">Pemasukan</p>
+              </div>
+              <p className="text-white font-bold text-sm">
+                {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••'}
+              </p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingDown className="w-3.5 h-3.5 text-rose-300" />
+                <p className="text-white/70 text-[10px] font-semibold">Pengeluaran</p>
+              </div>
+              <p className="text-white font-bold text-sm">Rp {currentExpense.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Quick Actions */}
+        <div className="px-4 mt-5">
+          <p className="text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-3">Aksi Cepat</p>
+          <div className="grid grid-cols-4 gap-3">
+            <button
+              onClick={() => { resetForm(); setType('pemasukan'); setCategory(''); setIsModalOpen(true); }}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-sm">
+                <TrendingUp className="w-7 h-7 text-emerald-600" />
+              </div>
+              <span className="text-[11px] font-semibold text-[#6A7686]">Masuk</span>
+            </button>
+            <button
+              onClick={() => { resetForm(); setType('pengeluaran'); setCategory(''); setIsModalOpen(true); }}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center shadow-sm">
+                <TrendingDown className="w-7 h-7 text-rose-500" />
+              </div>
+              <span className="text-[11px] font-semibold text-[#6A7686]">Keluar</span>
+            </button>
+            <button
+              onClick={() => { resetForm(); setType('topup'); setCategory('Topup'); setIsModalOpen(true); }}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+                <WalletIcon className="w-7 h-7 text-[#165DFF]" />
+              </div>
+              <span className="text-[11px] font-semibold text-[#6A7686]">Transfer</span>
+            </button>
+            <Link href="/budgets" className="flex flex-col items-center gap-2 active:scale-90 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center shadow-sm">
+                <CreditCard className="w-7 h-7 text-purple-600" />
+              </div>
+              <span className="text-[11px] font-semibold text-[#6A7686]">Anggaran</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Stats Row */}
+        <div className="px-4 mt-5 grid grid-cols-2 gap-3">
+          {/* Saldo Aktif */}
+          <div className="bg-white rounded-2xl p-4 border border-[#F3F4F3] shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#165DFF]/10 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-[#165DFF]" />
+                </div>
+                <p className="text-[11px] font-semibold text-[#6A7686]">Saldo Aktif</p>
+              </div>
+              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="p-1.5 rounded-lg hover:bg-slate-100 text-[#6A7686] active:scale-90 transition-all">
+                {showActiveBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="font-bold text-base text-[#080C1A] leading-tight">
+              {showActiveBalance
+                ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
+                : 'Rp ••••••'}
+            </p>
+            <p className="text-[10px] text-[#6A7686] mt-1">Siap digunakan</p>
+          </div>
+          {/* Pemasukan Bulan Ini */}
+          <div className="bg-white rounded-2xl p-4 border border-[#F3F4F3] shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                </div>
+                <p className="text-[11px] font-semibold text-[#6A7686]">Pemasukan</p>
+              </div>
+              <button onClick={() => setShowIncome(!showIncome)} className="p-1.5 rounded-lg hover:bg-slate-100 text-[#6A7686] active:scale-90 transition-all">
+                {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="font-bold text-base text-[#080C1A] leading-tight">
+              {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••'}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <p className="text-[10px] text-[#6A7686]">Bulan ini</p>
+              {prevIncome > 0 && (
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${incomeChange >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                  {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(0)}%
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Debt Quick View */}
+        {debts.some(d => d.status === 'pending') && (
+          <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+                <p className="text-sm font-bold text-amber-800">
+                  {debts.filter(d => d.status === 'pending').length} Piutang Belum Lunas
+                </p>
+              </div>
+              <button onClick={() => setShowDebtModal(true)} className="text-xs font-bold text-amber-700 bg-amber-200 px-3 py-1 rounded-full active:scale-95 transition-all">Lihat</button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Transaction History - All Transactions Scrollable */}
+        <div className="mx-4 mt-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-bold text-[#080C1A]">Riwayat Transaksi</p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={fetchTransactions}
+                disabled={loading}
+                className={`p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
+                title="Refresh"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+              </button>
+              <Link href="/analytics" className="text-xs font-semibold text-[#165DFF] flex items-center gap-1">
+                Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden max-h-[420px] overflow-y-auto custom-scrollbar">
+            {loading ? (
+              <div className="flex items-center justify-center p-10">
+                <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filteredTransactions.length === 0 ? (
+              <div className="p-10 text-center">
+                <p className="text-[#6A7686] text-sm">Belum ada transaksi bulan ini</p>
+              </div>
+            ) : (
+              filteredTransactions.map((t, idx) => {
+                const { Icon, color } = getCategoryIcon(t.category, t.type)
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => handleEditClick(t)}
+                    className={`flex items-center gap-3 px-4 py-4 active:bg-[#F9FAFB] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[#F3F4F3]' : ''}`}
+                  >
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                        <p className="font-semibold text-[#080C1A] text-sm truncate max-w-[140px]">
+                          {t.type === 'topup' && t.source_wallet_id
+                            ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
+                            : t.title}
+                        </p>
+                        {t.is_piutang && (
+                          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full shrink-0">💸 Piutang</span>
+                        )}
+                        {t.is_talangan && (
+                          <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full shrink-0">🤝 Talangan</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#8C9AAA] mb-1">
+                        <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-300" />
+                        <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 uppercase tracking-wider">
+                        {t.category}
+                      </span>
+                    </div>
+                    <div className="text-right shrink-0 ml-2">
+                      <p className={`font-bold text-sm mb-1 ${
+                        t.type === 'topup' ? 'text-blue-600' :
+                        t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-emerald-600') :
+                        (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                      }`}>
+                        {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
+                      </p>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
+                        disabled={deletingId === t.id}
+                        className={`text-xs font-medium transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed' : 'text-[#ED6B60]'}`}
+                      >
+                        {deletingId === t.id ? (
+                          <span className="flex items-center gap-1">
+                            <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                          </span>
+                        ) : 'Hapus'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Note Preview */}
+        {latestNote && (
+          <Link href="/notes" className="mx-4 mt-4 block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-4 active:opacity-80 transition-all relative">
+            {noteCount > 1 && (
+              <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                {noteCount > 99 ? '99+' : noteCount}
+              </div>
+            )}
+            <div className="flex items-center gap-2 mb-1 text-[#B45309]">
+              <StickyNote className="w-4 h-4" />
+              <span className="font-bold text-sm">Catatan Terbaru</span>
+            </div>
+            <p className="font-bold text-[#080C1A] text-sm mb-0.5">{latestNote.title}</p>
+            <p className="text-xs text-[#4B5563] line-clamp-2">{latestNote.content}</p>
+          </Link>
+        )}
+
+        {/* Mobile Chart - Arus Kas & Pertumbuhan */}
+        <div className="mx-4 mt-5">
+          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm p-4">
+            <div className="mb-4">
+              <h3 className="font-bold text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
+              <p className="text-xs text-[#6A7686]">Analisis Perbandingan</p>
+            </div>
+            <FinancialChart data={monthlyData} />
+          </div>
+        </div>
+
+        {/* Mobile Tagihan Rutin */}
+        <div className="mx-4 mt-4">
+          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-[#F3F4F3]">
+              <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+            </div>
+            <div className="p-2">
+              <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Calendar */}
+        <div className="mx-4 mt-4">
+          <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
+        </div>
+
+        {/* Mobile Gold Price & Currency */}
+        <div className="mx-4 mt-4 grid grid-cols-1 gap-4">
+          <GoldPriceCard />
+          <CurrencyCard />
+        </div>
+
+      </div>{/* end mobile dashboard */}
+
+      {/* ============= DESKTOP DASHBOARD ============= */}
+      <div className="hidden md:block p-8 space-y-8">
         
         {/* Date Filter & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1898,16 +2249,16 @@ export default function MoneyManager() {
             <CurrencyCard />
         </div>
 
-      </div>
+      </div>{/* end desktop content div */}
 
 
-      {/* Floating Action Button (Mobile & Desktop) */}
+      {/* Floating Action Button (Desktop only - Mobile uses Quick Actions) */}
       <button
         onClick={() => {
           resetForm()
           setIsModalOpen(true)
         }}
-        className="fixed bottom-10 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
+        className="hidden md:flex fixed bottom-10 right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
       >
         <Plus className="w-8 h-8" />
       </button>

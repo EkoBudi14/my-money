@@ -175,7 +175,150 @@ export default function GoalsPage() {
                 </div>
             </header>
 
-            <div className="p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
+            {/* ===== MOBILE VIEW ===== */}
+            <div className="md:hidden pb-[80px]">
+                {loading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : (() => {
+                    const totalTarget = goals.reduce((acc, g) => acc + g.target_amount, 0)
+                    const totalTerkumpul = goals.reduce((acc, g) => acc + g.current_amount, 0)
+                    const totalSisa = Math.max(totalTarget - totalTerkumpul, 0)
+                    const overallProgress = totalTarget > 0 ? Math.min((totalTerkumpul / totalTarget) * 100, 100) : 0
+
+                    return (
+                        <div className="px-4 pt-4 space-y-3">
+                            {/* Summary Card */}
+                            <div className="relative overflow-hidden rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, #165DFF 0%, #0E3FCC 100%)' }}>
+                                <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
+                                <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
+                                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">
+                                    Target Tabungan
+                                </p>
+                                <div className="flex items-end justify-between mb-3 relative z-10">
+                                    <div>
+                                        <p className="text-white text-2xl font-black">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
+                                        <p className="text-white/60 text-xs font-semibold mt-0.5">dari Rp {totalTarget.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-white/80 text-xs font-semibold">Kurang</p>
+                                        <p className="text-white font-black text-lg">Rp {totalSisa.toLocaleString('id-ID')}</p>
+                                    </div>
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-white/60 text-[10px] font-bold">Overall Progress</span>
+                                        <span className="text-white text-[10px] font-black">{overallProgress.toFixed(0)}%</span>
+                                    </div>
+                                    <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-500"
+                                            style={{
+                                                width: `${overallProgress}%`,
+                                                background: overallProgress >= 100 ? '#10b981' : overallProgress >= 75 ? '#f59e0b' : '#ffffff'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Goal List */}
+                            {goals.length === 0 ? (
+                                <div className="bg-white rounded-2xl border border-[#F3F4F3] p-10 text-center">
+                                    <Target className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                    <p className="text-slate-400 text-sm">Belum ada target tabungan</p>
+                                </div>
+                            ) : (
+                                goals.map((goal) => {
+                                    const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
+                                    const isCompleted = progress >= 100
+                                    const progressColor = isCompleted ? '#10b981' : progress >= 75 ? '#f59e0b' : '#165DFF'
+                                    return (
+                                        <div key={goal.id} className="bg-white rounded-2xl border border-[#F3F4F3] p-4 shadow-sm">
+                                            {/* Top Row */}
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${progressColor}15` }}>
+                                                        {isCompleted
+                                                            ? <CheckCircle2 className="w-5 h-5" style={{ color: progressColor }} />
+                                                            : <Target className="w-5 h-5" style={{ color: progressColor }} />
+                                                        }
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-[#080C1A] text-sm truncate">{goal.name}</p>
+                                                        {goal.deadline && (
+                                                            <p className="text-[10px] text-[#6A7686] font-medium mt-0.5">
+                                                                🗓 {new Date(goal.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs font-black shrink-0 ml-2" style={{ color: progressColor }}>
+                                                    {progress.toFixed(0)}%
+                                                </span>
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            <div className="w-full bg-[#F3F4F3] rounded-full h-1.5 mb-3 overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full transition-all duration-500"
+                                                    style={{ width: `${progress}%`, backgroundColor: progressColor }}
+                                                />
+                                            </div>
+
+                                            {/* Amount Row */}
+                                            <div className="flex justify-between items-center mb-3">
+                                                <span className="text-xs font-bold text-[#080C1A]">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
+                                                <span className="text-xs text-[#6A7686] font-medium">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(goal)}
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => openQuickAdd(goal)}
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-[#165DFF] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
+                                                >
+                                                    <TrendingUp className="w-3.5 h-3.5" />
+                                                    Nabung
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(goal.id)}
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+
+                            {/* Add New - Dashed Card */}
+                            <button
+                                onClick={() => { resetForm(); setIsModalOpen(true); }}
+                                className="w-full border-2 border-dashed border-[#E2E8F0] rounded-2xl p-5 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                    <Plus className="w-4 h-4" />
+                                </div>
+                                <span className="font-bold text-sm">Tambah Target Baru</span>
+                            </button>
+                        </div>
+                    )
+                })()}
+            </div>
+
+            {/* ===== DESKTOP VIEW ===== */}
+            <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
                 {loading ? (
                     <div className="text-center py-20 text-slate-400">Loading...</div>
                 ) : (
