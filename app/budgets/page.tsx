@@ -15,11 +15,28 @@ export default function BudgetsPage() {
     const [wallets, setWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [currentDate, setCurrentDate] = useState(new Date())
-    const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
-    const [customRange, setCustomRange] = useState({
-        start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-        end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+    const [currentDate, setCurrentDate] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('budget_currentDate')
+            if (saved) return new Date(saved)
+        }
+        return new Date()
+    })
+    const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>(() => {
+        if (typeof window !== 'undefined') {
+            return (localStorage.getItem('budget_filterMode') as 'monthly' | 'custom') || 'monthly'
+        }
+        return 'monthly'
+    })
+    const [customRange, setCustomRange] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('budget_customRange')
+            if (saved) return JSON.parse(saved)
+        }
+        return {
+            start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+            end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+        }
     })
     const [showSettings, setShowSettings] = useState(false)
 
@@ -37,6 +54,19 @@ export default function BudgetsPage() {
     const [quickExpCategory, setQuickExpCategory] = useState('')
     const [quickExpAmount, setQuickExpAmount] = useState('')
     const [quickExpWalletId, setQuickExpWalletId] = useState('')
+
+    // Persist filter settings to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem('budget_filterMode', filterMode)
+    }, [filterMode])
+
+    useEffect(() => {
+        localStorage.setItem('budget_customRange', JSON.stringify(customRange))
+    }, [customRange])
+
+    useEffect(() => {
+        localStorage.setItem('budget_currentDate', currentDate.toISOString())
+    }, [currentDate])
 
     useEffect(() => {
         fetchData()
@@ -348,7 +378,7 @@ export default function BudgetsPage() {
                                             <input
                                                 type="date"
                                                 value={customRange.start}
-                                                onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
+                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
                                             />
                                         </div>
@@ -357,7 +387,7 @@ export default function BudgetsPage() {
                                             <input
                                                 type="date"
                                                 value={customRange.end}
-                                                onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
+                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
                                             />
                                         </div>

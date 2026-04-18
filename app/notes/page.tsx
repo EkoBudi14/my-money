@@ -170,15 +170,81 @@ export default function NotesPage() {
                 </div>
             </header>
 
-            {/* Floating Action Button - Positioned consistently */}
+            {/* Floating Action Button - Desktop only */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-10 right-10 bg-[#165DFF] hover:bg-[#1455E5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 z-40 group"
+                className="hidden md:flex fixed bottom-10 right-10 bg-[#165DFF] hover:bg-[#1455E5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 z-40 group items-center justify-center"
             >
                 <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
             </button>
 
-            <div className="p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
+            {/* ===== MOBILE VIEW ===== */}
+            <div className="md:hidden pb-[80px]">
+                {loading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : (
+                    <div className="px-4 pt-4 space-y-3">
+                        {notes.length === 0 ? (
+                            <div className="bg-white rounded-2xl border border-[#F3F4F3] p-10 text-center">
+                                <StickyNote className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-slate-400 text-sm">Belum ada catatan</p>
+                            </div>
+                        ) : (
+                            notes.map((note) => (
+                                <div key={note.id} className="bg-white rounded-2xl border border-[#F3F4F3] p-4 shadow-sm">
+                                    {/* Top Row: Title + action buttons */}
+                                    <div className="flex items-start justify-between mb-2">
+                                        <h3 className="font-bold text-[#080C1A] text-sm flex-1 mr-2 line-clamp-1">{note.title}</h3>
+                                        <span className="text-[10px] text-[#6A7686] shrink-0 flex items-center gap-1">
+                                            <Calendar className="w-3 h-3" />
+                                            {formatDate(note.updated_at)}
+                                        </span>
+                                    </div>
+
+                                    {/* Content preview */}
+                                    <p className="text-[#6A7686] text-xs leading-relaxed line-clamp-3 mb-3 whitespace-pre-wrap">
+                                        {note.content || <span className="italic">Tidak ada isi catatan</span>}
+                                    </p>
+
+                                    {/* Action Buttons — 2 columns */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => handleEdit(note)}
+                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(note.id)}
+                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+
+                        {/* Add New - Dashed Card */}
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="w-full border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <Plus className="w-4 h-4" />
+                            </div>
+                            <span className="font-bold text-sm">Tambah Catatan Baru</span>
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* ===== DESKTOP VIEW ===== */}
+            <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
                 {loading ? (
                     <div className="text-center py-20 text-slate-400 animate-pulse">Memuat catatan...</div>
                 ) : notes.length === 0 ? (
