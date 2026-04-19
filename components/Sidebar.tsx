@@ -32,6 +32,7 @@ export default function Sidebar() {
         { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
         { name: 'Analitik', icon: PieChart, href: '/analytics' },
         { name: 'Dompet', icon: Wallet, href: '/wallets' },
+        { name: 'Tabungan', icon: PiggyBank, href: '/main-savings' },
         { name: 'Budget', icon: Box, href: '/budgets' },
         { name: 'Goals', icon: Goal, href: '/goals' },
     ]
@@ -71,17 +72,17 @@ export default function Sidebar() {
             </aside>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-[#F3F4F3] z-50 flex items-center justify-around px-2">
-                {menuItems.slice(0, 5).map((item) => {
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-[#F3F4F3] z-50 flex items-center justify-around px-1">
+                {menuItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex flex-col items-center justify-center gap-1 w-full h-full"
+                            className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
                         >
-                            <item.icon className={`w-6 h-6 ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`} />
-                            <span className={`text-[10px] font-medium ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`}>
+                            <item.icon className={`w-5 h-5 ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`} />
+                            <span className={`text-[9px] font-medium ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`}>
                                 {item.name}
                             </span>
                         </Link>

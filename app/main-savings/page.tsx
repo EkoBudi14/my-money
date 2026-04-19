@@ -259,7 +259,95 @@ export default function MainSavingsPage() {
                 </div>
             </header>
 
-            <div className="p-5 md:p-8 space-y-6">
+            {/* ===== MOBILE VIEW ===== */}
+            <div className="md:hidden pb-[80px]">
+                {loading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Summary Card — gradient seperti budget */}
+                        <div className="mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-emerald-500/25">
+                            <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
+                            <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
+                            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">
+                                Total Aset & Simpanan
+                            </p>
+                            <p className="text-white font-extrabold text-2xl relative z-10">
+                                Rp {totalSavings.toLocaleString('id-ID')}
+                            </p>
+                            <p className="text-white/60 text-xs mt-1 relative z-10">{savingsWallets.length} aset tercatat</p>
+                        </div>
+
+                        {/* Info Bar */}
+                        <div className="flex items-center justify-between px-4 mt-5 mb-2">
+                            <p className="text-sm font-bold text-[#080C1A]">{savingsWallets.length} aset tabungan</p>
+                            <p className="text-[11px] text-[#6A7686]">Tap untuk edit / hapus</p>
+                        </div>
+
+                        {/* List */}
+                        {savingsWallets.length === 0 ? (
+                            <div className="mx-4 text-center py-10 text-slate-400 border-2 border-dashed border-[#F3F4F3] rounded-2xl bg-white">
+                                <p className="text-sm">Belum ada aset tabungan.</p>
+                            </div>
+                        ) : (
+                            <div className="mx-4 bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+                                {savingsWallets.map((wallet, idx) => {
+                                    const isLast = idx === savingsWallets.length - 1
+                                    return (
+                                        <div key={wallet.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[#F3F4F3]' : ''}`}>
+                                            {/* Top Row: icon + name + balance */}
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-600 shrink-0">
+                                                    {getIcon(wallet.type)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-sm text-[#080C1A] truncate">{wallet.name}</p>
+                                                    <p className="text-[11px] text-[#6A7686] uppercase tracking-wider">{wallet.type}</p>
+                                                </div>
+                                                <p className="font-bold text-sm text-emerald-600 shrink-0">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(wallet)}
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(wallet.id)}
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* Tambah Aset Button */}
+                        <button
+                            onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
+                            className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all active:scale-[0.98]"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <Plus className="w-4 h-4" />
+                            </div>
+                            <span className="font-bold text-sm">Tambah Aset Baru</span>
+                        </button>
+                    </>
+                )}
+            </div>
+
+            {/* ===== DESKTOP VIEW ===== */}
+            <div className="hidden md:block p-8 space-y-6">
                 {/* Summary Card */}
                 <div className="bg-white px-6 py-6 rounded-2xl border border-[#F3F4F3] flex items-center gap-5 shadow-sm">
                     <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
@@ -295,15 +383,13 @@ export default function MainSavingsPage() {
                                     <p className="text-xs text-[#6A7686] uppercase tracking-wider mb-4 relative z-10">{wallet.type}</p>
                                 </div>
                                 <div className="relative z-10">
-                                     <p className="text-2xl font-bold text-emerald-600">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                    <p className="text-2xl font-bold text-emerald-600">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                 </div>
-
-                                {/* Decorative Background */}
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-transparent rounded-bl-full opacity-50 -z-0"></div>
                             </div>
                         ))}
 
-                         {/* Add New Card */}
+                        {/* Add New Card */}
                         <button
                             onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
                             className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[220px] group"
