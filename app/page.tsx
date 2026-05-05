@@ -429,7 +429,9 @@ export default function MoneyManager() {
   }
 
   const fetchBudgets = async () => {
-    const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`
+    // Use same target month logic as budget page: custom mode uses customRange.end
+    const targetDate = filterMode === 'custom' ? new Date(customRange.end) : currentDate
+    const monthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-01`
     const { data } = await supabase
       .from('budgets')
       .select('*')
@@ -1290,7 +1292,7 @@ export default function MoneyManager() {
 
   useEffect(() => {
     fetchBudgets()
-  }, [currentDate])
+  }, [currentDate, filterMode, customRange])
 
   // --- Budget Awareness Logic (Memoized) ---
   const budgetInfo = useMemo(() => {
@@ -1303,7 +1305,7 @@ export default function MoneyManager() {
     const targetDate = new Date(customDate)
     const budget = budgets.find(b => {
       const bDate = new Date(b.month)
-      return bDate.getMonth() === targetDate.getMonth() && bDate.getFullYear() === targetDate.getFullYear()
+      return b.category === category && bDate.getMonth() === targetDate.getMonth() && bDate.getFullYear() === targetDate.getFullYear()
     })
 
     if (!budget) return null

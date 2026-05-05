@@ -152,7 +152,9 @@ export default function BudgetsPage() {
         e.preventDefault()
         if (!category || !amount) return showToast('error', "Mohon lengkapi data")
 
-        const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`
+        // Use same target month logic as fetchData
+        const targetDate = filterMode === 'custom' ? new Date(customRange.end) : currentDate
+        const monthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-01`
 
         const payload = {
             category,
