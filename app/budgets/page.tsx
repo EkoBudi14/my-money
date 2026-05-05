@@ -48,6 +48,12 @@ export default function BudgetsPage() {
     const [editingId, setEditingId] = useState<number | null>(null)
     const [category, setCategory] = useState('')
     const [amount, setAmount] = useState('')
+    const [budgetStartDate, setBudgetStartDate] = useState(() => {
+        return new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
+    })
+    const [budgetEndDate, setBudgetEndDate] = useState(() => {
+        return new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
+    })
 
     // Quick Expense State
     const [isQuickExpModalOpen, setIsQuickExpModalOpen] = useState(false)
@@ -110,13 +116,15 @@ export default function BudgetsPage() {
             targetDate = new Date(customRange.end)
         }
 
-        // 1. Get Budgets for the target month
-        const monthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-01`
+        // 1. Get Budgets for the target date range
+        const targetStartDateStr = startIso.split('T')[0]
+        const targetEndDateStr = endIso.split('T')[0]
 
         const { data: bData, error: bError } = await supabase
             .from('budgets')
             .select('*')
-            .eq('month', monthStr)
+            .lte('start_date', targetEndDateStr)
+            .gte('end_date', targetStartDateStr)
 
         if (bError) showToast('error', 'Gagal memuat budget')
 
@@ -138,6 +146,18 @@ export default function BudgetsPage() {
         setCategory('')
         setAmount('')
         setEditingId(null)
+        
+        let startD, endD
+        if (filterMode === 'monthly') {
+            startD = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0]
+            endD = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0]
+        } else {
+            startD = customRange.start
+            endD = customRange.end
+        }
+        setBudgetStartDate(startD)
+        setBudgetEndDate(endD)
+        
         setIsModalOpen(false)
     }
 
@@ -150,16 +170,17 @@ export default function BudgetsPage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!category || !amount) return showToast('error', "Mohon lengkapi data")
-
-        // Use same target month logic as fetchData
-        const targetDate = filterMode === 'custom' ? new Date(customRange.end) : currentDate
-        const monthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-01`
+        if (!category || !amount || !budgetStartDate || !budgetEndDate) return showToast('error', "Mohon lengkapi data")
+        
+        if (new Date(budgetStartDate) > new Date(budgetEndDate)) {
+            return showToast('error', "Tanggal mulai tidak boleh lebih dari tanggal selesai")
+        }
 
         const payload = {
             category,
             amount: parseFloat(amount),
-            month: monthStr
+            start_date: budgetStartDate,
+            end_date: budgetEndDate
         }
 
         let error
@@ -167,9 +188,16 @@ export default function BudgetsPage() {
             const res = await supabase.from('budgets').update(payload).eq('id', editingId)
             error = res.error
         } else {
-            const existing = budgets.find(b => b.category === category)
-            if (existing) {
-                return showToast('error', `Budget untuk kategori ${category} sudah ada bulan ini.`)
+            // Check duplicate overlap (query langsung dari DB)
+            const { data: existingBudgets } = await supabase
+                .from('budgets')
+                .select('id')
+                .eq('category', category)
+                .lte('start_date', budgetEndDate)
+                .gte('end_date', budgetStartDate)
+                .limit(1)
+            if (existingBudgets && existingBudgets.length > 0) {
+                return showToast('error', `Budget untuk kategori ${category} sudah ada dan bertabrakan di tanggal ini.`)
             }
 
             const res = await supabase.from('budgets').insert([payload])
@@ -254,6 +282,8 @@ export default function BudgetsPage() {
         setEditingId(b.id)
         setCategory(b.category)
         setAmount(b.amount.toString())
+        setBudgetStartDate(b.start_date)
+        setBudgetEndDate(b.end_date)
         setIsModalOpen(true)
     }
 
@@ -655,6 +685,28 @@ export default function BudgetsPage() {
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#080C1A] mb-2">Tanggal Mulai</label>
+                                    <input 
+                                        type="date"
+                                        className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                        value={budgetStartDate}
+                                        onChange={(e) => setBudgetStartDate(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#080C1A] mb-2">Tanggal Selesai</label>
+                                    <input 
+                                        type="date"
+                                        className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                        value={budgetEndDate}
+                                        onChange={(e) => setBudgetEndDate(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
                              <div>
                                 <label className="block text-sm font-semibold text-[#080C1A] mb-3">Pilih Kategori</label>
                                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">

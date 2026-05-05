@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -429,13 +429,9 @@ export default function MoneyManager() {
   }
 
   const fetchBudgets = async () => {
-    // Use same target month logic as budget page: custom mode uses customRange.end
-    const targetDate = filterMode === 'custom' ? new Date(customRange.end) : currentDate
-    const monthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-01`
     const { data } = await supabase
       .from('budgets')
       .select('*')
-      .eq('month', monthStr)
     setBudgets(data || [])
   }
 
@@ -1292,7 +1288,7 @@ export default function MoneyManager() {
 
   useEffect(() => {
     fetchBudgets()
-  }, [currentDate, filterMode, customRange])
+  }, [currentDate])
 
   // --- Budget Awareness Logic (Memoized) ---
   const budgetInfo = useMemo(() => {
@@ -1304,23 +1300,29 @@ export default function MoneyManager() {
     // In that case, we skip the warning (safe fallback).
     const targetDate = new Date(customDate)
     const budget = budgets.find(b => {
-      const bDate = new Date(b.month)
-      return b.category === category && bDate.getMonth() === targetDate.getMonth() && bDate.getFullYear() === targetDate.getFullYear()
+      if (!b.start_date || !b.end_date) return false
+      const bStart = new Date(b.start_date)
+      const bEnd = new Date(b.end_date)
+      return b.category === category && targetDate >= bStart && targetDate <= bEnd
     })
 
     if (!budget) return null
 
-    // 2. Calculate actual spending for that specific month (ignoring dashboard filters)
+    // 2. Calculate actual spending for that specific budget's date range
     const currentSpent = transactions
       .filter(t => {
         const tDate = new Date(t.date || t.created_at)
+        const bStart = new Date(budget.start_date)
+        const bEnd = new Date(budget.end_date)
+        bEnd.setHours(23, 59, 59, 999) // include end of day
+        
         return (
           t.category === category &&
           t.type === 'pengeluaran' &&
           !t.is_talangan &&
           t.id !== editingId &&
-          tDate.getMonth() === targetDate.getMonth() &&
-          tDate.getFullYear() === targetDate.getFullYear()
+          tDate >= bStart &&
+          tDate <= bEnd
         )
       })
       .reduce((acc, curr) => acc + curr.amount, 0)
@@ -2635,12 +2637,41 @@ export default function MoneyManager() {
                   <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                      <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+                      <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>
+                        {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
+                      </span>
                     </div>
+
+                    <div className="flex justify-between items-end mb-2">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-slate-400">Terpakai + Baru</span>
+                        <span className="font-bold text-slate-700">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-slate-400">Total Budget</span>
+                        <span className="font-bold text-slate-700">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+                      </div>
+                    </div>
+
                     <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
-                      <div className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${budgetInfo.percent}%` }} />
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`}
+                        style={{ width: `${budgetInfo.percent}%` }}
+                      />
                     </div>
-                    <p className="text-xs text-center text-slate-500">Sisa: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+
+                    {budgetInfo.isOver ? (
+                      <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 p-2 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <p>
+                          Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-center text-slate-500 mt-2">
+                        Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
+                      </p>
+                    )}
                   </div>
                 )}
 

@@ -12,7 +12,8 @@ export interface Budget {
     id: number
     category: string
     amount: number
-    month: string // YYYY-MM-DD (first day of month)
+    start_date: string // YYYY-MM-DD
+    end_date: string   // YYYY-MM-DD
     created_at?: string
 }
 
