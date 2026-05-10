@@ -128,6 +128,7 @@ export default function MoneyManager() {
   const [isSplitBill, setIsSplitBill] = useState(false)
   const [splitEntries, setSplitEntries] = useState<{name: string, amount: string}[]>([{ name: '', amount: '' }])
   const [showDebtModal, setShowDebtModal] = useState(false)
+  const [showMobileDebtList, setShowMobileDebtList] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [repayingWalletId, setRepayingWalletId] = useState<number | null>(null)
 
@@ -797,6 +798,10 @@ export default function MoneyManager() {
       console.error("Supabase Error Full:", error)
       showToast('error', `Gagal menyimpan: ${error.message || 'Cek console untuk detail'}`)
     } else {
+      if (editingId) {
+         await supabase.from('debts').delete().eq('original_transaction_id', editingId)
+      }
+
       // Split Bill / Debt Creation
       if (data && data.length > 0 && isSplitBill && type === 'pengeluaran') {
         const validDebts = splitEntries.filter(e => e.name.trim() !== '' && parseFloat(e.amount) > 0)
@@ -811,9 +816,9 @@ export default function MoneyManager() {
           }))
 
           await supabase.from('debts').insert(debtPayloads)
-          fetchDebts()
         }
       }
+      fetchDebts()
 
       showSuccess({
         type: editingId ? 'edit' : 'create',
@@ -862,6 +867,15 @@ export default function MoneyManager() {
     setSelectedWalletId(t.wallet_id?.toString() || '')
     setSourceWalletId(t.source_wallet_id?.toString() || '')
     setCustomDate(new Date(t.date || t.created_at).toISOString().split('T')[0])
+    // Load Split Bill State
+    const associatedDebts = debts.filter(d => d.original_transaction_id === t.id)
+    if (associatedDebts.length > 0) {
+      setIsSplitBill(true)
+      setSplitEntries(associatedDebts.map(d => ({ name: d.person_name, amount: d.amount.toString() })))
+    } else {
+      setIsSplitBill(false)
+      setSplitEntries([{ name: '', amount: '' }])
+    }
     // Load Piutang State
     setIsPiutang(t.is_piutang || false)
     setPiutangPerson(t.piutang_person || '')
@@ -1118,7 +1132,9 @@ export default function MoneyManager() {
        category: 'Lainnya',
        wallet_id: targetWalletId,
        date: new Date().toISOString(),
-       created_at: new Date().toISOString()
+       created_at: new Date().toISOString(),
+       is_piutang: true,
+       piutang_person: debt.person_name
      }).select()
 
      if (trxError) {
@@ -1226,10 +1242,14 @@ export default function MoneyManager() {
 
     const expense = filteredTransactions
       .filter(t => t.type === 'pengeluaran' && !t.is_talangan)
-      .reduce((acc, curr) => acc + curr.amount, 0)
+      .reduce((acc, curr) => {
+        const associatedDebts = debts.filter(d => d.original_transaction_id === curr.id)
+        const splitBillAmount = associatedDebts.reduce((sum, d) => sum + d.amount, 0)
+        return acc + Math.max(0, curr.amount - splitBillAmount)
+      }, 0)
 
     return { currentIncome: income, currentExpense: expense }
-  }, [filteredTransactions])
+  }, [filteredTransactions, debts])
 
   // 3. Previous Period Stats (Monthly Only)
   const { prevIncome, prevExpense } = useMemo(() => {
@@ -1247,10 +1267,14 @@ export default function MoneyManager() {
 
     const expense = prevTx
       .filter(t => t.type === 'pengeluaran' && !t.is_talangan)
-      .reduce((acc, curr) => acc + curr.amount, 0)
+      .reduce((acc, curr) => {
+        const associatedDebts = debts.filter(d => d.original_transaction_id === curr.id)
+        const splitBillAmount = associatedDebts.reduce((sum, d) => sum + d.amount, 0)
+        return acc + Math.max(0, curr.amount - splitBillAmount)
+      }, 0)
 
     return { prevIncome: income, prevExpense: expense }
-  }, [transactions, currentDate])
+  }, [transactions, currentDate, debts])
 
   const getPercentageChange = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? 100 : 0
@@ -1278,13 +1302,15 @@ export default function MoneyManager() {
         if (t.type === 'pemasukan' && !t.is_piutang) {
           data[monthIndex].income += t.amount
         } else if (t.type === 'pengeluaran' && !t.is_talangan) {
-          data[monthIndex].expense += t.amount
+          const associatedDebts = debts.filter(d => d.original_transaction_id === t.id)
+          const splitBillAmount = associatedDebts.reduce((sum, d) => sum + d.amount, 0)
+          data[monthIndex].expense += Math.max(0, t.amount - splitBillAmount)
         }
       }
     })
 
     return data
-  }, [transactions, currentDate])
+  }, [transactions, currentDate, debts])
 
   useEffect(() => {
     fetchBudgets()
@@ -1325,16 +1351,24 @@ export default function MoneyManager() {
           tDate <= bEnd
         )
       })
-      .reduce((acc, curr) => acc + curr.amount, 0)
+      .reduce((acc, curr) => {
+        const associatedDebts = debts.filter(d => d.original_transaction_id === curr.id)
+        const splitBillAmount = associatedDebts.reduce((sum, d) => sum + d.amount, 0)
+        return acc + Math.max(0, curr.amount - splitBillAmount)
+      }, 0)
 
-    const newAmount = parseFloat(amount) || 0
+    let splitBillInputTotal = 0
+    if (isSplitBill) {
+       splitBillInputTotal = splitEntries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0)
+    }
+    const newAmount = Math.max(0, (parseFloat(amount) || 0) - splitBillInputTotal)
     const totalProjected = currentSpent + newAmount
     const remaining = budget.amount - totalProjected
     const isOver = remaining < 0
     const percent = Math.min((totalProjected / budget.amount) * 100, 100)
 
     return { budget, currentSpent, totalProjected, remaining, isOver, percent }
-  }, [category, type, budgets, transactions, amount, editingId, customDate])
+  }, [category, type, budgets, transactions, amount, editingId, customDate, debts, isSplitBill, splitEntries])
 
 
 
@@ -1557,7 +1591,7 @@ export default function MoneyManager() {
 
         {/* Mobile Debt Quick View */}
         {debts.some(d => d.status === 'pending') && (
-          <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 transition-all">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -1565,8 +1599,29 @@ export default function MoneyManager() {
                   {debts.filter(d => d.status === 'pending').length} Piutang Belum Lunas
                 </p>
               </div>
-              <button onClick={() => setShowDebtModal(true)} className="text-xs font-bold text-amber-700 bg-amber-200 px-3 py-1 rounded-full active:scale-95 transition-all">Lihat</button>
+              <button onClick={() => setShowMobileDebtList(!showMobileDebtList)} className="text-xs font-bold text-amber-700 bg-amber-200 px-3 py-1 rounded-full active:scale-95 transition-all">
+                {showMobileDebtList ? 'Tutup' : 'Lihat'}
+              </button>
             </div>
+
+            {showMobileDebtList && (
+               <div className="mt-4 flex flex-col gap-2">
+                  {debts.filter(d => d.status === 'pending').map(debt => (
+                     <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-amber-100 shadow-sm">
+                        <div>
+                           <p className="font-bold text-amber-900 text-sm">{debt.person_name}</p>
+                           <p className="text-xs text-amber-700 font-semibold">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                        </div>
+                        <button
+                          onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); setShowMobileDebtList(false); }}
+                          className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg active:scale-95 transition-all"
+                        >
+                           Lunas
+                        </button>
+                     </div>
+                  ))}
+               </div>
+            )}
           </div>
         )}
 
@@ -1621,6 +1676,9 @@ export default function MoneyManager() {
                         )}
                         {t.is_talangan && (
                           <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full shrink-0">🤝 Talangan</span>
+                        )}
+                        {debts.some(d => d.original_transaction_id === t.id) && (
+                          <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full shrink-0">🧑‍🤝‍🧑 Split Bill</span>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-[#8C9AAA] mb-1">
@@ -2121,6 +2179,34 @@ export default function MoneyManager() {
             </div>
         </div>
 
+        {/* Debts Section */}
+        {debts.some(d => d.status === 'pending') && (
+            <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
+                     <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
+                         {debts.filter(d => d.status === 'pending').length} Active
+                     </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {debts.filter(d => d.status === 'pending').map(debt => (
+                        <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
+                            <div>
+                                <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
+                                <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                            </div>
+                            <button
+                              onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }} 
+                              className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
+                            >
+                                Lunas
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
         {/* Transactions & Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Transactions List (Top Routes style) */}
@@ -2168,6 +2254,11 @@ export default function MoneyManager() {
                                            {t.is_talangan && (
                                                <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
                                                    🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
+                                               </span>
+                                           )}
+                                           {debts.some(d => d.original_transaction_id === t.id) && (
+                                               <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                                                   🧑‍🤝‍🧑 Split Bill
                                                </span>
                                            )}
                                        </div>
@@ -2218,34 +2309,6 @@ export default function MoneyManager() {
                 <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
             </div>
         </div>
-
-        {/* Debts Section */}
-        {debts.some(d => d.status === 'pending') && (
-            <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
-                     <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
-                         {debts.filter(d => d.status === 'pending').length} Active
-                     </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {debts.filter(d => d.status === 'pending').map(debt => (
-                        <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
-                            <div>
-                                <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
-                                <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
-                            </div>
-                            <button
-                              onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }} 
-                              className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
-                            >
-                                Lunas
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
 
         {/* Extras Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden">
