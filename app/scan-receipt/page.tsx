@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal } from 'lucide-react'
+import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { Wallet, CATEGORIES } from '@/types'
@@ -148,6 +148,19 @@ export default function ScanReceiptPage() {
         
         // Auto-recalculate total when items change
         const newTotal = newItems.reduce((acc, item) => acc + (item.qty * item.price), 0)
+        
+        setScanResult({
+            ...scanResult,
+            items: newItems,
+            total: newTotal
+        })
+    }
+
+    const handleDeleteItem = (idx: number) => {
+        if (!scanResult) return
+        const newItems = scanResult.items.filter((_: any, i: number) => i !== idx)
+        
+        const newTotal = newItems.reduce((acc: number, item: any) => acc + (item.qty * item.price), 0)
         
         setScanResult({
             ...scanResult,
@@ -394,14 +407,23 @@ export default function ScanReceiptPage() {
                                         </h3>
                                         <div className="space-y-3">
                                             {scanResult.items.map((item: any, idx: number) => (
-                                                <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-slate-300 focus-within:shadow-sm transition-all">
-                                                    <input 
-                                                        type="text"
-                                                        value={item.name}
-                                                        onChange={(e) => handleItemChange(idx, 'name', e.target.value)}
-                                                        className="w-full text-sm font-medium text-slate-800 bg-transparent outline-none"
-                                                        placeholder="Nama Item"
-                                                    />
+                                                <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-slate-300 focus-within:shadow-sm transition-all relative">
+                                                    <div className="flex justify-between items-start gap-2">
+                                                        <input 
+                                                            type="text"
+                                                            value={item.name}
+                                                            onChange={(e) => handleItemChange(idx, 'name', e.target.value)}
+                                                            className="w-full text-sm font-medium text-slate-800 bg-transparent outline-none"
+                                                            placeholder="Nama Item"
+                                                        />
+                                                        <button 
+                                                            onClick={() => handleDeleteItem(idx)}
+                                                            className="text-slate-400 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1 rounded-md hover:bg-red-50"
+                                                            title="Hapus Item"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                     <div className="flex justify-between items-center text-sm">
                                                         <div className="flex items-center gap-2 text-slate-500">
                                                             <span>x</span>
