@@ -10,7 +10,8 @@ import {
     Box,
     PackageCheck,
     MoreHorizontal,
-    ChevronRight
+    ChevronRight,
+    ScanLine
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -24,6 +25,7 @@ const allMenuItems = [
     { name: 'Budget', icon: Box, href: '/budgets' },
     { name: 'Goals', icon: Goal, href: '/goals' },
     { name: 'Catatan', icon: StickyNote, href: '/notes' },
+    { name: 'Scan Struk', icon: ScanLine, href: '/scan-receipt' },
 ]
 
 // Mobile: tampilkan 4 item utama di bottom nav, sisanya di "Lainnya"
