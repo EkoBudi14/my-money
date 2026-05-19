@@ -20,7 +20,12 @@ export async function POST(req: NextRequest) {
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '')
     const mimeType = image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg'
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      }
+    })
 
     const prompt = `Kamu adalah AI analis struk belanja. Ekstrak informasi dari gambar struk ini dalam format JSON:
 {
@@ -49,12 +54,24 @@ HANYA KEMBALIKAN JSON SAJA TANPA MARKDOWN atau TEKS LAIN.`
     // Parse JSON
     let parsedData
     try {
-        // Remove markdown formatting if present
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim()
-        parsedData = JSON.parse(jsonStr)
+        // 1. Remove markdown code blocks if present
+        let jsonStr = text.replace(/```json/gi, '').replace(/```/g, '').trim()
+        
+        // 2. Try direct parse first
+        try {
+            parsedData = JSON.parse(jsonStr)
+        } catch {
+            // 3. Fallback: extract JSON object/array using regex
+            const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+            if (jsonMatch) {
+                parsedData = JSON.parse(jsonMatch[0])
+            } else {
+                throw new Error('No valid JSON found in response')
+            }
+        }
     } catch (e) {
         console.error('Failed to parse Gemini response:', text)
-        return NextResponse.json({ error: 'Gagal memproses hasil dari AI' }, { status: 500 })
+        return NextResponse.json({ error: 'Gagal memproses hasil dari AI. Coba foto ulang dengan pencahayaan lebih baik.' }, { status: 500 })
     }
     
     if (parsedData.error) {
