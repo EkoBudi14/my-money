@@ -20,6 +20,10 @@ export default function ScanReceiptPage() {
     const [isSaving, setIsSaving] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
 
+    // Rate limit state
+    const [rateLimitInfo, setRateLimitInfo] = useState<{ retryAfter: number; isPerDay: boolean; total: number; resetTime: string } | null>(null)
+    const [rateLimitCountdown, setRateLimitCountdown] = useState(0)
+
     // Camera state
     const [showCamera, setShowCamera] = useState(false)
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
@@ -32,6 +36,21 @@ export default function ScanReceiptPage() {
     useEffect(() => {
         fetchWallets()
     }, [])
+
+    // Countdown timer for rate limit
+    useEffect(() => {
+        if (rateLimitCountdown <= 0) return
+        const timer = setInterval(() => {
+            setRateLimitCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [rateLimitCountdown])
 
     // Cleanup stream on unmount
     useEffect(() => {
@@ -133,7 +152,7 @@ export default function ScanReceiptPage() {
         img.src = objectUrl
     }
 
-    // ── SCAN ──────────────────────────────────────────────────────────────────
+    // ── SCAN ──────────────────────────────────────────────────────────────────────────
     const handleScan = async () => {
         if (!image) return
         setIsScanning(true)
@@ -144,15 +163,50 @@ export default function ScanReceiptPage() {
                 body: JSON.stringify({ image })
             })
             const result = await response.json()
+
+            // Handle rate limit specifically
+            if (response.status === 429) {
+                const retryAfter = result.retryAfter ?? 60
+                const isPerDay = result.isPerDay ?? false
+                let resetTime: string
+
+                if (isPerDay) {
+                    // Kuota harian reset tengah malam Pacific Time → hitung ke WIB
+                    const ptParts = new Intl.DateTimeFormat('en-US', {
+                        timeZone: 'America/Los_Angeles',
+                        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
+                    }).formatToParts(new Date())
+                    const ptH = parseInt(ptParts.find((p: any) => p.type === 'hour')?.value || '0') % 24
+                    const ptM = parseInt(ptParts.find((p: any) => p.type === 'minute')?.value || '0')
+                    const ptS = parseInt(ptParts.find((p: any) => p.type === 'second')?.value || '0')
+                    const msUntilMidnightPT = ((23 - ptH) * 3600 + (59 - ptM) * 60 + (60 - ptS)) * 1000
+                    const nextMidnightPT = new Date(Date.now() + msUntilMidnightPT)
+                    resetTime = nextMidnightPT.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+                } else {
+                    // Rate limit per menit → hitung dari retryAfter
+                    const resetAt = new Date(Date.now() + retryAfter * 1000)
+                    resetTime = resetAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+                }
+
+                setRateLimitInfo({ retryAfter, isPerDay, total: retryAfter, resetTime })
+                setRateLimitCountdown(retryAfter)
+                throw new Error(result.error || 'Rate limit exceeded')
+            }
+
             if (!response.ok || result.error) throw new Error(result.error || 'Gagal memproses struk')
             
             // Format result to ensure properties exist
             const data = result.data
             setScanResult({
+                document_type: data.document_type || 'struk_belanja',
                 store_name: data.store_name || '',
                 date: data.date || new Date().toISOString().split('T')[0],
                 total: data.total || 0,
                 category: data.category || 'Belanja',
+                transaction_type: data.transaction_type || 'pengeluaran',
+                description: data.description || '',
+                discount: data.discount || 0,
+                extra_fees: data.extra_fees || 0,
                 items: data.items || []
             })
         } catch (error: any) {
@@ -201,15 +255,32 @@ export default function ScanReceiptPage() {
         setIsSaving(true)
         try {
             const walletId = parseInt(selectedWalletId)
+            const txType = scanResult.transaction_type || 'pengeluaran'
             const { data: wallet } = await supabase.from('wallets').select('balance, name').eq('id', walletId).single()
             if (!wallet) throw new Error('Dompet tidak ditemukan')
-            if (wallet.balance < scanResult.total) throw new Error(`Saldo tidak mencukupi! Saldo ${wallet.name}: Rp ${wallet.balance.toLocaleString('id-ID')}`)
+
+            // Cek saldo hanya untuk pengeluaran
+            if (txType === 'pengeluaran' && wallet.balance < scanResult.total) {
+                throw new Error(`Saldo tidak mencukupi! Saldo ${wallet.name}: Rp ${wallet.balance.toLocaleString('id-ID')}`)
+            }
+
+            // Generate judul berdasarkan jenis dokumen
+            let title = ''
+            if (scanResult.document_type === 'bukti_transfer') {
+                title = txType === 'pemasukan'
+                    ? `Terima Transfer dari ${scanResult.store_name}`
+                    : `Transfer ke ${scanResult.store_name}`
+            } else if (scanResult.document_type === 'tagihan') {
+                title = `Tagihan ${scanResult.store_name}`
+            } else {
+                title = `Belanja di ${scanResult.store_name}`
+            }
 
             const safeDate = new Date(`${scanResult.date}T12:00:00`).toISOString()
             const payload = {
-                title: `Belanja di ${scanResult.store_name}`,
+                title,
                 amount: scanResult.total,
-                type: 'pengeluaran',
+                type: txType,
                 category: scanResult.category || 'Belanja',
                 wallet_id: walletId,
                 date: safeDate,
@@ -220,10 +291,14 @@ export default function ScanReceiptPage() {
             const { error: insertError } = await supabase.from('transactions').insert([payload])
             if (insertError) throw insertError
 
-            await supabase.from('wallets').update({ balance: wallet.balance - scanResult.total }).eq('id', walletId)
+            // Update saldo: kurangi untuk pengeluaran, tambah untuk pemasukan
+            const newBalance = txType === 'pemasukan'
+                ? wallet.balance + scanResult.total
+                : wallet.balance - scanResult.total
+            await supabase.from('wallets').update({ balance: newBalance }).eq('id', walletId)
 
             setIsSuccess(true)
-            showToast('success', 'Struk berhasil disimpan sebagai pengeluaran!')
+            showToast('success', 'Dokumen berhasil disimpan!')
         } catch (error: any) {
             showToast('error', error.message)
         } finally {
@@ -358,6 +433,46 @@ export default function ScanReceiptPage() {
                             </div>
                         )}
 
+                        {/* ── RATE LIMIT BANNER ───────────────────────────────── */}
+                        {rateLimitInfo && rateLimitCountdown > 0 && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 animate-in fade-in">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <span className="text-lg">⏳</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-amber-800 text-sm">
+                                            {rateLimitInfo.isPerDay ? 'Kuota Harian Habis' : 'Terlalu Banyak Request'}
+                                        </p>
+                                        <p className="text-xs text-amber-600 mt-0.5">
+                                            {rateLimitInfo.isPerDay
+                                                ? `Kuota harian habis. Reset pukul ${rateLimitInfo.resetTime} WIB.`
+                                                : `Batas request per menit tercapai. Bisa scan lagi sekitar pukul ${rateLimitInfo.resetTime} WIB.`}
+                                        </p>
+                                        <div className="mt-3">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs font-medium text-amber-700">Bisa scan lagi dalam:</span>
+                                                <span className="text-sm font-bold text-amber-800 tabular-nums">
+                                                    {rateLimitCountdown >= 3600
+                                                        ? `${Math.floor(rateLimitCountdown / 3600)}j ${Math.floor((rateLimitCountdown % 3600) / 60)}m`
+                                                        : rateLimitCountdown >= 60
+                                                            ? `${Math.floor(rateLimitCountdown / 60)}m ${rateLimitCountdown % 60}s`
+                                                            : `${rateLimitCountdown}s`
+                                                    }
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-amber-200 rounded-full h-1.5">
+                                                <div
+                                                    className="bg-amber-500 h-1.5 rounded-full transition-all duration-1000"
+                                                    style={{ width: `${(rateLimitCountdown / rateLimitInfo.total) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* ── IMAGE PREVIEW ─────────────────────────────────── */}
                         {image && !scanResult && (
                             <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F3F4F3] animate-in fade-in">
@@ -370,8 +485,8 @@ export default function ScanReceiptPage() {
                                 <div className="p-5">
                                     <button
                                         onClick={handleScan}
-                                        disabled={isScanning}
-                                        className="w-full py-4 bg-[#165DFF] hover:bg-blue-600 disabled:bg-blue-400 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200"
+                                        disabled={isScanning || rateLimitCountdown > 0}
+                                        className="w-full py-4 bg-[#165DFF] hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200 disabled:shadow-none"
                                     >
                                         {isScanning ? (
                                             <><Loader2 className="w-5 h-5 animate-spin" /> Menganalisa Struk...</>
@@ -388,6 +503,44 @@ export default function ScanReceiptPage() {
                             <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
                                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3F4F3]">
                                     <div className="flex flex-col gap-4 mb-6 pb-6 border-b border-dashed border-slate-200">
+
+                                        {/* ─ Document type badge ─ */}
+                                        <div className="flex items-center gap-2">
+                                            {scanResult.document_type === 'bukti_transfer' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">🏦 Bukti Transfer</span>
+                                            ) : scanResult.document_type === 'tagihan' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-semibold">📄 Tagihan</span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">🧾 Struk Belanja</span>
+                                            )}
+                                        </div>
+
+                                        {/* ─ Transfer direction toggle ─ */}
+                                        {scanResult.document_type === 'bukti_transfer' && (
+                                            <div className="flex rounded-xl overflow-hidden border border-slate-200">
+                                                <button
+                                                    onClick={() => handleResultChange('transaction_type', 'pengeluaran')}
+                                                    className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
+                                                        scanResult.transaction_type === 'pengeluaran'
+                                                            ? 'bg-red-500 text-white'
+                                                            : 'bg-white text-slate-500 hover:bg-slate-50'
+                                                    }`}
+                                                >
+                                                    ↑ Transfer Keluar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleResultChange('transaction_type', 'pemasukan')}
+                                                    className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
+                                                        scanResult.transaction_type === 'pemasukan'
+                                                            ? 'bg-emerald-500 text-white'
+                                                            : 'bg-white text-slate-500 hover:bg-slate-50'
+                                                    }`}
+                                                >
+                                                    ↓ Terima Transfer
+                                                </button>
+                                            </div>
+                                        )}
+
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Nama Toko</label>
                                             <input 
@@ -412,16 +565,32 @@ export default function ScanReceiptPage() {
                                                 <div className="flex items-center border-b border-slate-200 focus-within:border-[#165DFF] transition-colors pb-1">
                                                     <span className="text-[#165DFF] font-bold mr-1">Rp</span>
                                                     <input 
-                                                        type="number"
-                                                        value={scanResult.total}
-                                                        onChange={(e) => handleResultChange('total', parseInt(e.target.value) || 0)}
+                                                        type="text"
+                                                        value={scanResult.total.toLocaleString('id-ID')}
+                                                        onChange={(e) => handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0)}
                                                         className="w-full text-xl font-bold text-[#165DFF] bg-transparent outline-none"
                                                     />
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* ─ Keterangan transfer ─ */}
+                                        {scanResult.document_type === 'bukti_transfer' && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Keterangan Transfer</label>
+                                                <input
+                                                    type="text"
+                                                    value={scanResult.description || ''}
+                                                    onChange={(e) => handleResultChange('description', e.target.value)}
+                                                    placeholder="Keterangan transfer..."
+                                                    className="w-full text-sm text-slate-700 bg-transparent border-b border-slate-200 focus:border-[#165DFF] outline-none pb-1 transition-colors"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
+                                    {/* Detail item hanya tampil untuk struk & tagihan */}
+                                    {scanResult.document_type !== 'bukti_transfer' && (
                                     <div className="mb-6">
                                         <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider flex items-center justify-between">
                                             Detail Item
@@ -445,24 +614,30 @@ export default function ScanReceiptPage() {
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </div>
-                                                    <div className="flex justify-between items-center text-sm">
-                                                        <div className="flex items-center gap-2 text-slate-500">
-                                                            <span>x</span>
+                                                    <div className="flex justify-between items-center text-sm mt-1">
+                                                        {/* Kiri: qty x @harga satuan */}
+                                                        <div className="flex items-center gap-1.5 text-slate-500">
+                                                            <span className="text-xs">x</span>
                                                             <input 
                                                                 type="number"
                                                                 value={item.qty}
                                                                 onChange={(e) => handleItemChange(idx, 'qty', parseInt(e.target.value) || 0)}
-                                                                className="w-12 bg-white border border-slate-200 rounded text-center outline-none focus:border-[#165DFF]"
+                                                                className="w-10 bg-white border border-slate-200 rounded text-center text-xs outline-none focus:border-[#165DFF] py-0.5"
+                                                            />
+                                                            <span className="text-xs text-slate-400">@Rp</span>
+                                                            <input 
+                                                                type="text"
+                                                                value={item.price.toLocaleString('id-ID')}
+                                                                onChange={(e) => handleItemChange(idx, 'price', parseInt(e.target.value.replace(/\./g, '')) || 0)}
+                                                                className="w-20 bg-white border border-slate-200 rounded text-right text-xs px-1 outline-none focus:border-[#165DFF] py-0.5"
                                                             />
                                                         </div>
-                                                        <div className="flex items-center gap-1 font-semibold text-slate-700">
+                                                        {/* Kanan: subtotal (read-only) */}
+                                                        <div className="flex items-center gap-0.5">
                                                             <span className="text-xs text-slate-400">Rp</span>
-                                                            <input 
-                                                                type="number"
-                                                                value={item.price}
-                                                                onChange={(e) => handleItemChange(idx, 'price', parseInt(e.target.value) || 0)}
-                                                                className="w-20 bg-white border border-slate-200 rounded text-right px-1 outline-none focus:border-[#165DFF]"
-                                                            />
+                                                            <span className="font-semibold text-slate-800 text-sm tabular-nums">
+                                                                {(item.qty * item.price).toLocaleString('id-ID')}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -472,6 +647,33 @@ export default function ScanReceiptPage() {
                                             )}
                                         </div>
                                     </div>
+                                    )} {/* end: detail item for non-transfer */}
+
+                                    {/* ── BREAKDOWN DISKON & BIAYA TAMBAHAN ── */}
+                                    {(scanResult.discount > 0 || scanResult.extra_fees > 0) && (
+                                        <div className="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-100">
+                                            <div className="flex justify-between text-sm text-slate-500">
+                                                <span>Subtotal Item</span>
+                                                <span>Rp {scanResult.items.reduce((a: number, i: any) => a + i.qty * i.price, 0).toLocaleString('id-ID')}</span>
+                                            </div>
+                                            {scanResult.discount > 0 && (
+                                                <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                                                    <span>Diskon / Voucher</span>
+                                                    <span>- Rp {scanResult.discount.toLocaleString('id-ID')}</span>
+                                                </div>
+                                            )}
+                                            {scanResult.extra_fees > 0 && (
+                                                <div className="flex justify-between text-sm text-slate-500">
+                                                    <span>Biaya Tambahan (Ongkir, dll)</span>
+                                                    <span>+ Rp {scanResult.extra_fees.toLocaleString('id-ID')}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between text-sm font-bold text-slate-800 pt-2 border-t border-slate-200">
+                                                <span>Total Dibayar</span>
+                                                <span className="text-[#165DFF]">Rp {scanResult.total.toLocaleString('id-ID')}</span>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-4 pt-6 border-t border-slate-100">
                                         <div>

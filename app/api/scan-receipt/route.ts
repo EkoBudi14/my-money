@@ -22,16 +22,44 @@ export async function POST(req: NextRequest) {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 
-    const prompt = `Kamu adalah AI analis struk belanja. Ekstrak informasi dari gambar struk ini dalam format JSON:
+    const prompt = `Kamu adalah AI analis dokumen keuangan. Tentukan jenis dokumen dan ekstrak informasi dalam format JSON.
+
+JENIS DOKUMEN yang dikenali:
+- "struk_belanja": Struk/nota pembelian dari toko, minimarket, restoran, kafe, dll
+- "bukti_transfer": Bukti transfer bank (BCA, Mandiri, BNI, BRI, GoPay, OVO, DANA, ShopeePay, dll)
+- "tagihan": Tagihan/invoice/bill dari layanan (listrik, internet, dll)
+
+FORMAT JSON untuk struk_belanja atau tagihan:
 {
-  "store_name": "nama toko",
+  "document_type": "struk_belanja",
+  "store_name": "nama toko/merchant",
   "date": "YYYY-MM-DD",
-  "total": angka_total,
-  "items": [{ "name": "nama item", "price": harga, "qty": jumlah }],
-  "category": "kategori yang sesuai dari list: Kebutuhan Dapur / Makan di Luar / Belanja / Kesehatan / Lainnya"
+  "total": angka_total_yang_benar_dibayar,
+  "items": [{ "name": "nama item", "price": harga_satuan, "qty": jumlah }],
+  "category": "pilih dari: Kebutuhan Dapur / Makan di Luar / Belanja / Kesehatan / Lainnya",
+  "transaction_type": "pengeluaran",
+  "description": "",
+  "discount": total_potongan_diskon_voucher_dalam_angka_positif_atau_0,
+  "extra_fees": total_biaya_tambahan_seperti_ongkir_biaya_layanan_dll_dalam_angka_positif_atau_0
 }
-Jika gambar bukan struk atau tidak terbaca, kembalikan { "error": "pesan error kenapa tidak terbaca atau bukan struk" }
-HANYA KEMBALIKAN JSON SAJA TANPA MARKDOWN atau TEKS LAIN.`
+Catatan: "total" adalah jumlah yang benar-benar dibayar user (setelah diskon dan biaya tambahan).
+
+FORMAT JSON untuk bukti_transfer:
+{
+  "document_type": "bukti_transfer",
+  "store_name": "nama penerima transfer",
+  "date": "YYYY-MM-DD",
+  "total": angka_nominal_transfer,
+  "items": [],
+  "category": "Transfer",
+  "transaction_type": "pengeluaran",
+  "description": "keterangan/berita transfer jika ada"
+}
+
+Jika gambar tidak terbaca atau bukan dokumen keuangan:
+{ "error": "penjelasan singkat kenapa tidak bisa diproses" }
+
+HANYA kembalikan JSON, tanpa markdown atau teks lain.`
 
     const imageParts = [
       {
@@ -76,6 +104,38 @@ HANYA KEMBALIKAN JSON SAJA TANPA MARKDOWN atau TEKS LAIN.`
     return NextResponse.json({ data: parsedData })
   } catch (error: any) {
     console.error('Error scanning receipt:', error)
+
+    // Handle rate limit (429) specifically
+    const is429 = error.status === 429 || error.message?.includes('429') || error.message?.includes('Too Many Requests')
+    if (is429) {
+      let retryAfterSeconds = 60
+      let isPerDay = false
+      try {
+        if (error.errorDetails) {
+          // Parse retry delay
+          const retryInfo = error.errorDetails.find((d: any) => d['@type']?.includes('RetryInfo'))
+          if (retryInfo?.retryDelay) {
+            const match = retryInfo.retryDelay.match(/(\d+(?:\.\d+)?)s/)
+            if (match) retryAfterSeconds = Math.ceil(parseFloat(match[1]))
+          }
+          // Detect if daily quota (vs per-minute)
+          isPerDay = error.errorDetails.some((d: any) =>
+            d.violations?.some((v: any) => v.quotaId?.includes('PerDay'))
+          )
+        } else {
+          // Fallback: parse from error message
+          const match = error.message?.match(/retry in (\d+(?:\.\d+)?)s/i)
+          if (match) retryAfterSeconds = Math.ceil(parseFloat(match[1]))
+        }
+      } catch (_) { /* ignore parse errors */ }
+
+      return NextResponse.json({
+        error: isPerDay ? 'Kuota harian Gemini API habis.' : 'Terlalu banyak request ke AI.',
+        retryAfter: retryAfterSeconds,
+        isPerDay
+      }, { status: 429 })
+    }
+
     return NextResponse.json({ error: error.message || 'Terjadi kesalahan saat memproses gambar' }, { status: 500 })
   }
 }
