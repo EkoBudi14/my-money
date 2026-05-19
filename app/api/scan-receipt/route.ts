@@ -20,12 +20,7 @@ export async function POST(req: NextRequest) {
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '')
     const mimeType = image.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg'
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      }
-    })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 
     const prompt = `Kamu adalah AI analis struk belanja. Ekstrak informasi dari gambar struk ini dalam format JSON:
 {
