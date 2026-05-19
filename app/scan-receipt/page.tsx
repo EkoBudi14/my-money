@@ -81,6 +81,20 @@ export default function ScanReceiptPage() {
         openCamera(facingMode === 'environment' ? 'user' : 'environment')
     }
 
+    // ── COMPRESS ─────────────────────────────────────────────────────────────
+    const compressImage = (sourceCanvas: HTMLCanvasElement | HTMLImageElement, w: number, h: number): string => {
+        const MAX_DIM = 1280
+        let targetW = w
+        let targetH = h
+        if (targetW > MAX_DIM) { targetH = Math.round(targetH * MAX_DIM / targetW); targetW = MAX_DIM }
+        if (targetH > MAX_DIM) { targetW = Math.round(targetW * MAX_DIM / targetH); targetH = MAX_DIM }
+        const offscreen = document.createElement('canvas')
+        offscreen.width = targetW
+        offscreen.height = targetH
+        offscreen.getContext('2d')?.drawImage(sourceCanvas, 0, 0, targetW, targetH)
+        return offscreen.toDataURL('image/jpeg', 0.75)
+    }
+
     const capturePhoto = () => {
         if (!videoRef.current || !canvasRef.current) return
         const video = videoRef.current
@@ -88,7 +102,7 @@ export default function ScanReceiptPage() {
         canvas.width = video.videoWidth
         canvas.height = video.videoHeight
         canvas.getContext('2d')?.drawImage(video, 0, 0)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+        const dataUrl = compressImage(canvas, video.videoWidth, video.videoHeight)
         setImage(dataUrl)
         closeCamera()
     }
@@ -103,13 +117,20 @@ export default function ScanReceiptPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
-        const reader = new FileReader()
-        reader.onloadend = () => {
-            setImage(reader.result as string)
+        const objectUrl = URL.createObjectURL(file)
+        const img = new Image()
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl)
+            const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+            setImage(dataUrl)
             setScanResult(null)
             setIsSuccess(false)
         }
-        reader.readAsDataURL(file)
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl)
+            showToast('error', 'Gagal memuat gambar. Coba format lain.')
+        }
+        img.src = objectUrl
     }
 
     // ── SCAN ──────────────────────────────────────────────────────────────────
