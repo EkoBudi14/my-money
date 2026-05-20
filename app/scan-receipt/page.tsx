@@ -102,7 +102,7 @@ export default function ScanReceiptPage() {
 
     // ── COMPRESS ─────────────────────────────────────────────────────────────
     const compressImage = (sourceCanvas: HTMLCanvasElement | HTMLImageElement, w: number, h: number): string => {
-        const MAX_DIM = 1280
+        const MAX_DIM = 800 // 800px cukup untuk OCR teks struk, hemat ~60% token vs 1280px
         let targetW = w
         let targetH = h
         if (targetW > MAX_DIM) { targetH = Math.round(targetH * MAX_DIM / targetW); targetW = MAX_DIM }
@@ -111,7 +111,7 @@ export default function ScanReceiptPage() {
         offscreen.width = targetW
         offscreen.height = targetH
         offscreen.getContext('2d')?.drawImage(sourceCanvas, 0, 0, targetW, targetH)
-        return offscreen.toDataURL('image/jpeg', 0.75)
+        return offscreen.toDataURL('image/jpeg', 0.65) // 65% quality masih oke untuk teks, lebih hemat token
     }
 
     const capturePhoto = () => {
