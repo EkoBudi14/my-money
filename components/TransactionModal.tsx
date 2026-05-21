@@ -551,13 +551,12 @@ export default function TransactionModal({
                   key={tab.key}
                   type="button"
                   onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
-                  className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${
-                    type === tab.key
-                      ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
-                        : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
+                  className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
+                    ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
+                      : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
                         : 'border-violet-500 text-violet-600'
-                      : 'border-transparent text-slate-400'
-                  }`}
+                    : 'border-transparent text-slate-400'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -579,7 +578,7 @@ export default function TransactionModal({
                 </select>
               </div>
               <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
               <div className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-3 shadow-sm">
                 <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
@@ -592,11 +591,10 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`rounded-2xl p-6 relative overflow-hidden shadow-lg ${
-            type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
+          <div className={`rounded-2xl p-6 relative overflow-hidden shadow-lg ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
             type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-            'bg-gradient-to-br from-violet-600 to-purple-700'
-          }`}>
+              'bg-gradient-to-br from-violet-600 to-purple-700'
+            }`}>
             <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full" />
             <div className="absolute -bottom-10 -left-6 w-40 h-40 bg-white/5 rounded-full" />
             <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
@@ -620,7 +618,7 @@ export default function TransactionModal({
             <div className="flex gap-2 flex-wrap mt-4 relative z-10">
               {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
                 <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="px-3.5 py-2 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all">
-                  +{val >= 1000000 ? `${val/1000000}jt` : `${val/1000}rb`}
+                  +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                 </button>
               ))}
             </div>
@@ -756,7 +754,7 @@ export default function TransactionModal({
                   <div className="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
@@ -832,11 +830,10 @@ export default function TransactionModal({
             <button
               type="submit"
               disabled={saving}
-              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${
-                type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
+              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
                 type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
-                'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
-              } text-white`}
+                  'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
+                } text-white`}
             >
               {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
               {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
@@ -885,13 +882,12 @@ export default function TransactionModal({
                 key={tab.key}
                 type="button"
                 onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
-                className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${
-                  type === tab.key
-                    ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
-                      : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
+                className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
+                  ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
+                    : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
                       : 'border-violet-500 text-violet-600'
-                    : 'border-transparent text-slate-400'
-                }`}
+                  : 'border-transparent text-slate-400'
+                  }`}
               >
                 {tab.label}
               </button>
@@ -901,7 +897,7 @@ export default function TransactionModal({
 
         {/* Scrollable Content */}
         <form onSubmit={handleSaveTransaction} className="flex-1 overflow-y-auto overscroll-contain">
-          
+
           {/* Topup wallet selectors */}
           {type === 'topup' && (
             <div className="mx-4 mt-4 flex items-center gap-2">
@@ -913,7 +909,7 @@ export default function TransactionModal({
                 </select>
               </div>
               <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
               <div className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-3">
                 <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
@@ -926,11 +922,10 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${
-            type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
+          <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
             type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-            'bg-gradient-to-br from-violet-600 to-purple-700'
-          }`}>
+              'bg-gradient-to-br from-violet-600 to-purple-700'
+            }`}>
             <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
             <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
             <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
@@ -955,7 +950,7 @@ export default function TransactionModal({
             <div className="flex gap-2 flex-wrap mt-3 relative z-10">
               {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
                 <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white/30 active:scale-95 transition-all">
-                  +{val >= 1000000 ? `${val/1000000}jt` : `${val/1000}rb`}
+                  +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                 </button>
               ))}
             </div>
@@ -1089,7 +1084,7 @@ export default function TransactionModal({
                   <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
@@ -1165,11 +1160,10 @@ export default function TransactionModal({
             <button
               type="submit"
               disabled={saving}
-              className={`w-full py-4 rounded-2xl font-bold text-white text-base transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${
-                type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
+              className={`w-full py-4 rounded-2xl font-bold text-white text-base transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
                 type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
-                'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
-              } ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
+                } ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
               {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Topup'}`)}
@@ -1338,7 +1332,7 @@ export default function TransactionModal({
                 <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                    <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                    <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
                   </div>
                   {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                     <div className="mb-6 space-y-2">
