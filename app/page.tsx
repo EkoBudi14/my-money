@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import Link from 'next/link'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -59,8 +59,8 @@ import {
 
 // --- Definitions ---
 const AVAILABLE_ICONS: Record<string, any> = {
-  Home, ShoppingBag, Utensils, Car, Zap, Package, HeartPulse, CreditCard, Film, Gift, 
-  Briefcase, TrendingUp, Landmark, Coffee, Plane, Gamepad2, Tv, Smartphone, Book, 
+  Home, ShoppingBag, Utensils, Car, Zap, Package, HeartPulse, CreditCard, Film, Gift,
+  Briefcase, TrendingUp, Landmark, Coffee, Plane, Gamepad2, Tv, Smartphone, Book,
   Scissors, Music, Shirt, Smile, Globe, Dumbbell, GraduationCap
 }
 
@@ -126,7 +126,7 @@ export default function MoneyManager() {
   // Debt State
   const [debts, setDebts] = useState<Debt[]>([])
   const [isSplitBill, setIsSplitBill] = useState(false)
-  const [splitEntries, setSplitEntries] = useState<{name: string, amount: string}[]>([{ name: '', amount: '' }])
+  const [splitEntries, setSplitEntries] = useState<{ name: string, amount: string }[]>([{ name: '', amount: '' }])
   const [showDebtModal, setShowDebtModal] = useState(false)
   const [showMobileDebtList, setShowMobileDebtList] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
@@ -193,7 +193,7 @@ export default function MoneyManager() {
   const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
 
   // User Custom Categories
-  const [customCategories, setCustomCategories] = useState<{pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]}>({pengeluaran: [], pemasukan: []})
+  const [customCategories, setCustomCategories] = useState<{ pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] }>({ pengeluaran: [], pemasukan: [] })
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryIcon, setNewCategoryIcon] = useState('Package')
@@ -218,69 +218,69 @@ export default function MoneyManager() {
     const finalName = newCategoryName.trim()
 
     if (!oldNameObj && customCategories[currentType].map(getName).map(n => n.toLowerCase()).includes(finalName.toLowerCase())) {
-        showToast('warning', 'Kategori ini sudah ada!')
-        return
+      showToast('warning', 'Kategori ini sudah ada!')
+      return
     }
 
     let updatedList = [...customCategories[currentType]]
     const newDef: CustomCategoryDef = {
-        name: finalName,
-        iconName: newCategoryIcon,
-        color: newCategoryColor
+      name: finalName,
+      iconName: newCategoryIcon,
+      color: newCategoryColor
     }
 
     if (oldNameObj) {
-        updatedList = updatedList.map(c => getName(c) === oldNameObj ? newDef : c)
-        if (oldNameObj !== finalName) {
-            await supabase.from('transactions').update({ category: finalName }).eq('category', oldNameObj)
-        }
+      updatedList = updatedList.map(c => getName(c) === oldNameObj ? newDef : c)
+      if (oldNameObj !== finalName) {
+        await supabase.from('transactions').update({ category: finalName }).eq('category', oldNameObj)
+      }
     } else {
-        updatedList.push(newDef)
+      updatedList.push(newDef)
     }
 
     const updated = {
-        ...customCategories,
-        [currentType]: updatedList
+      ...customCategories,
+      [currentType]: updatedList
     }
 
     const { error } = await supabase.from('user_settings').update({ custom_categories: updated }).eq('id', 1)
-    
+
     if (!error) {
-        setCustomCategories(updated)
-        setCategory(finalName)
-        resetCategoryForm()
-        setBillsUpdateTrigger(prev => prev + 1)
-        showToast('success', oldNameObj ? 'Kategori diperbarui!' : 'Kategori ditambahkan!')
+      setCustomCategories(updated)
+      setCategory(finalName)
+      resetCategoryForm()
+      setBillsUpdateTrigger(prev => prev + 1)
+      showToast('success', oldNameObj ? 'Kategori diperbarui!' : 'Kategori ditambahkan!')
     } else {
-        showToast('error', 'Gagal menyimpan kategori')
+      showToast('error', 'Gagal menyimpan kategori')
     }
   }
 
   const handleDeleteCustomCategory = async (catName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     const currentType = type as 'pemasukan' | 'pengeluaran'
-    
+
     const confirmed = await showConfirm({
-        title: 'Hapus Kategori?',
-        message: `Hapus kategori "${catName}"? Histori asli di database akan tetap aman namun logonya akan tereset menjadi default.`,
-        confirmText: 'Hapus',
-        cancelText: 'Batal'
+      title: 'Hapus Kategori?',
+      message: `Hapus kategori "${catName}"? Histori asli di database akan tetap aman namun logonya akan tereset menjadi default.`,
+      confirmText: 'Hapus',
+      cancelText: 'Batal'
     })
-    
+
     if (!confirmed) return
 
     const getName = (c: string | CustomCategoryDef) => typeof c === 'string' ? c : c.name
     const updatedList = customCategories[currentType].filter(c => getName(c) !== catName)
-    
+
     const updated = { ...customCategories, [currentType]: updatedList }
     const { error } = await supabase.from('user_settings').update({ custom_categories: updated }).eq('id', 1)
-    
+
     if (!error) {
-        setCustomCategories(updated)
-        if (category === catName) setCategory('')
-        showToast('success', 'Kategori dihapus')
+      setCustomCategories(updated)
+      if (category === catName) setCategory('')
+      showToast('success', 'Kategori dihapus')
     } else {
-        showToast('error', 'Gagal menghapus kategori')
+      showToast('error', 'Gagal menghapus kategori')
     }
   }
 
@@ -306,7 +306,7 @@ export default function MoneyManager() {
 
       if (settings) {
         if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
-        if (settings.custom_categories) setCustomCategories(settings.custom_categories as {pengeluaran: string[], pemasukan: string[]})
+        if (settings.custom_categories) setCustomCategories(settings.custom_categories as { pengeluaran: string[], pemasukan: string[] })
         if (settings.custom_start_date && settings.custom_end_date) {
           setCustomRange({
             start: settings.custom_start_date,
@@ -473,7 +473,7 @@ export default function MoneyManager() {
       .from('debts')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     setDebts(data || [])
   }
 
@@ -667,7 +667,7 @@ export default function MoneyManager() {
         }
 
         if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
-            sourceBalanceAfterRollback += oldTransaction.amount + oldAdminFeeAmount
+          sourceBalanceAfterRollback += oldTransaction.amount + oldAdminFeeAmount
         }
 
         // Cek saldo cukup setelah rollback
@@ -687,26 +687,26 @@ export default function MoneyManager() {
           if (type === 'pemasukan' || type === 'topup') finalBalance += amountNum
           else finalBalance -= amountNum
           await supabase.from('wallets').update({ balance: finalBalance }).eq('id', newWalletId)
-          
+
           if (type === 'topup') {
-              // Fix BUG #4: Tidak lakukan dua kali update - langsung hitung final saldo termasuk adminFee
-              const finalSourceBalance = sourceBalanceAfterRollback - amountNum - adminFeeNum
-              await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
-              // Re-apply admin fee baru jika ada
-              if (adminFeeNum > 0) {
-                const adminPayload = {
-                  title: 'Biaya Admin',
-                  amount: adminFeeNum,
-                  type: 'pengeluaran',
-                  category: 'Lainnya',
-                  wallet_id: parseInt(sourceWalletId),
-                  date: safeDate,
-                  created_at: new Date().toISOString(),
-                  is_piutang: false,
-                  is_talangan: false
-                }
-                await supabase.from('transactions').insert([adminPayload])
+            // Fix BUG #4: Tidak lakukan dua kali update - langsung hitung final saldo termasuk adminFee
+            const finalSourceBalance = sourceBalanceAfterRollback - amountNum - adminFeeNum
+            await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
+            // Re-apply admin fee baru jika ada
+            if (adminFeeNum > 0) {
+              const adminPayload = {
+                title: 'Biaya Admin',
+                amount: adminFeeNum,
+                type: 'pengeluaran',
+                category: 'Lainnya',
+                wallet_id: parseInt(sourceWalletId),
+                date: safeDate,
+                created_at: new Date().toISOString(),
+                is_piutang: false,
+                is_talangan: false
               }
+              await supabase.from('transactions').insert([adminPayload])
+            }
           }
           fetchWallets()
         }
@@ -744,10 +744,10 @@ export default function MoneyManager() {
           await supabase.from('wallets').update({ balance: oldWalletNewBalance }).eq('id', oldWalletId)
 
           if (oldTransaction.type === 'topup' && oldTransaction.source_wallet_id) {
-             const freshOldSourceBal = await fetchFreshWalletBalance(oldTransaction.source_wallet_id)
-             if (freshOldSourceBal !== null) {
-                 await supabase.from('wallets').update({ balance: freshOldSourceBal + oldTransaction.amount + oldAdminFeeAmount }).eq('id', oldTransaction.source_wallet_id)
-             }
+            const freshOldSourceBal = await fetchFreshWalletBalance(oldTransaction.source_wallet_id)
+            if (freshOldSourceBal !== null) {
+              await supabase.from('wallets').update({ balance: freshOldSourceBal + oldTransaction.amount + oldAdminFeeAmount }).eq('id', oldTransaction.source_wallet_id)
+            }
           }
 
           // 2. Apply transaksi baru ke wallet BARU
@@ -760,23 +760,23 @@ export default function MoneyManager() {
           await supabase.from('wallets').update({ balance: newWalletNewBalance }).eq('id', newWalletId)
 
           if (type === 'topup' && freshSourceWalletBalance !== null) {
-             // Fix BUG #7: Admin fee juga di-apply saat edit topup dengan wallet berbeda
-             const finalSourceBalance = freshSourceWalletBalance - amountNum - adminFeeNum
-             await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
-             if (adminFeeNum > 0) {
-               const adminPayload = {
-                 title: 'Biaya Admin',
-                 amount: adminFeeNum,
-                 type: 'pengeluaran',
-                 category: 'Lainnya',
-                 wallet_id: parseInt(sourceWalletId),
-                 date: safeDate,
-                 created_at: new Date().toISOString(),
-                 is_piutang: false,
-                 is_talangan: false
-               }
-               await supabase.from('transactions').insert([adminPayload])
-             }
+            // Fix BUG #7: Admin fee juga di-apply saat edit topup dengan wallet berbeda
+            const finalSourceBalance = freshSourceWalletBalance - amountNum - adminFeeNum
+            await supabase.from('wallets').update({ balance: finalSourceBalance }).eq('id', parseInt(sourceWalletId))
+            if (adminFeeNum > 0) {
+              const adminPayload = {
+                title: 'Biaya Admin',
+                amount: adminFeeNum,
+                type: 'pengeluaran',
+                category: 'Lainnya',
+                wallet_id: parseInt(sourceWalletId),
+                date: safeDate,
+                created_at: new Date().toISOString(),
+                is_piutang: false,
+                is_talangan: false
+              }
+              await supabase.from('transactions').insert([adminPayload])
+            }
           }
 
           fetchWallets()
@@ -800,25 +800,25 @@ export default function MoneyManager() {
         let newBalance = type === 'pemasukan' || type === 'topup'
           ? freshNewWalletBalance + amountNum
           : freshNewWalletBalance - amountNum
-          
+
         if (type === 'topup' && freshSourceWalletBalance !== null) {
-            let srcNewBalance = freshSourceWalletBalance - amountNum
-            if (adminFeeNum > 0) {
-                srcNewBalance -= adminFeeNum
-                const adminPayload = {
-                    title: 'Biaya Admin',
-                    amount: adminFeeNum,
-                    type: 'pengeluaran',
-                    category: 'Lainnya',
-                    wallet_id: parseInt(sourceWalletId),
-                    date: safeDate, // maintain the same safeDate
-                    created_at: new Date().toISOString(),
-                    is_piutang: false,
-                    is_talangan: false
-                }
-                await supabase.from('transactions').insert([adminPayload])
+          let srcNewBalance = freshSourceWalletBalance - amountNum
+          if (adminFeeNum > 0) {
+            srcNewBalance -= adminFeeNum
+            const adminPayload = {
+              title: 'Biaya Admin',
+              amount: adminFeeNum,
+              type: 'pengeluaran',
+              category: 'Lainnya',
+              wallet_id: parseInt(sourceWalletId),
+              date: safeDate, // maintain the same safeDate
+              created_at: new Date().toISOString(),
+              is_piutang: false,
+              is_talangan: false
             }
-            await supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId))
+            await supabase.from('transactions').insert([adminPayload])
+          }
+          await supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId))
         }
 
         await supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
@@ -831,13 +831,13 @@ export default function MoneyManager() {
       showToast('error', `Gagal menyimpan: ${error.message || 'Cek console untuk detail'}`)
     } else {
       if (editingId) {
-         await supabase.from('debts').delete().eq('original_transaction_id', editingId)
+        await supabase.from('debts').delete().eq('original_transaction_id', editingId)
       }
 
       // Split Bill / Debt Creation
       if (data && data.length > 0 && isSplitBill && type === 'pengeluaran') {
         const validDebts = splitEntries.filter(e => e.name.trim() !== '' && parseFloat(e.amount) > 0)
-        
+
         if (validDebts.length > 0) {
           const debtPayloads = validDebts.map(d => ({
             person_name: d.name,
@@ -890,6 +890,12 @@ export default function MoneyManager() {
   }
 
   const handleEditClick = (t: Transaction) => {
+    // Mobile: navigate to full page
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      window.location.href = `/transaction?type=${t.type}&edit=${t.id}`
+      return
+    }
+    // Desktop: open modal
     setEditingId(t.id)
     setTitle(t.title)
     setAmount(t.amount.toString())
@@ -970,7 +976,7 @@ export default function MoneyManager() {
         .filter(pid => pid !== null) as number[]
 
       const hasPayments = paymentTransactionIds.length > 0
-      
+
       const confirmMessage = hasPayments
         ? `Transaksi ini memiliki ${createdDebts.length} data piutang dan ${paymentTransactionIds.length} pelunasan yang sudah tercatat. Menghapus ini akan membatalkan pelunasan, mengembalikan saldo dompet, dan menghapus piutang. Lanjutkan?`
         : `Transaksi ini memiliki ${createdDebts.length} data piutang terkait. Menghapus transaksi ini akan menghapus data piutang tersebut juga. Lanjutkan?`
@@ -988,47 +994,47 @@ export default function MoneyManager() {
 
       // 1. Handle Cascade Delete for Repayment Transactions (Rollback Balance First)
       if (hasPayments) {
-         // Fetch payment transactions details for balance rollback
-         const { data: paymentTrx } = await supabase
-            .from('transactions')
-            .select('*')
-            .in('id', paymentTransactionIds)
-         
-         if (paymentTrx && paymentTrx.length > 0) {
-            for (const p of paymentTrx) {
-               // Fix Bug #3: Fetch saldo fresh dari DB (bukan dari state lokal)
-               const freshBalance = await fetchFreshWalletBalance(p.wallet_id)
-               if (freshBalance !== null) {
-                  // Rollback: Repayment adalah Pemasukan, maka dikurangi
-                  await supabase.from('wallets').update({ balance: freshBalance - p.amount }).eq('id', p.wallet_id)
-               }
+        // Fetch payment transactions details for balance rollback
+        const { data: paymentTrx } = await supabase
+          .from('transactions')
+          .select('*')
+          .in('id', paymentTransactionIds)
+
+        if (paymentTrx && paymentTrx.length > 0) {
+          for (const p of paymentTrx) {
+            // Fix Bug #3: Fetch saldo fresh dari DB (bukan dari state lokal)
+            const freshBalance = await fetchFreshWalletBalance(p.wallet_id)
+            if (freshBalance !== null) {
+              // Rollback: Repayment adalah Pemasukan, maka dikurangi
+              await supabase.from('wallets').update({ balance: freshBalance - p.amount }).eq('id', p.wallet_id)
             }
-         }
+          }
+        }
       }
 
       // 2. Delete the linked debts (Crucial: Delete this FIRST to remove FK references)
       const { error: debtDelError } = await supabase.from('debts').delete().eq('original_transaction_id', id)
-      
+
       if (debtDelError) {
-         console.error('Error deleting debts:', debtDelError)
-         showToast('error', 'Gagal menghapus sebagian data piutang')
-         setDeletingId(null)
-         return // Stop if critical failure
+        console.error('Error deleting debts:', debtDelError)
+        showToast('error', 'Gagal menghapus sebagian data piutang')
+        setDeletingId(null)
+        return // Stop if critical failure
       }
 
       // 3. Now it is safe to delete Payment Transactions
-       if (hasPayments) {
-          const { error: delError } = await supabase.from('transactions').delete().in('id', paymentTransactionIds)
-          if (delError) console.error('Error deleting payment trx:', delError)
-       }
+      if (hasPayments) {
+        const { error: delError } = await supabase.from('transactions').delete().in('id', paymentTransactionIds)
+        if (delError) console.error('Error deleting payment trx:', delError)
+      }
     } else {
-        // If not a debt creation transaction, handle simple debt payment check or simple transaction
-        // Check if this transaction is a Debt Payment (Income) - moved logic slightly but keeping existing flow structure
+      // If not a debt creation transaction, handle simple debt payment check or simple transaction
+      // Check if this transaction is a Debt Payment (Income) - moved logic slightly but keeping existing flow structure
     }
 
     // Set deletingId for simple transactions too if not set above (logic is slightly complex due to nested if, let's simplify: set it once after confirm)
     if (!createdDebts || createdDebts.length === 0) {
-        setDeletingId(id)
+      setDeletingId(id)
     }
 
     // Delete transaction
@@ -1047,31 +1053,31 @@ export default function MoneyManager() {
             : freshBalance + transaction.amount
           await supabase.from('wallets').update({ balance: restoredBalance }).eq('id', transaction.wallet_id)
         }
-        
+
         if (transaction.type === 'topup' && transaction.source_wallet_id) {
-           // Cari dan hapus transaksi Biaya Admin terkait (jika ada)
-           let adminFeeRollback = 0
-           // Fix BUG #5: Tambah order created_at desc agar admin fee yang diambil
-           // adalah milik topup ini (paling dekat waktunya), bukan topup lain di hari sama
-           const { data: adminFeeTrx } = await supabase
-             .from('transactions')
-             .select('*')
-             .eq('wallet_id', transaction.source_wallet_id)
-             .eq('title', 'Biaya Admin')
-             .eq('type', 'pengeluaran')
-             .eq('date', transaction.date)
-             .order('created_at', { ascending: false })
-             .limit(1)
+          // Cari dan hapus transaksi Biaya Admin terkait (jika ada)
+          let adminFeeRollback = 0
+          // Fix BUG #5: Tambah order created_at desc agar admin fee yang diambil
+          // adalah milik topup ini (paling dekat waktunya), bukan topup lain di hari sama
+          const { data: adminFeeTrx } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('wallet_id', transaction.source_wallet_id)
+            .eq('title', 'Biaya Admin')
+            .eq('type', 'pengeluaran')
+            .eq('date', transaction.date)
+            .order('created_at', { ascending: false })
+            .limit(1)
 
-           if (adminFeeTrx && adminFeeTrx.length > 0) {
-             adminFeeRollback = adminFeeTrx[0].amount
-             await supabase.from('transactions').delete().eq('id', adminFeeTrx[0].id)
-           }
+          if (adminFeeTrx && adminFeeTrx.length > 0) {
+            adminFeeRollback = adminFeeTrx[0].amount
+            await supabase.from('transactions').delete().eq('id', adminFeeTrx[0].id)
+          }
 
-           const freshSource = await fetchFreshWalletBalance(transaction.source_wallet_id)
-           if (freshSource !== null) {
-               await supabase.from('wallets').update({ balance: freshSource + transaction.amount + adminFeeRollback }).eq('id', transaction.source_wallet_id)
-           }
+          const freshSource = await fetchFreshWalletBalance(transaction.source_wallet_id)
+          if (freshSource !== null) {
+            await supabase.from('wallets').update({ balance: freshSource + transaction.amount + adminFeeRollback }).eq('id', transaction.source_wallet_id)
+          }
         }
       }
       fetchWallets()
@@ -1086,123 +1092,123 @@ export default function MoneyManager() {
       console.error('Error deleting transaction:', error)
       showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
     }
-    
+
     // Check if this was a bill payment and delete the record if so
     // This ensures the bill status resets to "Unpaid"
     console.log('Checking for linked bill payments for transaction:', id)
     const { data: deletedBills, error: billPayError } = await supabase
-        .from('bill_payments')
-        .delete()
-        .eq('transaction_id', id)
-        .select()
-    
+      .from('bill_payments')
+      .delete()
+      .eq('transaction_id', id)
+      .select()
+
     if (billPayError) {
-        console.error('Error deleting bill payment:', billPayError)
+      console.error('Error deleting bill payment:', billPayError)
     }
 
     // FALLBACK: If standard delete failed (legacy data), try to find by name and month
     let finalDeletedBills = deletedBills
     if (!billPayError && (!deletedBills || deletedBills.length === 0)) {
-        console.log('No direct link found. Trying fallback by name and month...', transaction)
-        
-        if (transaction && transaction.title && transaction.date) {
-             const txMonth = new Date(transaction.date).toISOString().slice(0, 7)
-             const txTitle = transaction.title.trim()
+      console.log('No direct link found. Trying fallback by name and month...', transaction)
 
-             // 1. Find bill by name
-             const { data: foundBill } = await supabase
-                .from('recurring_bills')
-                .select('id')
-                .eq('name', txTitle)
-                .single()
-             
-             if (foundBill) {
-                 console.log('Found potential bill match:', foundBill)
-                 // 2. Find and delete payment for this bill in this month
-                 // Only if transaction_id is NULL (safe to delete, implies legacy)
-                 // OR just delete it because we are deleting the transaction anyway?
-                 // Safer: delete where bill_id and month matches.
-                  const { data: fallbackDeleted, error: fallbackError } = await supabase
-                    .from('bill_payments')
-                    .delete()
-                    .eq('bill_id', foundBill.id)
-                    .eq('month', txMonth)
-                    .select()
-                  
-                  if (!fallbackError && fallbackDeleted && fallbackDeleted.length > 0) {
-                      console.log('Fallback delete successful:', fallbackDeleted)
-                      finalDeletedBills = fallbackDeleted
-                  }
-             } else {
-                 console.log('No bill found with name:', txTitle)
-             }
+      if (transaction && transaction.title && transaction.date) {
+        const txMonth = new Date(transaction.date).toISOString().slice(0, 7)
+        const txTitle = transaction.title.trim()
+
+        // 1. Find bill by name
+        const { data: foundBill } = await supabase
+          .from('recurring_bills')
+          .select('id')
+          .eq('name', txTitle)
+          .single()
+
+        if (foundBill) {
+          console.log('Found potential bill match:', foundBill)
+          // 2. Find and delete payment for this bill in this month
+          // Only if transaction_id is NULL (safe to delete, implies legacy)
+          // OR just delete it because we are deleting the transaction anyway?
+          // Safer: delete where bill_id and month matches.
+          const { data: fallbackDeleted, error: fallbackError } = await supabase
+            .from('bill_payments')
+            .delete()
+            .eq('bill_id', foundBill.id)
+            .eq('month', txMonth)
+            .select()
+
+          if (!fallbackError && fallbackDeleted && fallbackDeleted.length > 0) {
+            console.log('Fallback delete successful:', fallbackDeleted)
+            finalDeletedBills = fallbackDeleted
+          }
+        } else {
+          console.log('No bill found with name:', txTitle)
         }
+      }
     }
 
     if (finalDeletedBills && finalDeletedBills.length > 0) {
-        console.log('Deleted bill payment:', finalDeletedBills)
-        showToast('success', 'Status tagihan terkait berhasil di-reset!')
-        // If a bill payment was deleted, trigger update to refresh RecurringBillsList
-        setBillsUpdateTrigger(prev => prev + 1)
+      console.log('Deleted bill payment:', finalDeletedBills)
+      showToast('success', 'Status tagihan terkait berhasil di-reset!')
+      // If a bill payment was deleted, trigger update to refresh RecurringBillsList
+      setBillsUpdateTrigger(prev => prev + 1)
     } else {
-        console.log('No linked bill payment found for this transaction.')
-        // Setup fallback: try to find by bill_id/month if transaction_id is missing? 
-        // No, let's just trigger update anyway to be safe.
-        setBillsUpdateTrigger(prev => prev + 1)
+      console.log('No linked bill payment found for this transaction.')
+      // Setup fallback: try to find by bill_id/month if transaction_id is missing? 
+      // No, let's just trigger update anyway to be safe.
+      setBillsUpdateTrigger(prev => prev + 1)
     }
 
     setDeletingId(null)
   }
   const markDebtAsPaid = async (debt: Debt, targetWalletId: number) => {
-     setRepayingWalletId(targetWalletId)
+    setRepayingWalletId(targetWalletId)
 
-     // 1. Create Income Transaction
-     const { data: trx, error: trxError } = await supabase.from('transactions').insert({
-       title: `Pelunasan Piutang: ${debt.person_name}`,
-       amount: debt.amount,
-       type: 'pemasukan',
-       category: 'Lainnya',
-       wallet_id: targetWalletId,
-       date: new Date().toISOString(),
-       created_at: new Date().toISOString(),
-       is_piutang: true,
-       piutang_person: debt.person_name
-     }).select()
+    // 1. Create Income Transaction
+    const { data: trx, error: trxError } = await supabase.from('transactions').insert({
+      title: `Pelunasan Piutang: ${debt.person_name}`,
+      amount: debt.amount,
+      type: 'pemasukan',
+      category: 'Lainnya',
+      wallet_id: targetWalletId,
+      date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      is_piutang: true,
+      piutang_person: debt.person_name
+    }).select()
 
-     if (trxError) {
-       showToast('error', 'Gagal membuat transaksi pelunasan')
-       setRepayingWalletId(null)
-       return
-     }
+    if (trxError) {
+      showToast('error', 'Gagal membuat transaksi pelunasan')
+      setRepayingWalletId(null)
+      return
+    }
 
-     // 2. Update Debt Status
-     const { error: debtError } = await supabase.from('debts').update({
-       status: 'paid',
-       payment_wallet_id: targetWalletId,
-       payment_transaction_id: trx[0].id,
-       paid_at: new Date().toISOString()
-     }).eq('id', debt.id)
+    // 2. Update Debt Status
+    const { error: debtError } = await supabase.from('debts').update({
+      status: 'paid',
+      payment_wallet_id: targetWalletId,
+      payment_transaction_id: trx[0].id,
+      paid_at: new Date().toISOString()
+    }).eq('id', debt.id)
 
-     // 3. Fix Bug #2: Update saldo pakai fresh balance dari DB
-     const freshBalance = await fetchFreshWalletBalance(targetWalletId)
-     if (freshBalance !== null) {
-       await supabase.from('wallets').update({
-         balance: freshBalance + debt.amount
-       }).eq('id', targetWalletId)
-     }
+    // 3. Fix Bug #2: Update saldo pakai fresh balance dari DB
+    const freshBalance = await fetchFreshWalletBalance(targetWalletId)
+    if (freshBalance !== null) {
+      await supabase.from('wallets').update({
+        balance: freshBalance + debt.amount
+      }).eq('id', targetWalletId)
+    }
 
-     if (!debtError) {
-       showSuccess({
-         type: 'general',
-         title: 'Piutang Lunas! 🎉',
-         message: 'Piutang berhasil ditandai lunas dan saldo dompet diperbarui.'
-       })
-       fetchDebts()
-       fetchTransactions()
-       fetchWallets()
-       setShowDebtModal(false)
-     }
-     setRepayingWalletId(null)
+    if (!debtError) {
+      showSuccess({
+        type: 'general',
+        title: 'Piutang Lunas! 🎉',
+        message: 'Piutang berhasil ditandai lunas dan saldo dompet diperbarui.'
+      })
+      fetchDebts()
+      fetchTransactions()
+      fetchWallets()
+      setShowDebtModal(false)
+    }
+    setRepayingWalletId(null)
   }
 
   // 5. Delete Debt
@@ -1213,7 +1219,7 @@ export default function MoneyManager() {
       confirmText: 'Hapus',
       cancelText: 'Batal'
     })
-    
+
     if (!confirmed) return
 
     const { error } = await supabase.from('debts').delete().eq('id', id)
@@ -1229,15 +1235,15 @@ export default function MoneyManager() {
   // Helper: Get Icon Component based on category name
   const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran' | 'topup') => {
     if (type === 'topup') return { Icon: WalletIcon, color: 'bg-blue-100 text-blue-600' }
-    
+
     // 1. Check Custom Categories
     const customList = customCategories[type] || []
     const foundCustom = customList.find(c => (typeof c === 'string' ? c : c.name) === catName)
     if (foundCustom) {
-        if (typeof foundCustom === 'object') {
-            return { Icon: AVAILABLE_ICONS[foundCustom.iconName] || Package, color: foundCustom.color }
-        }
-        return { Icon: Package, color: 'bg-slate-100 text-slate-600' }
+      if (typeof foundCustom === 'object') {
+        return { Icon: AVAILABLE_ICONS[foundCustom.iconName] || Package, color: foundCustom.color }
+      }
+      return { Icon: Package, color: 'bg-slate-100 text-slate-600' }
     }
 
     // 2. Check Standard Categories
@@ -1323,7 +1329,7 @@ export default function MoneyManager() {
   const monthlyData = useMemo(() => {
     const currentYear = currentDate.getFullYear()
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-    
+
     // Initialize all months with 0
     const data = months.map(name => ({ name, income: 0, expense: 0 }))
 
@@ -1373,7 +1379,7 @@ export default function MoneyManager() {
         const bStart = new Date(budget.start_date)
         const bEnd = new Date(budget.end_date)
         bEnd.setHours(23, 59, 59, 999) // include end of day
-        
+
         return (
           t.category === category &&
           t.type === 'pengeluaran' &&
@@ -1391,7 +1397,7 @@ export default function MoneyManager() {
 
     let splitBillInputTotal = 0
     if (isSplitBill) {
-       splitBillInputTotal = splitEntries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0)
+      splitBillInputTotal = splitEntries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0)
     }
     const newAmount = Math.max(0, (parseFloat(amount) || 0) - splitBillInputTotal)
     const totalProjected = currentSpent + newAmount
@@ -1470,21 +1476,21 @@ export default function MoneyManager() {
 
       // 10 columns: Tanggal | Tipe | Kategori | Dompet | Pemasukan | Pengeluaran | Transfer | Piutang | Talangan | Catatan
       wsTx.columns = [
-        { key: 'date',     width: 16 },
-        { key: 'type',     width: 16 },
+        { key: 'date', width: 16 },
+        { key: 'type', width: 16 },
         { key: 'category', width: 22 },
-        { key: 'account',  width: 18 },
-        { key: 'inflow',   width: 18 },
-        { key: 'outflow',  width: 18 },
+        { key: 'account', width: 18 },
+        { key: 'inflow', width: 18 },
+        { key: 'outflow', width: 18 },
         { key: 'transfer', width: 16 },
-        { key: 'piutang',  width: 18 },
+        { key: 'piutang', width: 18 },
         { key: 'talangan', width: 18 },
-        { key: 'note',     width: 30 },
+        { key: 'note', width: 30 },
       ]
 
       // Row 1: Title, Row 2: Column headers
       addTitleRow(wsTx, `Transaksi Periode: ${periodLabel}`, 10, 'FF165DFF')
-      addColHeaderRow(wsTx, ['Tanggal','Tipe','Kategori','Dompet','Pemasukan','Pengeluaran','Transfer','Piutang','Talangan','Catatan'], 10)
+      addColHeaderRow(wsTx, ['Tanggal', 'Tipe', 'Kategori', 'Dompet', 'Pemasukan', 'Pengeluaran', 'Transfer', 'Piutang', 'Talangan', 'Catatan'], 10)
 
       const filteredSorted = [...filteredTransactions].sort(
         (a, b) => new Date(a.date || a.created_at).getTime() - new Date(b.date || b.created_at).getTime()
@@ -1496,64 +1502,64 @@ export default function MoneyManager() {
         const isTalaganTx = t.type === 'pengeluaran' && t.is_talangan
 
         let typeLabel = 'Transfer'
-        if (isPiutangTx)              typeLabel = 'Piutang'
-        else if (t.type === 'pemasukan')   typeLabel = 'Pemasukan'
-        if (isTalaganTx)              typeLabel = 'Talangan/Split'
+        if (isPiutangTx) typeLabel = 'Piutang'
+        else if (t.type === 'pemasukan') typeLabel = 'Pemasukan'
+        if (isTalaganTx) typeLabel = 'Talangan/Split'
         else if (t.type === 'pengeluaran') typeLabel = 'Pengeluaran'
 
         const isOdd = (wsTx.rowCount % 2 === 0)
         const row = wsTx.addRow({
-          date:     new Date(t.date || t.created_at),
-          type:     typeLabel,
+          date: new Date(t.date || t.created_at),
+          type: typeLabel,
           category: t.category || '-',
-          account:  walletName,
-          inflow:   (t.type === 'pemasukan' && !isPiutangTx)    ? t.amount : null,
-          outflow:  (t.type === 'pengeluaran' && !isTalaganTx)  ? t.amount : null,
-          transfer: t.type === 'topup'                          ? t.amount : null,
-          piutang:  isPiutangTx                                 ? t.amount : null,
-          talangan: isTalaganTx                                 ? t.amount : null,
-          note:     t.title || '',
+          account: walletName,
+          inflow: (t.type === 'pemasukan' && !isPiutangTx) ? t.amount : null,
+          outflow: (t.type === 'pengeluaran' && !isTalaganTx) ? t.amount : null,
+          transfer: t.type === 'topup' ? t.amount : null,
+          piutang: isPiutangTx ? t.amount : null,
+          talangan: isTalaganTx ? t.amount : null,
+          note: t.title || '',
         })
         row.height = 18
-        row.getCell('date').numFmt      = 'dd mmm yyyy'
-        row.getCell('inflow').numFmt    = RP_FMT
-        row.getCell('outflow').numFmt   = RP_FMT
-        row.getCell('transfer').numFmt  = RP_FMT
-        row.getCell('piutang').numFmt   = RP_FMT
-        row.getCell('talangan').numFmt  = RP_FMT
-        if (!isPiutangTx && t.type === 'pemasukan')   row.getCell('inflow').font   = { color: { argb: 'FF059669' }, bold: true }
-        if (!isTalaganTx && t.type === 'pengeluaran') row.getCell('outflow').font  = { color: { argb: 'FFDC2626' }, bold: true }
-        if (isPiutangTx)  row.getCell('piutang').font  = { color: { argb: 'FF9333EA' }, bold: true }
-        if (isTalaganTx)  row.getCell('talangan').font = { color: { argb: 'FFEA580C' }, bold: true }
+        row.getCell('date').numFmt = 'dd mmm yyyy'
+        row.getCell('inflow').numFmt = RP_FMT
+        row.getCell('outflow').numFmt = RP_FMT
+        row.getCell('transfer').numFmt = RP_FMT
+        row.getCell('piutang').numFmt = RP_FMT
+        row.getCell('talangan').numFmt = RP_FMT
+        if (!isPiutangTx && t.type === 'pemasukan') row.getCell('inflow').font = { color: { argb: 'FF059669' }, bold: true }
+        if (!isTalaganTx && t.type === 'pengeluaran') row.getCell('outflow').font = { color: { argb: 'FFDC2626' }, bold: true }
+        if (isPiutangTx) row.getCell('piutang').font = { color: { argb: 'FF9333EA' }, bold: true }
+        if (isTalaganTx) row.getCell('talangan').font = { color: { argb: 'FFEA580C' }, bold: true }
         if (isOdd) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFF' } }
         applyBorderToRow(row, 10)
       })
 
       // Total row
-      const totalIn  = filteredTransactions.filter(t => t.type === 'pemasukan'  && !t.is_piutang).reduce((s,t) => s+t.amount, 0)
-      const totalOut = filteredTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((s,t) => s+t.amount, 0)
-      const totalTrf = filteredTransactions.filter(t => t.type === 'topup').reduce((s,t) => s+t.amount, 0)
-      const totalPiutangAmt = filteredTransactions.filter(t => t.is_piutang).reduce((s,t) => s+t.amount, 0)
-      const totalTalaganAmt = filteredTransactions.filter(t => t.is_talangan).reduce((s,t) => s+t.amount, 0)
+      const totalIn = filteredTransactions.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((s, t) => s + t.amount, 0)
+      const totalOut = filteredTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((s, t) => s + t.amount, 0)
+      const totalTrf = filteredTransactions.filter(t => t.type === 'topup').reduce((s, t) => s + t.amount, 0)
+      const totalPiutangAmt = filteredTransactions.filter(t => t.is_piutang).reduce((s, t) => s + t.amount, 0)
+      const totalTalaganAmt = filteredTransactions.filter(t => t.is_talangan).reduce((s, t) => s + t.amount, 0)
       const txTotalRow = wsTx.addRow({
         date: 'TOTAL PERIODE',
-        inflow:   totalIn      || null,
-        outflow:  totalOut     || null,
-        transfer: totalTrf     || null,
-        piutang:  totalPiutangAmt || null,
+        inflow: totalIn || null,
+        outflow: totalOut || null,
+        transfer: totalTrf || null,
+        piutang: totalPiutangAmt || null,
         talangan: totalTalaganAmt || null,
       })
       txTotalRow.font = { bold: true }
       txTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }
-      txTotalRow.getCell('inflow').numFmt    = RP_FMT
-      txTotalRow.getCell('inflow').font      = { bold: true, color: { argb: 'FF059669' } }
-      txTotalRow.getCell('outflow').numFmt   = RP_FMT
-      txTotalRow.getCell('outflow').font     = { bold: true, color: { argb: 'FFDC2626' } }
-      txTotalRow.getCell('transfer').numFmt  = RP_FMT
-      txTotalRow.getCell('piutang').numFmt   = RP_FMT
-      txTotalRow.getCell('piutang').font     = { bold: true, color: { argb: 'FF9333EA' } }
-      txTotalRow.getCell('talangan').numFmt  = RP_FMT
-      txTotalRow.getCell('talangan').font    = { bold: true, color: { argb: 'FFEA580C' } }
+      txTotalRow.getCell('inflow').numFmt = RP_FMT
+      txTotalRow.getCell('inflow').font = { bold: true, color: { argb: 'FF059669' } }
+      txTotalRow.getCell('outflow').numFmt = RP_FMT
+      txTotalRow.getCell('outflow').font = { bold: true, color: { argb: 'FFDC2626' } }
+      txTotalRow.getCell('transfer').numFmt = RP_FMT
+      txTotalRow.getCell('piutang').numFmt = RP_FMT
+      txTotalRow.getCell('piutang').font = { bold: true, color: { argb: 'FF9333EA' } }
+      txTotalRow.getCell('talangan').numFmt = RP_FMT
+      txTotalRow.getCell('talangan').font = { bold: true, color: { argb: 'FFEA580C' } }
       applyBorderToRow(txTotalRow, 10, BOTTOM_THICK)
       wsTx.autoFilter = { from: 'A2', to: 'J2' }
 
@@ -1599,12 +1605,12 @@ export default function MoneyManager() {
       const wsSummary = wb.addWorksheet('Rekap per Rentang')
       wsSummary.properties.tabColor = { argb: 'FF059669' }
       wsSummary.columns = [
-        { key: 'range',   width: 32 },
-        { key: 'income',  width: 22 },
+        { key: 'range', width: 32 },
+        { key: 'income', width: 22 },
         { key: 'expense', width: 22 },
         { key: 'piutang', width: 20 },
-        { key: 'talangan',width: 20 },
-        { key: 'diff',    width: 22 },
+        { key: 'talangan', width: 20 },
+        { key: 'diff', width: 22 },
       ]
       addTitleRow(wsSummary, 'Rekap per Rentang Tanggal — Semua Riwayat', 6, 'FF059669')
       addColHeaderRow(wsSummary, ['Rentang Tanggal', 'Pemasukan', 'Pengeluaran', 'Piutang', 'Talangan', 'Selisih'], 6)
@@ -1619,7 +1625,7 @@ export default function MoneyManager() {
 
         filterHistory.forEach((entry, idx) => {
           const start = new Date(entry.start_date)
-          const end   = new Date(entry.end_date)
+          const end = new Date(entry.end_date)
           // Set end-of-day for end date to include all transactions on that day
           end.setHours(23, 59, 59, 999)
 
@@ -1628,28 +1634,28 @@ export default function MoneyManager() {
             return d >= start && d <= end
           })
 
-          const income   = rangeTransactions.filter(t => t.type === 'pemasukan'  && !t.is_piutang).reduce((s, t) => s + t.amount, 0)
-          const expense  = rangeTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((s, t) => s + t.amount, 0)
-          const piutang  = rangeTransactions.filter(t => t.is_piutang).reduce((s, t) => s + t.amount, 0)
+          const income = rangeTransactions.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((s, t) => s + t.amount, 0)
+          const expense = rangeTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((s, t) => s + t.amount, 0)
+          const piutang = rangeTransactions.filter(t => t.is_piutang).reduce((s, t) => s + t.amount, 0)
           const talangan = rangeTransactions.filter(t => t.is_talangan).reduce((s, t) => s + t.amount, 0)
           const diff = income - expense
 
-          grandIn  += income
+          grandIn += income
           grandOut += expense
 
           const rangeLabel = entry.label || `${entry.start_date} – ${entry.end_date}`
           const row = wsSummary.addRow({ range: rangeLabel, income, expense, piutang, talangan, diff })
           row.height = 18
-          row.getCell('income').numFmt   = RP_FMT
-          row.getCell('income').font     = { color: { argb: 'FF059669' } }
-          row.getCell('expense').numFmt  = RP_FMT
-          row.getCell('expense').font    = { color: { argb: 'FFDC2626' } }
-          row.getCell('piutang').numFmt  = RP_FMT
-          row.getCell('piutang').font    = { color: { argb: 'FF9333EA' } }
+          row.getCell('income').numFmt = RP_FMT
+          row.getCell('income').font = { color: { argb: 'FF059669' } }
+          row.getCell('expense').numFmt = RP_FMT
+          row.getCell('expense').font = { color: { argb: 'FFDC2626' } }
+          row.getCell('piutang').numFmt = RP_FMT
+          row.getCell('piutang').font = { color: { argb: 'FF9333EA' } }
           row.getCell('talangan').numFmt = RP_FMT
-          row.getCell('talangan').font   = { color: { argb: 'FFEA580C' } }
-          row.getCell('diff').numFmt     = RP_FMT_NEG
-          row.getCell('diff').font       = { bold: true, color: { argb: diff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
+          row.getCell('talangan').font = { color: { argb: 'FFEA580C' } }
+          row.getCell('diff').numFmt = RP_FMT_NEG
+          row.getCell('diff').font = { bold: true, color: { argb: diff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
           if (idx % 2 === 0) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0FDF4' } }
           applyBorderToRow(row, 6)
         })
@@ -1660,12 +1666,12 @@ export default function MoneyManager() {
           const grandRow = wsSummary.addRow({ range: 'TOTAL SEMUA RENTANG', income: grandIn, expense: grandOut, diff: grandDiff })
           grandRow.font = { bold: true }
           grandRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }
-          grandRow.getCell('income').numFmt  = RP_FMT
-          grandRow.getCell('income').font    = { bold: true, color: { argb: 'FF059669' } }
+          grandRow.getCell('income').numFmt = RP_FMT
+          grandRow.getCell('income').font = { bold: true, color: { argb: 'FF059669' } }
           grandRow.getCell('expense').numFmt = RP_FMT
-          grandRow.getCell('expense').font   = { bold: true, color: { argb: 'FFDC2626' } }
-          grandRow.getCell('diff').numFmt    = RP_FMT_NEG
-          grandRow.getCell('diff').font      = { bold: true, color: { argb: grandDiff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
+          grandRow.getCell('expense').font = { bold: true, color: { argb: 'FFDC2626' } }
+          grandRow.getCell('diff').numFmt = RP_FMT_NEG
+          grandRow.getCell('diff').font = { bold: true, color: { argb: grandDiff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
           applyBorderToRow(grandRow, 6, BOTTOM_THICK)
         }
       }
@@ -1720,7 +1726,7 @@ export default function MoneyManager() {
 
   return (
     <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-      
+
       {/* ============= DESKTOP TOP HEADER ============= */}
       <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-8">
         <div className="flex items-center gap-4">
@@ -1777,16 +1783,16 @@ export default function MoneyManager() {
             {filterMode === 'monthly' ? (
               <div className="grid grid-cols-2 gap-2">
                 <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
-                  {['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
+                  {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
                 </select>
                 <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
-                  {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
             ) : (
               <div className="space-y-2">
-                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({...customRange, start: e.target.value})} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
-                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({...customRange, end: e.target.value})} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
+                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
+                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
               </div>
             )}
             <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-2 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">Reset ke Bulan Ini</button>
@@ -1802,11 +1808,11 @@ export default function MoneyManager() {
           {/* Period Row */}
           <div className="flex items-center justify-between mb-4 relative z-10">
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <button onClick={prevMonth} disabled={filterMode==='custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+              <button onClick={prevMonth} disabled={filterMode === 'custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <span className="text-white/90 text-xs font-semibold">{getPeriodLabel()}</span>
-              <button onClick={nextMonth} disabled={filterMode==='custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+              <button onClick={nextMonth} disabled={filterMode === 'custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1850,33 +1856,33 @@ export default function MoneyManager() {
         <div className="px-4 mt-5">
           <p className="text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-3">Aksi Cepat</p>
           <div className="grid grid-cols-4 gap-3">
-            <button
-              onClick={() => { resetForm(); setType('pemasukan'); setCategory(''); setIsModalOpen(true); }}
+            <Link
+              href="/transaction?type=pemasukan"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-sm">
                 <TrendingUp className="w-7 h-7 text-emerald-600" />
               </div>
               <span className="text-[11px] font-semibold text-[#6A7686]">Masuk</span>
-            </button>
-            <button
-              onClick={() => { resetForm(); setType('pengeluaran'); setCategory(''); setIsModalOpen(true); }}
+            </Link>
+            <Link
+              href="/transaction?type=pengeluaran"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
               <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center shadow-sm">
                 <TrendingDown className="w-7 h-7 text-rose-500" />
               </div>
               <span className="text-[11px] font-semibold text-[#6A7686]">Keluar</span>
-            </button>
-            <button
-              onClick={() => { resetForm(); setType('topup'); setCategory('Topup'); setIsModalOpen(true); }}
+            </Link>
+            <Link
+              href="/transaction?type=topup"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
               <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
                 <WalletIcon className="w-7 h-7 text-[#165DFF]" />
               </div>
               <span className="text-[11px] font-semibold text-[#6A7686]">Transfer</span>
-            </button>
+            </Link>
             <Link href="/budgets" className="flex flex-col items-center gap-2 active:scale-90 transition-all">
               <div className="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center shadow-sm">
                 <CreditCard className="w-7 h-7 text-purple-600" />
@@ -1951,22 +1957,22 @@ export default function MoneyManager() {
             </div>
 
             {showMobileDebtList && (
-               <div className="mt-4 flex flex-col gap-2">
-                  {debts.filter(d => d.status === 'pending').map(debt => (
-                     <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-amber-100 shadow-sm">
-                        <div>
-                           <p className="font-bold text-amber-900 text-sm">{debt.person_name}</p>
-                           <p className="text-xs text-amber-700 font-semibold">Rp {debt.amount.toLocaleString('id-ID')}</p>
-                        </div>
-                        <button
-                          onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); setShowMobileDebtList(false); }}
-                          className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg active:scale-95 transition-all"
-                        >
-                           Lunas
-                        </button>
-                     </div>
-                  ))}
-               </div>
+              <div className="mt-4 flex flex-col gap-2">
+                {debts.filter(d => d.status === 'pending').map(debt => (
+                  <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-amber-100 shadow-sm">
+                    <div>
+                      <p className="font-bold text-amber-900 text-sm">{debt.person_name}</p>
+                      <p className="text-xs text-amber-700 font-semibold">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                    </div>
+                    <button
+                      onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); setShowMobileDebtList(false); }}
+                      className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg active:scale-95 transition-all"
+                    >
+                      Lunas
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -1981,7 +1987,7 @@ export default function MoneyManager() {
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
                 title="Export ke Excel"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                 Export
               </button>
               <button
@@ -1990,7 +1996,7 @@ export default function MoneyManager() {
                 className={`p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
                 title="Refresh"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
               </button>
               <Link href="/analytics" className="text-xs font-semibold text-[#165DFF] flex items-center gap-1">
                 Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
@@ -2045,11 +2051,10 @@ export default function MoneyManager() {
                       </span>
                     </div>
                     <div className="text-right shrink-0 ml-2">
-                      <p className={`font-bold text-sm mb-1 ${
-                        t.type === 'topup' ? 'text-blue-600' :
+                      <p className={`font-bold text-sm mb-1 ${t.type === 'topup' ? 'text-blue-600' :
                         t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-emerald-600') :
-                        (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
-                      }`}>
+                          (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                        }`}>
                         {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                       </p>
                       <button
@@ -2126,43 +2131,43 @@ export default function MoneyManager() {
 
       {/* ============= DESKTOP DASHBOARD ============= */}
       <div className="hidden md:block p-8 space-y-8">
-        
+
         {/* Date Filter & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-[#080C1A] text-2xl md:text-3xl font-bold mb-1">Hemat Yuk !!!</h1>
             <p className="text-[#6A7686] text-sm">Financial metrics for {getPeriodLabel()}.</p>
           </div>
-          
+
           <div className="flex items-center gap-3 bg-white p-1.5 rounded-full border border-[#F3F4F3] shadow-sm">
-             <button 
-               onClick={prevMonth}
-               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
-               disabled={filterMode === 'custom'}
-             >
-               <ChevronLeft className="w-5 h-5" />
-             </button>
-             
-             <div className="px-4 text-sm font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
-                {getPeriodLabel()}
-             </div>
+            <button
+              onClick={prevMonth}
+              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+              disabled={filterMode === 'custom'}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-             <button 
-               onClick={nextMonth}
-               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
-               disabled={filterMode === 'custom'}
-             >
-               <ChevronRight className="w-5 h-5" />
-             </button>
+            <div className="px-4 text-sm font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
+              {getPeriodLabel()}
+            </div>
 
-             <div className="w-px h-6 bg-[#F3F4F3] mx-1"></div>
-             
-             <button
-               onClick={() => setShowSettings(!showSettings)}
-               className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
-             >
-                <Settings className="w-5 h-5" />
-             </button>
+            <button
+              onClick={nextMonth}
+              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+              disabled={filterMode === 'custom'}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            <div className="w-px h-6 bg-[#F3F4F3] mx-1"></div>
+
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -2273,409 +2278,404 @@ export default function MoneyManager() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Card 1: Total Tabungan (Revenue style) */}
           <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-[6px]">
-                  <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <WalletIcon className="size-6 text-[#30B22D]" />
-                  </div>
-                  <p className="font-medium text-[#6A7686]">Total Semua Uang</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[6px]">
+                <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <WalletIcon className="size-6 text-[#30B22D]" />
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button 
-                            onClick={() => setShowTotalTooltip(!showTotalTooltip)}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
-                        >
-                            <Info className="w-3.5 h-3.5" />
-                        </button>
-                        
-                        {/* Invisible overlay */}
-                        {showTotalTooltip && (
-                            <div className="fixed inset-0 z-10" onClick={() => setShowTotalTooltip(false)} />
-                        )}
+                <p className="font-medium text-[#6A7686]">Total Semua Uang</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowTotalTooltip(!showTotalTooltip)}
+                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
 
-                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                            showTotalTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                        }`}>
-                            <p>Total saldo dari semua dompet bertipe <span className="text-emerald-400 font-bold">Tabungan</span>.</p>
-                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                <p className="text-slate-300">Uang yang disimpan dan tidak untuk pengeluaran harian.</p>
-                            </div>
-                            {/* Arrow up */}
-                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
-                        </div>
+                  {/* Invisible overlay */}
+                  {showTotalTooltip && (
+                    <div className="fixed inset-0 z-10" onClick={() => setShowTotalTooltip(false)} />
+                  )}
+
+                  <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showTotalTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                    }`}>
+                    <p>Total saldo dari semua dompet bertipe <span className="text-emerald-400 font-bold">Tabungan</span>.</p>
+                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                      <p className="text-slate-300">Uang yang disimpan dan tidak untuk pengeluaran harian.</p>
                     </div>
+                    {/* Arrow up */}
+                    <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                  </div>
                 </div>
-             </div>
-             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
-                {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
-             </p>
-             <div className="flex justify-between items-center">
-                 <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
-                 <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
-                     {showBalance ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                 </button>
-             </div>
+              </div>
+            </div>
+            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+              {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
+              <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Card 2: Saldo Aktif (Shipments style) */}
           <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-[6px]">
-                  <div className="size-11 bg-[#165DFF]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <CreditCard className="size-6 text-[#165DFF]" />
-                  </div>
-                  <p className="font-medium text-[#6A7686]">Saldo Aktif</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[6px]">
+                <div className="size-11 bg-[#165DFF]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <CreditCard className="size-6 text-[#165DFF]" />
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button 
-                            onClick={() => setShowActiveTooltip(!showActiveTooltip)}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
-                        >
-                            <Info className="w-3.5 h-3.5" />
-                        </button>
-                        
-                        {/* Invisible overlay */}
-                        {showActiveTooltip && (
-                            <div className="fixed inset-0 z-10" onClick={() => setShowActiveTooltip(false)} />
-                        )}
+                <p className="font-medium text-[#6A7686]">Saldo Aktif</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowActiveTooltip(!showActiveTooltip)}
+                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
 
-                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                            showActiveTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                        }`}>
-                            <p>Total sisa saldo dari dompet bertipe <span className="text-[#165DFF] font-bold">Aktif</span>.</p>
-                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                <p className="text-slate-300">Uang yang siap digunakan untuk transaksi sehari-hari.</p>
-                            </div>
-                            {/* Arrow up */}
-                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
-                        </div>
+                  {/* Invisible overlay */}
+                  {showActiveTooltip && (
+                    <div className="fixed inset-0 z-10" onClick={() => setShowActiveTooltip(false)} />
+                  )}
+
+                  <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showActiveTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                    }`}>
+                    <p>Total sisa saldo dari dompet bertipe <span className="text-[#165DFF] font-bold">Aktif</span>.</p>
+                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                      <p className="text-slate-300">Uang yang siap digunakan untuk transaksi sehari-hari.</p>
                     </div>
+                    {/* Arrow up */}
+                    <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                  </div>
                 </div>
-             </div>
-             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
-                {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
-             </p>
-             <div className="flex justify-between items-center">
-                 <p className="text-xs text-[#6A7686]">Siap digunakan</p>
-                 <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
-                     {showActiveBalance ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                 </button>
-             </div>
+              </div>
+            </div>
+            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+              {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-[#6A7686]">Siap digunakan</p>
+              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+                {showActiveBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Card 3: Pemasukan (On-Time Rate style) */}
           <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-[6px]">
-                  <div className="size-11 bg-[#FED71F]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <TrendingUp className="size-6 text-[#DAA200]" />
-                  </div>
-                  <p className="font-medium text-[#6A7686]">Pemasukan</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[6px]">
+                <div className="size-11 bg-[#FED71F]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <TrendingUp className="size-6 text-[#DAA200]" />
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button 
-                            onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
-                        >
-                            <Info className="w-3.5 h-3.5" />
-                        </button>
-                        
-                        {/* Invisible overlay */}
-                        {showIncomeTooltip && (
-                            <div className="fixed inset-0 z-10" onClick={() => setShowIncomeTooltip(false)} />
-                        )}
+                <p className="font-medium text-[#6A7686]">Pemasukan</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
+                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
 
-                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                            showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                        }`}>
-                            <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada bulan ini.</p>
-                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> tidak dihitung sebagai pemasukan.</p>
-                            </div>
-                            {/* Arrow up */}
-                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
-                        </div>
+                  {/* Invisible overlay */}
+                  {showIncomeTooltip && (
+                    <div className="fixed inset-0 z-10" onClick={() => setShowIncomeTooltip(false)} />
+                  )}
+
+                  <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                    }`}>
+                    <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada bulan ini.</p>
+                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                      <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> tidak dihitung sebagai pemasukan.</p>
                     </div>
-                    {prevIncome > 0 && (
-                     <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${incomeChange >= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
-                       {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%
-                     </span>
-                    )}
+                    {/* Arrow up */}
+                    <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                  </div>
                 </div>
-             </div>
-             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
-                 {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
-             </p>
-             <div className="flex justify-between items-center">
-                <p className="text-xs text-[#6A7686]">Bulan ini</p>
-                <button onClick={() => setShowIncome(!showIncome)} className="text-[#6A7686] hover:text-[#165DFF]">
-                    {showIncome ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                </button>
-             </div>
+                {prevIncome > 0 && (
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${incomeChange >= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                    {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(1)}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+              {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
+            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-[#6A7686]">Bulan ini</p>
+              <button onClick={() => setShowIncome(!showIncome)} className="text-[#6A7686] hover:text-[#165DFF]">
+                {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Card 4: Pengeluaran (Active Fleet style) */}
           <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-[6px]">
-                  <div className="size-11 bg-[#ED6B60]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <TrendingDown className="size-6 text-[#ED6B60]" />
-                  </div>
-                  <p className="font-medium text-[#6A7686]">Pengeluaran</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-[6px]">
+                <div className="size-11 bg-[#ED6B60]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <TrendingDown className="size-6 text-[#ED6B60]" />
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button 
-                            onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
-                            className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
-                        >
-                            <Info className="w-3.5 h-3.5" />
-                        </button>
-                        
-                        {/* Invisible overlay */}
-                        {showExpenseTooltip && (
-                            <div className="fixed inset-0 z-10" onClick={() => setShowExpenseTooltip(false)} />
-                        )}
+                <p className="font-medium text-[#6A7686]">Pengeluaran</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
+                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
 
-                        <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                            showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                        }`}>
-                            <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada bulan ini.</p>
-                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> tidak dihitung sebagai pengeluaran.</p>
-                            </div>
-                            {/* Arrow up */}
-                            <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
-                        </div>
+                  {/* Invisible overlay */}
+                  {showExpenseTooltip && (
+                    <div className="fixed inset-0 z-10" onClick={() => setShowExpenseTooltip(false)} />
+                  )}
+
+                  <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                    }`}>
+                    <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada bulan ini.</p>
+                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                      <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> tidak dihitung sebagai pengeluaran.</p>
                     </div>
-                    {prevExpense > 0 && (
-                     <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${expenseChange <= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
-                       {expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%
-                     </span>
-                    )}
+                    {/* Arrow up */}
+                    <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-800 rotate-45"></div>
+                  </div>
                 </div>
-             </div>
-             <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
-                 Rp {currentExpense.toLocaleString('id-ID')}
-             </p>
-             <p className="text-xs text-[#6A7686]">Bulan ini</p>
+                {prevExpense > 0 && (
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 ${expenseChange <= 0 ? 'bg-[#DCFCE7] text-[#14532D]' : 'bg-[#FEE2E2] text-[#7F1D1D]'}`}>
+                    {expenseChange > 0 ? '▲' : '▼'} {Math.abs(expenseChange).toFixed(1)}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+              Rp {currentExpense.toLocaleString('id-ID')}
+            </p>
+            <p className="text-xs text-[#6A7686]">Bulan ini</p>
           </div>
         </div>
 
         {/* Note (Mobile Only - After Stats, Before Chart) */}
         {latestNote && (
-            <Link href="/notes" className="block lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
-                 {noteCount > 1 && (
-                    <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
-                        {noteCount > 99 ? '99+' : noteCount}
-                    </div>
-                 )}
-                 <div className="flex items-center gap-2 mb-2 text-[#B45309]">
-                    <StickyNote className="w-5 h-5" />
-                    <h3 className="font-bold">Catatan Terbaru</h3>
-                 </div>
-                 <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
-                 <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
-            </Link>
+          <Link href="/notes" className="block lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+            {noteCount > 1 && (
+              <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+                {noteCount > 99 ? '99+' : noteCount}
+              </div>
+            )}
+            <div className="flex items-center gap-2 mb-2 text-[#B45309]">
+              <StickyNote className="w-5 h-5" />
+              <h3 className="font-bold">Catatan Terbaru</h3>
+            </div>
+            <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
+            <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
+          </Link>
         )}
 
         {/* Gold & Currency Cards (Desktop Only - Above Chart) */}
         <div className="hidden lg:grid grid-cols-2 gap-6">
-            <GoldPriceCard />
-            <CurrencyCard />
+          <GoldPriceCard />
+          <CurrencyCard />
         </div>
 
         {/* Charts & Bills */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[#F3F4F3] p-6 bg-white">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 className="font-bold text-lg text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
-                        <p className="text-sm text-[#6A7686]">Analisis Perbandingan</p>
-                    </div>
-                </div>
-                <div className="w-full">
-                    {/* FinancialChart should be styled internally or wrap it */}
-                    <FinancialChart data={monthlyData} />
-                </div>
+          <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[#F3F4F3] p-6 bg-white">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-bold text-lg text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
+                <p className="text-sm text-[#6A7686]">Analisis Perbandingan</p>
+              </div>
+            </div>
+            <div className="w-full">
+              {/* FinancialChart should be styled internally or wrap it */}
+              <FinancialChart data={monthlyData} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
+            <div className="rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
+              <div className="p-5 border-b border-[#F3F4F3]">
+                <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+              </div>
+              <div className="p-2">
+                <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
+              </div>
             </div>
 
-            <div className="flex flex-col gap-6">
-               {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
-               <div className="rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
-                  <div className="p-5 border-b border-[#F3F4F3]">
-                    <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+            {/* Note (Desktop Only - Below Tagihan Rutin) */}
+            {latestNote && (
+              <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+                {noteCount > 1 && (
+                  <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+                    {noteCount > 99 ? '99+' : noteCount}
                   </div>
-                  <div className="p-2">
-                     <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
-                  </div>
-               </div>
-                
-                {/* Note (Desktop Only - Below Tagihan Rutin) */}
-                {latestNote && (
-                    <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
-                         {noteCount > 1 && (
-                            <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
-                                {noteCount > 99 ? '99+' : noteCount}
-                            </div>
-                         )}
-                         <div className="flex items-center gap-2 mb-2 text-[#B45309]">
-                            <StickyNote className="w-5 h-5" />
-                            <h3 className="font-bold">Catatan Terbaru</h3>
-                         </div>
-                         <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
-                         <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
-                    </Link>
                 )}
-            </div>
+                <div className="flex items-center gap-2 mb-2 text-[#B45309]">
+                  <StickyNote className="w-5 h-5" />
+                  <h3 className="font-bold">Catatan Terbaru</h3>
+                </div>
+                <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
+                <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Debts Section */}
         {debts.some(d => d.status === 'pending') && (
-            <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
-                     <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
-                         {debts.filter(d => d.status === 'pending').length} Active
-                     </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {debts.filter(d => d.status === 'pending').map(debt => (
-                        <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
-                            <div>
-                                <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
-                                <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
-                            </div>
-                            <button
-                              onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }} 
-                              className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
-                            >
-                                Lunas
-                            </button>
-                        </div>
-                    ))}
-                </div>
+          <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
+              <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
+                {debts.filter(d => d.status === 'pending').length} Active
+              </span>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {debts.filter(d => d.status === 'pending').map(debt => (
+                <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
+                  <div>
+                    <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
+                    <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                  </div>
+                  <button
+                    onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }}
+                    className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
+                  >
+                    Lunas
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Transactions & Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Transactions List (Top Routes style) */}
-            <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
-                    <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
-                    <div className="flex items-center gap-3">
+          {/* Recent Transactions List (Top Routes style) */}
+          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
+              <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
+                  title="Export ke Excel"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+                <button
+                  onClick={fetchTransactions}
+                  disabled={loading}
+                  className={`p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
+                  title="Refresh Data"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
+                </button>
+                <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+              </div>
+            </div>
+            <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
+              {filteredTransactions.length === 0 ? (
+                <div className="p-8 text-center text-[#6A7686]">Belum ada transaksi</div>
+              ) : (
+                filteredTransactions.map(t => {
+                  const { Icon, color } = getCategoryIcon(t.category, t.type)
+                  // Strip utility classes from color string and map to style if needed, or just use as is if compatible
+                  // The original logic returns tailwind classes like 'bg-orange-100 text-orange-600'
+                  // We might want to adjust these to be softer/SwiftLog style if possible, but let's keep for functionality
+                  return (
+                    <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[#F3F4F3] hover:bg-[#F9FAFB] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-[#080C1A] truncate">
+                            {t.type === 'topup' && t.source_wallet_id
+                              ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
+                              : t.title}
+                          </span>
+                          {t.is_piutang && (
+                            <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                              💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
+                            </span>
+                          )}
+                          {t.is_talangan && (
+                            <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+                              🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
+                            </span>
+                          )}
+                          {debts.some(d => d.original_transaction_id === t.id) && (
+                            <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                              🧑‍🤝‍🧑 Split Bill
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1.5 mt-1">
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#8C9AAA]">
+                            <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 inline-block uppercase tracking-wider">
+                              {t.category}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${t.type === 'topup' ? 'text-blue-600' :
+                          t.type === 'pemasukan'
+                            ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
+                            : (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                          }`}>
+                          {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
+                        </p>
                         <button
-                            onClick={handleExportExcel}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
-                            title="Export ke Excel"
+                          onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
+                          disabled={deletingId === t.id}
+                          className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                            <span className="hidden sm:inline">Export</span>
+                          {deletingId === t.id ? (
+                            <span className="flex items-center gap-1">
+                              <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                              Hapus...
+                            </span>
+                          ) : 'Hapus'}
                         </button>
-                        <button 
-                            onClick={fetchTransactions} 
-                            disabled={loading}
-                            className={`p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
-                            title="Refresh Data"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                        </button>
-                        <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+                      </div>
                     </div>
-                </div>
-                <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
-                   {filteredTransactions.length === 0 ? (
-                        <div className="p-8 text-center text-[#6A7686]">Belum ada transaksi</div>
-                   ) : (
-                       filteredTransactions.map(t => {
-                           const { Icon, color } = getCategoryIcon(t.category, t.type)
-                           // Strip utility classes from color string and map to style if needed, or just use as is if compatible
-                           // The original logic returns tailwind classes like 'bg-orange-100 text-orange-600'
-                           // We might want to adjust these to be softer/SwiftLog style if possible, but let's keep for functionality
-                           return (
-                               <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[#F3F4F3] hover:bg-[#F9FAFB] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
-                                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-                                       <Icon className="w-6 h-6" />
-                                   </div>
-                                   <div className="flex-1 min-w-0">
-                                       <div className="flex items-center gap-2 mb-1">
-                                           <span className="font-bold text-[#080C1A] truncate">
-                                              {t.type === 'topup' && t.source_wallet_id 
-                                                ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
-                                                : t.title}
-                                           </span>
-                                           {t.is_piutang && (
-                                               <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                                   💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
-                                               </span>
-                                           )}
-                                           {t.is_talangan && (
-                                               <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
-                                                   🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
-                                               </span>
-                                           )}
-                                           {debts.some(d => d.original_transaction_id === t.id) && (
-                                               <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
-                                                   🧑‍🤝‍🧑 Split Bill
-                                               </span>
-                                           )}
-                                       </div>
-                                       <div className="flex flex-col gap-1.5 mt-1">
-                                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#8C9AAA]">
-                                                <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                                <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 inline-block uppercase tracking-wider">
-                                                    {t.category}
-                                                </span>
-                                            </div>
-                                       </div>
-                                   </div>
-                                   <div className="text-right">
-                                       <p className={`font-bold ${
-                                         t.type === 'topup' ? 'text-blue-600' :
-                                         t.type === 'pemasukan'
-                                           ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
-                                           : (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
-                                       }`}>
-                                           {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
-                                       </p>
-                                       <button 
-                                         onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }} 
-                                         disabled={deletingId === t.id}
-                                         className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
-                                       >
-                                           {deletingId === t.id ? (
-                                              <span className="flex items-center gap-1">
-                                                <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-                                                Hapus...
-                                              </span>
-                                           ) : 'Hapus'}
-                                       </button>
-                                   </div>
-                               </div>
-                           )
-                       })
-                   )}
-                </div>
+                  )
+                })
+              )}
             </div>
+          </div>
 
-            {/* Calendar / Other Widgets */}
-            <div className="flex flex-col gap-6">
-                <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
-            </div>
+          {/* Calendar / Other Widgets */}
+          <div className="flex flex-col gap-6">
+            <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
+          </div>
         </div>
 
         {/* Extras Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden">
-            <GoldPriceCard />
-            <CurrencyCard />
+          <GoldPriceCard />
+          <CurrencyCard />
         </div>
 
       </div>{/* end desktop content div */}
@@ -2729,13 +2729,12 @@ export default function MoneyManager() {
                     key={tab.key}
                     type="button"
                     onClick={() => { setType(tab.key as 'pemasukan' | 'pengeluaran' | 'topup'); setCategory(tab.key === 'topup' ? 'Topup' : ''); }}
-                    className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${
-                      type === tab.key
-                        ? tab.key === 'pemasukan' ? 'border-[#165DFF] text-[#165DFF]'
+                    className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
+                      ? tab.key === 'pemasukan' ? 'border-[#165DFF] text-[#165DFF]'
                         : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-500'
-                        : 'border-violet-600 text-violet-600'
-                        : 'border-transparent text-slate-400'
-                    }`}
+                          : 'border-violet-600 text-violet-600'
+                      : 'border-transparent text-slate-400'
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -2762,7 +2761,7 @@ export default function MoneyManager() {
                     </select>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </div>
                   <div className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-3">
                     <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
@@ -2780,11 +2779,10 @@ export default function MoneyManager() {
               )}
 
               {/* Amount Display */}
-              <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${
-                type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
+              <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
                 type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-                'bg-gradient-to-br from-violet-600 to-purple-700'
-              }`}>
+                  'bg-gradient-to-br from-violet-600 to-purple-700'
+                }`}>
                 <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
                 <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
                 <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
@@ -2830,7 +2828,7 @@ export default function MoneyManager() {
                       onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))}
                       className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white/30 active:scale-95 transition-all"
                     >
-                      +{val >= 1000000 ? `${val/1000000}jt` : `${val/1000}rb`}
+                      +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                     </button>
                   ))}
                 </div>
@@ -2979,7 +2977,7 @@ export default function MoneyManager() {
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {[
-                        ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({...c, isCustom: false, originalObj: null}))),
+                        ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
                         ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
                           if (typeof c === 'string') return { name: c, color: 'bg-slate-100 text-slate-600', icon: Package, isCustom: true, originalObj: c };
                           return { name: c.name, color: c.color, icon: AVAILABLE_ICONS[c.iconName] || Package, isCustom: true, originalObj: c };
@@ -3011,7 +3009,7 @@ export default function MoneyManager() {
                       <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
                         <div className="flex justify-between items-center mb-4">
                           <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                          <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                          <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
                         </div>
                         {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                           <div className="mb-6 space-y-2">
@@ -3116,11 +3114,10 @@ export default function MoneyManager() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${
-                    type === 'pemasukan' ? 'bg-gradient-to-r from-[#165DFF] to-[#0E4BD9] shadow-blue-500/30' :
+                  className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-[#165DFF] to-[#0E4BD9] shadow-blue-500/30' :
                     type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-700 shadow-rose-500/30' :
-                    'bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-500/30'
-                  } text-white`}
+                      'bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-500/30'
+                    } text-white`}
                 >
                   {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                   {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : 'Simpan Transaksi')}
@@ -3184,34 +3181,34 @@ export default function MoneyManager() {
                 </div>
                 {type === 'topup' ? (
                   <>
-                     <div className="border border-slate-200 p-3 rounded-xl bg-slate-50 relative">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sumber Dana</label>
-                        <select
-                          className="w-full bg-transparent outline-none font-semibold text-slate-800 text-sm"
-                          value={sourceWalletId}
-                          onChange={(e) => setSourceWalletId(e.target.value)}
-                          required
-                        >
-                          <option value="" disabled>Pilih Sumber</option>
-                          {wallets.map(w => (
-                            <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                          ))}
-                        </select>
-                     </div>
-                     <div className="border border-blue-200 p-3 rounded-xl bg-blue-50/50">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
-                        <select
-                          className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm"
-                          value={selectedWalletId}
-                          onChange={(e) => setSelectedWalletId(e.target.value)}
-                          required
-                        >
-                          <option value="" disabled>Pilih Tujuan</option>
-                          {wallets.map(w => (
-                            <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                          ))}
-                        </select>
-                     </div>
+                    <div className="border border-slate-200 p-3 rounded-xl bg-slate-50 relative">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sumber Dana</label>
+                      <select
+                        className="w-full bg-transparent outline-none font-semibold text-slate-800 text-sm"
+                        value={sourceWalletId}
+                        onChange={(e) => setSourceWalletId(e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Pilih Sumber</option>
+                        {wallets.map(w => (
+                          <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="border border-blue-200 p-3 rounded-xl bg-blue-50/50">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
+                      <select
+                        className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm"
+                        value={selectedWalletId}
+                        onChange={(e) => setSelectedWalletId(e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Pilih Tujuan</option>
+                        {wallets.map(w => (
+                          <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                        ))}
+                      </select>
+                    </div>
                   </>
                 ) : (
                   <div>
@@ -3295,7 +3292,7 @@ export default function MoneyManager() {
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (
                 <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
-                  <div 
+                  <div
                     onClick={() => setIsSplitBill(!isSplitBill)}
                     className="flex items-center justify-between cursor-pointer group select-none mb-3"
                   >
@@ -3310,7 +3307,7 @@ export default function MoneyManager() {
 
                   {isSplitBill && (
                     <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
-                      
+
                       {splitEntries.map((entry, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
                           <div className="flex-1 grid grid-cols-2 gap-2">
@@ -3336,12 +3333,12 @@ export default function MoneyManager() {
                                   newEntries[idx].amount = val
                                   setSplitEntries(newEntries)
                                 }}
-                                className="!text-sm !p-3" 
+                                className="!text-sm !p-3"
                               />
                             </div>
                           </div>
                           {splitEntries.length > 1 && (
-                            <button 
+                            <button
                               type="button"
                               onClick={() => {
                                 const newEntries = splitEntries.filter((_, i) => i !== idx)
@@ -3364,18 +3361,18 @@ export default function MoneyManager() {
                       </button>
 
                       <div className="bg-blue-50 p-3 rounded-lg flex flex-col gap-1 mt-2">
-                         <div className="flex justify-between items-center text-xs font-medium text-blue-900 border-b border-blue-100 pb-2 mb-1">
-                           <span>Total Piutang:</span>
-                           <span className="font-bold">Rp {splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0).toLocaleString('id-ID')}</span>
-                         </div>
-                         <div className="flex items-start gap-2">
-                           <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                           <p className="text-xs text-blue-700">
-                             Total pengeluaran tercatat: <strong>Rp {parseInt(amount || '0').toLocaleString('id-ID')}</strong>.
-                             <br/>
-                             Sisa (Bagian Anda): <strong>Rp {Math.max(0, parseInt(amount || '0') - splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0)).toLocaleString('id-ID')}</strong>.
-                           </p>
-                         </div>
+                        <div className="flex justify-between items-center text-xs font-medium text-blue-900 border-b border-blue-100 pb-2 mb-1">
+                          <span>Total Piutang:</span>
+                          <span className="font-bold">Rp {splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0).toLocaleString('id-ID')}</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                          <p className="text-xs text-blue-700">
+                            Total pengeluaran tercatat: <strong>Rp {parseInt(amount || '0').toLocaleString('id-ID')}</strong>.
+                            <br />
+                            Sisa (Bagian Anda): <strong>Rp {Math.max(0, parseInt(amount || '0') - splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0)).toLocaleString('id-ID')}</strong>.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -3420,19 +3417,19 @@ export default function MoneyManager() {
 
 
               {type !== 'topup' && (
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({...c, isCustom: false, originalObj: null}))),
-                    ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
+                      ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
                         if (typeof c === 'string') return { name: c, color: 'bg-slate-100 text-slate-600', icon: Package, isCustom: true, originalObj: c };
                         return { name: c.name, color: c.color, icon: AVAILABLE_ICONS[c.iconName] || Package, isCustom: true, originalObj: c };
-                    })
-                  ].map((cat) => {
-                    const isSelected = category === cat.name
-                    return (
-                      <div key={cat.name} className="relative group">
+                      })
+                    ].map((cat) => {
+                      const isSelected = category === cat.name
+                      return (
+                        <div key={cat.name} className="relative group">
                           <button
                             type="button"
                             onClick={() => setCategory(cat.name)}
@@ -3445,95 +3442,95 @@ export default function MoneyManager() {
                               {cat.name}
                             </span>
                           </button>
-                      </div>
-                    )
-                  })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 text-slate-400">
-                      <Plus className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-bold text-center leading-tight text-slate-500">Custom</span>
-                  </button>
-                </div>
-                
-                {showAddCategory && (
-                  <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
-                    </div>
-
-                    {/* Existing Custom Categories List */}
-                    {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
-                        <div className="mb-6 space-y-2">
-                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
-                             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                                 {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
-                                      const isStr = typeof c === 'string'
-                                      const name = isStr ? c : c.name
-                                      const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
-                                      return (
-                                          <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
-                                              <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}>
-                                                    <Ico className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-sm font-bold text-slate-700 px-1">{name}</span>
-                                              </div>
-                                              <div className="flex items-center border-l border-slate-100 pl-2">
-                                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                              </div>
-                                          </div>
-                                      )
-                                 })}
-                             </div>
                         </div>
-                    )}
+                      )
+                    })}
+                    <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 text-slate-400">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold text-center leading-tight text-slate-500">Custom</span>
+                    </button>
+                  </div>
 
-                    <div className="space-y-4 border-t border-slate-200 pt-4">
+                  {showAddCategory && (
+                    <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
+                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                      </div>
+
+                      {/* Existing Custom Categories List */}
+                      {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
+                        <div className="mb-6 space-y-2">
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                          <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                            {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
+                              const isStr = typeof c === 'string'
+                              const name = isStr ? c : c.name
+                              const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
+                              return (
+                                <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}>
+                                      <Ico className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-700 px-1">{name}</span>
+                                  </div>
+                                  <div className="flex items-center border-l border-slate-100 pl-2">
+                                    <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                                    <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-4 border-t border-slate-200 pt-4">
                         <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
                         {/* Name */}
                         <div>
-                            <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
                         </div>
                         {/* Icon Picker */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
-                            <div className="grid grid-cols-7 gap-2">
-                                {Object.keys(AVAILABLE_ICONS).map(iconKey => {
-                                    const Ico = AVAILABLE_ICONS[iconKey]
-                                    const isSelected = newCategoryIcon === iconKey
-                                    return (
-                                        <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
-                                            <Ico className="w-5 h-5" />
-                                        </button>
-                                    )
-                                })}
-                            </div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
+                          <div className="grid grid-cols-7 gap-2">
+                            {Object.keys(AVAILABLE_ICONS).map(iconKey => {
+                              const Ico = AVAILABLE_ICONS[iconKey]
+                              const isSelected = newCategoryIcon === iconKey
+                              return (
+                                <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
+                                  <Ico className="w-5 h-5" />
+                                </button>
+                              )
+                            })}
+                          </div>
                         </div>
                         {/* Color Picker */}
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
-                            <div className="grid grid-cols-6 gap-2">
-                                {COLOR_PALETTES.map((colorSet, idx) => {
-                                    const isSelected = newCategoryColor === colorSet
-                                    return (
-                                        <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
-                                            {isSelected && <div className="w-3 h-3 bg-current rounded-full" />}
-                                        </button>
-                                    )
-                                })}
-                            </div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
+                          <div className="grid grid-cols-6 gap-2">
+                            {COLOR_PALETTES.map((colorSet, idx) => {
+                              const isSelected = newCategoryColor === colorSet
+                              return (
+                                <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
+                                  {isSelected && <div className="w-3 h-3 bg-current rounded-full" />}
+                                </button>
+                              )
+                            })}
+                          </div>
                         </div>
                         {/* Actions */}
                         <div className="flex gap-2 pt-2 border-t border-slate-200">
-                            <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                          <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
                         </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
               )}
 
               {/* Budget Awareness Indicator */}
@@ -3723,12 +3720,12 @@ export default function MoneyManager() {
                     className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 ${creatingWallet ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
                     {creatingWallet ? (
-                        <>
-                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                           Membuat Dompet...
-                        </>
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Membuat Dompet...
+                      </>
                     ) : (
-                        <>✅ Buat Dompet Tabungan</>
+                      <>✅ Buat Dompet Tabungan</>
                     )}
                   </button>
                   <button
@@ -3755,66 +3752,65 @@ export default function MoneyManager() {
       {showDebtModal && selectedDebt && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-xl animate-in zoom-in-95 duration-200">
-             <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-               <X className="w-5 h-5"/>
-             </button>
-             
-             <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-                   🧑‍🤝‍🧑
+            <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                🧑‍🤝‍🧑
+              </div>
+              <h3 className="font-bold text-lg text-slate-800">Lunasi Piutang</h3>
+              <p className="text-sm text-slate-500">
+                {selectedDebt ? `Pilih dompet penerima dana dari ${selectedDebt.person_name}` : 'Pilih dompet penerima dana'}
+              </p>
+              {selectedDebt && (
+                <div className="mt-3 bg-blue-50 py-2 rounded-lg">
+                  <span className="text-blue-600 font-bold text-xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
                 </div>
-                <h3 className="font-bold text-lg text-slate-800">Lunasi Piutang</h3>
-                <p className="text-sm text-slate-500">
-                  {selectedDebt ? `Pilih dompet penerima dana dari ${selectedDebt.person_name}` : 'Pilih dompet penerima dana'}
-                </p>
-                {selectedDebt && (
-                 <div className="mt-3 bg-blue-50 py-2 rounded-lg">
-                    <span className="text-blue-600 font-bold text-xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
-                 </div>
-                )}
-             </div>
+              )}
+            </div>
 
-             <div className="space-y-3 mb-4">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Masuk ke Dompet</p>
-               <div className="grid gap-2 max-h-64 overflow-y-auto pr-2">
-                 {wallets.map(w => {
-                   const isProcessing = repayingWalletId === w.id
-                   return (
-                   <button
-                     key={w.id}
-                     onClick={() => selectedDebt && markDebtAsPaid(selectedDebt, w.id)}
-                     disabled={repayingWalletId !== null}
-                     className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${
-                       isProcessing 
-                         ? 'bg-blue-50 border-blue-500 cursor-wait' 
-                         : repayingWalletId !== null
-                           ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                           : 'bg-white border-slate-200 hover:border-green-500 hover:bg-green-50'
-                     }`}
-                   >
-                     <div className="flex items-center gap-3">
-                       {isProcessing && (
+            <div className="space-y-3 mb-4">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Masuk ke Dompet</p>
+              <div className="grid gap-2 max-h-64 overflow-y-auto pr-2">
+                {wallets.map(w => {
+                  const isProcessing = repayingWalletId === w.id
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => selectedDebt && markDebtAsPaid(selectedDebt, w.id)}
+                      disabled={repayingWalletId !== null}
+                      className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${isProcessing
+                        ? 'bg-blue-50 border-blue-500 cursor-wait'
+                        : repayingWalletId !== null
+                          ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                          : 'bg-white border-slate-200 hover:border-green-500 hover:bg-green-50'
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {isProcessing && (
                           <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></div>
-                       )}
-                       <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700'} group-hover:text-green-700`}>
-                         {w.name} {isProcessing && '(Memproses...)'}
-                       </span>
-                     </div>
-                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">
-                       Rp {w.balance.toLocaleString('id-ID')}
-                     </span>
-                   </button>
-                   )
-                 })}
-               </div>
-             </div>
+                        )}
+                        <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700'} group-hover:text-green-700`}>
+                          {w.name} {isProcessing && '(Memproses...)'}
+                        </span>
+                      </div>
+                      <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">
+                        Rp {w.balance.toLocaleString('id-ID')}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
-             <button
-               onClick={() => setShowDebtModal(false)}
-               className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors"
-             >
-               Batal
-             </button>
+            <button
+              onClick={() => setShowDebtModal(false)}
+              className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors"
+            >
+              Batal
+            </button>
           </div>
         </div>
       )}

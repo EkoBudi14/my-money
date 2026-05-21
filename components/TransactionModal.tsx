@@ -11,7 +11,7 @@ import {
   ShoppingBag, Utensils, Car, Zap, Home, Film, HeartPulse,
   CreditCard, Gift, Briefcase, TrendingUp, Landmark, Coffee,
   Plane, Gamepad2, Tv, Smartphone, Book, Scissors, Music,
-  Shirt, Smile, Globe, Dumbbell, GraduationCap
+  Shirt, Smile, Globe, Dumbbell, GraduationCap, ArrowLeft
 } from 'lucide-react'
 
 // ── Constants (duplicated from page.tsx to keep component self-contained) ──────
@@ -64,6 +64,8 @@ interface Props {
   onClose: () => void
   onSaved: () => void
   onCustomCategoriesChange: (updated: { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }) => void
+  mode?: 'modal' | 'page'
+  initialType?: 'pemasukan' | 'pengeluaran' | 'topup'
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────
@@ -76,7 +78,8 @@ const fetchFreshWalletBalance = async (walletId: number): Promise<number | null>
 // ── Component ────────────────────────────────────────────────────────────────
 export default function TransactionModal({
   isOpen, editingTransaction, wallets, transactions, budgets,
-  customCategories, onClose, onSaved, onCustomCategoriesChange
+  customCategories, onClose, onSaved, onCustomCategoriesChange,
+  mode = 'modal', initialType
 }: Props) {
   const { showToast } = useToast()
   const { showConfirm } = useConfirm()
@@ -138,8 +141,8 @@ export default function TransactionModal({
       setTitle('')
       setAmount('')
       setAdminFee('')
-      setCategory('')
-      setType('pemasukan')
+      setCategory(initialType === 'topup' ? 'Topup' : '')
+      setType(initialType || 'pemasukan')
       setSelectedWalletId('')
       setSourceWalletId('')
       setCustomDate(new Date().toISOString().split('T')[0])
@@ -510,7 +513,7 @@ export default function TransactionModal({
     setSaving(false)
   }
 
-  if (!isOpen) return null
+  if (!isOpen && mode !== 'page') return null
 
   // ── All category options combined ─────────────────────────────────────────
   const allCategories = type !== 'topup' ? [
@@ -521,6 +524,333 @@ export default function TransactionModal({
     })
   ] : []
 
+  // ── Page Mode (full screen, no overlay) ────────────────────────────────────
+  if (mode === 'page') {
+    return (
+      <div className="min-h-screen bg-[#EFF2F7] pb-8">
+        {/* Header */}
+        <div className="sticky top-0 z-20 bg-white border-b border-slate-100 shadow-sm">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button onClick={onClose} className="p-2 -ml-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors active:scale-90">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-bold text-[#080C1A]">
+              {editingTransaction ? 'Edit Transaksi' : type === 'pemasukan' ? 'Pemasukan Baru' : type === 'pengeluaran' ? 'Pengeluaran Baru' : 'Transfer Saldo'}
+            </h1>
+          </div>
+
+          {/* Type Tabs */}
+          <div className="px-4 pb-0">
+            <div className="flex border-b border-[#F3F4F3]">
+              {[
+                { key: 'pemasukan', label: 'Pemasukan' },
+                { key: 'pengeluaran', label: 'Pengeluaran' },
+                { key: 'topup', label: 'Transfer' },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
+                  className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${
+                    type === tab.key
+                      ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
+                        : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
+                        : 'border-violet-500 text-violet-600'
+                      : 'border-transparent text-slate-400'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <form onSubmit={handleSaveTransaction} className="px-4 pt-5">
+          {/* Topup wallet selectors */}
+          {type === 'topup' && (
+            <div className="flex items-center gap-2 mb-5">
+              <div className="flex-1 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                <p className="text-[9px] font-bold text-[#6A7686] uppercase tracking-wider mb-1">Sumber Dana</p>
+                <select className="w-full bg-transparent outline-none font-semibold text-[#080C1A] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
+                  <option value="" disabled>Pilih Sumber</option>
+                  {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
+                </select>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+              <div className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-3 shadow-sm">
+                <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
+                <select className="w-full bg-transparent outline-none font-semibold text-violet-800 text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                  <option value="" disabled>Pilih Tujuan</option>
+                  {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Amount Display */}
+          <div className={`rounded-2xl p-6 relative overflow-hidden shadow-lg ${
+            type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
+            type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
+            'bg-gradient-to-br from-violet-600 to-purple-700'
+          }`}>
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full" />
+            <div className="absolute -bottom-10 -left-6 w-40 h-40 bg-white/5 rounded-full" />
+            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
+            <div className="relative z-10 mb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-extrabold text-4xl shrink-0">Rp</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  className="flex-1 bg-transparent border-none outline-none text-white font-extrabold text-4xl placeholder:text-white/30 min-w-0"
+                  value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
+                  onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
+                  autoFocus={!editingTransaction}
+                />
+              </div>
+              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-3 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-sm rounded-lg active:scale-95 transition-all">
+                +000
+              </button>
+            </div>
+            <div className="flex gap-2 flex-wrap mt-4 relative z-10">
+              {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
+                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="px-3.5 py-2 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all">
+                  +{val >= 1000000 ? `${val/1000000}jt` : `${val/1000}rb`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            {/* Date & Wallet */}
+            {type !== 'topup' ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                  <p className="text-[9px] font-bold text-[#6A7686] uppercase tracking-wider mb-1">Tanggal</p>
+                  <input type="date" className="w-full bg-transparent outline-none font-semibold text-[#080C1A] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                  <p className="text-[9px] font-bold text-[#6A7686] uppercase tracking-wider mb-1">Dompet</p>
+                  <select className="w-full bg-transparent outline-none font-semibold text-[#080C1A] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                    <option value="" disabled>Pilih</option>
+                    {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-sm text-[#080C1A]">Biaya Admin</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Optional — Isi jika ada potongan</p>
+                    </div>
+                    <input
+                      type="text" inputMode="numeric" placeholder="0"
+                      className="w-28 text-right bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-base text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
+                      value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
+                      onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
+                    />
+                  </div>
+                </div>
+                <div className="bg-white border border-[#F3F4F3] rounded-xl px-4 py-3 space-y-2 shadow-sm">
+                  <div className="flex justify-between items-center text-sm"><span className="text-slate-500">Nominal topup</span><span className="font-semibold text-[#080C1A]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="flex justify-between items-center text-sm"><span className="text-slate-500">Biaya admin</span><span className="font-semibold text-[#080C1A]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="border-t border-[#F3F4F3] pt-2 flex justify-between items-center text-sm"><span className="font-bold text-violet-700">Total keluar</span><span className="font-bold text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                  <p className="text-[9px] font-bold text-[#6A7686] uppercase tracking-wider mb-1">Tanggal</p>
+                  <input type="date" className="w-full bg-transparent outline-none font-semibold text-[#080C1A] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                </div>
+              </div>
+            )}
+
+            {/* Piutang Toggle */}
+            {type === 'pemasukan' && (
+              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isPiutang ? 'bg-amber-50/60 border-amber-200' : 'bg-white border-slate-200'}`}>
+                <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600'}`}>💸 Ini adalah Piutang?</span>
+                    <p className={`text-[11px] ${isPiutang ? 'text-amber-500' : 'text-slate-400'}`}>Tandai jika uang akan dikembalikan</p>
+                  </div>
+                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-amber-400' : 'bg-slate-200'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+                {isPiutang && (
+                  <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-amber-200 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                )}
+              </div>
+            )}
+
+            {/* Split Bill */}
+            {type === 'pengeluaran' && (
+              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isSplitBill ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-slate-200'}`}>
+                <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
+                  <span className={`text-sm font-bold ${isSplitBill ? 'text-[#165DFF]' : 'text-slate-600'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-[#165DFF]' : 'bg-slate-200'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+                {isSplitBill && (
+                  <div className="space-y-3 mt-3">
+                    {splitEntries.map((entry, idx) => (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
+                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-sm !p-3" />
+                        </div>
+                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1"><Plus className="w-3 h-3" />Tambah Orang Lain</button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Talangan Toggle */}
+            {type === 'pengeluaran' && (
+              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isTalangan ? 'bg-purple-50/60 border-purple-200' : 'bg-white border-slate-200'}`}>
+                <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
+                  <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600'}`}>🤝 Ini Talangan?</span>
+                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-purple-400' : 'bg-slate-200'}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+                {isTalangan && (
+                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                )}
+              </div>
+            )}
+
+            {/* Category Picker */}
+            {type !== 'topup' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-[10px] font-bold text-[#6A7686] uppercase tracking-wider">Kategori <span className="text-rose-500">*</span></label>
+                  <span className="text-[10px] text-[#165DFF] font-bold">Wajib dipilih</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2.5">
+                  {allCategories.map((cat) => {
+                    const isSelected = category === cat.name
+                    return (
+                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 shadow-sm ${isSelected ? 'border-[#165DFF] bg-blue-50' : 'border-transparent bg-white hover:bg-slate-50'}`}>
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-1.5 ${cat.color}`}><cat.icon className="w-5 h-5" /></div>
+                        <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[#165DFF]' : 'text-slate-600'}`}>{cat.name}</span>
+                      </button>
+                    )
+                  })}
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[#165DFF] transition-all">
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 text-slate-400"><Plus className="w-5 h-5" /></div>
+                    <span className="text-[10px] font-bold text-slate-500">Custom</span>
+                  </button>
+                </div>
+
+                {showAddCategory && (
+                  <div className="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
+                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4"/></button>
+                    </div>
+                    {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
+                      <div className="mb-6 space-y-2">
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                        <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
+                          {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
+                            const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
+                            return (
+                              <div key={idx} className="flex flex-row items-center justify-between bg-slate-50 p-2.5 border border-slate-200 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
+                                  <span className="text-sm font-bold text-slate-700">{name}</span>
+                                </div>
+                                <div className="flex items-center border-l border-slate-100 pl-2">
+                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-4 border-t border-slate-200 pt-4">
+                      <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
+                        <div className="grid grid-cols-7 gap-2">
+                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}><Ico className="w-5 h-5" /></button>) })}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
+                        <div className="grid grid-cols-6 gap-2">
+                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
+                        </div>
+                      </div>
+                      <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Budget Indicator */}
+            {budgetInfo && (
+              <div className={`p-4 rounded-xl border shadow-sm ${budgetInfo.isOver ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200'}`}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
+                  <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                  <div className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${budgetInfo.percent}%` }} />
+                </div>
+                <p className="text-xs text-center text-slate-500">Sisa: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+              </div>
+            )}
+
+            {/* Notes */}
+            <div>
+              <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 font-normal">(Opsional)</span></label>
+              <input
+                type="text"
+                placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
+                className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all font-medium text-base shadow-sm"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={saving}
+              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${
+                type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
+                type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
+                'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
+              } text-white`}
+            >
+              {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
+            </button>
+
+            {/* Bottom padding for safe area */}
+            <div className="h-6" />
+          </div>
+        </form>
+      </div>
+    )
+  }
+
+  // ── Modal Mode (default — original behavior) ──────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
