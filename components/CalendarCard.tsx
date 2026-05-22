@@ -458,15 +458,15 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             <div className="flex gap-1 mt-1 justify-center h-1.5">
                                 {/* Blue dot for bills */}
                                 {hasBills && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white dark:bg-[var(--bg-card)]' : 'bg-blue-50 dark:bg-blue-950/300'}`}></span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-blue-500'}`}></span>
                                 )}
                                 {/* Red dot for holidays (National holiday or Observance/Cuti Bersama) */}
                                 {isHoliday && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white dark:bg-[var(--bg-card)]/70' : 'bg-rose-50 dark:bg-rose-950/300'}`}></span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-rose-500'}`}></span>
                                 )}
                                 {/* Green dot for events */}
                                 {hasEvents && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white dark:bg-[var(--bg-card)]/70' : 'bg-emerald-50 dark:bg-emerald-950/300'}`}></span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-emerald-500'}`}></span>
                                 )}
                             </div>
                         </div>
