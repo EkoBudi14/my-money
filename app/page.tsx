@@ -2019,7 +2019,7 @@ export default function MoneyManager() {
                   <div
                     key={t.id}
                     onClick={() => handleEditClick(t)}
-                    className={`flex items-center gap-3 px-4 py-4 active:bg-[#F9FAFB] dark:active:bg-[#F9FAFB] dark:bg-[var(--bg-page)] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[var(--border-default)]' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-4 active:bg-slate-50 dark:active:bg-[var(--bg-hover)] dark:bg-[var(--bg-page)] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[var(--border-default)]' : ''}`}
                   >
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
                       <Icon className="w-5 h-5" />
