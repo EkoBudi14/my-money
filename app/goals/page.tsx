@@ -159,17 +159,17 @@ export default function GoalsPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[#080C1A]">Target Tabungan</h2>
+                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Target Tabungan</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
-                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                        {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
                     </div>
-                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                         EB
                     </div>
                 </div>
@@ -179,7 +179,7 @@ export default function GoalsPage() {
             <div className="md:hidden pb-[80px]">
                 {loading ? (
                     <div className="flex items-center justify-center py-16">
-                        <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : (() => {
                     const totalTarget = goals.reduce((acc, g) => acc + g.target_amount, 0)
@@ -225,17 +225,17 @@ export default function GoalsPage() {
 
                             {/* Goal List */}
                             {goals.length === 0 ? (
-                                <div className="bg-white rounded-2xl border border-[#F3F4F3] p-10 text-center">
+                                <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] p-10 text-center">
                                     <Target className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                                    <p className="text-slate-400 text-sm">Belum ada target tabungan</p>
+                                    <p className="text-slate-400 dark:text-slate-500 text-sm">Belum ada target tabungan</p>
                                 </div>
                             ) : (
                                 goals.map((goal) => {
                                     const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
                                     const isCompleted = progress >= 100
-                                    const progressColor = isCompleted ? '#10b981' : progress >= 75 ? '#f59e0b' : '#165DFF'
+                                    const progressColor = isCompleted ? '#10b981' : progress >= 75 ? '#f59e0b' : 'var(--primary)'
                                     return (
-                                        <div key={goal.id} className="bg-white rounded-2xl border border-[#F3F4F3] p-4 shadow-sm">
+                                        <div key={goal.id} className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] p-4 shadow-sm">
                                             {/* Top Row */}
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -246,9 +246,9 @@ export default function GoalsPage() {
                                                         }
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="font-bold text-[#080C1A] text-sm truncate">{goal.name}</p>
+                                                        <p className="font-bold text-[var(--text-primary)] text-sm truncate">{goal.name}</p>
                                                         {goal.deadline && (
-                                                            <p className="text-[10px] text-[#6A7686] font-medium mt-0.5">
+                                                            <p className="text-[10px] text-[var(--text-secondary)] font-medium mt-0.5">
                                                                 🗓 {new Date(goal.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                             </p>
                                                         )}
@@ -260,7 +260,7 @@ export default function GoalsPage() {
                                             </div>
 
                                             {/* Progress Bar */}
-                                            <div className="w-full bg-[#F3F4F3] rounded-full h-1.5 mb-3 overflow-hidden">
+                                            <div className="w-full bg-[var(--bg-elevated)] rounded-full h-1.5 mb-3 overflow-hidden">
                                                 <div
                                                     className="h-full rounded-full transition-all duration-500"
                                                     style={{ width: `${progress}%`, backgroundColor: progressColor }}
@@ -269,29 +269,29 @@ export default function GoalsPage() {
 
                                             {/* Amount Row */}
                                             <div className="flex justify-between items-center mb-3">
-                                                <span className="text-xs font-bold text-[#080C1A]">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
-                                                <span className="text-xs text-[#6A7686] font-medium">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
+                                                <span className="text-xs font-bold text-[var(--text-primary)]">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
+                                                <span className="text-xs text-[var(--text-secondary)] font-medium">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
                                             </div>
 
                                             {/* Action Buttons */}
                                             <div className="grid grid-cols-3 gap-2">
                                                 <button
                                                     onClick={() => handleEdit(goal)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-bold rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] active:scale-95 transition-all"
                                                 >
                                                     <Pencil className="w-3.5 h-3.5" />
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => openQuickAdd(goal)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 bg-[#165DFF] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-[var(--primary)] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
                                                 >
                                                     <TrendingUp className="w-3.5 h-3.5" />
                                                     Nabung
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(goal.id)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 dark:bg-rose-950/40 active:scale-95 transition-all"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                     Hapus
@@ -305,9 +305,9 @@ export default function GoalsPage() {
                             {/* Add New - Dashed Card */}
                             <button
                                 onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                className="w-full border-2 border-dashed border-[#E2E8F0] rounded-2xl p-5 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                                className="w-full border-2 border-dashed border-[#E2E8F0] rounded-2xl p-5 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all active:scale-[0.98]"
                             >
-                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] flex items-center justify-center">
                                     <Plus className="w-4 h-4" />
                                 </div>
                                 <span className="font-bold text-sm">Tambah Target Baru</span>
@@ -320,54 +320,54 @@ export default function GoalsPage() {
             {/* ===== DESKTOP VIEW ===== */}
             <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
                 {loading ? (
-                    <div className="text-center py-20 text-slate-400">Loading...</div>
+                    <div className="text-center py-20 text-slate-400 dark:text-slate-500">Loading...</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {goals.map((goal) => {
                             const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
                             return (
-                                <div key={goal.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
+                                <div key={goal.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
                                     <div>
                                         <div className="flex justify-between items-start mb-6">
-                                            <div className="bg-blue-50 p-3 rounded-2xl text-[#165DFF]">
+                                            <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-2xl text-[var(--primary)]">
                                                 <Target className="w-6 h-6" />
                                             </div>
-                                            <button onClick={() => handleDelete(goal.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
+                                            <button onClick={() => handleDelete(goal.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
                                         </div>
-                                        <h3 className="font-bold text-lg text-[#080C1A] mb-1">{goal.name}</h3>
+                                        <h3 className="font-bold text-lg text-[var(--text-primary)] mb-1">{goal.name}</h3>
                                         
                                         <div className="flex items-center gap-2 mb-4">
                                              {goal.deadline && (
-                                                <span className="text-xs font-medium text-[#6A7686] bg-[#F7F9FC] px-2 py-1 rounded-md">
+                                                <span className="text-xs font-medium text-[var(--text-secondary)] bg-[#F7F9FC] px-2 py-1 rounded-md">
                                                     Target: {new Date(goal.deadline).toLocaleDateString('id-ID')}
                                                 </span>
                                             )}
                                         </div>
 
                                         <div className="mb-2 flex justify-between items-end">
-                                            <span className="text-xs font-semibold text-[#6A7686] uppercase tracking-wider">Tercapai</span>
-                                            <span className="text-lg font-bold text-[#165DFF]">{progress.toFixed(0)}%</span>
+                                            <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Tercapai</span>
+                                            <span className="text-lg font-bold text-[var(--primary)]">{progress.toFixed(0)}%</span>
                                         </div>
-                                        <div className="w-full bg-[#F3F4F3] rounded-full h-2.5 mb-5 overflow-hidden">
-                                            <div className="bg-[#165DFF] h-full rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                                        <div className="w-full bg-[var(--bg-elevated)] rounded-full h-2.5 mb-5 overflow-hidden">
+                                            <div className="bg-[var(--primary)] h-full rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                                         </div>
                                         <div className="flex justify-between text-sm bg-[#F7F9FC] p-3 rounded-xl">
-                                            <span className="text-[#080C1A] font-bold">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
-                                            <span className="text-[#6A7686] font-medium">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
+                                            <span className="text-[var(--text-primary)] font-bold">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
+                                            <span className="text-[var(--text-secondary)] font-medium">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-6 grid grid-cols-2 gap-3 pt-4 border-t border-[#F3F4F3]">
+                                    <div className="mt-6 grid grid-cols-2 gap-3 pt-4 border-t border-[var(--border-default)]">
                                         <button
                                             onClick={() => handleEdit(goal)}
-                                            className="py-3.5 bg-slate-50 text-slate-700 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                            className="py-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
                                         >
                                             <Pencil className="w-5 h-5" /> Edit
                                         </button>
                                         <button
                                             onClick={() => openQuickAdd(goal)}
-                                            className="py-3.5 bg-[#165DFF] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm shadow-md hover:shadow-lg active:scale-95"
+                                            className="py-3.5 bg-[var(--primary)] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm shadow-md hover:shadow-lg active:scale-95"
                                         >
                                             + Nabung
                                         </button>
@@ -379,10 +379,10 @@ export default function GoalsPage() {
                         {/* Add New Card */}
                         <button
                             onClick={() => { resetForm(); setIsModalOpen(true); }}
-                            className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[300px] group"
+                            className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all min-h-[300px] group"
                         >
-                            <div className="bg-[#F3F4F3] group-hover:bg-[#165DFF] p-4 rounded-full transition-colors">
-                                <Plus className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                            <div className="bg-[var(--bg-elevated)] group-hover:bg-[var(--primary)] p-4 rounded-full transition-colors">
+                                <Plus className="w-8 h-8 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
                             </div>
                             <span className="font-bold text-sm">Tambah Target Baru</span>
                         </button>
@@ -394,42 +394,42 @@ export default function GoalsPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[#080C1A]">{editingId ? 'Edit Target' : 'Target Baru'}</h3>
-                            <button onClick={resetForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{editingId ? 'Edit Target' : 'Target Baru'}</h3>
+                            <button onClick={resetForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Nama Target</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Nama Target</label>
                                 <input 
                                     type="text" 
-                                    className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A] placeholder:text-slate-400" 
+                                    className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-xl border border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)] placeholder:text-slate-400 dark:text-slate-500" 
                                     value={name} 
                                     onChange={e => setName(e.target.value)} 
                                     placeholder="Contoh: Beli Laptop" 
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Target Dana (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Target Dana (Rp)</label>
                                 <MoneyInput value={targetAmount} onChange={setTargetAmount} />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Terkumpul Saat Ini (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Terkumpul Saat Ini (Rp)</label>
                                 <MoneyInput value={currentAmount} onChange={setCurrentAmount} />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Batas Waktu</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Batas Waktu</label>
                                 <input 
                                     type="date" 
-                                    className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]" 
+                                    className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-xl border border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]" 
                                     value={deadline} 
                                     onChange={e => setDeadline(e.target.value)} 
                                 />
                             </div>
-                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
                                 Simpan Target
                             </button>
                         </form>
@@ -441,25 +441,25 @@ export default function GoalsPage() {
             {isQuickAddModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetQuickAddForm}></div>
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[#080C1A]">Menabung</h3>
-                            <button onClick={resetQuickAddForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Menabung</h3>
+                            <button onClick={resetQuickAddForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleQuickAddSave} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Jumlah yang ditabung (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Jumlah yang ditabung (Rp)</label>
                                 <MoneyInput
                                     value={quickAddAmountValue}
                                     onChange={setQuickAddAmountValue}
                                     autoFocus
-                                    className="focus:ring-[#165DFF]"
+                                    className="focus:ring-[var(--primary)]"
                                 />
-                                <p className="text-xs text-slate-500 mt-2">Saldo akan ditambahkan ke total terkumpul.</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Saldo akan ditambahkan ke total terkumpul.</p>
                             </div>
-                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
+                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
                                 + Masukkan Tabungan
                             </button>
                         </form>

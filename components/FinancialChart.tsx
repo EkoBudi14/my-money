@@ -37,13 +37,13 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white p-4 border border-slate-100 shadow-xl rounded-2xl">
-                    <p className="font-bold text-slate-800 mb-2">{label}</p>
+                <div className="bg-white dark:bg-[var(--bg-card)] p-4 border border-slate-100 dark:border-[var(--border-default)] shadow-xl rounded-2xl">
+                    <p className="font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">{label}</p>
                     <div className="space-y-1">
-                        <p className="text-sm font-medium text-[#165DFF]">
+                        <p className="text-sm font-medium text-[var(--primary)]">
                             Pemasukan: <span className="font-bold">Rp {payload.find((p: any) => p.dataKey === 'income')?.value.toLocaleString('id-ID')}</span>
                         </p>
-                        <p className="text-sm font-medium text-slate-400">
+                        <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
                             Pengeluaran: <span className="font-bold">Rp {payload.find((p: any) => p.dataKey === 'expense')?.value.toLocaleString('id-ID')}</span>
                         </p>
                     </div>
@@ -83,11 +83,11 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
                     return (
                         <div key={`item-${index}`} className="flex items-center gap-2">
                             <div 
-                                className={`w-3 h-3 rounded-full border-2 ${isIncome ? 'border-[#165DFF]' : 'border-slate-400'}`}
+                                className={`w-3 h-3 rounded-full border-2 ${isIncome ? 'border-[var(--primary)]' : 'border-slate-400'}`}
                                 style={{ backgroundColor: 'transparent' }}
                             />
-                            <span className="text-sm font-medium text-slate-600 whitespace-nowrap">
-                                {entry.value} <span className="text-slate-900 font-bold ml-1">Rp {formatShort(total)}</span>
+                            <span className="text-sm font-medium text-slate-600 dark:text-slate-500 whitespace-nowrap">
+                                {entry.value} <span className="text-slate-900 dark:text-slate-100 font-bold ml-1">Rp {formatShort(total)}</span>
                             </span>
                         </div>
                     )
@@ -99,11 +99,11 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
     return (
         <div className="w-full h-[350px] flex flex-col">
             <div className="flex flex-wrap justify-end gap-x-6 mb-4 shrink-0">
-                {[{ name: 'Pemasukan', total: totalIncome, color: 'border-[#165DFF]' }, { name: 'Pengeluaran', total: totalExpense, color: 'border-[#F43F5E]' }].map((item, index) => (
+                {[{ name: 'Pemasukan', total: totalIncome, color: 'border-[var(--primary)]' }, { name: 'Pengeluaran', total: totalExpense, color: 'border-[#F43F5E]' }].map((item, index) => (
                     <div key={index} className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full border-2 ${item.color}`} style={{ backgroundColor: 'transparent' }} />
-                        <span className="text-sm font-medium text-slate-600 whitespace-nowrap">
-                            {item.name} <span className="text-slate-900 font-bold ml-1">Rp {formatShort(item.total)}</span>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-500 whitespace-nowrap">
+                            {item.name} <span className="text-slate-900 dark:text-slate-100 font-bold ml-1">Rp {formatShort(item.total)}</span>
                         </span>
                     </div>
                 ))}
@@ -122,11 +122,11 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
                     >
                         <defs>
                             <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#165DFF" stopOpacity={0.2}/>
-                                <stop offset="95%" stopColor="#165DFF" stopOpacity={0}/>
+                                <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                             </linearGradient>
                         </defs>
-                        <CartesianGrid vertical={false} stroke="#F3F4F3" strokeDasharray="3 3" />
+                        <CartesianGrid vertical={false} stroke="var(--border-default)" strokeDasharray="3 3" />
                         <XAxis 
                             dataKey="name" 
                             axisLine={false}
@@ -151,7 +151,7 @@ const FinancialChart = ({ data }: FinancialChartProps) => {
                             type="monotone" 
                             dataKey="income" 
                             name="Pemasukan"
-                            stroke="#165DFF" 
+                            stroke="var(--primary)" 
                             strokeWidth={3}
                             fillOpacity={1} 
                             fill="url(#colorIncome)" 

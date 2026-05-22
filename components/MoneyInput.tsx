@@ -72,7 +72,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    className={`w-full p-4 pr-20 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-bold text-2xl tracking-wide ${className}`}
+                    className={`w-full p-4 pr-20 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-bold text-2xl tracking-wide ${className}`}
                     value={formatDisplay(value)}
                     onChange={handleChange}
                     autoFocus={autoFocus}
@@ -81,7 +81,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     <button
                         type="button"
                         onClick={addThousands}
-                        className="h-full px-3 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 active:scale-95"
+                        className="h-full px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:bg-slate-600 text-slate-600 dark:text-slate-500 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 active:scale-95"
                         tabIndex={-1} // prevent auto focus on this button
                     >
                         +000
@@ -90,7 +90,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
             </div>
             {/* Helper label */}
             {value && parseInt(value) >= 1000000 && (
-                <p className="text-xs text-slate-400 mt-1 text-right">
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 text-right">
                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseInt(value))}
                 </p>
             )}

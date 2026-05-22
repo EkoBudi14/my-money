@@ -315,7 +315,7 @@ export default function ScanReceiptPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#EFF2F7] pb-24 md:pb-8">
+        <main className="min-h-screen bg-[#F9FAFB] dark:bg-[var(--bg-page)] pb-24 md:pb-8">
 
             {/* ── CAMERA MODAL ─────────────────────────────────────────────── */}
             {showCamera && (
@@ -353,7 +353,7 @@ export default function ScanReceiptPage() {
                             <FlipHorizontal className="w-5 h-5 text-white" />
                         </button>
                         {/* Shutter */}
-                        <button onClick={capturePhoto} className="w-20 h-20 rounded-full bg-white border-4 border-white/30 shadow-2xl hover:scale-95 transition-transform active:scale-90" />
+                        <button onClick={capturePhoto} className="w-20 h-20 rounded-full bg-white dark:bg-[var(--bg-card)] border-4 border-white/30 shadow-2xl hover:scale-95 transition-transform active:scale-90" />
                         {/* Spacer */}
                         <div className="w-12 h-12" />
                     </div>
@@ -364,17 +364,17 @@ export default function ScanReceiptPage() {
             )}
 
             {/* ── HEADER ───────────────────────────────────────────────────── */}
-            <header className="bg-white px-5 py-4 flex items-center justify-between shadow-sm sticky top-0 z-40 border-b border-[#F3F4F3]">
+            <header className="bg-white dark:bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between shadow-sm sticky top-0 z-40 border-b border-[var(--border-default)]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#165DFF]/10 rounded-xl flex items-center justify-center">
-                        <ScanLine className="w-5 h-5 text-[#165DFF]" />
+                    <div className="w-10 h-10 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center">
+                        <ScanLine className="w-5 h-5 text-[var(--primary)]" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-[#080C1A] text-lg leading-tight">Scan Struk</h1>
-                        <p className="text-xs text-[#6A7686]">Catat pengeluaran otomatis pakai AI</p>
+                        <h1 className="font-bold text-[var(--text-primary)] text-lg leading-tight">Scan Struk</h1>
+                        <p className="text-xs text-[var(--text-secondary)]">Catat pengeluaran otomatis pakai AI</p>
                     </div>
                 </div>
-                <button onClick={() => router.push('/')} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EFF2F7] text-[#6A7686] hover:bg-slate-200 transition-colors">
+                <button onClick={() => router.push('/')} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                     <X className="w-4 h-4" />
                 </button>
             </header>
@@ -383,17 +383,17 @@ export default function ScanReceiptPage() {
 
                 {/* ── SUCCESS ──────────────────────────────────────────────── */}
                 {isSuccess ? (
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-[#F3F4F3] text-center animate-in zoom-in-95 duration-300">
+                    <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-8 shadow-sm border border-[var(--border-default)] text-center animate-in zoom-in-95 duration-300">
                         <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="w-10 h-10 text-emerald-600" />
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-800 mb-2">Berhasil Disimpan!</h2>
-                        <p className="text-slate-500 mb-8">Transaksi telah ditambahkan ke pengeluaran Anda.</p>
+                        <h2 className="text-2xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">Berhasil Disimpan!</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8">Transaksi telah ditambahkan ke pengeluaran Anda.</p>
                         <div className="flex flex-col gap-3">
-                            <button onClick={resetState} className="w-full py-3.5 bg-[#165DFF] hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors">
+                            <button onClick={resetState} className="w-full py-3.5 bg-[var(--primary)] hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors">
                                 Scan Struk Lagi
                             </button>
-                            <button onClick={() => router.push('/')} className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                            <button onClick={() => router.push('/')} className="w-full py-3.5 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors">
                                 Kembali ke Dashboard
                             </button>
                         </div>
@@ -402,21 +402,21 @@ export default function ScanReceiptPage() {
                     <>
                         {/* ── UPLOAD AREA ──────────────────────────────────── */}
                         {!image && (
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3F4F3] space-y-4">
-                                <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-4 bg-slate-50">
-                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
-                                        <Camera className="w-8 h-8 text-[#165DFF]" />
+                            <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-6 shadow-sm border border-[var(--border-default)] space-y-4">
+                                <div className="aspect-[4/3] w-full rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-[var(--bg-elevated)]">
+                                    <div className="w-16 h-16 bg-white dark:bg-[var(--bg-card)] rounded-full flex items-center justify-center shadow-sm">
+                                        <Camera className="w-8 h-8 text-[var(--primary)]" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="font-semibold text-slate-700">Ambil Foto / Upload Struk</p>
-                                        <p className="text-sm text-slate-500 mt-1">Pastikan tulisan terbaca jelas</p>
+                                        <p className="font-semibold text-slate-700 dark:text-slate-300">Ambil Foto / Upload Struk</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Pastikan tulisan terbaca jelas</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     {/* Foto — buka kamera via getUserMedia */}
                                     <button
                                         onClick={() => openCamera('environment')}
-                                        className="flex items-center justify-center gap-2 py-3.5 bg-[#165DFF] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
+                                        className="flex items-center justify-center gap-2 py-3.5 bg-[var(--primary)] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
                                     >
                                         <Camera className="w-4 h-4" /> Foto
                                     </button>
@@ -425,7 +425,7 @@ export default function ScanReceiptPage() {
                                     <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="flex items-center justify-center gap-2 py-3.5 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                                        className="flex items-center justify-center gap-2 py-3.5 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                     >
                                         <Upload className="w-4 h-4" /> Galeri
                                     </button>
@@ -435,7 +435,7 @@ export default function ScanReceiptPage() {
 
                         {/* ── RATE LIMIT BANNER ───────────────────────────────── */}
                         {rateLimitInfo && rateLimitCountdown > 0 && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 animate-in fade-in">
+                            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-2xl p-4 animate-in fade-in">
                                 <div className="flex items-start gap-3">
                                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                         <span className="text-lg">⏳</span>
@@ -463,7 +463,7 @@ export default function ScanReceiptPage() {
                                             </div>
                                             <div className="w-full bg-amber-200 rounded-full h-1.5">
                                                 <div
-                                                    className="bg-amber-500 h-1.5 rounded-full transition-all duration-1000"
+                                                    className="bg-amber-50 dark:bg-amber-950/300 h-1.5 rounded-full transition-all duration-1000"
                                                     style={{ width: `${(rateLimitCountdown / rateLimitInfo.total) * 100}%` }}
                                                 />
                                             </div>
@@ -475,7 +475,7 @@ export default function ScanReceiptPage() {
 
                         {/* ── IMAGE PREVIEW ─────────────────────────────────── */}
                         {image && !scanResult && (
-                            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F3F4F3] animate-in fade-in">
+                            <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl overflow-hidden shadow-sm border border-[var(--border-default)] animate-in fade-in">
                                 <div className="relative aspect-[3/4] w-full bg-slate-900">
                                     <img src={image} alt="Struk" className="w-full h-full object-contain" />
                                     <button onClick={resetState} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm">
@@ -486,7 +486,7 @@ export default function ScanReceiptPage() {
                                     <button
                                         onClick={handleScan}
                                         disabled={isScanning || rateLimitCountdown > 0}
-                                        className="w-full py-4 bg-[#165DFF] hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200 disabled:shadow-none"
+                                        className="w-full py-4 bg-[var(--primary)] hover:bg-blue-600 disabled:bg-slate-300 dark:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200 disabled:shadow-none"
                                     >
                                         {isScanning ? (
                                             <><Loader2 className="w-5 h-5 animate-spin" /> Menganalisa Struk...</>
@@ -501,29 +501,29 @@ export default function ScanReceiptPage() {
                         {/* ── SCAN RESULT ───────────────────────────────────── */}
                         {scanResult && !isSuccess && (
                             <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
-                                <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3F4F3]">
-                                    <div className="flex flex-col gap-4 mb-6 pb-6 border-b border-dashed border-slate-200">
+                                <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-6 shadow-sm border border-[var(--border-default)]">
+                                    <div className="flex flex-col gap-4 mb-6 pb-6 border-b border-dashed border-slate-200 dark:border-[var(--border-default)]">
 
                                         {/* ─ Document type badge ─ */}
                                         <div className="flex items-center gap-2">
                                             {scanResult.document_type === 'bukti_transfer' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">🏦 Bukti Transfer</span>
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-700 text-xs font-semibold">🏦 Bukti Transfer</span>
                                             ) : scanResult.document_type === 'tagihan' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-semibold">📄 Tagihan</span>
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/30 text-purple-700 text-xs font-semibold">📄 Tagihan</span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">🧾 Struk Belanja</span>
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 text-xs font-semibold">🧾 Struk Belanja</span>
                                             )}
                                         </div>
 
                                         {/* ─ Transfer direction toggle ─ */}
                                         {scanResult.document_type === 'bukti_transfer' && (
-                                            <div className="flex rounded-xl overflow-hidden border border-slate-200">
+                                            <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-[var(--border-default)]">
                                                 <button
                                                     onClick={() => handleResultChange('transaction_type', 'pengeluaran')}
                                                     className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
                                                         scanResult.transaction_type === 'pengeluaran'
-                                                            ? 'bg-red-500 text-white'
-                                                            : 'bg-white text-slate-500 hover:bg-slate-50'
+                                                            ? 'bg-red-50 dark:bg-red-950/300 text-white'
+                                                            : 'bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'
                                                     }`}
                                                 >
                                                     ↑ Transfer Keluar
@@ -532,8 +532,8 @@ export default function ScanReceiptPage() {
                                                     onClick={() => handleResultChange('transaction_type', 'pemasukan')}
                                                     className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
                                                         scanResult.transaction_type === 'pemasukan'
-                                                            ? 'bg-emerald-500 text-white'
-                                                            : 'bg-white text-slate-500 hover:bg-slate-50'
+                                                            ? 'bg-emerald-50 dark:bg-emerald-950/300 text-white'
+                                                            : 'bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'
                                                     }`}
                                                 >
                                                     ↓ Terima Transfer
@@ -542,33 +542,33 @@ export default function ScanReceiptPage() {
                                         )}
 
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Nama Toko</label>
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Nama Toko</label>
                                             <input 
                                                 type="text"
                                                 value={scanResult.store_name}
                                                 onChange={(e) => handleResultChange('store_name', e.target.value)}
-                                                className="w-full text-xl font-bold text-slate-800 bg-transparent border-b border-slate-200 focus:border-[#165DFF] outline-none pb-1 transition-colors"
+                                                className="w-full text-xl font-bold text-slate-800 dark:text-[var(--text-primary)] bg-transparent border-b border-slate-200 dark:border-[var(--border-default)] focus:border-[var(--primary)] outline-none pb-1 transition-colors"
                                             />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Tanggal</label>
+                                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Tanggal</label>
                                                 <input 
                                                     type="date"
                                                     value={scanResult.date}
                                                     onChange={(e) => handleResultChange('date', e.target.value)}
-                                                    className="w-full text-slate-700 bg-transparent border-b border-slate-200 focus:border-[#165DFF] outline-none pb-1 transition-colors"
+                                                    className="w-full text-slate-700 dark:text-slate-300 bg-transparent border-b border-slate-200 dark:border-[var(--border-default)] focus:border-[var(--primary)] outline-none pb-1 transition-colors"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Total Belanja</label>
-                                                <div className="flex items-center border-b border-slate-200 focus-within:border-[#165DFF] transition-colors pb-1">
-                                                    <span className="text-[#165DFF] font-bold mr-1">Rp</span>
+                                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Total Belanja</label>
+                                                <div className="flex items-center border-b border-slate-200 dark:border-[var(--border-default)] focus-within:border-[var(--primary)] transition-colors pb-1">
+                                                    <span className="text-[var(--primary)] font-bold mr-1">Rp</span>
                                                     <input 
                                                         type="text"
                                                         value={scanResult.total.toLocaleString('id-ID')}
                                                         onChange={(e) => handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0)}
-                                                        className="w-full text-xl font-bold text-[#165DFF] bg-transparent outline-none"
+                                                        className="w-full text-xl font-bold text-[var(--primary)] bg-transparent outline-none"
                                                     />
                                                 </div>
                                             </div>
@@ -577,13 +577,13 @@ export default function ScanReceiptPage() {
                                         {/* ─ Keterangan transfer ─ */}
                                         {scanResult.document_type === 'bukti_transfer' && (
                                             <div>
-                                                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Keterangan Transfer</label>
+                                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Keterangan Transfer</label>
                                                 <input
                                                     type="text"
                                                     value={scanResult.description || ''}
                                                     onChange={(e) => handleResultChange('description', e.target.value)}
                                                     placeholder="Keterangan transfer..."
-                                                    className="w-full text-sm text-slate-700 bg-transparent border-b border-slate-200 focus:border-[#165DFF] outline-none pb-1 transition-colors"
+                                                    className="w-full text-sm text-slate-700 dark:text-slate-300 bg-transparent border-b border-slate-200 dark:border-[var(--border-default)] focus:border-[var(--primary)] outline-none pb-1 transition-colors"
                                                 />
                                             </div>
                                         )}
@@ -592,23 +592,23 @@ export default function ScanReceiptPage() {
                                     {/* Detail item hanya tampil untuk struk & tagihan */}
                                     {scanResult.document_type !== 'bukti_transfer' && (
                                     <div className="mb-6">
-                                        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider flex items-center justify-between">
+                                        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider flex items-center justify-between">
                                             Detail Item
                                         </h3>
                                         <div className="space-y-3">
                                             {scanResult.items.map((item: any, idx: number) => (
-                                                <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 focus-within:border-slate-300 focus-within:shadow-sm transition-all relative">
+                                                <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-xl border border-slate-100 dark:border-[var(--border-default)] focus-within:border-slate-300 focus-within:shadow-sm transition-all relative">
                                                     <div className="flex justify-between items-start gap-2">
                                                         <input 
                                                             type="text"
                                                             value={item.name}
                                                             onChange={(e) => handleItemChange(idx, 'name', e.target.value)}
-                                                            className="w-full text-sm font-medium text-slate-800 bg-transparent outline-none"
+                                                            className="w-full text-sm font-medium text-slate-800 dark:text-[var(--text-primary)] bg-transparent outline-none"
                                                             placeholder="Nama Item"
                                                         />
                                                         <button 
                                                             onClick={() => handleDeleteItem(idx)}
-                                                            className="text-slate-400 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1 rounded-md hover:bg-red-50"
+                                                            className="text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1 rounded-md hover:bg-red-50 dark:bg-red-950/30"
                                                             title="Hapus Item"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
@@ -616,26 +616,26 @@ export default function ScanReceiptPage() {
                                                     </div>
                                                     <div className="flex justify-between items-center text-sm mt-1">
                                                         {/* Kiri: qty x @harga satuan */}
-                                                        <div className="flex items-center gap-1.5 text-slate-500">
+                                                        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                                                             <span className="text-xs">x</span>
                                                             <input 
                                                                 type="number"
                                                                 value={item.qty}
                                                                 onChange={(e) => handleItemChange(idx, 'qty', parseInt(e.target.value) || 0)}
-                                                                className="w-10 bg-white border border-slate-200 rounded text-center text-xs outline-none focus:border-[#165DFF] py-0.5"
+                                                                className="w-10 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded text-center text-xs outline-none focus:border-[var(--primary)] py-0.5"
                                                             />
-                                                            <span className="text-xs text-slate-400">@Rp</span>
+                                                            <span className="text-xs text-slate-400 dark:text-slate-500">@Rp</span>
                                                             <input 
                                                                 type="text"
                                                                 value={item.price.toLocaleString('id-ID')}
                                                                 onChange={(e) => handleItemChange(idx, 'price', parseInt(e.target.value.replace(/\./g, '')) || 0)}
-                                                                className="w-20 bg-white border border-slate-200 rounded text-right text-xs px-1 outline-none focus:border-[#165DFF] py-0.5"
+                                                                className="w-20 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded text-right text-xs px-1 outline-none focus:border-[var(--primary)] py-0.5"
                                                             />
                                                         </div>
                                                         {/* Kanan: subtotal (read-only) */}
                                                         <div className="flex items-center gap-0.5">
-                                                            <span className="text-xs text-slate-400">Rp</span>
-                                                            <span className="font-semibold text-slate-800 text-sm tabular-nums">
+                                                            <span className="text-xs text-slate-400 dark:text-slate-500">Rp</span>
+                                                            <span className="font-semibold text-slate-800 dark:text-[var(--text-primary)] text-sm tabular-nums">
                                                                 {(item.qty * item.price).toLocaleString('id-ID')}
                                                             </span>
                                                         </div>
@@ -643,7 +643,7 @@ export default function ScanReceiptPage() {
                                                 </div>
                                             ))}
                                             {scanResult.items.length === 0 && (
-                                                <p className="text-sm text-slate-500 text-center py-2">Tidak ada detail item yang terdeteksi.</p>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-2">Tidak ada detail item yang terdeteksi.</p>
                                             )}
                                         </div>
                                     </div>
@@ -651,8 +651,8 @@ export default function ScanReceiptPage() {
 
                                     {/* ── BREAKDOWN DISKON & BIAYA TAMBAHAN ── */}
                                     {(scanResult.discount > 0 || scanResult.extra_fees > 0) && (
-                                        <div className="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-100">
-                                            <div className="flex justify-between text-sm text-slate-500">
+                                        <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-2xl p-4 space-y-2 border border-slate-100 dark:border-[var(--border-default)]">
+                                            <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
                                                 <span>Subtotal Item</span>
                                                 <span>Rp {scanResult.items.reduce((a: number, i: any) => a + i.qty * i.price, 0).toLocaleString('id-ID')}</span>
                                             </div>
@@ -663,25 +663,25 @@ export default function ScanReceiptPage() {
                                                 </div>
                                             )}
                                             {scanResult.extra_fees > 0 && (
-                                                <div className="flex justify-between text-sm text-slate-500">
+                                                <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
                                                     <span>Biaya Tambahan (Ongkir, dll)</span>
                                                     <span>+ Rp {scanResult.extra_fees.toLocaleString('id-ID')}</span>
                                                 </div>
                                             )}
-                                            <div className="flex justify-between text-sm font-bold text-slate-800 pt-2 border-t border-slate-200">
+                                            <div className="flex justify-between text-sm font-bold text-slate-800 dark:text-[var(--text-primary)] pt-2 border-t border-slate-200 dark:border-[var(--border-default)]">
                                                 <span>Total Dibayar</span>
-                                                <span className="text-[#165DFF]">Rp {scanResult.total.toLocaleString('id-ID')}</span>
+                                                <span className="text-[var(--primary)]">Rp {scanResult.total.toLocaleString('id-ID')}</span>
                                             </div>
                                         </div>
                                     )}
 
-                                    <div className="space-y-4 pt-6 border-t border-slate-100">
+                                    <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-[var(--border-default)]">
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Kategori Pengeluaran</label>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Kategori Pengeluaran</label>
                                             <select
                                                 value={scanResult.category}
                                                 onChange={(e) => handleResultChange('category', e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all appearance-none"
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-slate-800 dark:text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all appearance-none"
                                             >
                                                 <option value={scanResult.category}>{scanResult.category}</option>
                                                 {CATEGORIES.pengeluaran.filter(c => c.name !== scanResult.category).map((cat, idx) => (
@@ -690,11 +690,11 @@ export default function ScanReceiptPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">Pilih Dompet Pengeluaran</label>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Pilih Dompet Pengeluaran</label>
                                             <select
                                                 value={selectedWalletId}
                                                 onChange={(e) => setSelectedWalletId(e.target.value)}
-                                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all appearance-none"
+                                                className="w-full px-4 py-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all appearance-none"
                                             >
                                                 <option value="" disabled>Pilih dompet...</option>
                                                 {wallets.map(w => (
@@ -706,13 +706,13 @@ export default function ScanReceiptPage() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <button onClick={resetState} className="py-4 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors">
+                                    <button onClick={resetState} className="py-4 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                         Ulangi Foto
                                     </button>
                                     <button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="py-4 bg-[#165DFF] text-white rounded-xl font-semibold hover:bg-blue-600 disabled:bg-blue-400 transition-colors flex items-center justify-center gap-2"
+                                        className="py-4 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-blue-600 disabled:bg-blue-400 transition-colors flex items-center justify-center gap-2"
                                     >
                                         {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                         Simpan

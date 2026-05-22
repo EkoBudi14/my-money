@@ -25,6 +25,7 @@ import Sidebar from "@/components/Sidebar";
 import { ToastProvider } from "@/hooks/useToast";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
+import { ThemeProvider } from "@/hooks/useTheme";
 
 export default function RootLayout({
   children,
@@ -32,22 +33,41 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Anti-FOUC: apply dark class before paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
-        className={`${lexendDeca.variable} antialiased bg-[#EFF2F7]`}
+        className={`${lexendDeca.variable} antialiased bg-[var(--bg-page)]`}
       >
-        <ToastProvider>
-          <ConfirmProvider>
-            <SuccessModalProvider>
-              <div className="flex min-h-screen">
-                <Sidebar />
-                <div className="flex-1 min-w-0 overflow-x-hidden md:ml-[280px]">
-                   {children}
+        <ThemeProvider>
+          <ToastProvider>
+            <ConfirmProvider>
+              <SuccessModalProvider>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <div className="flex-1 min-w-0 overflow-x-hidden md:ml-[280px]">
+                     {children}
+                  </div>
                 </div>
-              </div>
-            </SuccessModalProvider>
-          </ConfirmProvider>
-        </ToastProvider>
+              </SuccessModalProvider>
+            </ConfirmProvider>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -46,18 +46,18 @@ export default function CurrencyCard() {
 
             <div className="flex justify-between items-start z-10 relative mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-600 ring-4 ring-emerald-50/50">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl text-emerald-600 ring-4 ring-emerald-50/50">
                         <Banknote className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mata Uang</p>
-                        <p className="text-slate-800 font-bold">Kurs USD</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mata Uang</p>
+                        <p className="text-slate-800 dark:text-[var(--text-primary)] font-bold">Kurs USD</p>
                     </div>
                 </div>
                 <button
                     onClick={fetchRate}
                     disabled={loading}
-                    className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-colors disabled:opacity-50"
+                    className="p-2 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-xl text-slate-400 dark:text-slate-500 hover:text-blue-600 transition-colors disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 </button>
@@ -66,22 +66,22 @@ export default function CurrencyCard() {
             <div className="z-10 relative flex-1 flex flex-col justify-end">
                 {loading ? (
                     <div className="space-y-2">
-                        <div className="h-4 w-12 bg-slate-100 rounded animate-pulse" />
-                        <div className="h-8 w-32 bg-slate-100 rounded animate-pulse" />
+                        <div className="h-4 w-12 bg-slate-100 dark:bg-[var(--bg-hover)] rounded animate-pulse" />
+                        <div className="h-8 w-32 bg-slate-100 dark:bg-[var(--bg-hover)] rounded animate-pulse" />
                     </div>
                 ) : error ? (
-                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-100">
+                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-950/30 p-3 rounded-xl border border-red-100">
                         <AlertCircle className="w-4 h-4" />
                         <span>Gagal memuat</span>
                     </div>
                 ) : (
                     <div>
-                        <div className="flex items-center gap-2 text-slate-500 font-medium text-xs mb-2">
-                            <span className="bg-slate-100 px-2 py-1 rounded-md text-slate-600 font-bold">1 USD</span>
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium text-xs mb-2">
+                            <span className="bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-1 rounded-md text-slate-600 dark:text-slate-500 font-bold">1 USD</span>
                             <ArrowRightLeft className="w-3 h-3 text-slate-300" />
-                            <span className="bg-emerald-50 px-2 py-1 rounded-md text-emerald-700 font-bold">IDR</span>
+                            <span className="bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-md text-emerald-700 font-bold">IDR</span>
                         </div>
-                        <p className="text-3xl font-extrabold text-slate-800 tracking-tight">
+                        <p className="text-3xl font-extrabold text-slate-800 dark:text-[var(--text-primary)] tracking-tight">
                             Rp {rate && rate > 0 ? rate.toLocaleString('id-ID') : '-'}
                         </p>
                     </div>
@@ -89,8 +89,8 @@ export default function CurrencyCard() {
             </div>
 
             <div className="mt-4 pt-3 flex justify-between items-center z-10 relative">
-                <span className="text-[10px] text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-full">Update: {lastUpdate}</span>
-                <span className="text-[10px] text-slate-400 font-medium">Frankfurter API</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-[var(--bg-elevated)] px-2 py-1 rounded-full">Update: {lastUpdate}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Frankfurter API</span>
             </div>
         </div>
     )

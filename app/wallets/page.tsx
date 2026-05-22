@@ -343,20 +343,20 @@ export default function WalletsPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
             {/* Top Header */}
-            <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+            <div className="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div className="flex items-center gap-4">
-                    <h2 className="font-bold text-2xl text-[#080C1A]">Dompet Saya</h2>
+                    <h2 className="font-bold text-2xl text-[var(--text-primary)]">Dompet Saya</h2>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <div className="hidden md:flex items-center gap-3 pl-3">
                         <div className="text-right">
-                            <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-                            {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                            <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                            {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
                         </div>
-                        <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                        <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                             EB
                         </div>
                     </div>
@@ -368,8 +368,8 @@ export default function WalletsPage() {
                 {/* ===== MOBILE VIEW ===== */}
                 <div className="md:hidden pb-[80px]">
                     {loading ? (
-                        <div className="flex items-center justify-center py-16 text-slate-400">
-                            <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                        <div className="flex items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+                            <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
                         </div>
                     ) : (() => {
                         const totalBalance = activeWallets.reduce((acc, w) => acc + w.balance, 0)
@@ -387,19 +387,19 @@ export default function WalletsPage() {
                                     <p className="text-white font-extrabold text-3xl mb-4 relative z-10">Rp {totalBalance.toLocaleString('id-ID')}</p>
                                     <div className="flex items-center gap-2 flex-wrap relative z-10">
                                         {cashCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
                                                 <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full" />
                                                 {cashCount} Cash
                                             </span>
                                         )}
                                         {ewalletCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
                                                 <span className="w-1.5 h-1.5 bg-purple-300 rounded-full" />
                                                 {ewalletCount} E-Wallet
                                             </span>
                                         )}
                                         {bankCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full">
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
                                                 <span className="w-1.5 h-1.5 bg-blue-200 rounded-full" />
                                                 {bankCount} Bank
                                             </span>
@@ -409,19 +409,19 @@ export default function WalletsPage() {
 
                                 {/* Info Bar */}
                                 <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="text-sm font-bold text-[#080C1A]">{activeWallets.length} dompet aktif</p>
-                                    <p className="text-[11px] text-[#6A7686]">Tap untuk edit / hapus</p>
+                                    <p className="text-sm font-bold text-[var(--text-primary)]">{activeWallets.length} dompet aktif</p>
+                                    <p className="text-[11px] text-[var(--text-secondary)]">Tap untuk edit / hapus</p>
                                 </div>
 
                                 {/* Wallet List */}
-                                <div className="mx-4 bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+                                <div className="mx-4 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
                                     {activeWallets.map((wallet, idx) => {
                                         const pct = totalBalance > 0 ? Math.round((wallet.balance / totalBalance) * 100) : 0
                                         const isLast = idx === activeWallets.length - 1
                                         return (
                                             <div
                                                 key={wallet.id}
-                                                className={`px-4 py-3.5 flex items-center gap-3 active:bg-[#F9FAFB] transition-colors ${!isLast ? 'border-b border-[#F3F4F3]' : ''}`}
+                                                className={`px-4 py-3.5 flex items-center gap-3 active:bg-[#F9FAFB] dark:active:bg-[#F9FAFB] dark:bg-[var(--bg-page)] transition-colors ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}
                                             >
                                                 {/* Icon */}
                                                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${getColor(wallet.type)}`}>
@@ -431,21 +431,21 @@ export default function WalletsPage() {
                                                 {/* Info */}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-0.5">
-                                                        <p className="font-bold text-[#080C1A] text-sm truncate">{wallet.name}</p>
-                                                        <p className="font-bold text-sm text-[#080C1A] shrink-0 ml-2">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                                        <p className="font-bold text-[var(--text-primary)] text-sm truncate">{wallet.name}</p>
+                                                        <p className="font-bold text-sm text-[var(--text-primary)] shrink-0 ml-2">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                                     </div>
                                                     <div className="flex items-center justify-between mb-1.5">
                                                         <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
-                                                            wallet.type === 'bank' ? 'bg-blue-50 text-blue-600' :
-                                                            wallet.type === 'ewallet' ? 'bg-purple-50 text-purple-600' :
-                                                            'bg-emerald-50 text-emerald-600'
+                                                            wallet.type === 'bank' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' :
+                                                            wallet.type === 'ewallet' ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' :
+                                                            'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600'
                                                         }`}>{wallet.type}</span>
-                                                        <p className="text-[11px] text-[#6A7686]">{pct}% dari total</p>
+                                                        <p className="text-[11px] text-[var(--text-secondary)]">{pct}% dari total</p>
                                                     </div>
                                                     {/* Progress bar */}
-                                                    <div className="w-full h-1.5 bg-[#F3F4F3] rounded-full overflow-hidden">
+                                                    <div className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full rounded-full bg-[#165DFF] transition-all duration-500"
+                                                            className="h-full rounded-full bg-[var(--primary)] transition-all duration-500"
                                                             style={{ width: `${pct}%` }}
                                                         />
                                                     </div>
@@ -453,10 +453,10 @@ export default function WalletsPage() {
 
                                                 {/* Actions */}
                                                 <div className="flex flex-col gap-1.5 shrink-0">
-                                                    <button onClick={() => handleEdit(wallet)} className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-blue-500 active:scale-90 transition-all">
+                                                    <button onClick={() => handleEdit(wallet)} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-100 dark:border-[var(--border-default)] rounded-lg text-blue-500 active:scale-90 transition-all">
                                                         <Pencil className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <button onClick={() => handleDelete(wallet.id)} className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-rose-400 active:scale-90 transition-all">
+                                                    <button onClick={() => handleDelete(wallet.id)} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-100 dark:border-[var(--border-default)] rounded-lg text-rose-400 active:scale-90 transition-all">
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
@@ -468,9 +468,9 @@ export default function WalletsPage() {
                                 {/* Tambah Dompet Button */}
                                 <button
                                     onClick={() => setIsModalOpen(true)}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all active:scale-[0.98]"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] flex items-center justify-center">
                                         <Plus className="w-4 h-4" />
                                     </div>
                                     <span className="font-bold text-sm">Tambah Dompet Baru</span>
@@ -483,16 +483,16 @@ export default function WalletsPage() {
                 {/* ===== DESKTOP VIEW ===== */}
                 <div className="hidden md:block p-8">
                     {loading ? (
-                        <div className="text-center py-12 text-slate-400">Loading...</div>
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500">Loading...</div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {activeWallets.map((wallet: Wallet) => (
-                                <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
+                                <div key={wallet.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
-                                         <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
+                                         <button onClick={() => handleEdit(wallet)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
                                             <Pencil className="w-5 h-5" />
                                         </button>
-                                        <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
+                                        <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -501,13 +501,13 @@ export default function WalletsPage() {
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 ${getColor(wallet.type)} shadow-lg shadow-blue-500/20`}>
                                             {getIcon(wallet.type)}
                                         </div>
-                                        <h3 className="font-bold text-xl text-[#080C1A] mb-1">{wallet.name}</h3>
-                                        <span className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-[#6A7686] border border-slate-100">{wallet.type}</span>
+                                        <h3 className="font-bold text-xl text-[var(--text-primary)] mb-1">{wallet.name}</h3>
+                                        <span className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-50 dark:bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-slate-100 dark:border-[var(--border-default)]">{wallet.type}</span>
                                     </div>
                                     
                                     <div className="z-10 mt-6">
-                                        <p className="text-sm font-medium text-[#6A7686] mb-1">Saldo Saat Ini</p>
-                                        <p className="text-3xl font-extrabold text-[#080C1A] tracking-tight">Rp {wallet.balance.toLocaleString('id-ID')}</p>
+                                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">Saldo Saat Ini</p>
+                                        <p className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                     </div>
                                     
                                     {/* Decorative circle */}
@@ -518,10 +518,10 @@ export default function WalletsPage() {
                             {/* Add New Wallet Card */}
                             <button
                                 onClick={() => { setIsModalOpen(true) }}
-                                className="border-2 border-dashed border-[#E2E8F0] rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[220px] group"
+                                className="border-2 border-dashed border-[#E2E8F0] rounded-3xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all min-h-[220px] group"
                             >
-                                <div className="bg-[#F3F4F3] group-hover:bg-[#165DFF] p-4 rounded-full transition-colors">
-                                    <Plus className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                                <div className="bg-[var(--bg-elevated)] group-hover:bg-[var(--primary)] p-4 rounded-full transition-colors">
+                                    <Plus className="w-8 h-8 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
                                 </div>
                                 <span className="font-bold text-sm">Tambah Dompet Baru</span>
                             </button>
@@ -535,33 +535,33 @@ export default function WalletsPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[#080C1A]">{editingId ? 'Edit Dompet' : 'Tambah Dompet'}</h3>
-                            <button onClick={resetForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{editingId ? 'Edit Dompet' : 'Tambah Dompet'}</h3>
+                            <button onClick={resetForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Nama Dompet</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Nama Dompet</label>
                                 <input
                                     type="text"
                                     placeholder="Contoh: BCA Utama"
-                                    className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium"
+                                    className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-sm font-medium"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Tipe</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tipe</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     {['bank', 'ewallet', 'cash'].map((t) => (
                                         <button
                                             key={t}
                                             type="button"
                                             onClick={() => setType(t as any)}
-                                            className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                            className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 text-blue-700 shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                         >
                                             {t.toUpperCase()}
                                         </button>
@@ -569,29 +569,29 @@ export default function WalletsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Kategori Dompet</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Kategori Dompet</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
                                         onClick={() => setCategory('active')}
-                                        className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'active' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                        className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'active' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 text-blue-700 shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                     >
                                         SALDO AKTIF
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setCategory('savings')}
-                                        className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'savings' ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                        className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'savings' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-700 shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                     >
                                         TABUNGAN
                                     </button>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-2">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
                                     {category === 'active' ? 'Dihitung sebagai saldo aktif di dashboard.' : 'Tidak dihitung di saldo aktif utama.'}
                                 </p>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Saldo Awal (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Saldo Awal (Rp)</label>
                                 <MoneyInput
                                     value={balance}
                                     onChange={setBalance}
@@ -600,7 +600,7 @@ export default function WalletsPage() {
                             
                             {/* Source Wallet Logic (Simplified for styling update) */}
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Sumber Dana (Opsional)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Sumber Dana (Opsional)</label>
                                 {(() => {
                                     const allWallets = [...activeWallets, ...savingsWallets]
                                     const isRefundScenario: boolean = editingId ? (() => {
@@ -615,9 +615,9 @@ export default function WalletsPage() {
                                     return (
                                         <>
                                             <select
-                                                className={`w-full p-3.5 border rounded-xl outline-none text-slate-700 transition-colors text-sm font-medium appearence-none ${isDisabled
-                                                    ? 'bg-slate-100 border-slate-300 cursor-not-allowed opacity-70'
-                                                    : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-blue-500'
+                                                className={`w-full p-3.5 border rounded-xl outline-none text-slate-700 dark:text-slate-300 transition-colors text-sm font-medium appearence-none ${isDisabled
+                                                    ? 'bg-slate-100 dark:bg-[var(--bg-hover)] border-slate-300 cursor-not-allowed opacity-70'
+                                                    : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
                                                     }`}
                                                 value={sourceWalletId}
                                                 onChange={(e) => setSourceWalletId(e.target.value)}
@@ -644,7 +644,7 @@ export default function WalletsPage() {
                                                 </optgroup>
                                             </select>
                                             {isRefundScenario && (
-                                                <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                                                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-lg flex items-start gap-2">
                                                     <div className="text-xs">
                                                         <p className="font-bold text-amber-800">Sumber Terkunci</p>
                                                         <p className="text-amber-700 mt-0.5">Dana harus dikembalikan ke sumber asli.</p>
@@ -658,19 +658,19 @@ export default function WalletsPage() {
 
                              {/* Checkbox and Preview */}
                              {sourceWalletId && (
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] p-4 rounded-xl border border-slate-200 dark:border-[var(--border-default)]">
                                     <label className="flex items-center gap-3 cursor-pointer mb-2">
                                         <input
                                             type="checkbox"
                                             checked={linkToSource}
                                             onChange={e => setLinkToSource(e.target.checked)}
-                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500 border-gray-300"
+                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400 border-gray-300"
                                         />
-                                        <span className="text-sm font-semibold text-slate-700">Sesuaikan saldo dompet sumber?</span>
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Sesuaikan saldo dompet sumber?</span>
                                     </label>
 
                                     {linkToSource && (
-                                        <div className="text-xs text-slate-500 pl-8">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 pl-8">
                                             {(() => {
                                                 const allWallets = [...activeWallets, ...savingsWallets]
                                                 let targetWallet = allWallets.find(w => w.id === parseInt(sourceWalletId))
@@ -713,7 +713,7 @@ export default function WalletsPage() {
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
                                 Simpan
                             </button>
                         </form>

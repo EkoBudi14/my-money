@@ -154,17 +154,17 @@ export default function NotesPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[#080C1A]">Catatan Keuangan</h2>
+                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Catatan Keuangan</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
-                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                        {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
                     </div>
-                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                         EB
                     </div>
                 </div>
@@ -173,7 +173,7 @@ export default function NotesPage() {
             {/* Floating Action Button - Desktop only */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="hidden md:flex fixed bottom-10 right-10 bg-[#165DFF] hover:bg-[#1455E5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 z-40 group items-center justify-center"
+                className="hidden md:flex fixed bottom-10 right-10 bg-[var(--primary)] hover:bg-[#1455E5] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 z-40 group items-center justify-center"
             >
                 <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
             </button>
@@ -182,29 +182,29 @@ export default function NotesPage() {
             <div className="md:hidden pb-[80px]">
                 {loading ? (
                     <div className="flex items-center justify-center py-16">
-                        <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : (
                     <div className="px-4 pt-4 space-y-3">
                         {notes.length === 0 ? (
-                            <div className="bg-white rounded-2xl border border-[#F3F4F3] p-10 text-center">
+                            <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] p-10 text-center">
                                 <StickyNote className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                                <p className="text-slate-400 text-sm">Belum ada catatan</p>
+                                <p className="text-slate-400 dark:text-slate-500 text-sm">Belum ada catatan</p>
                             </div>
                         ) : (
                             notes.map((note) => (
-                                <div key={note.id} className="bg-white rounded-2xl border border-[#F3F4F3] p-4 shadow-sm">
+                                <div key={note.id} className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] p-4 shadow-sm">
                                     {/* Top Row: Title + action buttons */}
                                     <div className="flex items-start justify-between mb-2">
-                                        <h3 className="font-bold text-[#080C1A] text-sm flex-1 mr-2 line-clamp-1">{note.title}</h3>
-                                        <span className="text-[10px] text-[#6A7686] shrink-0 flex items-center gap-1">
+                                        <h3 className="font-bold text-[var(--text-primary)] text-sm flex-1 mr-2 line-clamp-1">{note.title}</h3>
+                                        <span className="text-[10px] text-[var(--text-secondary)] shrink-0 flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
                                             {formatDate(note.updated_at)}
                                         </span>
                                     </div>
 
                                     {/* Content preview */}
-                                    <p className="text-[#6A7686] text-xs leading-relaxed line-clamp-3 mb-3 whitespace-pre-wrap">
+                                    <p className="text-[var(--text-secondary)] text-xs leading-relaxed line-clamp-3 mb-3 whitespace-pre-wrap">
                                         {note.content || <span className="italic">Tidak ada isi catatan</span>}
                                     </p>
 
@@ -212,14 +212,14 @@ export default function NotesPage() {
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
                                             onClick={() => handleEdit(note)}
-                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] active:scale-95 transition-all"
                                         >
                                             <Pencil className="w-3.5 h-3.5" />
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDelete(note.id)}
-                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-xl text-xs hover:bg-rose-100 dark:hover:bg-rose-950/40 active:scale-95 transition-all"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                             Hapus
@@ -232,9 +232,9 @@ export default function NotesPage() {
                         {/* Add New - Dashed Card */}
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="w-full border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                            className="w-full border-2 border-dashed border-[#E2E8F0] dark:border-[var(--border-strong)] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all active:scale-[0.98]"
                         >
-                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-elevated)] flex items-center justify-center">
                                 <Plus className="w-4 h-4" />
                             </div>
                             <span className="font-bold text-sm">Tambah Catatan Baru</span>
@@ -246,19 +246,19 @@ export default function NotesPage() {
             {/* ===== DESKTOP VIEW ===== */}
             <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
                 {loading ? (
-                    <div className="text-center py-20 text-slate-400 animate-pulse">Memuat catatan...</div>
+                    <div className="text-center py-20 text-slate-400 dark:text-slate-500 animate-pulse">Memuat catatan...</div>
                 ) : notes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-[#F3F4F3] rounded-3xl bg-white h-[400px]">
-                        <div className="bg-blue-50 p-6 rounded-full mb-6">
-                            <StickyNote className="w-10 h-10 text-[#165DFF]" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-[var(--border-default)] rounded-3xl bg-white dark:bg-[var(--bg-card)] h-[400px]">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-full mb-6">
+                            <StickyNote className="w-10 h-10 text-[var(--primary)]" />
                         </div>
-                        <h3 className="text-xl font-bold text-[#080C1A] mb-2">Belum ada catatan</h3>
-                        <p className="text-[#6A7686] max-w-sm mb-8">
+                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Belum ada catatan</h3>
+                        <p className="text-[var(--text-secondary)] max-w-sm mb-8">
                             Buat catatan untuk mengingatkan tagihan, rencana belanja, atau tips keuangan.
                         </p>
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="px-6 py-3 bg-[#165DFF] text-white font-bold rounded-xl hover:bg-[#1455E5] transition-colors shadow-sm hover:shadow-md"
+                            className="px-6 py-3 bg-[var(--primary)] text-white font-bold rounded-xl hover:bg-[#1455E5] transition-colors shadow-sm hover:shadow-md"
                         >
                             Buat Catatan Pertama
                         </button>
@@ -266,21 +266,21 @@ export default function NotesPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {notes.map((note) => (
-                            <div key={note.id} onClick={() => handleEdit(note)} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col min-h-[300px] cursor-pointer card-hover relative overflow-hidden">
+                            <div key={note.id} onClick={() => handleEdit(note)} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col min-h-[300px] cursor-pointer card-hover relative overflow-hidden">
                                 <div className="flex justify-between items-start mb-4 relative z-10">
-                                    <h3 className="text-lg font-bold text-[#080C1A] line-clamp-1 group-hover:text-[#165DFF] transition-colors">
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] line-clamp-1 group-hover:text-[var(--primary)] transition-colors">
                                         {note.title}
                                     </h3>
                                     <div className="flex gap-1">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleEdit(note); }}
-                                            className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95"
+                                            className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 transition-all shadow-sm hover:shadow-md active:scale-95"
                                         >
                                             <Pencil className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
-                                            className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95"
+                                            className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
@@ -288,19 +288,19 @@ export default function NotesPage() {
                                 </div>
 
                                 <div className="flex-1 overflow-hidden relative mb-4 z-10">
-                                    <p className="text-[#6A7686] whitespace-pre-wrap break-all text-sm leading-relaxed">
+                                    <p className="text-[var(--text-secondary)] whitespace-pre-wrap break-all text-sm leading-relaxed">
                                         {note.content}
                                     </p>
-                                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
+                                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-[var(--bg-card)] dark:via-[var(--bg-card)]/80 pointer-events-none" />
                                 </div>
 
-                                <div className="pt-4 border-t border-[#F3F4F3] flex items-center gap-2 text-xs text-[#6A7686] font-medium z-10">
+                                <div className="pt-4 border-t border-[var(--border-default)] flex items-center gap-2 text-xs text-[var(--text-secondary)] font-medium z-10">
                                     <Calendar className="w-3.5 h-3.5" />
                                     <span>{formatDate(note.updated_at)}</span>
                                 </div>
                                 
                                 {/* Decorative elements */}
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-slate-50 to-transparent rounded-bl-full -z-0 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-slate-50 dark:from-[var(--bg-elevated)] to-transparent rounded-bl-full -z-0 opacity-50 group-hover:opacity-100 transition-opacity"></div>
                             </div>
                         ))}
                     </div>
@@ -311,53 +311,53 @@ export default function NotesPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col h-[600px] max-h-[90vh] animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-2xl rounded-3xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col h-[600px] max-h-[90vh] animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-[#F3F4F3] flex justify-between items-center bg-white sticky top-0 z-10">
-                            <h3 className="text-lg font-bold text-[#080C1A]">
+                        <div className="px-6 py-4 border-b border-[var(--border-default)] flex justify-between items-center bg-white dark:bg-[var(--bg-card)] sticky top-0 z-10">
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">
                                 {editingNote ? 'Edit Catatan' : 'Catatan Baru'}
                             </h3>
-                            <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors">
+                            <button onClick={resetForm} className="p-2 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden bg-white">
+                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[var(--bg-card)]">
                             <div className="p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                 <input
                                     type="text"
                                     placeholder="Judul Catatan..."
-                                    className="w-full text-2xl font-bold bg-transparent border-none outline-none placeholder:text-slate-300 text-[#080C1A]"
+                                    className="w-full text-2xl font-bold bg-transparent border-none outline-none placeholder:text-slate-300 text-[var(--text-primary)]"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     autoFocus
                                 />
-                                <div className="h-px bg-[#F3F4F3] w-full" />
+                                <div className="h-px bg-[var(--border-default)] w-full" />
                                 <textarea
                                     placeholder="Ketik catatanmu di sini..."
-                                    className="w-full h-full min-h-[300px] resize-none bg-transparent border-none outline-none text-slate-600 text-base leading-relaxed placeholder:text-slate-300"
+                                    className="w-full h-full min-h-[300px] resize-none bg-transparent border-none outline-none text-[var(--text-secondary)] text-base leading-relaxed placeholder:text-slate-300 dark:placeholder:text-slate-600"
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                 ></textarea>
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="p-4 border-t border-[#F3F4F3] bg-white flex justify-between items-center">
-                                <div className="text-xs text-[#6A7686] font-medium px-2 bg-slate-50 py-1 rounded-md">
+                            <div className="p-4 border-t border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] flex justify-between items-center">
+                                <div className="text-xs text-[var(--text-secondary)] font-medium px-2 bg-slate-50 dark:bg-[var(--bg-elevated)] py-1 rounded-md">
                                     {content.length} karakter
                                 </div>
                                 <div className="flex gap-3">
                                     <button
                                         type="button"
                                         onClick={resetForm}
-                                        className="px-5 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors text-sm"
+                                        className="px-5 py-2.5 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors text-sm"
                                     >
                                         Batal
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-6 py-2.5 rounded-xl font-bold bg-[#165DFF] hover:bg-[#1455E5] text-white shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-sm"
+                                        className="px-6 py-2.5 rounded-xl font-bold bg-[var(--primary)] hover:bg-[#1455E5] text-white shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-sm"
                                     >
                                         <Save className="w-4 h-4" />
                                         Simpan

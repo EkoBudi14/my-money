@@ -254,7 +254,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
     }).length
 
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-xl font-bold flex items-center gap-2">
@@ -262,7 +262,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                         {urgentBillsCount > 0 && (
                             <span className="flex h-3 w-3 relative">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-50 dark:bg-red-950/300"></span>
                             </span>
                         )}
                     </h2>
@@ -270,14 +270,14 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                    className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
                 >
                     <Plus size={20} />
                 </button>
             </div>
 
             {urgentBillsCount > 0 && (
-                <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-start gap-3">
+                <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 rounded-xl p-3 flex items-start gap-3">
                     <AlertTriangle className="text-yellow-600 shrink-0 mt-0.5" size={18} />
                     <div>
                         <p className="text-sm font-medium text-yellow-800">
@@ -298,16 +298,16 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                     sortedBills.map((bill) => {
                         const { color, text, status } = getStatus(bill.due_date)
                         return (
-                            <div key={bill.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 gap-3 sm:gap-0">
+                            <div key={bill.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:border-[var(--border-default)] gap-3 sm:gap-0">
                                 <div className="flex items-center gap-4 w-full sm:w-auto">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-                                        status === 'soon' ? 'bg-rose-100 text-rose-600' : 'bg-blue-50 text-blue-600'
+                                        status === 'soon' ? 'bg-rose-100 dark:bg-rose-950/40 text-rose-600' : 'bg-blue-50 dark:bg-blue-950/30 text-blue-600'
                                     }`}>
                                         <Calendar size={20} />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-slate-800 text-base truncate">{bill.name}</h4>
-                                        <p className="text-sm text-slate-500 font-medium">
+                                        <h4 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-base truncate">{bill.name}</h4>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
                                             Rp {bill.amount.toLocaleString('id-ID')}
                                         </p>
                                     </div>
@@ -338,7 +338,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
                                                     payingBillId === bill.id 
                                                         ? 'bg-blue-100 cursor-wait' 
-                                                        : 'bg-[#165DFF] text-white hover:bg-blue-700 hover:shadow-blue-200 active:scale-95'
+                                                        : 'bg-[var(--primary)] text-white hover:bg-blue-700 hover:shadow-blue-200 active:scale-95'
                                                 }`}
                                             >
                                                 {payingBillId === bill.id ? (
@@ -354,7 +354,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                                 e.stopPropagation()
                                                 handleEdit(bill)
                                             }}
-                                            className="p-2 text-slate-400 hover:text-[#165DFF] hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30 rounded-xl transition-all active:scale-95"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                                         </button>
@@ -364,7 +364,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                                 handleDelete(bill.id)
                                             }}
                                             disabled={deletingId === bill.id}
-                                            className={`p-2 rounded-xl transition-all active:scale-95 ${deletingId === bill.id ? 'bg-rose-50 cursor-wait' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'}`}
+                                            className={`p-2 rounded-xl transition-all active:scale-95 ${deletingId === bill.id ? 'bg-rose-50 dark:bg-rose-950/30 cursor-wait' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30'}`}
                                         >
                                             {deletingId === bill.id ? (
                                                 <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
@@ -391,28 +391,28 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             {showPaymentModal && selectedPaymentBill && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-slate-800">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
                                 Bayar Tagihan
                             </h3>
                             <button 
                                 onClick={() => setShowPaymentModal(false)}
-                                className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                                className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
                         
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5">
-                            <p className="text-sm text-slate-600">Tagihan</p>
-                            <p className="text-lg font-bold text-slate-800">{selectedPaymentBill.name}</p>
+                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 rounded-xl p-3 mb-5">
+                            <p className="text-sm text-slate-600 dark:text-slate-500">Tagihan</p>
+                            <p className="text-lg font-bold text-slate-800 dark:text-[var(--text-primary)]">{selectedPaymentBill.name}</p>
                         </div>
                         
                         <div className="space-y-4">
                             {/* Editable Amount */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     Jumlah Pembayaran (Rp)
                                 </label>
                                 <MoneyInput
@@ -420,19 +420,19 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                     onChange={setPaymentAmount}
                                     placeholder={selectedPaymentBill.amount.toString()}
                                 />
-                                <p className="text-xs text-slate-400 mt-1">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                                     Default: Rp {selectedPaymentBill.amount.toLocaleString('id-ID')}
                                 </p>
                             </div>
 
                             {/* Date Picker */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     Tanggal Pembayaran
                                 </label>
                                 <input
                                     type="date"
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                 />
@@ -440,11 +440,11 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                             
                             {/* Wallet Selection */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     Bayar dari Dompet
                                 </label>
                                 <select
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
                                     value={selectedWalletId || ''}
                                     onChange={(e) => setSelectedWalletId(Number(e.target.value))}
                                 >
@@ -461,7 +461,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowPaymentModal(false)}
-                                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                                className="flex-1 py-3 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 Batal
                             </button>

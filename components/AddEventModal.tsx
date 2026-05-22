@@ -18,7 +18,7 @@ const COLORS = [
     { name: 'blue', class: 'bg-blue-100 text-blue-600 ring-blue-500' },
     { name: 'green', class: 'bg-emerald-100 text-emerald-600 ring-emerald-500' },
     { name: 'yellow', class: 'bg-amber-100 text-amber-600 ring-amber-500' },
-    { name: 'red', class: 'bg-rose-100 text-rose-600 ring-rose-500' },
+    { name: 'red', class: 'bg-rose-100 dark:bg-rose-950/40 text-rose-600 ring-rose-500' },
     { name: 'purple', class: 'bg-purple-100 text-purple-600 ring-purple-500' },
 ]
 
@@ -105,7 +105,7 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-gray-800">
@@ -126,7 +126,7 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Contoh: Meeting jam 2, Bayar listrik..."
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
                             autoFocus
                         />
                     </div>
@@ -140,8 +140,8 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
                                 onClick={() => setType('note')}
                                 className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
                                     type === 'note' 
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700 ring-2 ring-blue-500/20' 
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30 text-blue-700 ring-2 ring-blue-500/20' 
+                                        : 'bg-white dark:bg-[var(--bg-card)] border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                             >
                                 <StickyNote size={18} />
@@ -152,8 +152,8 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
                                 onClick={() => setType('reminder')}
                                 className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
                                     type === 'reminder' 
-                                        ? 'bg-amber-50 border-amber-200 text-amber-700 ring-2 ring-amber-500/20' 
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30 text-amber-700 ring-2 ring-amber-500/20' 
+                                        : 'bg-white dark:bg-[var(--bg-card)] border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                             >
                                 <Bell size={18} />

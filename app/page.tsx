@@ -66,7 +66,7 @@ const AVAILABLE_ICONS: Record<string, any> = {
 
 const COLOR_PALETTES = [
   'bg-emerald-100 text-emerald-600',
-  'bg-rose-100 text-rose-600',
+  'bg-rose-100 dark:bg-rose-950/40 text-rose-600',
   'bg-blue-100 text-blue-600',
   'bg-teal-100 text-teal-600',
   'bg-yellow-100 text-yellow-600',
@@ -76,7 +76,7 @@ const COLOR_PALETTES = [
   'bg-pink-100 text-pink-600',
   'bg-indigo-100 text-indigo-600',
   'bg-amber-100 text-amber-600',
-  'bg-slate-100 text-slate-600'
+  'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
 ]
 
 interface Note {
@@ -91,7 +91,7 @@ interface Note {
 const CATEGORIES = {
   pengeluaran: [
     { name: 'Kebutuhan Dapur', icon: ShoppingBag, color: 'bg-orange-100 text-orange-600' },
-    { name: 'Makan di Luar', icon: Utensils, color: 'bg-rose-100 text-rose-600' },
+    { name: 'Makan di Luar', icon: Utensils, color: 'bg-rose-100 dark:bg-rose-950/40 text-rose-600' },
     { name: 'Transportasi', icon: Car, color: 'bg-blue-100 text-blue-600' },
     { name: 'Tempat Tinggal', icon: Home, color: 'bg-teal-100 text-teal-600' },
     { name: 'Tagihan', icon: Zap, color: 'bg-yellow-100 text-yellow-600' },
@@ -100,14 +100,14 @@ const CATEGORIES = {
     { name: 'Cicilan & Utang', icon: CreditCard, color: 'bg-stone-100 text-stone-600' },
     { name: 'Pribadi & Hiburan', icon: Film, color: 'bg-pink-100 text-pink-600' },
     { name: 'Edukasi & Donasi', icon: Gift, color: 'bg-indigo-100 text-indigo-600' },
-    { name: 'Lainnya', icon: Package, color: 'bg-slate-100 text-slate-600' },
+    { name: 'Lainnya', icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' },
   ],
   pemasukan: [
     { name: 'Gaji', icon: Briefcase, color: 'bg-emerald-100 text-emerald-600' },
     { name: 'Bonus & Hadiah', icon: Gift, color: 'bg-pink-100 text-pink-600' },
     { name: 'Investasi', icon: TrendingUp, color: 'bg-indigo-100 text-indigo-600' },
     { name: 'Penjualan', icon: TrendingUp, color: 'bg-amber-100 text-amber-600' },
-    { name: 'Lainnya', icon: Landmark, color: 'bg-slate-100 text-slate-600' },
+    { name: 'Lainnya', icon: Landmark, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' },
   ]
 }
 
@@ -1243,13 +1243,13 @@ export default function MoneyManager() {
       if (typeof foundCustom === 'object') {
         return { Icon: AVAILABLE_ICONS[foundCustom.iconName] || Package, color: foundCustom.color }
       }
-      return { Icon: Package, color: 'bg-slate-100 text-slate-600' }
+      return { Icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' }
     }
 
     // 2. Check Standard Categories
     const allCats = [...CATEGORIES.pemasukan, ...CATEGORIES.pengeluaran]
     const found = allCats.find(c => c.name === catName)
-    return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 text-slate-600' }
+    return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' }
   }
 
   // --- Derived Data with Performance Memoization ---
@@ -1725,18 +1725,18 @@ export default function MoneyManager() {
   }
 
   return (
-    <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+    <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
 
       {/* ============= DESKTOP TOP HEADER ============= */}
-      <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-8">
+      <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-8">
         <div className="flex items-center gap-4">
-          <h2 className="font-bold text-2xl text-[#080C1A]">CatatDuit</h2>
+          <h2 className="font-bold text-2xl text-[var(--text-primary)]">CatatDuit</h2>
         </div>
         <div className="flex items-center gap-3 pl-3">
           <div className="text-right">
-            <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+            <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
           </div>
-          <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+          <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
             EB
           </div>
         </div>
@@ -1746,19 +1746,19 @@ export default function MoneyManager() {
       <div className="md:hidden flex flex-col pb-[80px]">
 
         {/* Mobile Top Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 bg-white border-b border-[#F3F4F3]">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border-default)]">
           <div>
-            <p className="text-xs font-semibold text-[#6A7686] uppercase tracking-wider">CatatDuit</p>
-            <h1 className="font-bold text-xl text-[#080C1A]">Hemat Yuk! 💪</h1>
+            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">CatatDuit</p>
+            <h1 className="font-bold text-xl text-[var(--text-primary)]">Hemat Yuk! 💪</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#EFF2F7] text-[#6A7686] active:scale-90 transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] active:scale-90 transition-all"
             >
               <Settings className="w-4 h-4" />
             </button>
-            <div className="w-9 h-9 bg-[#165DFF] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <div className="w-9 h-9 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
               EB
             </div>
           </div>
@@ -1766,36 +1766,36 @@ export default function MoneyManager() {
 
         {/* Mobile Settings Panel */}
         {showSettings && (
-          <div className="mx-4 mt-3 bg-white rounded-2xl shadow-lg border border-slate-100 p-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="mx-4 mt-3 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-lg border border-slate-100 dark:border-[var(--border-default)] p-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-500" />
+              <h3 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Filter & Periode
               </h3>
-              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
-              <button onClick={() => setFilterMode('monthly')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>Bulanan</button>
-              <button onClick={() => setFilterMode('custom')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>Custom</button>
+            <div className="flex bg-slate-100 dark:bg-[var(--bg-elevated)] p-1 rounded-xl mb-3">
+              <button onClick={() => setFilterMode('monthly')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Bulanan</button>
+              <button onClick={() => setFilterMode('custom')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Custom</button>
             </div>
             {filterMode === 'monthly' ? (
               <div className="grid grid-cols-2 gap-2">
-                <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+                <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none">
                   {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
                 </select>
-                <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+                <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none">
                   {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
             ) : (
               <div className="space-y-2">
-                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
-                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none" />
+                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] outline-none" />
+                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] outline-none" />
               </div>
             )}
-            <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-2 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">Reset ke Bulan Ini</button>
+            <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-2 py-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors">Reset ke Bulan Ini</button>
           </div>
         )}
 
@@ -1854,40 +1854,40 @@ export default function MoneyManager() {
 
         {/* Mobile Quick Actions */}
         <div className="px-4 mt-5">
-          <p className="text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-3">Aksi Cepat</p>
+          <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Aksi Cepat</p>
           <div className="grid grid-cols-4 gap-3">
             <Link
               href="/transaction?type=pemasukan"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/30 flex items-center justify-center shadow-sm">
                 <TrendingUp className="w-7 h-7 text-emerald-600" />
               </div>
-              <span className="text-[11px] font-semibold text-[#6A7686]">Masuk</span>
+              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Masuk</span>
             </Link>
             <Link
               href="/transaction?type=pengeluaran"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
-              <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/30 flex items-center justify-center shadow-sm">
                 <TrendingDown className="w-7 h-7 text-rose-500" />
               </div>
-              <span className="text-[11px] font-semibold text-[#6A7686]">Keluar</span>
+              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Keluar</span>
             </Link>
             <Link
               href="/transaction?type=topup"
               className="flex flex-col items-center gap-2 active:scale-90 transition-all"
             >
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
-                <WalletIcon className="w-7 h-7 text-[#165DFF]" />
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 flex items-center justify-center shadow-sm">
+                <WalletIcon className="w-7 h-7 text-[var(--primary)]" />
               </div>
-              <span className="text-[11px] font-semibold text-[#6A7686]">Transfer</span>
+              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Transfer</span>
             </Link>
             <Link href="/budgets" className="flex flex-col items-center gap-2 active:scale-90 transition-all">
-              <div className="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-800/30 flex items-center justify-center shadow-sm">
                 <CreditCard className="w-7 h-7 text-purple-600" />
               </div>
-              <span className="text-[11px] font-semibold text-[#6A7686]">Anggaran</span>
+              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Anggaran</span>
             </Link>
           </div>
         </div>
@@ -1895,45 +1895,45 @@ export default function MoneyManager() {
         {/* Mobile Stats Row */}
         <div className="px-4 mt-5 grid grid-cols-2 gap-3">
           {/* Saldo Aktif */}
-          <div className="bg-white rounded-2xl p-4 border border-[#F3F4F3] shadow-sm">
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-4 border border-[var(--border-default)] shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[#165DFF]/10 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-[#165DFF]" />
+                <div className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-[var(--primary)]" />
                 </div>
-                <p className="text-[11px] font-semibold text-[#6A7686]">Saldo Aktif</p>
+                <p className="text-[11px] font-semibold text-[var(--text-secondary)]">Saldo Aktif</p>
               </div>
-              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="p-1.5 rounded-lg hover:bg-slate-100 text-[#6A7686] active:scale-90 transition-all">
+              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] active:scale-90 transition-all">
                 {showActiveBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="font-bold text-base text-[#080C1A] leading-tight">
+            <p className="font-bold text-base text-[var(--text-primary)] leading-tight">
               {showActiveBalance
                 ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
                 : 'Rp ••••••'}
             </p>
-            <p className="text-[10px] text-[#6A7686] mt-1">Siap digunakan</p>
+            <p className="text-[10px] text-[var(--text-secondary)] mt-1">Siap digunakan</p>
           </div>
           {/* Pemasukan Bulan Ini */}
-          <div className="bg-white rounded-2xl p-4 border border-[#F3F4F3] shadow-sm">
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-4 border border-[var(--border-default)] shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                 </div>
-                <p className="text-[11px] font-semibold text-[#6A7686]">Pemasukan</p>
+                <p className="text-[11px] font-semibold text-[var(--text-secondary)]">Pemasukan</p>
               </div>
-              <button onClick={() => setShowIncome(!showIncome)} className="p-1.5 rounded-lg hover:bg-slate-100 text-[#6A7686] active:scale-90 transition-all">
+              <button onClick={() => setShowIncome(!showIncome)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] active:scale-90 transition-all">
                 {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="font-bold text-base text-[#080C1A] leading-tight">
+            <p className="font-bold text-base text-[var(--text-primary)] leading-tight">
               {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••'}
             </p>
             <div className="flex items-center gap-1.5 mt-1">
-              <p className="text-[10px] text-[#6A7686]">Bulan ini</p>
+              <p className="text-[10px] text-[var(--text-secondary)]">Bulan ini</p>
               {prevIncome > 0 && (
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${incomeChange >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${incomeChange >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 dark:bg-rose-950/40 text-rose-700'}`}>
                   {incomeChange >= 0 ? '▲' : '▼'} {Math.abs(incomeChange).toFixed(0)}%
                 </span>
               )}
@@ -1943,7 +1943,7 @@ export default function MoneyManager() {
 
         {/* Mobile Debt Quick View */}
         {debts.some(d => d.status === 'pending') && (
-          <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 transition-all">
+          <div className="mx-4 mt-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-2xl p-4 transition-all">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -1959,14 +1959,14 @@ export default function MoneyManager() {
             {showMobileDebtList && (
               <div className="mt-4 flex flex-col gap-2">
                 {debts.filter(d => d.status === 'pending').map(debt => (
-                  <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-amber-100 shadow-sm">
+                  <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[var(--bg-card)] border border-amber-100 shadow-sm">
                     <div>
                       <p className="font-bold text-amber-900 text-sm">{debt.person_name}</p>
                       <p className="text-xs text-amber-700 font-semibold">Rp {debt.amount.toLocaleString('id-ID')}</p>
                     </div>
                     <button
                       onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); setShowMobileDebtList(false); }}
-                      className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg active:scale-95 transition-all"
+                      className="px-3 py-1.5 bg-[var(--primary)] text-white text-xs font-bold rounded-lg active:scale-95 transition-all"
                     >
                       Lunas
                     </button>
@@ -1980,11 +1980,11 @@ export default function MoneyManager() {
         {/* Mobile Transaction History - All Transactions Scrollable */}
         <div className="mx-4 mt-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="font-bold text-[#080C1A]">Riwayat Transaksi</p>
+            <p className="font-bold text-[var(--text-primary)]">Riwayat Transaksi</p>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportExcel}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
                 title="Export ke Excel"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
@@ -1993,24 +1993,24 @@ export default function MoneyManager() {
               <button
                 onClick={fetchTransactions}
                 disabled={loading}
-                className={`p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
+                className={`p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-all ${loading ? 'animate-spin' : ''}`}
                 title="Refresh"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
               </button>
-              <Link href="/analytics" className="text-xs font-semibold text-[#165DFF] flex items-center gap-1">
+              <Link href="/analytics" className="text-xs font-semibold text-[var(--primary)] flex items-center gap-1">
                 Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
-          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden max-h-[420px] overflow-y-auto custom-scrollbar">
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden max-h-[420px] overflow-y-auto custom-scrollbar">
             {loading ? (
               <div className="flex items-center justify-center p-10">
-                <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : filteredTransactions.length === 0 ? (
               <div className="p-10 text-center">
-                <p className="text-[#6A7686] text-sm">Belum ada transaksi bulan ini</p>
+                <p className="text-[var(--text-secondary)] text-sm">Belum ada transaksi bulan ini</p>
               </div>
             ) : (
               filteredTransactions.map((t, idx) => {
@@ -2019,14 +2019,14 @@ export default function MoneyManager() {
                   <div
                     key={t.id}
                     onClick={() => handleEditClick(t)}
-                    className={`flex items-center gap-3 px-4 py-4 active:bg-[#F9FAFB] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[#F3F4F3]' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-4 active:bg-[#F9FAFB] dark:active:bg-[#F9FAFB] dark:bg-[var(--bg-page)] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[var(--border-default)]' : ''}`}
                   >
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                        <p className="font-semibold text-[#080C1A] text-sm truncate max-w-[140px]">
+                        <p className="font-semibold text-[var(--text-primary)] text-sm truncate max-w-[140px]">
                           {t.type === 'topup' && t.source_wallet_id
                             ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
                             : t.title}
@@ -2043,24 +2043,24 @@ export default function MoneyManager() {
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-[#8C9AAA] mb-1">
                         <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        <span className="w-1 h-1 rounded-full bg-slate-300" />
+                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                         <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 uppercase tracking-wider">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         {t.category}
                       </span>
                     </div>
                     <div className="text-right shrink-0 ml-2">
                       <p className={`font-bold text-sm mb-1 ${t.type === 'topup' ? 'text-blue-600' :
                         t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-emerald-600') :
-                          (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                          (t.is_talangan ? 'text-purple-500' : 'text-[var(--text-primary)]')
                         }`}>
                         {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                       </p>
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
                         disabled={deletingId === t.id}
-                        className={`text-xs font-medium transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed' : 'text-[#ED6B60]'}`}
+                        className={`text-xs font-medium transition-all ${deletingId === t.id ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed' : 'text-[#ED6B60]'}`}
                       >
                         {deletingId === t.id ? (
                           <span className="flex items-center gap-1">
@@ -2078,27 +2078,27 @@ export default function MoneyManager() {
 
         {/* Mobile Note Preview */}
         {latestNote && (
-          <Link href="/notes" className="mx-4 mt-4 block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-4 active:opacity-80 transition-all relative">
+          <Link href="/notes" className="mx-4 mt-4 block rounded-2xl border border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-4 active:opacity-80 transition-all relative">
             {noteCount > 1 && (
-              <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+              <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white dark:border-[var(--bg-page)] shadow-sm">
                 {noteCount > 99 ? '99+' : noteCount}
               </div>
             )}
-            <div className="flex items-center gap-2 mb-1 text-[#B45309]">
+            <div className="flex items-center gap-2 mb-1 text-[#B45309] dark:text-amber-400">
               <StickyNote className="w-4 h-4" />
               <span className="font-bold text-sm">Catatan Terbaru</span>
             </div>
-            <p className="font-bold text-[#080C1A] text-sm mb-0.5">{latestNote.title}</p>
-            <p className="text-xs text-[#4B5563] line-clamp-2">{latestNote.content}</p>
+            <p className="font-bold text-[var(--text-primary)] text-sm mb-0.5">{latestNote.title}</p>
+            <p className="text-xs text-[#4B5563] dark:text-amber-300/70 line-clamp-2">{latestNote.content}</p>
           </Link>
         )}
 
         {/* Mobile Chart - Arus Kas & Pertumbuhan */}
         <div className="mx-4 mt-5">
-          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm p-4">
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm p-4">
             <div className="mb-4">
-              <h3 className="font-bold text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
-              <p className="text-xs text-[#6A7686]">Analisis Perbandingan</p>
+              <h3 className="font-bold text-[var(--text-primary)]">Arus Kas & Pertumbuhan</h3>
+              <p className="text-xs text-[var(--text-secondary)]">Analisis Perbandingan</p>
             </div>
             <FinancialChart data={monthlyData} />
           </div>
@@ -2106,9 +2106,9 @@ export default function MoneyManager() {
 
         {/* Mobile Tagihan Rutin */}
         <div className="mx-4 mt-4">
-          <div className="bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-[#F3F4F3]">
-              <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-[var(--border-default)]">
+              <h3 className="font-bold text-[var(--text-primary)]">Tagihan Rutin</h3>
             </div>
             <div className="p-2">
               <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
@@ -2135,36 +2135,36 @@ export default function MoneyManager() {
         {/* Date Filter & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-[#080C1A] text-2xl md:text-3xl font-bold mb-1">Hemat Yuk !!!</h1>
-            <p className="text-[#6A7686] text-sm">Financial metrics for {getPeriodLabel()}.</p>
+            <h1 className="text-[var(--text-primary)] text-2xl md:text-3xl font-bold mb-1">Hemat Yuk !!!</h1>
+            <p className="text-[var(--text-secondary)] text-sm">Financial metrics for {getPeriodLabel()}.</p>
           </div>
 
-          <div className="flex items-center gap-3 bg-white p-1.5 rounded-full border border-[#F3F4F3] shadow-sm">
+          <div className="flex items-center gap-3 bg-white dark:bg-[var(--bg-card)] p-1.5 rounded-full border border-[var(--border-default)] shadow-sm">
             <button
               onClick={prevMonth}
-              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+              className="p-2 hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] rounded-full text-[var(--text-secondary)] transition-all"
               disabled={filterMode === 'custom'}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            <div className="px-4 text-sm font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
+            <div className="px-4 text-sm font-bold text-[var(--text-primary)] whitespace-nowrap min-w-[140px] text-center">
               {getPeriodLabel()}
             </div>
 
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+              className="p-2 hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] rounded-full text-[var(--text-secondary)] transition-all"
               disabled={filterMode === 'custom'}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
 
-            <div className="w-px h-6 bg-[#F3F4F3] mx-1"></div>
+            <div className="w-px h-6 bg-[var(--border-default)] mx-1"></div>
 
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-2 hover:bg-[#EFF2F7] rounded-full text-[#6A7686] transition-all"
+              className="p-2 hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] rounded-full text-[var(--text-secondary)] transition-all"
             >
               <Settings className="w-5 h-5" />
             </button>
@@ -2173,28 +2173,28 @@ export default function MoneyManager() {
 
         {/* Settings / Filter Panel */}
         {showSettings && (
-          <div className="w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-slate-100 dark:border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-500" />
+              <h3 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Filter & Periode
               </h3>
-              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Mode Switcher */}
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+            <div className="flex bg-slate-100 dark:bg-[var(--bg-hover)] p-1 rounded-xl mb-4">
               <button
                 onClick={() => setFilterMode('monthly')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
               >
                 Bulanan
               </button>
               <button
                 onClick={() => setFilterMode('custom')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
               >
                 Custom
               </button>
@@ -2204,7 +2204,7 @@ export default function MoneyManager() {
               {filterMode === 'monthly' ? (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Bulan</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Bulan</label>
                     <select
                       value={currentDate.getMonth()}
                       onChange={(e) => {
@@ -2213,7 +2213,7 @@ export default function MoneyManager() {
                         newDate.setMonth(newMonth);
                         setCurrentDate(newDate);
                       }}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                     >
                       {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
                         <option key={i} value={i}>{m}</option>
@@ -2221,7 +2221,7 @@ export default function MoneyManager() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Tahun</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Tahun</label>
                     <select
                       value={currentDate.getFullYear()}
                       onChange={(e) => {
@@ -2230,7 +2230,7 @@ export default function MoneyManager() {
                         newDate.setFullYear(newYear);
                         setCurrentDate(newDate);
                       }}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                     >
                       {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
                         <option key={y} value={y}>{y}</option>
@@ -2241,21 +2241,21 @@ export default function MoneyManager() {
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Dari Tanggal</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Dari Tanggal</label>
                     <input
                       type="date"
                       value={customRange.start}
                       onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Sampai Tanggal</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Sampai Tanggal</label>
                     <input
                       type="date"
                       value={customRange.end}
                       onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                     />
                   </div>
                 </div>
@@ -2266,7 +2266,7 @@ export default function MoneyManager() {
                   setCurrentDate(new Date())
                   setShowSettings(false)
                 }}
-                className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                className="w-full py-2 text-xs font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors"
               >
                 Reset ke Bulan Ini
               </button>
@@ -2277,19 +2277,19 @@ export default function MoneyManager() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Card 1: Total Tabungan (Revenue style) */}
-          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
                   <WalletIcon className="size-6 text-[#30B22D]" />
                 </div>
-                <p className="font-medium text-[#6A7686]">Total Semua Uang</p>
+                <p className="font-medium text-[var(--text-secondary)]">Total Semua Uang</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <button
                     onClick={() => setShowTotalTooltip(!showTotalTooltip)}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                   >
                     <Info className="w-3.5 h-3.5" />
                   </button>
@@ -2311,31 +2311,31 @@ export default function MoneyManager() {
                 </div>
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
               {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
-              <p className="text-xs text-[#6A7686]">Total aset tersimpan</p>
-              <button onClick={() => setShowBalance(!showBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+              <p className="text-xs text-[var(--text-secondary)]">Total aset tersimpan</p>
+              <button onClick={() => setShowBalance(!showBalance)} className="text-[var(--text-secondary)] hover:text-[var(--primary)]">
                 {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Card 2: Saldo Aktif (Shipments style) */}
-          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
-                <div className="size-11 bg-[#165DFF]/10 rounded-xl flex items-center justify-center shrink-0">
-                  <CreditCard className="size-6 text-[#165DFF]" />
+                <div className="size-11 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <CreditCard className="size-6 text-[var(--primary)]" />
                 </div>
-                <p className="font-medium text-[#6A7686]">Saldo Aktif</p>
+                <p className="font-medium text-[var(--text-secondary)]">Saldo Aktif</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <button
                     onClick={() => setShowActiveTooltip(!showActiveTooltip)}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                   >
                     <Info className="w-3.5 h-3.5" />
                   </button>
@@ -2347,7 +2347,7 @@ export default function MoneyManager() {
 
                   <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showActiveTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                     }`}>
-                    <p>Total sisa saldo dari dompet bertipe <span className="text-[#165DFF] font-bold">Aktif</span>.</p>
+                    <p>Total sisa saldo dari dompet bertipe <span className="text-[var(--primary)] font-bold">Aktif</span>.</p>
                     <div className="mt-2 pt-2 border-t border-slate-700/50">
                       <p className="text-slate-300">Uang yang siap digunakan untuk transaksi sehari-hari.</p>
                     </div>
@@ -2357,31 +2357,31 @@ export default function MoneyManager() {
                 </div>
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
               {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
-              <p className="text-xs text-[#6A7686]">Siap digunakan</p>
-              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[#6A7686] hover:text-[#165DFF]">
+              <p className="text-xs text-[var(--text-secondary)]">Siap digunakan</p>
+              <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="text-[var(--text-secondary)] hover:text-[var(--primary)]">
                 {showActiveBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Card 3: Pemasukan (On-Time Rate style) */}
-          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#FED71F]/10 rounded-xl flex items-center justify-center shrink-0">
                   <TrendingUp className="size-6 text-[#DAA200]" />
                 </div>
-                <p className="font-medium text-[#6A7686]">Pemasukan</p>
+                <p className="font-medium text-[var(--text-secondary)]">Pemasukan</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <button
                     onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                   >
                     <Info className="w-3.5 h-3.5" />
                   </button>
@@ -2408,31 +2408,31 @@ export default function MoneyManager() {
                 )}
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
               {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
-              <p className="text-xs text-[#6A7686]">Bulan ini</p>
-              <button onClick={() => setShowIncome(!showIncome)} className="text-[#6A7686] hover:text-[#165DFF]">
+              <p className="text-xs text-[var(--text-secondary)]">Bulan ini</p>
+              <button onClick={() => setShowIncome(!showIncome)} className="text-[var(--text-secondary)] hover:text-[var(--primary)]">
                 {showIncome ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Card 4: Pengeluaran (Active Fleet style) */}
-          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] p-6 gap-3 bg-white hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#ED6B60]/10 rounded-xl flex items-center justify-center shrink-0">
                   <TrendingDown className="size-6 text-[#ED6B60]" />
                 </div>
-                <p className="font-medium text-[#6A7686]">Pengeluaran</p>
+                <p className="font-medium text-[var(--text-secondary)]">Pengeluaran</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <button
                     onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
-                    className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                   >
                     <Info className="w-3.5 h-3.5" />
                   </button>
@@ -2459,10 +2459,10 @@ export default function MoneyManager() {
                 )}
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[#080C1A]">
+            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
               Rp {currentExpense.toLocaleString('id-ID')}
             </p>
-            <p className="text-xs text-[#6A7686]">Bulan ini</p>
+            <p className="text-xs text-[var(--text-secondary)]">Bulan ini</p>
           </div>
         </div>
 
@@ -2470,7 +2470,7 @@ export default function MoneyManager() {
         {latestNote && (
           <Link href="/notes" className="block lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
             {noteCount > 1 && (
-              <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+              <div className="absolute -top-2 -right-2 bg-rose-50 dark:bg-rose-950/300 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
                 {noteCount > 99 ? '99+' : noteCount}
               </div>
             )}
@@ -2478,7 +2478,7 @@ export default function MoneyManager() {
               <StickyNote className="w-5 h-5" />
               <h3 className="font-bold">Catatan Terbaru</h3>
             </div>
-            <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
+            <h4 className="font-bold text-[var(--text-primary)] mb-1">{latestNote.title}</h4>
             <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
           </Link>
         )}
@@ -2491,11 +2491,11 @@ export default function MoneyManager() {
 
         {/* Charts & Bills */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[#F3F4F3] p-6 bg-white">
+          <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[var(--border-default)] p-6 bg-white dark:bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-bold text-lg text-[#080C1A]">Arus Kas & Pertumbuhan</h3>
-                <p className="text-sm text-[#6A7686]">Analisis Perbandingan</p>
+                <h3 className="font-bold text-lg text-[var(--text-primary)]">Arus Kas & Pertumbuhan</h3>
+                <p className="text-sm text-[var(--text-secondary)]">Analisis Perbandingan</p>
               </div>
             </div>
             <div className="w-full">
@@ -2506,9 +2506,9 @@ export default function MoneyManager() {
 
           <div className="flex flex-col gap-6">
             {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
-            <div className="rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
-              <div className="p-5 border-b border-[#F3F4F3]">
-                <h3 className="font-bold text-[#080C1A]">Tagihan Rutin</h3>
+            <div className="rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] overflow-hidden">
+              <div className="p-5 border-b border-[var(--border-default)]">
+                <h3 className="font-bold text-[var(--text-primary)]">Tagihan Rutin</h3>
               </div>
               <div className="p-2">
                 <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
@@ -2517,18 +2517,18 @@ export default function MoneyManager() {
 
             {/* Note (Desktop Only - Below Tagihan Rutin) */}
             {latestNote && (
-              <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+              <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-5 hover:shadow-md transition-all cursor-pointer relative">
                 {noteCount > 1 && (
-                  <div className="absolute -top-2 -right-2 bg-rose-500 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
+                  <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white dark:border-[var(--bg-card)] shadow-sm ring-1 ring-rose-200 dark:ring-rose-800">
                     {noteCount > 99 ? '99+' : noteCount}
                   </div>
                 )}
-                <div className="flex items-center gap-2 mb-2 text-[#B45309]">
+                <div className="flex items-center gap-2 mb-2 text-[#B45309] dark:text-amber-400">
                   <StickyNote className="w-5 h-5" />
                   <h3 className="font-bold">Catatan Terbaru</h3>
                 </div>
-                <h4 className="font-bold text-[#080C1A] mb-1">{latestNote.title}</h4>
-                <p className="text-sm text-[#4B5563] line-clamp-3">{latestNote.content}</p>
+                <h4 className="font-bold text-[var(--text-primary)] mb-1">{latestNote.title}</h4>
+                <p className="text-sm text-[#4B5563] dark:text-amber-300/70 line-clamp-3">{latestNote.content}</p>
               </Link>
             )}
           </div>
@@ -2536,23 +2536,23 @@ export default function MoneyManager() {
 
         {/* Debts Section */}
         {debts.some(d => d.status === 'pending') && (
-          <div className="rounded-2xl border border-[#F3F4F3] bg-white p-6">
+          <div className="rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-[#080C1A]">Daftar Piutang</h3>
+              <h3 className="font-bold text-lg text-[var(--text-primary)]">Daftar Piutang</h3>
               <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
                 {debts.filter(d => d.status === 'pending').length} Active
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {debts.filter(d => d.status === 'pending').map(debt => (
-                <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[#F3F4F3] bg-[#F9FAFB]">
+                <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border-default)] bg-[#F9FAFB] dark:bg-[var(--bg-page)]">
                   <div>
-                    <p className="font-bold text-[#080C1A]">{debt.person_name}</p>
-                    <p className="text-xs text-[#6A7686]">Rp {debt.amount.toLocaleString('id-ID')}</p>
+                    <p className="font-bold text-[var(--text-primary)]">{debt.person_name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Rp {debt.amount.toLocaleString('id-ID')}</p>
                   </div>
                   <button
                     onClick={() => { setSelectedDebt(debt); setShowDebtModal(true); }}
-                    className="px-3 py-1.5 bg-[#165DFF] text-white text-xs font-bold rounded-lg hover:bg-[#0E4BD9]"
+                    className="px-3 py-1.5 bg-[var(--primary)] text-white text-xs font-bold rounded-lg hover:opacity-90"
                   >
                     Lunas
                   </button>
@@ -2565,13 +2565,13 @@ export default function MoneyManager() {
         {/* Transactions & Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Transactions List (Top Routes style) */}
-          <div className="flex flex-col rounded-2xl border border-[#F3F4F3] bg-white overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-[#F3F4F3]">
-              <h3 className="font-bold text-lg text-[#080C1A]">Riwayat Transaksi</h3>
+          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-[var(--border-default)]">
+              <h3 className="font-bold text-lg text-[var(--text-primary)]">Riwayat Transaksi</h3>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleExportExcel}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
                   title="Export ke Excel"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
@@ -2580,17 +2580,17 @@ export default function MoneyManager() {
                 <button
                   onClick={fetchTransactions}
                   disabled={loading}
-                  className={`p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${loading ? 'animate-spin' : ''}`}
+                  className={`p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-all ${loading ? 'animate-spin' : ''}`}
                   title="Refresh Data"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
                 </button>
-                <Link href="/analytics" className="text-sm text-[#165DFF] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+                <Link href="/analytics" className="text-sm text-[var(--primary)] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
               </div>
             </div>
             <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
               {filteredTransactions.length === 0 ? (
-                <div className="p-8 text-center text-[#6A7686]">Belum ada transaksi</div>
+                <div className="p-8 text-center text-[var(--text-secondary)]">Belum ada transaksi</div>
               ) : (
                 filteredTransactions.map(t => {
                   const { Icon, color } = getCategoryIcon(t.category, t.type)
@@ -2598,29 +2598,29 @@ export default function MoneyManager() {
                   // The original logic returns tailwind classes like 'bg-orange-100 text-orange-600'
                   // We might want to adjust these to be softer/SwiftLog style if possible, but let's keep for functionality
                   return (
-                    <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[#F3F4F3] hover:bg-[#F9FAFB] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
+                    <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[var(--border-default)] hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
                         <Icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-[#080C1A] truncate">
+                          <span className="font-bold text-[var(--text-primary)] truncate">
                             {t.type === 'topup' && t.source_wallet_id
                               ? `${t.title} (${wallets.find(w => w.id === t.source_wallet_id)?.name || '?'} → ${wallets.find(w => w.id === t.wallet_id)?.name || '?'})`
                               : t.title}
                           </span>
                           {t.is_piutang && (
-                            <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                            <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/30">
                               💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
                             </span>
                           )}
                           {t.is_talangan && (
-                            <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+                            <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/30">
                               🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
                             </span>
                           )}
                           {debts.some(d => d.original_transaction_id === t.id) && (
-                            <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                            <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/30">
                               🧑‍🤝‍🧑 Split Bill
                             </span>
                           )}
@@ -2628,11 +2628,11 @@ export default function MoneyManager() {
                         <div className="flex flex-col gap-1.5 mt-1">
                           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#8C9AAA]">
                             <span>{new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
                             <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                           <div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 inline-block uppercase tracking-wider">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">
                               {t.category}
                             </span>
                           </div>
@@ -2642,14 +2642,14 @@ export default function MoneyManager() {
                         <p className={`font-bold ${t.type === 'topup' ? 'text-blue-600' :
                           t.type === 'pemasukan'
                             ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
-                            : (t.is_talangan ? 'text-purple-500' : 'text-[#080C1A]')
+                            : (t.is_talangan ? 'text-purple-500' : 'text-[var(--text-primary)]')
                           }`}>
                           {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                         </p>
                         <button
                           onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
                           disabled={deletingId === t.id}
-                          className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
+                          className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
                         >
                           {deletingId === t.id ? (
                             <span className="flex items-center gap-1">
@@ -2701,25 +2701,25 @@ export default function MoneyManager() {
           ></div>
 
           {/* ===== MOBILE BOTTOM SHEET ===== */}
-          <div className="md:hidden w-full rounded-t-3xl bg-white shadow-2xl z-50 relative animate-in slide-in-from-bottom-10 fade-in duration-200 h-[92vh] flex flex-col overflow-hidden">
+          <div className="md:hidden w-full rounded-t-3xl bg-white dark:bg-[var(--bg-card)] shadow-2xl z-50 relative animate-in slide-in-from-bottom-10 fade-in duration-200 h-[92vh] flex flex-col overflow-hidden">
             {/* Drag Handle */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 bg-slate-200 rounded-full" />
+              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 shrink-0">
-              <h3 className="text-lg font-bold text-[#080C1A]">
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
               </h3>
-              <button onClick={resetForm} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+              <button onClick={resetForm} className="p-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Type Tabs */}
             <div className="px-5 shrink-0">
-              <div className="flex border-b border-[#F3F4F3]">
+              <div className="flex border-b border-[var(--border-default)]">
                 {[
                   { key: 'pemasukan', label: 'Pemasukan' },
                   { key: 'pengeluaran', label: 'Pengeluaran' },
@@ -2730,10 +2730,10 @@ export default function MoneyManager() {
                     type="button"
                     onClick={() => { setType(tab.key as 'pemasukan' | 'pengeluaran' | 'topup'); setCategory(tab.key === 'topup' ? 'Topup' : ''); }}
                     className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
-                      ? tab.key === 'pemasukan' ? 'border-[#165DFF] text-[#165DFF]'
+                      ? tab.key === 'pemasukan' ? 'border-[var(--primary)] text-[var(--primary)]'
                         : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-500'
                           : 'border-violet-600 text-violet-600'
-                      : 'border-transparent text-slate-400'
+                      : 'border-transparent text-slate-400 dark:text-slate-500'
                       }`}
                   >
                     {tab.label}
@@ -2748,10 +2748,10 @@ export default function MoneyManager() {
               {/* Topup: Source → Destination (before amount card) */}
               {type === 'topup' && (
                 <div className="mx-4 mt-4 flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                    <p className="text-[9px] font-bold text-[#6A7686] uppercase tracking-wider mb-1">Sumber Dana</p>
+                  <div className="flex-1 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
+                    <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Sumber Dana</p>
                     <select
-                      className="w-full bg-transparent outline-none font-semibold text-[#080C1A] text-sm appearance-none"
+                      className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none"
                       value={sourceWalletId}
                       onChange={(e) => setSourceWalletId(e.target.value)}
                       required
@@ -2763,7 +2763,7 @@ export default function MoneyManager() {
                   <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </div>
-                  <div className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-3">
+                  <div className="flex-1 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/30 rounded-xl p-3">
                     <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
                     <select
                       className="w-full bg-transparent outline-none font-semibold text-violet-800 text-sm appearance-none"
@@ -2811,7 +2811,7 @@ export default function MoneyManager() {
                       const raw = amount.replace(/\D/g, '')
                       if (!raw) { setAmount('1000') } else { setAmount(raw + '000') }
                     }}
-                    className="mt-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white font-bold text-sm rounded-lg active:scale-95 transition-all"
+                    className="mt-2 px-3 py-1 bg-white/20 hover:bg-white  text-white font-bold text-sm rounded-lg active:scale-95 transition-all"
                   >
                     +000
                   </button>
@@ -2826,7 +2826,7 @@ export default function MoneyManager() {
                       key={val}
                       type="button"
                       onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))}
-                      className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white/30 active:scale-95 transition-all"
+                      className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white  active:scale-95 transition-all"
                     >
                       +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                     </button>
@@ -2839,19 +2839,19 @@ export default function MoneyManager() {
                 {type !== 'topup' ? (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Tanggal</label>
+                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tanggal</label>
                       <input
                         type="date"
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all"
+                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Dompet</label>
+                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Dompet</label>
                       <select
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition-all appearance-none"
+                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all appearance-none"
                         value={selectedWalletId}
                         onChange={(e) => setSelectedWalletId(e.target.value)}
                         required
@@ -2867,17 +2867,17 @@ export default function MoneyManager() {
                   /* Topup-specific: Biaya Admin + Summary + Date */
                   <div className="space-y-3">
                     {/* Biaya Admin compact row */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-bold text-sm text-[#080C1A]">Biaya Admin</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">Optional — Isi jika ada potongan</p>
+                          <p className="font-bold text-sm text-[var(--text-primary)]">Biaya Admin</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Optional — Isi jika ada potongan</p>
                         </div>
                         <input
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
-                          className="w-28 text-right bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-base text-[#080C1A] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
+                          className="w-28 text-right bg-slate-100 dark:bg-[var(--bg-hover)] border border-slate-200 dark:border-[var(--border-default)] rounded-lg px-3 py-1.5 font-bold text-base text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
                           value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                           onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
                         />
@@ -2885,16 +2885,16 @@ export default function MoneyManager() {
                     </div>
 
                     {/* Summary rows */}
-                    <div className="bg-white border border-[#F3F4F3] rounded-xl px-4 py-3 space-y-2">
+                    <div className="bg-white dark:bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl px-4 py-3 space-y-2">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500">Nominal topup</span>
-                        <span className="font-semibold text-[#080C1A]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Nominal topup</span>
+                        <span className="font-semibold text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500">Biaya admin</span>
-                        <span className="font-semibold text-[#080C1A]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Biaya admin</span>
+                        <span className="font-semibold text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
                       </div>
-                      <div className="border-t border-[#F3F4F3] pt-2 flex justify-between items-center text-sm">
+                      <div className="border-t border-[var(--border-default)] pt-2 flex justify-between items-center text-sm">
                         <span className="font-bold text-violet-700">Total keluar</span>
                         <span className="font-bold text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span>
                       </div>
@@ -2902,38 +2902,38 @@ export default function MoneyManager() {
 
                     {/* Date - full width */}
                     <div>
-                      <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Tanggal</label>
-                      <input type="date" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tanggal</label>
+                      <input type="date" className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                     </div>
                   </div>
                 )}
 
                 {/* Piutang Toggle */}
                 {type === 'pemasukan' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                     <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                       <div className="flex items-center gap-3">
-                        <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600'}`}>💸 Ini adalah Piutang?</span>
-                        <p className={`text-[11px] ${isPiutang ? 'text-amber-500' : 'text-slate-400'}`}>Tandai jika uang akan dikembalikan</p>
+                        <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500'}`}>💸 Ini adalah Piutang?</span>
+                        <p className={`text-[11px] ${isPiutang ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>Tandai jika uang akan dikembalikan</p>
                       </div>
                       {/* Toggle switch */}
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-amber-400' : 'bg-slate-200'}`}>
-                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isPiutang && (
-                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-amber-200 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
                     )}
                   </div>
                 )}
 
                 {/* Split Bill Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                     <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
-                      <span className={`text-sm font-bold ${isSplitBill ? 'text-[#165DFF]' : 'text-slate-600'}`}>Ada yang nitip bayar? (Split Bill)</span>
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-[#165DFF]' : 'bg-slate-200'}`}>
-                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <span className={`text-sm font-bold ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-[var(--primary)]' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isSplitBill && (
@@ -2941,10 +2941,10 @@ export default function MoneyManager() {
                         {splitEntries.map((entry, idx) => (
                           <div key={idx} className="flex gap-2 items-start">
                             <div className="flex-1 grid grid-cols-2 gap-2">
-                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
+                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
                               <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n); }} className="!text-sm !p-3" />
                             </div>
-                            {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                            {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
                           </div>
                         ))}
                         <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1"><Plus className="w-3 h-3" /> Tambah Orang Lain</button>
@@ -2955,15 +2955,15 @@ export default function MoneyManager() {
 
                 {/* Talangan Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50/60 border-purple-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                     <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
-                      <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600'}`}>🤝 Ini Talangan?</span>
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-purple-400' : 'bg-slate-200'}`}>
-                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500'}`}>🤝 Ini Talangan?</span>
+                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-purple-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isTalangan && (
-                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white border border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
                     )}
                   </div>
                 )}
@@ -2972,14 +2972,14 @@ export default function MoneyManager() {
                 {type !== 'topup' && (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="text-[10px] font-bold text-[#6A7686] uppercase tracking-wider">Kategori <span className="text-rose-500">*</span></label>
-                      <span className="text-[10px] text-[#165DFF] font-bold">Wajib dipilih</span>
+                      <label className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Kategori <span className="text-rose-500">*</span></label>
+                      <span className="text-[10px] text-[var(--primary)] font-bold">Wajib dipilih</span>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {[
                         ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
                         ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
-                          if (typeof c === 'string') return { name: c, color: 'bg-slate-100 text-slate-600', icon: Package, isCustom: true, originalObj: c };
+                          if (typeof c === 'string') return { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500', icon: Package, isCustom: true, originalObj: c };
                           return { name: c.name, color: c.color, icon: AVAILABLE_ICONS[c.iconName] || Package, isCustom: true, originalObj: c };
                         })
                       ].map((cat) => {
@@ -2989,43 +2989,43 @@ export default function MoneyManager() {
                             key={cat.name}
                             type="button"
                             onClick={() => setCategory(cat.name)}
-                            className={`flex flex-col items-center justify-center p-2.5 rounded-2xl transition-all border-2 ${isSelected ? 'border-[#165DFF] bg-blue-50' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`}
+                            className={`flex flex-col items-center justify-center p-2.5 rounded-2xl transition-all border-2 ${isSelected ? 'border-[var(--primary)] bg-blue-50 dark:bg-blue-950/30' : 'border-transparent bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
                           >
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1.5 ${cat.color}`}>
                               <cat.icon className="w-5 h-5" />
                             </div>
-                            <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[#165DFF]' : 'text-slate-600'}`}>{cat.name}</span>
+                            <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>{cat.name}</span>
                           </button>
                         )
                       })}
-                      <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[#165DFF] transition-all">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 text-slate-400">
+                      <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[var(--primary)] transition-all">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500">
                           <Plus className="w-5 h-5" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500">Custom</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Custom</span>
                       </button>
                     </div>
                     {showAddCategory && (
-                      <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
+                      <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] animate-in slide-in-from-top-2 duration-200">
                         <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                          <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
+                          <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
                         </div>
                         {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                           <div className="mb-6 space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                            <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
                             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                               {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                                 const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                                 return (
-                                  <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
+                                  <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
                                     <div className="flex items-center gap-3">
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                      <span className="text-sm font-bold text-slate-700">{name}</span>
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
+                                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{name}</span>
                                     </div>
-                                    <div className="flex items-center border-l border-slate-100 pl-2">
-                                      <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                      <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
+                                      <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                                      <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                                     </div>
                                   </div>
                                 )
@@ -3033,22 +3033,22 @@ export default function MoneyManager() {
                             </div>
                           </div>
                         )}
-                        <div className="space-y-4 border-t border-slate-200 pt-4">
-                          <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                        <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
+                          <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
                             <div className="grid grid-cols-7 gap-2">
-                              {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}><Ico className="w-5 h-5" /></button>) })}
+                              {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}><Ico className="w-5 h-5" /></button>) })}
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
                             <div className="grid grid-cols-6 gap-2">
                               {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
                             </div>
                           </div>
-                          <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                          <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
                         </div>
                       </div>
                     )}
@@ -3057,41 +3057,41 @@ export default function MoneyManager() {
 
                 {/* Budget Indicator */}
                 {budgetInfo && (
-                  <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                      <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
+                      <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>
                         {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-end mb-2">
                       <div className="flex flex-col">
-                        <span className="text-xs text-slate-400">Terpakai + Baru</span>
-                        <span className="font-bold text-slate-700">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">Terpakai + Baru</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-xs text-slate-400">Total Budget</span>
-                        <span className="font-bold text-slate-700">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500">Total Budget</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
                       </div>
                     </div>
 
-                    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`}
+                        className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`}
                         style={{ width: `${budgetInfo.percent}%` }}
                       />
                     </div>
 
                     {budgetInfo.isOver ? (
-                      <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 p-2 rounded-lg">
+                      <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 dark:bg-rose-950/40 p-2 rounded-lg">
                         <AlertTriangle className="w-4 h-4 shrink-0" />
                         <p>
                           Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
                         </p>
                       </div>
                     ) : (
-                      <p className="text-xs text-center text-slate-500 mt-2">
+                      <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-2">
                         Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
                       </p>
                     )}
@@ -3100,11 +3100,11 @@ export default function MoneyManager() {
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-[10px] font-bold text-[#6A7686] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 font-normal">(Opsional)</span></label>
+                  <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 dark:text-slate-500 font-normal">(Opsional)</span></label>
                   <input
                     type="text"
                     placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none transition-all font-medium text-base"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all font-medium text-base"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
@@ -3129,12 +3129,12 @@ export default function MoneyManager() {
           {/* ===== DESKTOP MODAL ===== */}
           <div className="hidden md:block glass backdrop-blur-2xl w-full max-w-lg rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 pb-10 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-800">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
               </h3>
               <button
                 onClick={resetForm}
-                className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3143,25 +3143,25 @@ export default function MoneyManager() {
             <form onSubmit={handleSaveTransaction} className="space-y-6">
 
               {/* Type Switcher */}
-              <div className="flex bg-slate-100 p-1 rounded-2xl">
+              <div className="flex bg-slate-100 dark:bg-[var(--bg-hover)] p-1 rounded-2xl">
                 <button
                   type="button"
                   onClick={() => { setType('pemasukan'); setCategory(''); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pemasukan' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pemasukan' ? 'bg-white dark:bg-[var(--bg-card)] text-emerald-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
                 >
                   Pemasukan
                 </button>
                 <button
                   type="button"
                   onClick={() => { setType('pengeluaran'); setCategory(''); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pengeluaran' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pengeluaran' ? 'bg-white dark:bg-[var(--bg-card)] text-rose-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
                 >
                   Pengeluaran
                 </button>
                 <button
                   type="button"
                   onClick={() => { setType('topup'); setCategory('Topup'); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'topup' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'topup' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
                 >
                   Topup
                 </button>
@@ -3170,10 +3170,10 @@ export default function MoneyManager() {
               {/* Date & Wallet Grid */}
               <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
                 <div className={type === 'topup' ? 'md:col-span-1' : ''}>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tanggal</label>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tanggal</label>
                   <input
                     type="date"
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}
                     required
@@ -3181,10 +3181,10 @@ export default function MoneyManager() {
                 </div>
                 {type === 'topup' ? (
                   <>
-                    <div className="border border-slate-200 p-3 rounded-xl bg-slate-50 relative">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sumber Dana</label>
+                    <div className="border border-slate-200 dark:border-[var(--border-default)] p-3 rounded-xl bg-slate-50 dark:bg-[var(--bg-elevated)] relative">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Sumber Dana</label>
                       <select
-                        className="w-full bg-transparent outline-none font-semibold text-slate-800 text-sm"
+                        className="w-full bg-transparent outline-none font-semibold text-slate-800 dark:text-[var(--text-primary)] text-sm"
                         value={sourceWalletId}
                         onChange={(e) => setSourceWalletId(e.target.value)}
                         required
@@ -3195,7 +3195,7 @@ export default function MoneyManager() {
                         ))}
                       </select>
                     </div>
-                    <div className="border border-blue-200 p-3 rounded-xl bg-blue-50/50">
+                    <div className="border border-blue-200 dark:border-blue-800/30 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30">
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
                       <select
                         className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm"
@@ -3212,9 +3212,9 @@ export default function MoneyManager() {
                   </>
                 ) : (
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Dompet</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Dompet</label>
                     <select
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                       value={selectedWalletId}
                       onChange={(e) => setSelectedWalletId(e.target.value)}
                       required
@@ -3231,7 +3231,7 @@ export default function MoneyManager() {
               {/* Amount Input */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     {type === 'topup' ? 'Nominal Topup (Rp)' : 'Jumlah (Rp)'}
                   </label>
                   <MoneyInput
@@ -3243,7 +3243,7 @@ export default function MoneyManager() {
 
                 {type === 'topup' && (
                   <div className="animate-in slide-in-from-top-2 duration-200">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Biaya Admin (Opsional)</label>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Biaya Admin (Opsional)</label>
                     <MoneyInput
                       value={adminFee}
                       onChange={setAdminFee}
@@ -3255,20 +3255,20 @@ export default function MoneyManager() {
 
               {/* Piutang Toggle - hanya untuk Pemasukan */}
               {type === 'pemasukan' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                   <div
                     onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isPiutang ? 'border-amber-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isPiutang && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-in zoom-in duration-200" />}
+                        {isPiutang && <div className="w-2.5 h-2.5 bg-amber-50 dark:bg-amber-950/300 rounded-full animate-in zoom-in duration-200" />}
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isPiutang ? 'text-amber-700' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                      <span className={`text-sm font-bold transition-colors ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>
                         💸 Ini adalah Piutang?
                       </span>
                     </div>
-                    {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
+                    {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
                   </div>
 
                   {isPiutang && (
@@ -3276,7 +3276,7 @@ export default function MoneyManager() {
                       <input
                         type="text"
                         placeholder="Nama peminjam (Opsional)"
-                        className="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium"
+                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium"
                         value={piutangPerson}
                         onChange={(e) => setPiutangPerson(e.target.value)}
                       />
@@ -3291,18 +3291,18 @@ export default function MoneyManager() {
 
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                   <div
                     onClick={() => setIsSplitBill(!isSplitBill)}
                     className="flex items-center justify-between cursor-pointer group select-none mb-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[#165DFF]' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isSplitBill && <div className="w-2.5 h-2.5 bg-[#165DFF] rounded-full animate-in zoom-in duration-200" />}
+                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[var(--primary)]' : 'border-slate-300 group-hover:border-slate-400'}`}>
+                        {isSplitBill && <div className="w-2.5 h-2.5 bg-[var(--primary)] rounded-full animate-in zoom-in duration-200" />}
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isSplitBill ? 'text-[#165DFF]' : 'text-slate-600 group-hover:text-slate-800'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                      <span className={`text-sm font-bold transition-colors ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                     </div>
-                    {isSplitBill && <span className="text-[10px] uppercase font-bold text-[#165DFF] bg-white px-2 py-1 rounded-lg shadow-sm border border-blue-100">Aktif</span>}
+                    {isSplitBill && <span className="text-[10px] uppercase font-bold text-[var(--primary)] bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-blue-100 dark:border-blue-800/30">Aktif</span>}
                   </div>
 
                   {isSplitBill && (
@@ -3315,7 +3315,7 @@ export default function MoneyManager() {
                               <input
                                 type="text"
                                 placeholder={`Nama Teman #${idx + 1}`}
-                                className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                 value={entry.name}
                                 onChange={(e) => {
                                   const newEntries = [...splitEntries]
@@ -3344,7 +3344,7 @@ export default function MoneyManager() {
                                 const newEntries = splitEntries.filter((_, i) => i !== idx)
                                 setSplitEntries(newEntries)
                               }}
-                              className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                              className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -3360,8 +3360,8 @@ export default function MoneyManager() {
                         <Plus className="w-3 h-3" /> Tambah Orang Lain
                       </button>
 
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col gap-1 mt-2">
-                        <div className="flex justify-between items-center text-xs font-medium text-blue-900 border-b border-blue-100 pb-2 mb-1">
+                      <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg flex flex-col gap-1 mt-2">
+                        <div className="flex justify-between items-center text-xs font-medium text-blue-900 border-b border-blue-100 dark:border-blue-800/30 pb-2 mb-1">
                           <span>Total Piutang:</span>
                           <span className="font-bold">Rp {splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0).toLocaleString('id-ID')}</span>
                         </div>
@@ -3381,20 +3381,20 @@ export default function MoneyManager() {
 
               {/* Talangan Toggle - hanya untuk Pengeluaran */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50/60 border-purple-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                   <div
                     onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isTalangan ? 'border-purple-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isTalangan && <div className="w-2.5 h-2.5 bg-purple-500 rounded-full animate-in zoom-in duration-200" />}
+                        {isTalangan && <div className="w-2.5 h-2.5 bg-purple-50 dark:bg-purple-950/300 rounded-full animate-in zoom-in duration-200" />}
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isTalangan ? 'text-purple-700' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                      <span className={`text-sm font-bold transition-colors ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>
                         🤝 Ini Talangan (bayarin orang lain)?
                       </span>
                     </div>
-                    {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-purple-100">Aktif</span>}
+                    {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">Aktif</span>}
                   </div>
 
                   {isTalangan && (
@@ -3402,7 +3402,7 @@ export default function MoneyManager() {
                       <input
                         type="text"
                         placeholder="Nama orang yang ditalangin (Opsional)"
-                        className="w-full p-2.5 bg-white border border-purple-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium"
+                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium"
                         value={talanganPerson}
                         onChange={(e) => setTalanganPerson(e.target.value)}
                       />
@@ -3418,12 +3418,12 @@ export default function MoneyManager() {
 
               {type !== 'topup' && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
                   <div className="grid grid-cols-4 gap-3">
                     {[
                       ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
                       ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
-                        if (typeof c === 'string') return { name: c, color: 'bg-slate-100 text-slate-600', icon: Package, isCustom: true, originalObj: c };
+                        if (typeof c === 'string') return { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500', icon: Package, isCustom: true, originalObj: c };
                         return { name: c.name, color: c.color, icon: AVAILABLE_ICONS[c.iconName] || Package, isCustom: true, originalObj: c };
                       })
                     ].map((cat) => {
@@ -3433,53 +3433,53 @@ export default function MoneyManager() {
                           <button
                             type="button"
                             onClick={() => setCategory(cat.name)}
-                            className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-slate-50'}`}
+                            className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : 'border-transparent hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                           >
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color}`}>
                               <cat.icon className="w-5 h-5" />
                             </div>
-                            <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600'}`}>
+                            <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600 dark:text-slate-500'}`}>
                               {cat.name}
                             </span>
                           </button>
                         </div>
                       )
                     })}
-                    <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 text-slate-400">
+                    <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500">
                         <Plus className="w-5 h-5" />
                       </div>
-                      <span className="text-[10px] font-bold text-center leading-tight text-slate-500">Custom</span>
+                      <span className="text-[10px] font-bold text-center leading-tight text-slate-500 dark:text-slate-400">Custom</span>
                     </button>
                   </div>
 
                   {showAddCategory && (
-                    <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 animate-in slide-in-from-top-2 duration-200">
+                    <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] animate-in slide-in-from-top-2 duration-200">
                       <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-slate-700">Kelola Kategori Custom</span>
-                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
+                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
                       </div>
 
                       {/* Existing Custom Categories List */}
                       {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                         <div className="mb-6 space-y-2">
-                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                          <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
                           <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                             {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                               const isStr = typeof c === 'string'
                               const name = isStr ? c : c.name
                               const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                               return (
-                                <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border border-slate-200 rounded-xl">
+                                <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
                                   <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 ${isStr ? 'text-slate-500' : c.color.split(' ')[1]}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}>
                                       <Ico className="w-4 h-4" />
                                     </div>
-                                    <span className="text-sm font-bold text-slate-700 px-1">{name}</span>
+                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 px-1">{name}</span>
                                   </div>
-                                  <div className="flex items-center border-l border-slate-100 pl-2">
-                                    <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                    <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                  <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
+                                    <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
+                                    <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                                   </div>
                                 </div>
                               )
@@ -3488,21 +3488,21 @@ export default function MoneyManager() {
                         </div>
                       )}
 
-                      <div className="space-y-4 border-t border-slate-200 pt-4">
-                        <span className="font-bold text-sm text-slate-700 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                      <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
+                        <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
                         {/* Name */}
                         <div>
-                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
                         </div>
                         {/* Icon Picker */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Icon</label>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
                           <div className="grid grid-cols-7 gap-2">
                             {Object.keys(AVAILABLE_ICONS).map(iconKey => {
                               const Ico = AVAILABLE_ICONS[iconKey]
                               const isSelected = newCategoryIcon === iconKey
                               return (
-                                <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-transparent bg-white text-slate-500 hover:bg-slate-100'}`}>
+                                <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}>
                                   <Ico className="w-5 h-5" />
                                 </button>
                               )
@@ -3511,7 +3511,7 @@ export default function MoneyManager() {
                         </div>
                         {/* Color Picker */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Warna</label>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
                           <div className="grid grid-cols-6 gap-2">
                             {COLOR_PALETTES.map((colorSet, idx) => {
                               const isSelected = newCategoryColor === colorSet
@@ -3524,8 +3524,8 @@ export default function MoneyManager() {
                           </div>
                         </div>
                         {/* Actions */}
-                        <div className="flex gap-2 pt-2 border-t border-slate-200">
-                          <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[#165DFF] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                        <div className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[var(--border-default)]">
+                          <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
                         </div>
                       </div>
                     </div>
@@ -3535,41 +3535,41 @@ export default function MoneyManager() {
 
               {/* Budget Awareness Indicator */}
               {budgetInfo && (
-                <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                    <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600'}`}>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
+                    <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>
                       {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-end mb-2">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-400">Terpakai + Baru</span>
-                      <span className="font-bold text-slate-700">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">Terpakai + Baru</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-xs text-slate-400">Total Budget</span>
-                      <span className="font-bold text-slate-700">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">Total Budget</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
                     </div>
                   </div>
 
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-500' : budgetInfo.percent > 80 ? 'bg-orange-500' : 'bg-blue-500'}`}
+                      className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`}
                       style={{ width: `${budgetInfo.percent}%` }}
                     />
                   </div>
 
                   {budgetInfo.isOver ? (
-                    <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 p-2 rounded-lg">
+                    <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 dark:bg-rose-950/40 p-2 rounded-lg">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       <p>
                         Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-center text-slate-500">
+                    <p className="text-xs text-center text-slate-500 dark:text-slate-400">
                       Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
                     </p>
                   )}
@@ -3578,13 +3578,13 @@ export default function MoneyManager() {
 
               {/* Title Input */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Catatan <span className="text-slate-400 font-normal text-xs">(Opsional)</span>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  Catatan <span className="text-slate-400 dark:text-slate-500 font-normal text-xs">(Opsional)</span>
                 </label>
                 <input
                   type="text"
                   placeholder={category ? `Contoh: ${category} Enak` : "Catatan Transaksi"}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium"
+                  className="w-full p-4 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -3616,8 +3616,8 @@ export default function MoneyManager() {
           <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-3xl shadow-premium-lg border border-white/20 z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
             {/* Steps Indicator */}
             <div className="flex gap-2 mb-6 justify-center">
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200'}`}></div>
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 2 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200'}`}></div>
+              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200 dark:bg-slate-700'}`}></div>
+              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 2 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200 dark:bg-slate-700'}`}></div>
             </div>
 
             {welcomeStep === 1 ? (
@@ -3625,40 +3625,40 @@ export default function MoneyManager() {
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
 
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">
                   Selamat Datang di My Money!
                 </h2>
-                <p className="text-slate-600 mb-6 text-sm">
+                <p className="text-slate-600 dark:text-slate-500 mb-6 text-sm">
                   Kami sudah siapkan 2 dompet untuk transaksi harian Anda:
                 </p>
 
                 {/* Active Wallets Preview */}
-                <div className="bg-slate-50 rounded-2xl p-4 mb-6 space-y-3 text-left">
-                  <div className="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-2xl p-4 mb-6 space-y-3 text-left">
+                  <div className="flex items-start gap-3 bg-white dark:bg-[var(--bg-card)] p-3 rounded-xl border border-slate-100 dark:border-[var(--border-default)] shadow-sm">
                     <div className="text-2xl mt-1">💵</div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
-                        <p className="font-bold text-slate-800">Tunai</p>
+                        <p className="font-bold text-slate-800 dark:text-[var(--text-primary)]">Tunai</p>
                         <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Untuk uang cash sehari-hari</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Untuk uang cash sehari-hari</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                  <div className="flex items-start gap-3 bg-white dark:bg-[var(--bg-card)] p-3 rounded-xl border border-slate-100 dark:border-[var(--border-default)] shadow-sm">
                     <div className="text-2xl mt-1">🏦</div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
-                        <p className="font-bold text-slate-800">Rekening Bank</p>
+                        <p className="font-bold text-slate-800 dark:text-[var(--text-primary)]">Rekening Bank</p>
                         <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Untuk transfer & belanja online</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Untuk transfer & belanja online</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Education Box */}
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left flex gap-3">
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 rounded-xl p-4 mb-6 text-left flex gap-3">
                   <div className="text-xl">💡</div>
                   <div>
                     <p className="text-xs text-blue-900 font-bold mb-1">Info Penting</p>
@@ -3678,7 +3678,7 @@ export default function MoneyManager() {
                   </button>
                   <button
                     onClick={() => setShowWelcome(false)}
-                    className="w-full bg-white hover:bg-slate-50 text-slate-600 font-medium py-3 rounded-2xl transition-colors text-sm"
+                    className="w-full bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-medium py-3 rounded-2xl transition-colors text-sm"
                   >
                     Mulai Tracking Saja
                   </button>
@@ -3689,10 +3689,10 @@ export default function MoneyManager() {
               <div className="text-center animate-in slide-in-from-right-10 duration-300">
                 <div className="text-5xl mb-4">🏦</div>
 
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">
                   Setup Tabungan (Opsional)
                 </h2>
-                <p className="text-slate-600 mb-8 text-sm px-4">
+                <p className="text-slate-600 dark:text-slate-500 mb-8 text-sm px-4">
                   Pisahkan uang untuk kebutuhan darurat agar aman & tidak terpakai foya-foya!
                 </p>
 
@@ -3730,7 +3730,7 @@ export default function MoneyManager() {
                   </button>
                   <button
                     onClick={() => setShowWelcome(false)}
-                    className="w-full bg-white hover:bg-slate-50 text-slate-500 font-medium py-3 rounded-2xl transition-colors text-sm"
+                    className="w-full bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] text-slate-500 dark:text-slate-400 font-medium py-3 rounded-2xl transition-colors text-sm"
                   >
                     Lewati, nanti saja
                   </button>
@@ -3738,7 +3738,7 @@ export default function MoneyManager() {
 
                 <button
                   onClick={() => setWelcomeStep(1)}
-                  className="mt-4 text-xs text-slate-400 hover:text-slate-600"
+                  className="mt-4 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"
                 >
                   ⬅️ Kembali
                 </button>
@@ -3751,8 +3751,8 @@ export default function MoneyManager() {
       {/* Debt Repayment Modal */}
       {showDebtModal && selectedDebt && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+          <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl w-full max-w-sm relative shadow-xl animate-in zoom-in-95 duration-200">
+            <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
               <X className="w-5 h-5" />
             </button>
 
@@ -3760,19 +3760,19 @@ export default function MoneyManager() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
                 🧑‍🤝‍🧑
               </div>
-              <h3 className="font-bold text-lg text-slate-800">Lunasi Piutang</h3>
-              <p className="text-sm text-slate-500">
+              <h3 className="font-bold text-lg text-slate-800 dark:text-[var(--text-primary)]">Lunasi Piutang</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 {selectedDebt ? `Pilih dompet penerima dana dari ${selectedDebt.person_name}` : 'Pilih dompet penerima dana'}
               </p>
               {selectedDebt && (
-                <div className="mt-3 bg-blue-50 py-2 rounded-lg">
+                <div className="mt-3 bg-blue-50 dark:bg-blue-950/30 py-2 rounded-lg">
                   <span className="text-blue-600 font-bold text-xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
                 </div>
               )}
             </div>
 
             <div className="space-y-3 mb-4">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Masuk ke Dompet</p>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Masuk ke Dompet</p>
               <div className="grid gap-2 max-h-64 overflow-y-auto pr-2">
                 {wallets.map(w => {
                   const isProcessing = repayingWalletId === w.id
@@ -3782,21 +3782,21 @@ export default function MoneyManager() {
                       onClick={() => selectedDebt && markDebtAsPaid(selectedDebt, w.id)}
                       disabled={repayingWalletId !== null}
                       className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${isProcessing
-                        ? 'bg-blue-50 border-blue-500 cursor-wait'
+                        ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 cursor-wait'
                         : repayingWalletId !== null
-                          ? 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                          : 'bg-white border-slate-200 hover:border-green-500 hover:bg-green-50'
+                          ? 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)] opacity-50 cursor-not-allowed'
+                          : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)] hover:border-green-500 hover:bg-green-50 dark:bg-green-950/30'
                         }`}
                     >
                       <div className="flex items-center gap-3">
                         {isProcessing && (
                           <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></div>
                         )}
-                        <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700'} group-hover:text-green-700`}>
+                        <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700 dark:text-slate-300'} group-hover:text-green-700`}>
                           {w.name} {isProcessing && '(Memproses...)'}
                         </span>
                       </div>
-                      <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-lg">
+                      <span className="text-xs bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg">
                         Rp {w.balance.toLocaleString('id-ID')}
                       </span>
                     </button>
@@ -3807,7 +3807,7 @@ export default function MoneyManager() {
 
             <button
               onClick={() => setShowDebtModal(false)}
-              className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors"
+              className="w-full py-3 text-slate-400 dark:text-slate-500 font-bold hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors"
             >
               Batal
             </button>

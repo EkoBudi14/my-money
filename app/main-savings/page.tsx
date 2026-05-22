@@ -243,17 +243,17 @@ export default function MainSavingsPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[#080C1A]">Tabungan Inti</h2>
+                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Tabungan Inti</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
-                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                        {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
                     </div>
-                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                         EB
                     </div>
                 </div>
@@ -282,29 +282,29 @@ export default function MainSavingsPage() {
 
                         {/* Info Bar */}
                         <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                            <p className="text-sm font-bold text-[#080C1A]">{savingsWallets.length} aset tabungan</p>
-                            <p className="text-[11px] text-[#6A7686]">Tap untuk edit / hapus</p>
+                            <p className="text-sm font-bold text-[var(--text-primary)]">{savingsWallets.length} aset tabungan</p>
+                            <p className="text-[11px] text-[var(--text-secondary)]">Tap untuk edit / hapus</p>
                         </div>
 
                         {/* List */}
                         {savingsWallets.length === 0 ? (
-                            <div className="mx-4 text-center py-10 text-slate-400 border-2 border-dashed border-[#F3F4F3] rounded-2xl bg-white">
+                            <div className="mx-4 text-center py-10 text-slate-400 dark:text-slate-500 border-2 border-dashed border-[var(--border-default)] rounded-2xl bg-white dark:bg-[var(--bg-card)]">
                                 <p className="text-sm">Belum ada aset tabungan.</p>
                             </div>
                         ) : (
-                            <div className="mx-4 bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+                            <div className="mx-4 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
                                 {savingsWallets.map((wallet, idx) => {
                                     const isLast = idx === savingsWallets.length - 1
                                     return (
-                                        <div key={wallet.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[#F3F4F3]' : ''}`}>
+                                        <div key={wallet.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}>
                                             {/* Top Row: icon + name + balance */}
                                             <div className="flex items-center gap-3 mb-3">
-                                                <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-600 shrink-0">
+                                                <div className="bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl text-emerald-600 shrink-0">
                                                     {getIcon(wallet.type)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-sm text-[#080C1A] truncate">{wallet.name}</p>
-                                                    <p className="text-[11px] text-[#6A7686] uppercase tracking-wider">{wallet.type}</p>
+                                                    <p className="font-bold text-sm text-[var(--text-primary)] truncate">{wallet.name}</p>
+                                                    <p className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider">{wallet.type}</p>
                                                 </div>
                                                 <p className="font-bold text-sm text-emerald-600 shrink-0">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                             </div>
@@ -313,14 +313,14 @@ export default function MainSavingsPage() {
                                             <div className="grid grid-cols-2 gap-2">
                                                 <button
                                                     onClick={() => handleEdit(wallet)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-bold rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] active:scale-95 transition-all"
                                                 >
                                                     <Pencil className="w-3.5 h-3.5" />
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(wallet.id)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                                    className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 dark:bg-rose-950/40 active:scale-95 transition-all"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                     Hapus
@@ -335,9 +335,9 @@ export default function MainSavingsPage() {
                         {/* Tambah Aset Button */}
                         <button
                             onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
-                            className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all active:scale-[0.98]"
+                            className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50 dark:bg-emerald-950/30/30 transition-all active:scale-[0.98]"
                         >
-                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] flex items-center justify-center">
                                 <Plus className="w-4 h-4" />
                             </div>
                             <span className="font-bold text-sm">Tambah Aset Baru</span>
@@ -349,38 +349,38 @@ export default function MainSavingsPage() {
             {/* ===== DESKTOP VIEW ===== */}
             <div className="hidden md:block p-8 space-y-6">
                 {/* Summary Card */}
-                <div className="bg-white px-6 py-6 rounded-2xl border border-[#F3F4F3] flex items-center gap-5 shadow-sm">
-                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                <div className="bg-white dark:bg-[var(--bg-card)] px-6 py-6 rounded-2xl border border-[var(--border-default)] flex items-center gap-5 shadow-sm">
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600">
                         <Landmark className="w-8 h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-[#6A7686] font-bold uppercase tracking-wide">Total Aset & Simpanan</p>
-                        <p className="text-3xl font-bold text-[#080C1A] mt-1">Rp {totalSavings.toLocaleString('id-ID')}</p>
+                        <p className="text-sm text-[var(--text-secondary)] font-bold uppercase tracking-wide">Total Aset & Simpanan</p>
+                        <p className="text-3xl font-bold text-[var(--text-primary)] mt-1">Rp {totalSavings.toLocaleString('id-ID')}</p>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-20 text-slate-400 animate-pulse">Memuat aset...</div>
+                    <div className="text-center py-20 text-slate-400 dark:text-slate-500 animate-pulse">Memuat aset...</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {savingsWallets.map((wallet) => (
-                            <div key={wallet.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between card-hover relative overflow-hidden min-h-[240px]">
+                            <div key={wallet.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between card-hover relative overflow-hidden min-h-[240px]">
                                 <div>
                                     <div className="flex justify-between items-start mb-4 relative z-10">
-                                        <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600">
+                                        <div className="bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl text-emerald-600">
                                             {getIcon(wallet.type)}
                                         </div>
                                         <div className="flex gap-1">
-                                            <button onClick={() => handleEdit(wallet)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm hover:shadow-md active:scale-95">
+                                            <button onClick={() => handleEdit(wallet)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 transition-all shadow-sm hover:shadow-md active:scale-95">
                                                 <Pencil className="w-5 h-5" />
                                             </button>
-                                            <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95">
+                                            <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95">
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-lg text-[#080C1A] mb-1 relative z-10">{wallet.name}</h3>
-                                    <p className="text-xs text-[#6A7686] uppercase tracking-wider mb-4 relative z-10">{wallet.type}</p>
+                                    <h3 className="font-bold text-lg text-[var(--text-primary)] mb-1 relative z-10">{wallet.name}</h3>
+                                    <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-4 relative z-10">{wallet.type}</p>
                                 </div>
                                 <div className="relative z-10">
                                     <p className="text-2xl font-bold text-emerald-600">Rp {wallet.balance.toLocaleString('id-ID')}</p>
@@ -392,10 +392,10 @@ export default function MainSavingsPage() {
                         {/* Add New Card */}
                         <button
                             onClick={() => { resetForm(); fetchActiveWallets(); setIsModalOpen(true); }}
-                            className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[220px] group"
+                            className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all min-h-[220px] group"
                         >
-                            <div className="bg-slate-50 p-4 rounded-full group-hover:bg-blue-100 transition-colors">
-                                <Plus className="w-8 h-8 group-hover:text-[#165DFF] transition-colors" />
+                            <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] p-4 rounded-full group-hover:bg-blue-100 transition-colors">
+                                <Plus className="w-8 h-8 group-hover:text-[var(--primary)] transition-colors" />
                             </div>
                             <span className="font-bold">Tambah Aset Baru</span>
                         </button>
@@ -407,25 +407,25 @@ export default function MainSavingsPage() {
             {isModalOpen && (
                  <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-lg rounded-3xl shadow-2xl z-50 p-0 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-[#F3F4F3] flex justify-between items-center bg-white sticky top-0 z-10">
-                            <h3 className="text-lg font-bold text-[#080C1A]">
+                        <div className="px-6 py-4 border-b border-[var(--border-default)] flex justify-between items-center bg-white dark:bg-[var(--bg-card)] sticky top-0 z-10">
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">
                                 {editingId ? 'Edit Aset' : 'Aset Baru'}
                             </h3>
-                            <button onClick={resetForm} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors">
+                            <button onClick={resetForm} className="p-2 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden bg-white">
+                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[var(--bg-card)]">
                             <div className="p-6 space-y-5 flex-1 overflow-y-auto custom-scrollbar">
                                 <div>
-                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Nama Aset / Tabungan</label>
+                                    <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Nama Aset / Tabungan</label>
                                     <input 
                                         type="text" 
-                                        className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] outline-none font-bold text-[#080C1A] placeholder:text-slate-300 transition-all" 
+                                        className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-xl border border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none font-bold text-[var(--text-primary)] placeholder:text-slate-300 transition-all" 
                                         value={name} 
                                         onChange={e => setName(e.target.value)} 
                                         placeholder="Contoh: Emas, Deposito" 
@@ -433,14 +433,14 @@ export default function MainSavingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Tipe Aset</label>
+                                    <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Tipe Aset</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {['bank', 'ewallet', 'cash'].map((t) => (
                                             <button
                                                 key={t}
                                                 type="button"
                                                 onClick={() => setType(t as any)}
-                                                className={`py-2.5 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 border-[#165DFF] text-[#165DFF]' : 'border-slate-200 text-[#6A7686] hover:bg-slate-50'}`}
+                                                className={`py-2.5 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 dark:bg-blue-950/30 border-[var(--primary)] text-[var(--primary)]' : 'border-slate-200 dark:border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                             >
                                                 {t.toUpperCase()}
                                             </button>
@@ -448,7 +448,7 @@ export default function MainSavingsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-[#6A7686] uppercase tracking-wider mb-2">Nilai Saat Ini (Rp)</label>
+                                    <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Nilai Saat Ini (Rp)</label>
                                     <MoneyInput
                                         value={balance}
                                         onChange={setBalance}
@@ -456,9 +456,9 @@ export default function MainSavingsPage() {
                                     />
                                 </div>
 
-                                <div className="pt-4 border-t border-[#F3F4F3]">
-                                    <label className="block text-sm font-bold text-[#080C1A] mb-2">Sumber Dana (Opsional)</label>
-                                    <p className="text-xs text-[#6A7686] mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
+                                <div className="pt-4 border-t border-[var(--border-default)]">
+                                    <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Sumber Dana (Opsional)</label>
+                                    <p className="text-xs text-[var(--text-secondary)] mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
                                     
                                     {(() => {
                                         // Check if we're in refund scenario (reducing balance)
@@ -475,9 +475,9 @@ export default function MainSavingsPage() {
                                             <>
                                                 <div className="relative">
                                                     <select
-                                                        className={`w-full p-3 border rounded-xl outline-none text-[#080C1A] font-medium transition-colors appearance-none ${isDisabled
-                                                            ? 'bg-slate-100 border-slate-300 cursor-not-allowed opacity-70'
-                                                            : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]'
+                                                        className={`w-full p-3 border rounded-xl outline-none text-[var(--text-primary)] font-medium transition-colors appearance-none ${isDisabled
+                                                            ? 'bg-slate-100 dark:bg-[var(--bg-hover)] border-slate-300 cursor-not-allowed opacity-70'
+                                                            : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]'
                                                             }`}
                                                         value={sourceWalletId}
                                                         onChange={(e) => setSourceWalletId(e.target.value)}
@@ -501,13 +501,13 @@ export default function MainSavingsPage() {
                                                                 ))}
                                                         </optgroup>
                                                     </select>
-                                                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                                                     </div>
                                                 </div>
 
                                                 {isRefundScenario && (
-                                                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                                                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-xl flex items-start gap-3">
                                                         <div className="p-1 bg-amber-100 rounded-full text-amber-600 mt-0.5">
                                                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                                         </div>
@@ -524,19 +524,19 @@ export default function MainSavingsPage() {
 
                                 {/* Checkbox and Preview */}
                                 {sourceWalletId && (
-                                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                                    <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
                                         <label className="flex items-center gap-3 cursor-pointer mb-2">
                                             <input
                                                 type="checkbox"
                                                 checked={linkToSource}
                                                 onChange={e => setLinkToSource(e.target.checked)}
-                                                className="w-5 h-5 rounded-lg text-[#165DFF] focus:ring-[#165DFF] border-gray-300"
+                                                className="w-5 h-5 rounded-lg text-[var(--primary)] focus:ring-[var(--primary)] border-gray-300"
                                             />
-                                            <span className="text-sm font-bold text-[#080C1A]">Sesuaikan saldo dompet sumber?</span>
+                                            <span className="text-sm font-bold text-[var(--text-primary)]">Sesuaikan saldo dompet sumber?</span>
                                         </label>
 
                                         {linkToSource && (
-                                            <div className="text-xs text-slate-500 pl-8 leading-relaxed">
+                                            <div className="text-xs text-slate-500 dark:text-slate-400 pl-8 leading-relaxed">
                                                 {(() => {
                                                     // Determine which wallet will be affected
                                                     let targetWallet = activeWallets.find(w => w.id === parseInt(sourceWalletId)) || savingsWallets.find(w => w.id === parseInt(sourceWalletId))
@@ -564,18 +564,18 @@ export default function MainSavingsPage() {
 
                                                     if (diff > 0) {
                                                         return (
-                                                            <span className="text-rose-500 font-bold block bg-rose-50 p-2 rounded-lg border border-rose-100 mt-2">
+                                                            <span className="text-rose-500 font-bold block bg-rose-50 dark:bg-rose-950/30 p-2 rounded-lg border border-rose-100 dark:border-rose-800/30 mt-2">
                                                                 - Akan MEMOTONG Rp {diff.toLocaleString('id-ID')} dari {targetWallet.name}.
                                                             </span>
                                                         )
                                                     } else if (diff < 0) {
                                                         return (
-                                                            <span className="text-emerald-600 font-bold block bg-emerald-50 p-2 rounded-lg border border-emerald-100 mt-2">
+                                                            <span className="text-emerald-600 font-bold block bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-800/30 mt-2">
                                                                 + Akan MENGEMBALIKAN Rp {Math.abs(diff).toLocaleString('id-ID')} ke {targetWallet.name}.
                                                             </span>
                                                         )
                                                     } else {
-                                                        return <span className="text-slate-400 italic">Tidak ada perubahan saldo sumber.</span>
+                                                        return <span className="text-slate-400 dark:text-slate-500 italic">Tidak ada perubahan saldo sumber.</span>
                                                     }
                                                 })()}
                                             </div>
@@ -585,17 +585,17 @@ export default function MainSavingsPage() {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="p-4 border-t border-[#F3F4F3] bg-white flex justify-end gap-3">
+                            <div className="p-4 border-t border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] flex justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="px-5 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-colors text-sm"
+                                    className="px-5 py-2.5 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors text-sm"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2.5 rounded-xl font-bold bg-[#165DFF] hover:bg-[#1455E5] text-white shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-sm"
+                                    className="px-6 py-2.5 rounded-xl font-bold bg-[var(--primary)] hover:bg-[#1455E5] text-white shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-sm"
                                 >
                                     <Save className="w-4 h-4" />
                                     Simpan

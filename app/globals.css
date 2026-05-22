@@ -1,19 +1,34 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Lexend Deca', sans-serif;
 }
 
+/* ============================================================
+   LIGHT MODE — ORIGINAL COLORS (tidak berubah sama sekali)
+   ============================================================ */
 :root {
-  /* SwiftLog Palette */
   --primary: #165DFF;
   --primary-hover: #0E4BD9;
-  --foreground: #080C1A;
-  --secondary: #6A7686;
-  --muted: #EFF2F7;
-  --border: #F3F4F3;
-  --card-grey: #F1F3F6;
-  
+
+  /* Background layers - ORIGINAL */
+  --bg-page: #EFF2F7;
+  --bg-card: #ffffff;
+  --bg-elevated: #F8FAFC;
+  --bg-hover: #F1F5F9;
+  --bg-input: #F8FAFC;
+
+  /* Text - ORIGINAL */
+  --text-primary: #080C1A;
+  --text-secondary: #6A7686;
+  --text-muted: #94A3B8;
+
+  /* Border - ORIGINAL */
+  --border-default: #F3F4F3;
+  --border-strong: #E2E8F0;
+
   /* Status Colors */
   --success: #30B22D;
   --success-light: #DCFCE7;
@@ -24,31 +39,100 @@
 
   /* Layout */
   --sidebar-width: 280px;
+
+  /* Legacy aliases */
+  --foreground: var(--text-primary);
+  --secondary: var(--text-secondary);
+  --muted: var(--bg-page);
+  --border: var(--border-default);
+  --card-grey: #F1F3F6;
 }
 
-/* Base Styles */
+/* ============================================================
+   DARK MODE — PURE BLACK/DARK, CLEAN & ELEGANT
+   ============================================================ */
+.dark {
+  --primary: #4D8AFF;
+  --primary-hover: #6B9FFF;
+
+  /* Background layers — truly dark, NO muddy colors */
+  --bg-page: #0A0A0F;
+  /* Pure near-black page bg */
+  --bg-card: #111118;
+  /* Slightly lighter for cards */
+  --bg-elevated: #18181F;
+  /* Elevated elements */
+  --bg-hover: #1E1E28;
+  /* Hover states */
+  --bg-input: #111118;
+  /* Input backgrounds */
+
+  /* Text — clean white/light grey */
+  --text-primary: #F2F2F7;
+  /* Near white */
+  --text-secondary: #8E8EA0;
+  /* Muted grey */
+  --text-muted: #5C5C70;
+  /* Very muted */
+
+  /* Border — subtle dark */
+  --border-default: #222230;
+  /* Very subtle border */
+  --border-strong: #2C2C3A;
+  /* Stronger border */
+
+  /* Status Colors — adapted for dark */
+  --success: #34D399;
+  --success-light: #052E16;
+  --error: #F87171;
+  --error-light: #450A0A;
+  --warning: #FBBF24;
+  --warning-light: #431407;
+
+  --card-grey: #18181F;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 body {
-  background-color: var(--muted);
-  color: var(--foreground);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Typography Overrides */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--foreground);
-  font-weight: 700; /* Bold by default for headings in this theme */
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
-/* Custom Utilities */
+/* ============================================================
+   COMPONENT STYLES
+   ============================================================ */
 .glass {
-  background: white;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.dark .glass {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
 .shadow-premium-lg {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.dark .shadow-premium-lg {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
 .card-hover {
@@ -61,7 +145,13 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--primary);
 }
 
-/* Scrollbar */
+.dark .card-hover:hover {
+  box-shadow: 0 8px 25px rgba(77, 138, 255, 0.15);
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -76,45 +166,98 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 10px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #2C2C3A;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
 
-/* Form Elements */
-input, select, textarea {
-  border-radius: 0.75rem; /* rounded-xl */
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3C3C50;
 }
 
-input:not([data-no-ring]):focus, select:focus, textarea:focus {
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
+input,
+select,
+textarea {
+  border-radius: 0.75rem;
+}
+
+input:not([data-no-ring]):focus,
+select:focus,
+textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.15);
   outline: none;
 }
 
-/* Search input — suppress focus ring only, caret renders naturally */
+.dark input:not([data-no-ring]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  box-shadow: 0 0 0 3px rgba(77, 138, 255, 0.2);
+}
+
+/* Search input */
 input[data-no-ring] {
-  color: #080C1A !important;
-  caret-color: #080C1A !important;
-  -webkit-text-fill-color: #080C1A !important;
-  border-radius: 0 !important;  /* prevent border-radius clipping the caret at position 0 */
+  color: var(--text-primary) !important;
+  caret-color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  border-radius: 0 !important;
 }
 
 input[data-no-ring]::placeholder {
-  -webkit-text-fill-color: #94a3b8 !important;
-  color: #94a3b8 !important;
+  -webkit-text-fill-color: var(--text-muted) !important;
+  color: var(--text-muted) !important;
   opacity: 1;
 }
 
 input[data-no-ring]:focus {
   outline: none !important;
   box-shadow: none !important;
-  caret-color: #080C1A !important;
-  -webkit-text-fill-color: #080C1A !important;
+  caret-color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
 }
 
-
-
-/* Button Radius Override */
+/* Button Radius */
 button {
-  border-radius: 0.75rem; /* Default to rounded-xl for most */
+  border-radius: 0.75rem;
+}
+
+/* ============================================================
+   DARK MODE: COLOR-SPECIFIC OVERRIDES
+   ============================================================ */
+
+/* Option text in dark mode selects */
+.dark option {
+  background-color: #111118;
+  color: #F2F2F7;
+}
+
+/* Native date/time inputs in dark mode */
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Select elements with bg-slate-50 in dark mode */
+.dark select {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}
+
+/* Ensure all form inputs respect dark theme */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-no-ring]) {
+  color: var(--text-primary);
+}
+
+/* Calendar/date picker icon color */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }

@@ -11,11 +11,14 @@ import {
     PackageCheck,
     MoreHorizontal,
     ChevronRight,
-    ScanLine
+    ScanLine,
+    Moon,
+    Sun
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useTheme } from '@/hooks/useTheme'
 
 const allMenuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
@@ -35,19 +38,20 @@ const mobileMoreItems = allMenuItems.slice(4)
 export default function Sidebar() {
     const pathname = usePathname()
     const [showMore, setShowMore] = useState(false)
+    const { theme, toggleTheme } = useTheme()
 
     const isMoreActive = mobileMoreItems.some(item => pathname === item.href)
 
     return (
         <>
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[280px] bg-white border-r border-[#F3F4F3] z-50 flex-col overflow-hidden">
-                <div className="h-[90px] flex items-center px-6 border-b border-[#F3F4F3]">
+            <aside className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[280px] bg-[var(--bg-card)] border-r border-[var(--border-default)] z-50 flex-col overflow-hidden">
+                <div className="h-[90px] flex items-center px-6 border-b border-[var(--border-default)]">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#165DFF] rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-[var(--primary)] rounded-xl flex items-center justify-center">
                             <PackageCheck className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="font-bold text-xl text-[#080C1A]">CatatDuit</h1>
+                        <h1 className="font-bold text-xl text-[var(--text-primary)]">CatatDuit</h1>
                     </div>
                 </div>
 
@@ -59,10 +63,10 @@ export default function Sidebar() {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-[#EFF2F7]' : 'bg-white hover:bg-[#EFF2F7]'}`}
+                                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-[#F9FAFB] dark:bg-[var(--bg-page)] dark:bg-[var(--bg-elevated)]' : 'hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] dark:hover:bg-[var(--bg-elevated)]'}`}
                                 >
-                                    <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#080C1A]' : 'text-[#6A7686] group-hover:text-[#080C1A]'}`} />
-                                    <span className={`font-medium text-sm transition-colors ${isActive ? 'text-[#080C1A] font-semibold' : 'text-[#6A7686] group-hover:text-[#080C1A]'}`}>
+                                    <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`} />
+                                    <span className={`font-medium text-sm transition-colors ${isActive ? 'text-[var(--text-primary)] font-semibold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
                                         {item.name}
                                     </span>
                                 </Link>
@@ -70,10 +74,27 @@ export default function Sidebar() {
                         })}
                     </div>
                 </div>
+
+                {/* Dark Mode Toggle — Desktop Sidebar Bottom */}
+                <div className="px-5 py-4 border-t border-[var(--border-default)]">
+                    <button
+                        onClick={toggleTheme}
+                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] dark:hover:bg-[var(--bg-elevated)] transition-all duration-200 group"
+                    >
+                        {theme === 'dark' ? (
+                            <Sun className="w-5 h-5 text-amber-400" />
+                        ) : (
+                            <Moon className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]" />
+                        )}
+                        <span className="font-medium text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                            {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+                        </span>
+                    </button>
+                </div>
             </aside>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-[#F3F4F3] z-50 flex items-center justify-around px-1">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[70px] bg-[var(--bg-card)] border-t border-[var(--border-default)] z-50 flex items-center justify-around px-1">
                 {mobileMainItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
@@ -82,8 +103,8 @@ export default function Sidebar() {
                             href={item.href}
                             className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`} />
-                            <span className={`text-[9px] font-medium ${isActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`}>
+                            <item.icon className={`w-5 h-5 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`} />
+                            <span className={`text-[9px] font-medium ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
                                 {item.name}
                             </span>
                         </Link>
@@ -95,10 +116,10 @@ export default function Sidebar() {
                     onClick={() => setShowMore(true)}
                     className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
                 >
-                    <div className={`w-5 h-5 flex items-center justify-center ${isMoreActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`}>
+                    <div className={`w-5 h-5 flex items-center justify-center ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
                         <MoreHorizontal className="w-5 h-5" />
                     </div>
-                    <span className={`text-[9px] font-medium ${isMoreActive ? 'text-[#165DFF]' : 'text-[#6A7686]'}`}>
+                    <span className={`text-[9px] font-medium ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
                         Lainnya
                     </span>
                 </button>
@@ -114,18 +135,18 @@ export default function Sidebar() {
                     />
 
                     {/* Sheet */}
-                    <div className="relative w-full bg-white rounded-t-3xl shadow-2xl z-10 pb-safe animate-in slide-in-from-bottom duration-300">
+                    <div className="relative w-full bg-[var(--bg-card)] rounded-t-3xl shadow-2xl z-10 pb-safe animate-in slide-in-from-bottom duration-300">
                         {/* Handle Bar */}
                         <div className="flex justify-center pt-3 pb-1">
-                            <div className="w-10 h-1 bg-slate-200 rounded-full" />
+                            <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full" />
                         </div>
 
                         {/* Header */}
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-[#F3F4F3]">
-                            <span className="font-semibold text-[#080C1A] text-base">Menu Lainnya</span>
+                        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-default)]">
+                            <span className="font-semibold text-[var(--text-primary)] text-base">Menu Lainnya</span>
                             <button
                                 onClick={() => setShowMore(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EFF2F7] text-[#6A7686] hover:bg-slate-200 transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -140,18 +161,35 @@ export default function Sidebar() {
                                         key={item.href}
                                         href={item.href}
                                         onClick={() => setShowMore(false)}
-                                        className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 ${isActive ? 'bg-[#EFF2F7]' : 'active:bg-[#EFF2F7]'}`}
+                                        className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 ${isActive ? 'bg-[var(--bg-elevated)]' : 'active:bg-[var(--bg-elevated)]'}`}
                                     >
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? 'bg-[#165DFF]' : 'bg-[#EFF2F7]'}`}>
-                                            <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[#6A7686]'}`} />
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? 'bg-[var(--primary)]' : 'bg-[#F9FAFB] dark:bg-[var(--bg-page)]'}`}>
+                                            <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
                                         </div>
-                                        <span className={`font-medium text-sm flex-1 ${isActive ? 'text-[#080C1A] font-semibold' : 'text-[#6A7686]'}`}>
+                                        <span className={`font-medium text-sm flex-1 ${isActive ? 'text-[var(--text-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}>
                                             {item.name}
                                         </span>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[#165DFF]' : 'text-[#C8CDD6]'}`} />
+                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`} />
                                     </Link>
                                 )
                             })}
+
+                            {/* Dark Mode Toggle in Mobile More Menu */}
+                            <button
+                                onClick={toggleTheme}
+                                className="flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 active:bg-[var(--bg-elevated)]"
+                            >
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#F9FAFB] dark:bg-[var(--bg-page)]">
+                                    {theme === 'dark' ? (
+                                        <Sun className="w-5 h-5 text-amber-400" />
+                                    ) : (
+                                        <Moon className="w-5 h-5 text-[var(--text-secondary)]" />
+                                    )}
+                                </div>
+                                <span className="font-medium text-sm flex-1 text-[var(--text-secondary)] text-left">
+                                    {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>

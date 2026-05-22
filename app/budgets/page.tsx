@@ -313,17 +313,17 @@ export default function BudgetsPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
             {/* Top Header */}
-            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[#080C1A]">Manajemen Budget</h2>
+                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Manajemen Budget</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
-                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
+                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
                     </div>
-                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                         EB
                     </div>
                 </div>
@@ -332,26 +332,26 @@ export default function BudgetsPage() {
             <div className="relative min-h-[calc(100vh-90px)]">
 
                 {/* Control Bar - Filter UI */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 mx-4 md:mx-8 mt-6 rounded-2xl border border-[#F3F4F3] shadow-sm">
-                    <div className="flex w-full md:w-auto items-center gap-2 bg-slate-50 p-1 rounded-xl">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-[var(--bg-card)] p-4 mx-4 md:mx-8 mt-6 rounded-2xl border border-[var(--border-default)] shadow-sm">
+                    <div className="flex w-full md:w-auto items-center gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1 rounded-xl">
                         {filterMode === 'monthly' && (
                             <button
                                 onClick={prevMonth}
-                                className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                         )}
                         <div className="flex-1 flex items-center justify-center gap-2 px-4 py-1.5 min-w-[140px]">
-                            <Calendar className="w-4 h-4 text-[#165DFF]" />
-                            <span className="font-bold text-[#080C1A] whitespace-nowrap text-center text-sm">
+                            <Calendar className="w-4 h-4 text-[var(--primary)]" />
+                            <span className="font-bold text-[var(--text-primary)] whitespace-nowrap text-center text-sm">
                                 {getPeriodLabel()}
                             </span>
                         </div>
                          {filterMode === 'monthly' && (
                             <button
                                 onClick={nextMonth}
-                                className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>
@@ -361,7 +361,7 @@ export default function BudgetsPage() {
                     <div className="flex w-full md:w-auto items-center gap-2">
                         <button
                             onClick={() => setShowSettings(!showSettings)}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[#165DFF] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[var(--primary)] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
                         >
                             <Settings className="w-4 h-4" />
                             <span>Filter</span>
@@ -376,27 +376,27 @@ export default function BudgetsPage() {
                             className="fixed inset-0 z-10"
                             onClick={() => setShowSettings(false)}
                         />
-                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] bg-white rounded-2xl shadow-xl border border-[#F3F4F3] p-5 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-[#080C1A]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                                <h3 className="font-bold text-[var(--text-primary)]">Pengaturan Filter</h3>
+                                <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-[#6A7686] uppercase tracking-wider">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl">
+                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mode Tampilan</label>
+                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1.5 rounded-xl">
                                         <button
                                             onClick={() => setFilterMode('monthly')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
                                         >
                                             Bulanan
                                         </button>
                                         <button
                                             onClick={() => setFilterMode('custom')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
                                         >
                                             Custom
                                         </button>
@@ -404,23 +404,23 @@ export default function BudgetsPage() {
                                 </div>
 
                                 {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2 border-t border-[#F3F4F3]">
+                                    <div className="space-y-4 pt-2 border-t border-[var(--border-default)]">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[#6A7686]">Dari Tanggal</label>
+                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Dari Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[#6A7686]">Sampai Tanggal</label>
+                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Sampai Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
                                             />
                                         </div>
                                     </div>
@@ -434,7 +434,7 @@ export default function BudgetsPage() {
                 <div className="md:hidden pb-[80px]">
                     {loading ? (
                         <div className="flex items-center justify-center py-16">
-                            <div className="w-6 h-6 border-2 border-[#165DFF] border-t-transparent rounded-full animate-spin" />
+                            <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
                         </div>
                     ) : (() => {
                         const totalBudget = budgets.reduce((acc, b) => acc + b.amount, 0)
@@ -464,7 +464,7 @@ export default function BudgetsPage() {
                                     </div>
                                     {/* Overall progress */}
                                     <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mb-2 relative z-10">
-                                        <div className="h-full rounded-full bg-white/80 transition-all duration-500" style={{ width: `${overallPct}%` }} />
+                                        <div className="h-full rounded-full bg-white dark:bg-[var(--bg-card)]/80 transition-all duration-500" style={{ width: `${overallPct}%` }} />
                                     </div>
                                     <div className="flex items-center justify-between relative z-10">
                                         <p className="text-white/70 text-[11px]">Sisa: <span className="text-white font-bold">Rp {totalRemaining.toLocaleString('id-ID')}</span></p>
@@ -476,45 +476,45 @@ export default function BudgetsPage() {
 
                                 {/* Info Bar */}
                                 <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="text-sm font-bold text-[#080C1A]">{budgets.length} kategori budget</p>
-                                    <p className="text-[11px] text-[#6A7686]">Tap untuk edit / hapus / catat</p>
+                                    <p className="text-sm font-bold text-[var(--text-primary)]">{budgets.length} kategori budget</p>
+                                    <p className="text-[11px] text-[var(--text-secondary)]">Tap untuk edit / hapus / catat</p>
                                 </div>
 
                                 {/* Budget List */}
                                 {budgets.length === 0 ? (
-                                    <div className="mx-4 text-center py-10 text-slate-400 border-2 border-dashed border-[#F3F4F3] rounded-2xl bg-white">
+                                    <div className="mx-4 text-center py-10 text-slate-400 dark:text-slate-500 border-2 border-dashed border-[var(--border-default)] rounded-2xl bg-white dark:bg-[var(--bg-card)]">
                                         <p className="text-sm">Belum ada budget bulan ini.</p>
                                     </div>
                                 ) : (
-                                    <div className="mx-4 bg-white rounded-2xl border border-[#F3F4F3] shadow-sm overflow-hidden">
+                                    <div className="mx-4 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
                                         {budgets.map((budget, idx) => {
                                             const spent = getSpentAmount(budget.category)
                                             const percent = Math.min((spent / budget.amount) * 100, 100)
                                             const isOver = spent > budget.amount
                                             const allCats = [
                                                 ...CATEGORIES.pengeluaran,
-                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 text-slate-600'} : {name: c.name, color: c.color})
+                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
                                             ]
-                                            const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
+                                            const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
                                             const isLast = idx === budgets.length - 1
 
                                             return (
-                                                <div key={budget.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[#F3F4F3]' : ''}`}>
+                                                <div key={budget.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}>
                                                     {/* Top Row: Category badge + amounts */}
                                                     <div className="flex items-start justify-between mb-2">
                                                         <div className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 ${catColor}`}>
                                                             {budget.category}
                                                         </div>
                                                         <div className="text-right ml-2">
-                                                            <p className="font-bold text-sm text-[#080C1A]">Rp {spent.toLocaleString('id-ID')}</p>
-                                                            <p className="text-[11px] text-[#6A7686]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
+                                                            <p className="font-bold text-sm text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
+                                                            <p className="text-[11px] text-[var(--text-secondary)]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
                                                         </div>
                                                     </div>
 
                                                     {/* Progress bar */}
-                                                    <div className="w-full h-1.5 bg-[#F3F4F3] rounded-full overflow-hidden mb-1.5">
+                                                    <div className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden mb-1.5">
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-400' : 'bg-[#165DFF]'}`}
+                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-50 dark:bg-rose-950/300' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
                                                             style={{ width: `${percent}%` }}
                                                         />
                                                     </div>
@@ -526,30 +526,30 @@ export default function BudgetsPage() {
                                                                 <AlertCircle className="w-3 h-3" /> Over Budget!
                                                             </span>
                                                         ) : (
-                                                            <span className="text-[10px] text-[#6A7686]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
+                                                            <span className="text-[10px] text-[var(--text-secondary)]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
                                                         )}
-                                                        <span className="text-[10px] font-semibold text-[#6A7686]">{Math.round(percent)}%</span>
+                                                        <span className="text-[10px] font-semibold text-[var(--text-secondary)]">{Math.round(percent)}%</span>
                                                     </div>
 
                                                     {/* Action Buttons — 3 columns like Goals */}
                                                     <div className="grid grid-cols-3 gap-2">
                                                         <button
                                                             onClick={() => handleEdit(budget)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100 active:scale-95 transition-all"
+                                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-bold rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] active:scale-95 transition-all"
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
                                                             Edit
                                                         </button>
                                                         <button
                                                             onClick={() => openQuickExp(budget.category)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-[#165DFF] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
+                                                            className="py-2 flex items-center justify-center gap-1.5 bg-[var(--primary)] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
                                                         >
                                                             <Plus className="w-3.5 h-3.5" />
                                                             Catat
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(budget.id)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 active:scale-95 transition-all"
+                                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 dark:bg-rose-950/40 active:scale-95 transition-all"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                             Hapus
@@ -564,9 +564,9 @@ export default function BudgetsPage() {
                                 {/* Tambah Budget Button */}
                                 <button
                                     onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all active:scale-[0.98]"
+                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all active:scale-[0.98]"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] flex items-center justify-center">
                                         <Plus className="w-4 h-4" />
                                     </div>
                                     <span className="font-bold text-sm">Buat Budget Baru</span>
@@ -579,7 +579,7 @@ export default function BudgetsPage() {
                 {/* ===== DESKTOP VIEW ===== */}
                 <div className="hidden md:block p-8">
                     {loading ? (
-                        <div className="text-center py-12 text-slate-400">Loading...</div>
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500">Loading...</div>
                     ) : (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -589,59 +589,59 @@ export default function BudgetsPage() {
                                     const isOver = spent > budget.amount
                                     const allCats = [
                                         ...CATEGORIES.pengeluaran, 
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 text-slate-600'} : {name: c.name, color: c.color})
+                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
                                     ]
-                                    const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 text-slate-600'
+                                    const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
 
                                     return (
-                                        <div key={budget.id} className="bg-white p-6 pb-8 rounded-3xl border border-[#F3F4F3] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
+                                        <div key={budget.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
                                             <div>
                                                 <div className="flex justify-between items-start mb-6">
                                                     <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${catColor}`}>
                                                         {budget.category}
                                                     </div>
-                                                    <button onClick={() => handleDelete(budget.id)} className="p-3 bg-white/80 backdrop-blur-sm border border-slate-100 rounded-xl text-rose-500 hover:bg-rose-50 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
+                                                    <button onClick={() => handleDelete(budget.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
                                                         <Trash2 className="w-5 h-5" />
                                                     </button>
                                                 </div>
 
                                                 <div className="mb-6">
                                                     <div className="flex justify-between items-end mb-2">
-                                                        <p className="text-3xl font-extrabold text-[#080C1A]">Rp {spent.toLocaleString('id-ID')}</p>
+                                                        <p className="text-3xl font-extrabold text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
                                                     </div>
-                                                    <p className="text-sm font-medium text-[#6A7686] mb-3">
+                                                    <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">
                                                         Limit: Rp {budget.amount.toLocaleString('id-ID')}
                                                     </p>
                                                     
                                                     {isOver && (
-                                                        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold mb-3 bg-rose-50 p-2 rounded-lg">
+                                                        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold mb-3 bg-rose-50 dark:bg-rose-950/30 p-2 rounded-lg">
                                                             <AlertCircle className="w-3.5 h-3.5" /> 
                                                             <span>Over Budget!</span>
                                                         </div>
                                                     )}
 
-                                                    <div className="w-full h-3 bg-[#F3F4F3] rounded-full overflow-hidden">
+                                                    <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-500' : 'bg-[#165DFF]'}`}
+                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-50 dark:bg-rose-950/300' : percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-[var(--primary)]'}`}
                                                             style={{ width: `${percent}%` }}
                                                         />
                                                     </div>
-                                                    <p className="text-xs text-[#6A7686] mt-3 font-medium">
-                                                        Sisa: <span className="text-[#080C1A]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
+                                                    <p className="text-xs text-[var(--text-secondary)] mt-3 font-medium">
+                                                        Sisa: <span className="text-[var(--text-primary)]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#F3F4F3]">
+                                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--border-default)]">
                                                 <button
                                                     onClick={() => handleEdit(budget)}
-                                                    className="py-3.5 bg-slate-50 text-slate-700 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                                    className="py-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
                                                 >
                                                     <Pencil className="w-5 h-5" /> Edit
                                                 </button>
                                                 <button
                                                     onClick={() => openQuickExp(budget.category)}
-                                                    className="py-3.5 bg-[#165DFF] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+                                                    className="py-3.5 bg-[var(--primary)] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
                                                 >
                                                     <Plus className="w-5 h-5 !text-white" /> Catat
                                                 </button>
@@ -653,17 +653,17 @@ export default function BudgetsPage() {
                                 {/* Add New Card */}
                                 <button
                                     onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 hover:text-[#165DFF] hover:border-[#165DFF] hover:bg-blue-50/30 transition-all min-h-[320px] group"
+                                    className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all min-h-[320px] group"
                                 >
-                                    <div className="bg-[#F3F4F3] group-hover:bg-[#165DFF] p-4 rounded-full transition-colors">
-                                        <Plus className="w-8 h-8 text-slate-500 group-hover:text-white transition-colors" />
+                                    <div className="bg-[var(--bg-elevated)] group-hover:bg-[var(--primary)] p-4 rounded-full transition-colors">
+                                        <Plus className="w-8 h-8 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
                                     </div>
                                     <span className="font-bold text-sm">Buat Budget Baru</span>
                                 </button>
                             </div>
 
                             {budgets.length === 0 && (
-                                <div className="text-center py-12 text-slate-400 border-2 border-dashed border-[#F3F4F3] rounded-3xl bg-white">
+                                <div className="text-center py-12 text-slate-400 dark:text-slate-500 border-2 border-dashed border-[var(--border-default)] rounded-3xl bg-white dark:bg-[var(--bg-card)]">
                                     <p>Belum ada budget untuk bulan ini.</p>
                                 </div>
                             )}
@@ -677,30 +677,30 @@ export default function BudgetsPage() {
              {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[#080C1A]">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                            <button onClick={resetForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
+                            <button onClick={resetForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#080C1A] mb-2">Tanggal Mulai</label>
+                                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Mulai</label>
                                     <input 
                                         type="date"
-                                        className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                        className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
                                         value={budgetStartDate}
                                         onChange={(e) => setBudgetStartDate(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-[#080C1A] mb-2">Tanggal Selesai</label>
+                                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Selesai</label>
                                     <input 
                                         type="date"
-                                        className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                        className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
                                         value={budgetEndDate}
                                         onChange={(e) => setBudgetEndDate(e.target.value)}
                                         required
@@ -708,17 +708,17 @@ export default function BudgetsPage() {
                                 </div>
                             </div>
                              <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-3">Pilih Kategori</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">Pilih Kategori</label>
                                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                                     {[
                                         ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 text-slate-600'} : {name: c.name, color: c.color})
+                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
                                     ].map(cat => (
                                         <button
                                             key={cat.name}
                                             type="button"
                                             onClick={() => setCategory(cat.name)}
-                                            className={`p-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2 ${category === cat.name ? `bg-blue-50 border-[#165DFF] text-[#165DFF] ring-1 ring-[#165DFF]` : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                            className={`p-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2 ${category === cat.name ? `bg-blue-50 dark:bg-blue-950/30 border-[var(--primary)] text-[var(--primary)] ring-1 ring-[var(--primary)]` : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                         >
                                            <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
                                             {cat.name}
@@ -727,13 +727,13 @@ export default function BudgetsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Batasan (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Batasan (Rp)</label>
                                 <MoneyInput
                                     value={amount}
                                     onChange={setAmount}
                                 />
                             </div>
-                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
                                 Simpan Budget
                             </button>
                         </form>
@@ -745,30 +745,30 @@ export default function BudgetsPage() {
             {isQuickExpModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm}></div>
-                    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h3 className="text-xl font-bold text-[#080C1A]">Catat Pengeluaran</h3>
-                                <p className="text-sm text-slate-500 mt-1">Kategori: <span className="font-bold text-[#165DFF] bg-blue-50 px-2 py-0.5 rounded-md">{quickExpCategory}</span></p>
+                                <h3 className="text-xl font-bold text-[var(--text-primary)]">Catat Pengeluaran</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Kategori: <span className="font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 rounded-md">{quickExpCategory}</span></p>
                             </div>
-                            <button onClick={resetQuickExpForm} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                            <button onClick={resetQuickExpForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleQuickExpenseSave} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Jumlah (Rp)</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Jumlah (Rp)</label>
                                 <MoneyInput
                                     value={quickExpAmount}
                                     onChange={setQuickExpAmount}
                                     autoFocus
-                                    className="focus:ring-[#165DFF]" 
+                                    className="focus:ring-[var(--primary)]" 
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[#080C1A] mb-2">Ambil dari Dompet</label>
+                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Ambil dari Dompet</label>
                                 <select
-                                    className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#165DFF] focus:border-transparent outline-none text-sm font-medium text-[#080C1A]"
+                                    className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
                                     value={quickExpWalletId}
                                     onChange={(e) => setQuickExpWalletId(e.target.value)}
                                     required
@@ -779,7 +779,7 @@ export default function BudgetsPage() {
                                     ))}
                                 </select>
                             </div>
-                            <button type="submit" className="w-full bg-[#165DFF] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
+                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
                                 Simpan Pengeluaran
                             </button>
                         </form>

@@ -72,7 +72,7 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
 
             {/* Modal Card */}
             <div
-                className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden"
+                className="relative w-full max-w-sm bg-white dark:bg-[var(--bg-card)] rounded-3xl shadow-2xl border border-slate-100 dark:border-[var(--border-default)] overflow-hidden"
                 style={{ animation: 'successModalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
             >
                 {/* Top accent bar */}
@@ -81,7 +81,7 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                     <X className="w-4 h-4" />
                 </button>
@@ -104,13 +104,13 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold text-slate-800 mb-2"
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2"
                         style={{ animation: 'slideUp 0.3s ease-out 0.2s both' }}>
                         {title || config.titleDefault}
                     </h3>
 
                     {/* Message */}
-                    <p className="text-slate-500 text-sm leading-relaxed mb-6"
+                    <p className="text-slate-500 dark:text-[var(--text-secondary)] text-sm leading-relaxed mb-6"
                         style={{ animation: 'slideUp 0.3s ease-out 0.25s both' }}>
                         {message}
                     </p>
@@ -125,7 +125,7 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                     </button>
 
                     {/* Auto-close progress bar */}
-                    <div className="w-full mt-4 h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-full mt-4 h-1 bg-slate-100 dark:bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                         <div
                             className={`h-full bg-gradient-to-r ${config.accentColor} rounded-full`}
                             style={{
@@ -134,7 +134,7 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                             }}
                         />
                     </div>
-                    <p className="text-xs text-slate-400 mt-1.5">Menutup otomatis...</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">Menutup otomatis...</p>
                 </div>
             </div>
 

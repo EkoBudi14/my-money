@@ -29,27 +29,27 @@ const ToastItem = ({ toast, onClose }: ToastItemProps) => {
         switch (toast.type) {
             case 'success':
                 return {
-                    bg: 'bg-emerald-50 border-emerald-200',
-                    icon: <CheckCircle className="w-5 h-5 text-emerald-600" />,
-                    text: 'text-emerald-800'
+                    bg: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/30',
+                    icon: <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
+                    text: 'text-emerald-800 dark:text-emerald-300'
                 }
             case 'error':
                 return {
-                    bg: 'bg-rose-50 border-rose-200',
-                    icon: <XCircle className="w-5 h-5 text-rose-600" />,
-                    text: 'text-rose-800'
+                    bg: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/30',
+                    icon: <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+                    text: 'text-rose-800 dark:text-rose-300'
                 }
             case 'warning':
                 return {
-                    bg: 'bg-amber-50 border-amber-200',
-                    icon: <AlertTriangle className="w-5 h-5 text-amber-600" />,
-                    text: 'text-amber-800'
+                    bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30',
+                    icon: <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
+                    text: 'text-amber-800 dark:text-amber-300'
                 }
             case 'info':
                 return {
-                    bg: 'bg-blue-50 border-blue-200',
-                    icon: <Info className="w-5 h-5 text-blue-600" />,
-                    text: 'text-blue-800'
+                    bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30',
+                    icon: <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+                    text: 'text-blue-800 dark:text-blue-300'
                 }
         }
     }

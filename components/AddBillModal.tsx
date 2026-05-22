@@ -75,15 +75,15 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
 
     return (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-slate-800">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
                             {initialData ? 'Edit Tagihan Rutin' : 'Tambah Tagihan Rutin'}
                         </h3>
                         <button 
                             onClick={onClose} 
-                            className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                            className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
                         >
                             <X size={20} />
                         </button>
@@ -91,19 +91,19 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                     
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">Nama Tagihan</label>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Tagihan</label>
                             <input
                                 required
                                 type="text"
                                 placeholder="Contoh: Netflix, WiFi, Listrik"
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-[var(--text-primary)] placeholder:text-slate-400 dark:text-slate-500"
                                 value={formData.name}
                                 onChange={e => setFormData({...formData, name: e.target.value})}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">Jumlah (Rp)</label>
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Jumlah (Rp)</label>
                             <MoneyInput
                                 value={formData.amount}
                                 onChange={(val) => setFormData({...formData, amount: val})}
@@ -112,7 +112,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Mulai Tanggal Pembayaran
                             </label>
                             <div className="relative">
@@ -120,7 +120,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                                 <input
                                     required
                                     type="date"
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-800 placeholder:text-slate-400 [color-scheme:light] cursor-pointer"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-[var(--text-primary)] placeholder:text-slate-400 dark:text-slate-500 [color-scheme:light] cursor-pointer"
                                     onClick={(e) => e.currentTarget.showPicker()}
                                     onChange={(e) => {
                                         const date = new Date(e.target.value)
@@ -133,12 +133,12 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                                     }}
                                 />
                                 {formData.due_date && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium bg-slate-50 pl-2">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400 font-medium bg-slate-50 dark:bg-[var(--bg-elevated)] pl-2">
                                         Setiap tgl <span className="text-blue-600 font-bold">{formData.due_date}</span>
                                     </div>
                                 )}
                             </div>
-                            <p className="text-xs text-slate-400 px-1">
+                            <p className="text-xs text-slate-400 dark:text-slate-500 px-1">
                                 Pilih tanggal pembayaran pertama. Tagihan akan otomatis berulang setiap bulannya pada tanggal yang sama.
                             </p>
                         </div>

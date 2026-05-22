@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
     }, [filteredTxs])
 
     // Colors
-    const COLORS = useMemo(() => ['#165DFF', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'], [])
+    const COLORS = useMemo(() => ['var(--primary)', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'], [])
     
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -534,17 +534,17 @@ export default function AnalyticsPage() {
 
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[#F3F4F3] bg-white px-5 md:px-8">
+        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[#080C1A]">Analitik</h2>
+                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Analitik</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[#F3F4F3] ml-auto">
+                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
-                        <p className="font-semibold text-[#080C1A] text-sm">Eko Budi</p>
-                        {/* <p className="text-[#6A7686] text-xs">Premium User</p> */}
+                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                        {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
                     </div>
-                    <div className="w-11 h-11 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold border-2 border-white shadow-sm">
+                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
                         EB
                     </div>
                 </div>
@@ -552,27 +552,27 @@ export default function AnalyticsPage() {
 
             <div className="p-4 pb-28 md:p-8 md:pb-8 space-y-6 md:space-y-8">
                 {/* Control Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-[#F3F4F3] shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border-default)] shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl">
+                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1 rounded-xl">
                             {filterMode === 'monthly' && (
                                 <button
                                     onClick={prevMonth}
-                                    className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                    className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
                             )}
                             <div className="flex items-center gap-2 px-4 py-1.5">
-                                <Calendar className="w-4 h-4 text-[#165DFF]" />
-                                <span className="font-bold text-[#080C1A] whitespace-nowrap min-w-[140px] text-center">
+                                <Calendar className="w-4 h-4 text-[var(--primary)]" />
+                                <span className="font-bold text-[var(--text-primary)] whitespace-nowrap min-w-[140px] text-center">
                                     {getPeriodLabel()}
                                 </span>
                             </div>
                              {filterMode === 'monthly' && (
                                 <button
                                     onClick={nextMonth}
-                                    className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-400 hover:text-[#165DFF] transition-all"
+                                    className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
@@ -583,7 +583,7 @@ export default function AnalyticsPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowSettings(!showSettings)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[#165DFF] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[var(--primary)] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
                         >
                             <Settings className="w-4 h-4" />
                             <span>Filter</span>
@@ -593,20 +593,20 @@ export default function AnalyticsPage() {
 
                 {/* Search Bar */}
                 <div className="relative">
-                    <div className="flex items-center gap-3 bg-white border border-[#F3F4F3] rounded-2xl px-4 py-3 shadow-sm">
-                        <Search className="w-4 h-4 text-[#6A7686] shrink-0" />
+                    <div className="flex items-center gap-3 bg-white dark:bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl px-4 py-3 shadow-sm">
+                        <Search className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
                         <input
                             type="text"
                             data-no-ring=""
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Cari transaksi berdasarkan nama, kategori, atau dompet..."
-                            className="flex-1 bg-white text-[16px] md:text-sm text-[#080C1A] placeholder-slate-400 outline-none font-medium"
+                            className="flex-1 bg-white dark:bg-[var(--bg-card)] text-[16px] md:text-sm text-[var(--text-primary)] placeholder-slate-400 outline-none font-medium"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -615,24 +615,24 @@ export default function AnalyticsPage() {
 
                     {/* Search Results Panel */}
                     {searchQuery.trim() && (
-                        <div className="mt-2 bg-white rounded-2xl border border-[#F3F4F3] shadow-lg overflow-hidden">
-                            <div className="px-4 py-3 border-b border-[#F3F4F3] flex items-center justify-between">
-                                <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                        <div className="mt-2 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-lg overflow-hidden">
+                            <div className="px-4 py-3 border-b border-[var(--border-default)] flex items-center justify-between">
+                                <span className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                                     {searchResults.length > 0 ? `${searchResults.length} hasil ditemukan` : 'Tidak ada hasil'}
                                 </span>
                                 {searchResults.length === 50 && (
-                                    <span className="text-xs text-slate-400">Menampilkan 50 teratas</span>
+                                    <span className="text-xs text-slate-400 dark:text-slate-500">Menampilkan 50 teratas</span>
                                 )}
                             </div>
 
                             {searchResults.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+                                <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400 dark:text-slate-500">
                                     <Search className="w-8 h-8 opacity-20" />
                                     <p className="text-sm font-medium">Transaksi tidak ditemukan</p>
                                     <p className="text-xs">Coba kata kunci lain</p>
                                 </div>
                             ) : (
-                                <div className="max-h-[400px] overflow-y-auto overflow-x-hidden divide-y divide-[#F3F4F3]">
+                                <div className="max-h-[400px] overflow-y-auto overflow-x-hidden divide-y divide-[var(--border-default)]">
                                     {(() => {
                                         const walletMap = new Map(wallets.map(w => [w.id, w.name]))
                                         return searchResults.map(tx => {
@@ -643,10 +643,10 @@ export default function AnalyticsPage() {
                                         const isIncome = tx.type === 'pemasukan'
                                         const isTopup = tx.type === 'topup'
                                         return (
-                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition-colors w-full min-w-0">
+                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors w-full min-w-0">
                                                 {/* Type icon */}
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                    isTopup ? 'bg-blue-50' : isIncome ? 'bg-emerald-50' : 'bg-rose-50'
+                                                    isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
                                                 }`}>
                                                     {isTopup
                                                         ? <Zap className="w-4 h-4 text-blue-500" />
@@ -658,18 +658,18 @@ export default function AnalyticsPage() {
 
                                                 {/* Info */}
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-[#080C1A] truncate">
+                                                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
                                                          {isTopup && tx.source_wallet_id 
                                                             ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
                                                             : tx.title}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                        <span className="text-xs text-[#6A7686]">{dateStr}</span>
-                                                        <span className="text-xs text-[#6A7686] flex items-center gap-1">
+                                                        <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
+                                                        <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
                                                             <WalletIcon className="w-3 h-3" />
                                                             {walletName}
                                                         </span>
-                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
                                                             {tx.category}
                                                         </span>
                                                         {tx.is_talangan && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>}
@@ -700,27 +700,27 @@ export default function AnalyticsPage() {
                             className="fixed inset-0 z-10"
                             onClick={() => setShowSettings(false)}
                         />
-                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white rounded-2xl shadow-xl border border-[#F3F4F3] p-5 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-[#080C1A]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                                <h3 className="font-bold text-[var(--text-primary)]">Pengaturan Filter</h3>
+                                <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-[#6A7686] uppercase tracking-wider">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl">
+                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mode Tampilan</label>
+                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1.5 rounded-xl">
                                         <button
                                             onClick={() => setFilterMode('monthly')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
                                         >
                                             Bulanan
                                         </button>
                                         <button
                                             onClick={() => setFilterMode('custom')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white shadow-sm text-[#165DFF]' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
                                         >
                                             Custom
                                         </button>
@@ -728,23 +728,23 @@ export default function AnalyticsPage() {
                                 </div>
 
                                 {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2 border-t border-[#F3F4F3]">
+                                    <div className="space-y-4 pt-2 border-t border-[var(--border-default)]">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[#6A7686]">Dari Tanggal</label>
+                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Dari Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[#6A7686]">Sampai Tanggal</label>
+                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Sampai Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#165DFF] transition-all font-bold text-[#080C1A]"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
                                             />
                                         </div>
                                     </div>
@@ -755,23 +755,23 @@ export default function AnalyticsPage() {
                 )}
 
                 {loading ? (
-                    <div className="text-center py-20 text-slate-400 animate-pulse">Memuat analitik...</div>
+                    <div className="text-center py-20 text-slate-400 dark:text-slate-500 animate-pulse">Memuat analitik...</div>
                 ) : (
                     <>
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
                                             <TrendingUp className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[#6A7686] font-medium">Total Pemasukan</h3>
+                                        <h3 className="text-[var(--text-secondary)] font-medium">Total Pemasukan</h3>
                                     </div>
                                     <div className="relative">
                                         <button 
                                             onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
-                                            className="p-1 text-slate-400 hover:text-emerald-500 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-emerald-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -796,21 +796,21 @@ export default function AnalyticsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold text-[#080C1A]">Rp {income.toLocaleString('id-ID')}</p>
+                                <p className="text-2xl font-bold text-[var(--text-primary)]">Rp {income.toLocaleString('id-ID')}</p>
                             </div>
 
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-rose-50 rounded-xl text-rose-600 group-hover:bg-rose-100 transition-colors">
+                                        <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl text-rose-600 group-hover:bg-rose-100 dark:bg-rose-950/40 transition-colors">
                                             <TrendingDown className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[#6A7686] font-medium">Total Pengeluaran</h3>
+                                        <h3 className="text-[var(--text-secondary)] font-medium">Total Pengeluaran</h3>
                                     </div>
                                     <div className="relative">
                                         <button 
                                             onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
-                                            className="p-1 text-slate-400 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -835,21 +835,21 @@ export default function AnalyticsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold text-[#080C1A]">Rp {expense.toLocaleString('id-ID')}</p>
+                                <p className="text-2xl font-bold text-[var(--text-primary)]">Rp {expense.toLocaleString('id-ID')}</p>
                             </div>
 
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 group">
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-50 rounded-xl text-[#165DFF] group-hover:bg-blue-100 transition-colors">
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-[var(--primary)] group-hover:bg-blue-100 transition-colors">
                                             <WalletIcon className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[#6A7686] font-medium">Sisa Saldo Periode Ini</h3>
+                                        <h3 className="text-[var(--text-secondary)] font-medium">Sisa Saldo Periode Ini</h3>
                                     </div>
                                     <div className="relative">
                                         <button 
                                             onClick={() => setShowTooltip(!showTooltip)}
-                                            className="p-1 text-slate-400 hover:text-[#165DFF] transition-colors rounded-full hover:bg-slate-50 relative z-20"
+                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -874,7 +874,7 @@ export default function AnalyticsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[#080C1A]' : 'text-rose-600'}`}>
+                                <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[var(--text-primary)]' : 'text-rose-600'}`}>
                                     Rp {netBalance.toLocaleString('id-ID')}
                                 </p>
                             </div>
@@ -883,12 +883,12 @@ export default function AnalyticsPage() {
                         {/* Quick Insights Row (Top Expenses & Recent Activity) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Top Expenses */}
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
                                 <div className="flex items-center gap-3 mb-5">
-                                    <div className="p-2 bg-rose-50 rounded-lg text-rose-500">
+                                    <div className="p-2 bg-rose-50 dark:bg-rose-950/30 rounded-lg text-rose-500">
                                         <TrendingDown className="w-5 h-5" />
                                     </div>
-                                    <h3 className="font-bold text-[#080C1A]">Pengeluaran Terbesar</h3>
+                                    <h3 className="font-bold text-[var(--text-primary)]">Pengeluaran Terbesar</h3>
                                 </div>
                                 {topExpenses.length > 0 ? (
                                     <div className="space-y-4">
@@ -897,12 +897,12 @@ export default function AnalyticsPage() {
                                                 <div className="flex items-center gap-3 min-w-0 pr-4">
                                                     <span className="text-xs font-black text-slate-300 w-4">{idx + 1}.</span>
                                                     <div className="min-w-0">
-                                                        <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
+                                                        <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
                                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
-                                                            <span className="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-0.5 rounded-md text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">{tx.category}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -911,19 +911,19 @@ export default function AnalyticsPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500">
                                         <p className="text-sm font-medium">Belum ada pengeluaran</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Recent Activity */}
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
                                 <div className="flex items-center gap-3 mb-5">
-                                    <div className="p-2 bg-[#165DFF]/10 rounded-lg text-[#165DFF]">
+                                    <div className="p-2 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
                                         <Zap className="w-5 h-5" />
                                     </div>
-                                    <h3 className="font-bold text-[#080C1A]">Aktivitas Terakhir</h3>
+                                    <h3 className="font-bold text-[var(--text-primary)]">Aktivitas Terakhir</h3>
                                 </div>
                                 {recentActivity.length > 0 ? (
                                     <div className="space-y-4">
@@ -932,12 +932,12 @@ export default function AnalyticsPage() {
                                             return (
                                                 <div key={tx.id} className="flex justify-between items-center group">
                                                     <div className="min-w-0 pr-4">
-                                                        <p className="font-bold text-sm text-[#080C1A] truncate">{tx.title}</p>
+                                                        <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
                                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
-                                                            <span className="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-0.5 rounded-md text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">{tx.category}</span>
                                                         </div>
                                                     </div>
                                                     <p className={`font-bold text-sm shrink-0 ${
@@ -950,7 +950,7 @@ export default function AnalyticsPage() {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500">
                                         <p className="text-sm font-medium">Belum ada aktivitas</p>
                                     </div>
                                 )}
@@ -961,19 +961,19 @@ export default function AnalyticsPage() {
                         {insights.length > 0 && (
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-[#165DFF]" />
-                                    <h3 className="font-bold text-[#080C1A]">Spending Insights</h3>
-                                    <span className="text-xs text-[#6A7686] font-medium">— analisis otomatis periode ini</span>
+                                    <Zap className="w-4 h-4 text-[var(--primary)]" />
+                                    <h3 className="font-bold text-[var(--text-primary)]">Spending Insights</h3>
+                                    <span className="text-xs text-[var(--text-secondary)] font-medium">— analisis otomatis periode ini</span>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {insights.map((ins, i) => (
                                         <div
                                             key={i}
                                             className={`p-4 rounded-2xl border flex items-start gap-3 transition-all hover:shadow-sm ${
-                                                ins.type === 'positive' ? 'bg-emerald-50 border-emerald-100' :
-                                                ins.type === 'negative' ? 'bg-rose-50 border-rose-100' :
-                                                ins.type === 'warning' ? 'bg-amber-50 border-amber-100' :
-                                                'bg-blue-50 border-blue-100'
+                                                ins.type === 'positive' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
+                                                ins.type === 'negative' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/30' :
+                                                ins.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100' :
+                                                'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
                                             }`}
                                         >
                                             <span className="text-xl mt-0.5 shrink-0">{ins.emoji}</span>
@@ -998,33 +998,33 @@ export default function AnalyticsPage() {
                         )}
 
                         {/* Period Comparison Table */}
-                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
-                            <div className="p-5 border-b border-[#F3F4F3] flex items-center gap-2">
-                                <ArrowUpRight className="w-4 h-4 text-[#165DFF]" />
-                                <h3 className="font-bold text-[#080C1A]">Perbandingan Periode</h3>
-                                <span className="text-xs text-[#6A7686] font-medium ml-1">— otomatis vs periode sebelumnya</span>
+                        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
+                            <div className="p-5 border-b border-[var(--border-default)] flex items-center gap-2">
+                                <ArrowUpRight className="w-4 h-4 text-[var(--primary)]" />
+                                <h3 className="font-bold text-[var(--text-primary)]">Perbandingan Periode</h3>
+                                <span className="text-xs text-[var(--text-secondary)] font-medium ml-1">— otomatis vs periode sebelumnya</span>
                             </div>
 
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm min-w-[600px]">
                                     <thead>
-                                        <tr className="bg-slate-50">
-                                            <th className="text-left px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider w-36">Item</th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#080C1A] uppercase tracking-wider">
+                                        <tr className="bg-slate-50 dark:bg-[var(--bg-elevated)]">
+                                            <th className="text-left px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider w-36">Item</th>
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
                                                 <div>Periode Ini</div>
-                                                <div className="text-[10px] font-medium text-[#165DFF] normal-case mt-0.5">{periodComparison.currentLabel}</div>
+                                                <div className="text-[10px] font-medium text-[var(--primary)] normal-case mt-0.5">{periodComparison.currentLabel}</div>
                                             </th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                                                 <div>Periode Lalu</div>
-                                                <div className="text-[10px] font-medium text-slate-400 normal-case mt-0.5">{periodComparison.prevLabel}</div>
+                                                <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 normal-case mt-0.5">{periodComparison.prevLabel}</div>
                                             </th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[#6A7686] uppercase tracking-wider">
+                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     Perubahan
                                                     <div className="relative inline-flex">
                                                         <button 
                                                             onClick={() => setShowChangeTooltip(!showChangeTooltip)}
-                                                            className="text-slate-400 hover:text-[#165DFF] transition-colors rounded-full"
+                                                            className="text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full"
                                                         >
                                                             <Info className="w-3.5 h-3.5" />
                                                         </button>
@@ -1050,22 +1050,22 @@ export default function AnalyticsPage() {
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#F3F4F3]">
+                                    <tbody className="divide-y divide-[var(--border-default)]">
                                         {/* Summary rows */}
                                         {([
                                             { label: 'Pemasukan', curr: periodComparison.currIncome, prev: periodComparison.prevIncome, color: 'text-emerald-600', positive: true },
                                             { label: 'Pengeluaran', curr: periodComparison.currExpense, prev: periodComparison.prevExpense, color: 'text-rose-500', positive: false },
-                                            { label: 'Selisih', curr: periodComparison.currNet, prev: periodComparison.prevNet, color: periodComparison.currNet >= 0 ? 'text-[#080C1A]' : 'text-rose-600', positive: true },
+                                            { label: 'Selisih', curr: periodComparison.currNet, prev: periodComparison.prevNet, color: periodComparison.currNet >= 0 ? 'text-[var(--text-primary)]' : 'text-rose-600', positive: true },
                                         ] as const).map(row => {
                                             const pct = periodComparison.pctDiff(row.curr, row.prev)
                                             const isGood = row.positive ? (pct !== null && pct > 0) : (pct !== null && pct < 0)
                                             return (
-                                                <tr key={row.label} className="hover:bg-slate-50/60 transition-colors">
-                                                    <td className="px-5 py-3.5 font-semibold text-[#080C1A]">{row.label}</td>
+                                                <tr key={row.label} className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
+                                                    <td className="px-5 py-3.5 font-semibold text-[var(--text-primary)]">{row.label}</td>
                                                     <td className={`px-5 py-3.5 text-right font-bold ${row.color}`}>
                                                         {row.curr >= 0 ? '+' : ''}Rp {row.curr.toLocaleString('id-ID')}
                                                     </td>
-                                                    <td className="px-5 py-3.5 text-right text-[#6A7686] font-medium">
+                                                    <td className="px-5 py-3.5 text-right text-[var(--text-secondary)] font-medium">
                                                         {periodComparison.hasPrevData ? (
                                                             <>Rp {row.prev.toLocaleString('id-ID')}</>
                                                         ) : <span className="text-slate-300">—</span>}
@@ -1074,13 +1074,13 @@ export default function AnalyticsPage() {
                                                         {pct !== null && periodComparison.hasPrevData ? (
                                                             <div className="flex flex-col items-end gap-1">
                                                                 <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                    isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                                    isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
                                                                 }`}>
                                                                     {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                                     {Math.abs(pct).toFixed(1)}%
                                                                 </span>
                                                                 {pct > 100 && (
-                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                                                                         (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
                                                                     </span>
                                                                 )}
@@ -1091,13 +1091,13 @@ export default function AnalyticsPage() {
                                             )
                                         })}
                                         {/* Saving Rate row */}
-                                        <tr className="hover:bg-slate-50/60 transition-colors">
-                                            <td className="px-5 py-3.5 font-semibold text-[#080C1A]">Saving Rate</td>
+                                        <tr className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
+                                            <td className="px-5 py-3.5 font-semibold text-[var(--text-primary)]">Saving Rate</td>
                                             <td className={`px-5 py-3.5 text-right font-bold ${
                                                 periodComparison.currSavingRate >= 20 ? 'text-emerald-600' :
                                                 periodComparison.currSavingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
                                             }`}>{periodComparison.currSavingRate.toFixed(1)}%</td>
-                                            <td className="px-5 py-3.5 text-right text-[#6A7686] font-medium">
+                                            <td className="px-5 py-3.5 text-right text-[var(--text-secondary)] font-medium">
                                                 {periodComparison.hasPrevData ? `${periodComparison.prevSavingRate.toFixed(1)}%` : <span className="text-slate-300">—</span>}
                                             </td>
                                             <td className="px-5 py-3.5 text-right">
@@ -1105,7 +1105,7 @@ export default function AnalyticsPage() {
                                                     const diff = periodComparison.currSavingRate - periodComparison.prevSavingRate
                                                     return (
                                                         <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                            diff >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                            diff >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
                                                         }`}>
                                                             {diff >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                             {Math.abs(diff).toFixed(1)}%
@@ -1119,7 +1119,7 @@ export default function AnalyticsPage() {
                                         {periodComparison.categoryRows.length > 0 && (
                                             <tr>
                                                 <td colSpan={4} className="px-5 pt-4 pb-1">
-                                                    <p className="text-[10px] font-bold text-[#6A7686] uppercase tracking-widest">Per Kategori (Pengeluaran)</p>
+                                                    <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Per Kategori (Pengeluaran)</p>
                                                 </td>
                                             </tr>
                                         )}
@@ -1127,12 +1127,12 @@ export default function AnalyticsPage() {
                                             const pct = row.pct
                                             const isGood = pct !== null && pct < 0  // spending down = good
                                             return (
-                                                <tr key={row.name} className="hover:bg-slate-50/60 transition-colors">
-                                                    <td className="px-5 py-3 text-[#080C1A] font-medium">{row.name}</td>
+                                                <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
+                                                    <td className="px-5 py-3 text-[var(--text-primary)] font-medium">{row.name}</td>
                                                     <td className="px-5 py-3 text-right font-semibold text-rose-500">
                                                         Rp {row.curr.toLocaleString('id-ID')}
                                                     </td>
-                                                    <td className="px-5 py-3 text-right text-[#6A7686] font-medium">
+                                                    <td className="px-5 py-3 text-right text-[var(--text-secondary)] font-medium">
                                                         {periodComparison.hasPrevData && row.prev > 0
                                                             ? `Rp ${row.prev.toLocaleString('id-ID')}`
                                                             : <span className="text-slate-300">—</span>}
@@ -1141,13 +1141,13 @@ export default function AnalyticsPage() {
                                                         {pct !== null && periodComparison.hasPrevData ? (
                                                             <div className="flex flex-col items-end gap-1">
                                                                 <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                    isGood ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                                                                    isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
                                                                 }`}>
                                                                     {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                                     {Math.abs(pct).toFixed(0)}%
                                                                 </span>
                                                                 {pct > 100 && (
-                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                                                                         (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
                                                                     </span>
                                                                 )}
@@ -1160,7 +1160,7 @@ export default function AnalyticsPage() {
                                     </tbody>
                                 </table>
                                 {!periodComparison.hasPrevData && (
-                                    <div className="text-center py-4 text-xs text-slate-400 border-t border-[#F3F4F3]">
+                                    <div className="text-center py-4 text-xs text-slate-400 dark:text-slate-500 border-t border-[var(--border-default)]">
                                         Belum ada data dari periode sebelumnya ({periodComparison.prevLabel})
                                     </div>
                                 )}
@@ -1171,8 +1171,8 @@ export default function AnalyticsPage() {
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Summary Pie Chart */}
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
-                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Ringkasan Arus Kas</h3>
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
+                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Ringkasan Arus Kas</h3>
                                 <div className="w-full h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -1192,7 +1192,8 @@ export default function AnalyticsPage() {
                                             </Pie>
                                             <Tooltip 
                                                 formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
+                                                itemStyle={{ color: 'var(--text-primary)' }}
                                             />
                                             <Legend verticalAlign="bottom" height={36} iconType="circle" />
                                         </PieChart>
@@ -1201,28 +1202,29 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Category Bar Chart */}
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300">
-                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Pengeluaran per Kategori</h3>
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
+                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Pengeluaran per Kategori</h3>
                                 <div className="w-full h-[300px]">
                                     {categoryData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 5, left: 40, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F3" />
+                                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border-default)" />
                                                 <XAxis type="number" hide />
                                                 <YAxis 
                                                     dataKey="name" 
                                                     type="category" 
-                                                    tick={{ fill: '#6A7686', fontSize: 12, fontWeight: 500 }} 
+                                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} 
                                                     width={100}
                                                     axisLine={false}
                                                     tickLine={false}
                                                 />
                                                 <Tooltip 
                                                     formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                    cursor={{ fill: '#F9FAFB' }}
-                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    cursor={{ fill: 'var(--bg-elevated)' }}
+                                                    contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
+                                                    itemStyle={{ color: 'var(--text-primary)' }}
                                                 />
-                                                <Bar dataKey="value" fill="#165DFF" radius={[0, 4, 4, 0]} barSize={28}>
+                                                <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={28}>
                                                     <LabelList 
                                                         dataKey="value" 
                                                         position="insideEnd" 
@@ -1233,8 +1235,8 @@ export default function AnalyticsPage() {
                                             </BarChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-2">
+                                            <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
                                                 <TrendingDown className="w-5 h-5 opacity-20" />
                                             </div>
                                             <span className="text-sm font-medium">Belum ada data pengeluaran</span>
@@ -1244,8 +1246,8 @@ export default function AnalyticsPage() {
                             </div>
 
                              {/* Wallet Distribution */}
-                            <div className="bg-white p-6 rounded-2xl border border-[#F3F4F3] hover:shadow-sm transition-all duration-300 lg:col-span-2">
-                                <h3 className="font-bold text-lg text-[#080C1A] mb-6">Pengeluaran Berdasarkan Sumber Dana</h3>
+                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 lg:col-span-2">
+                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Pengeluaran Berdasarkan Sumber Dana</h3>
                                 <div className="w-full h-[300px]">
                                     {walletData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
@@ -1266,14 +1268,15 @@ export default function AnalyticsPage() {
                                                 </Pie>
                                                 <Tooltip 
                                                     formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                    contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #F3F4F3', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
+                                                    itemStyle={{ color: 'var(--text-primary)' }}
                                                 />
                                                 <Legend />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     ) : (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-2">
+                                            <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
                                                 <WalletIcon className="w-5 h-5 opacity-20" />
                                             </div>
                                             <span className="text-sm font-medium">Belum ada data wallet</span>
@@ -1284,22 +1287,22 @@ export default function AnalyticsPage() {
                         </div>
 
                         {/* Wallet Transaction Breakdown */}
-                        <div className="bg-white rounded-2xl border border-[#F3F4F3] overflow-hidden">
-                            <div className="p-5 border-b border-[#F3F4F3] flex items-center gap-2">
-                                <WalletIcon className="w-4 h-4 text-[#165DFF]" />
-                                <h3 className="font-bold text-[#080C1A]">Transaksi Per Dompet</h3>
-                                <span className="text-xs text-[#6A7686] font-medium ml-1">— rincian per sumber dana</span>
+                        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden">
+                            <div className="p-5 border-b border-[var(--border-default)] flex items-center gap-2">
+                                <WalletIcon className="w-4 h-4 text-[var(--primary)]" />
+                                <h3 className="font-bold text-[var(--text-primary)]">Transaksi Per Dompet</h3>
+                                <span className="text-xs text-[var(--text-secondary)] font-medium ml-1">— rincian per sumber dana</span>
                             </div>
 
                             {walletTransactionBreakdown.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 text-slate-400 gap-2">
-                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center">
+                                <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500 gap-2">
+                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
                                         <WalletIcon className="w-5 h-5 opacity-20" />
                                     </div>
                                     <span className="text-sm font-medium">Belum ada transaksi di periode ini</span>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-[#F3F4F3]">
+                                <div className="divide-y divide-[var(--border-default)]">
                                     {walletTransactionBreakdown.map((walletGroup) => {
                                         const isExpanded = expandedWallet === walletGroup.walletName
                                         return (
@@ -1307,21 +1310,21 @@ export default function AnalyticsPage() {
                                                 {/* Wallet Header — clickable accordion toggle */}
                                                 <button
                                                     onClick={() => setExpandedWallet(isExpanded ? null : walletGroup.walletName)}
-                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-50/70 transition-colors text-left group"
+                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/70 transition-colors text-left group"
                                                 >
-                                                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                                                        <WalletIcon className="w-4 h-4 text-[#165DFF]" />
+                                                    <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center shrink-0">
+                                                        <WalletIcon className="w-4 h-4 text-[var(--primary)]" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-[#080C1A] text-sm">{walletGroup.walletName}</p>
+                                                        <p className="font-bold text-[var(--text-primary)] text-sm">{walletGroup.walletName}</p>
                                                         <div className="flex items-center gap-3 mt-0.5">
                                                             <span className="text-xs text-emerald-600 font-medium">+Rp {walletGroup.totalIncome.toLocaleString('id-ID')}</span>
                                                             <span className="text-xs text-rose-500 font-medium">-Rp {walletGroup.totalExpense.toLocaleString('id-ID')}</span>
-                                                            <span className="text-xs text-[#6A7686]">{walletGroup.transactions.length} transaksi</span>
+                                                            <span className="text-xs text-[var(--text-secondary)]">{walletGroup.transactions.length} transaksi</span>
                                                         </div>
                                                     </div>
                                                     <ChevronDown
-                                                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                                                        className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0 ${
                                                             isExpanded ? 'rotate-180' : ''
                                                         }`}
                                                     />
@@ -1329,7 +1332,7 @@ export default function AnalyticsPage() {
 
                                                 {/* Transaction List */}
                                                 {isExpanded && (
-                                                    <div className="bg-slate-50/50 border-t border-[#F3F4F3] overflow-x-hidden">
+                                                    <div className="bg-slate-50 dark:bg-[var(--bg-elevated)]/50 border-t border-[var(--border-default)] overflow-x-hidden">
                                                         {walletGroup.transactions.map((tx, idx) => {
                                                             const txDate = new Date(tx.date || tx.created_at)
                                                             const txTime = new Date(tx.created_at)
@@ -1340,13 +1343,13 @@ export default function AnalyticsPage() {
                                                                     key={tx.id}
                                                                     className={`flex items-center gap-3 px-5 py-3.5 w-full min-w-0 ${
                                                                         idx !== walletGroup.transactions.length - 1
-                                                                            ? 'border-b border-[#F3F4F3]'
+                                                                            ? 'border-b border-[var(--border-default)]'
                                                                             : ''
-                                                                    } hover:bg-white transition-colors`}
+                                                                    } hover:bg-white dark:bg-[var(--bg-card)] transition-colors`}
                                                                 >
                                                                     {/* Type indicator */}
                                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                                        isIncome ? 'bg-emerald-50' : 'bg-rose-50'
+                                                                        isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
                                                                     }`}>
                                                                         {isIncome
                                                                             ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
@@ -1356,10 +1359,10 @@ export default function AnalyticsPage() {
 
                                                                     {/* Info */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-sm font-semibold text-[#080C1A] truncate">{tx.title}</p>
+                                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{tx.title}</p>
                                                                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                                            <span className="text-xs text-[#6A7686]">{dateStr}</span>
-                                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                                            <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
+                                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
                                                                                 {tx.category}
                                                                             </span>
                                                                             {tx.is_talangan && (

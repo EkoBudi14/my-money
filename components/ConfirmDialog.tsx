@@ -29,26 +29,26 @@ export default function ConfirmDialog({
                 onClick={onCancel}
             ></div>
 
-            <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl border border-white/20 z-50 p-6 relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="glass backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl border border-white/20 dark:border-[var(--border-default)] z-50 p-6 relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 <button
                     onClick={onCancel}
-                    className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+                    className="absolute top-4 right-4 p-2 bg-slate-100 dark:bg-[var(--bg-elevated)] hover:bg-slate-200 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-500 dark:text-slate-400 transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>
 
                 <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                        <AlertTriangle className="w-8 h-8 text-amber-600" />
+                    <div className="w-16 h-16 bg-amber-100 dark:bg-amber-950/40 rounded-full flex items-center justify-center mb-4">
+                        <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
-                    <p className="text-slate-600 mb-6">{message}</p>
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{title}</h3>
+                    <p className="text-[var(--text-secondary)] mb-6">{message}</p>
 
                     <div className="flex gap-3 w-full">
                         <button
                             onClick={onCancel}
-                            className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                            className="flex-1 px-6 py-3 bg-slate-100 dark:bg-[var(--bg-elevated)] hover:bg-slate-200 dark:hover:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors"
                         >
                             {cancelText}
                         </button>
