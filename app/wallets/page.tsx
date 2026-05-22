@@ -207,7 +207,7 @@ export default function WalletsPage() {
                                         return (
                                             <div
                                                 key={wallet.id}
-                                                className={`px-4 py-3.5 flex items-center gap-3 active:bg-[#F9FAFB] dark:active:bg-[#F9FAFB] dark:bg-[var(--bg-page)] transition-colors ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}
+                                                className={`px-4 py-3.5 flex items-center gap-3 active:bg-[#F9FAFB] dark:active:bg-[var(--bg-hover)] dark:bg-[var(--bg-page)] transition-colors ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}
                                             >
                                                 {/* Icon */}
                                                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${getColor(wallet.type)}`}>
