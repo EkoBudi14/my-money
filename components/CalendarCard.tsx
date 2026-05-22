@@ -436,8 +436,8 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             onClick={() => handleDateClick(day)}
                             className={`
                                 aspect-square flex flex-col items-center justify-center relative rounded-2xl cursor-pointer transition-all duration-200
-                                ${selected ? 'bg-blue-600 shadow-lg shadow-blue-200 scale-105 z-10' : ''}
-                                ${!selected && today ? 'bg-blue-50 dark:bg-blue-950/30 ring-1 ring-blue-200' : ''}
+                                ${selected ? 'bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-blue-900/40 scale-105 z-10' : ''}
+                                ${!selected && today ? 'bg-blue-50 dark:bg-blue-950/30 ring-1 ring-blue-200 dark:ring-blue-800' : ''}
                                 ${!selected && !today && isNationalHoliday ? 'bg-rose-50 dark:bg-rose-950/30' : ''}
                                 ${!selected && !today ? 'hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]' : ''}
                             `}
@@ -492,7 +492,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                     <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                         {/* Holiday Info */}
                         {displayData?.holiday && (
-                            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-100 dark:border-rose-800/30">
+                            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/30 border border-rose-100 dark:border-rose-800/30">
                                 <div className="p-2 bg-rose-100 dark:bg-rose-950/40 rounded-lg text-rose-600">
                                     <CalendarIcon size={16} />
                                 </div>
@@ -509,7 +509,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                 <div key={event.id} className={`flex items-start gap-3 p-3 rounded-xl border group relative
                                     ${event.color === 'blue' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30' : 
                                       event.color === 'green' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
-                                      event.color === 'yellow' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100' :
+                                      event.color === 'yellow' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-800/30' :
                                       event.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-100 dark:border-purple-800/30' :
                                       'bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/30'
                                     }
