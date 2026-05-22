@@ -215,7 +215,7 @@ export default function WalletsPage() {
 
             const res = await supabase.from('wallets').insert([payload]).select()
             error = res.error
-            
+
             // Create Transaction History if successful
             if (!error && res.data && res.data.length > 0 && sourceWalletToDeduct) {
                 const newWalletId = res.data[0].id
@@ -251,7 +251,7 @@ export default function WalletsPage() {
     const handleDelete = async (id: number) => {
         // 1. Fetch wallet details first to check for source_wallet_id and balance
         const { data: walletToDelete } = await supabase.from('wallets').select('*').eq('id', id).single()
-        
+
         if (!walletToDelete) {
             return showToast('error', 'Dompet not found')
         }
@@ -260,11 +260,11 @@ export default function WalletsPage() {
 
         // 2. Check logic for refund
         if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
-             const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
-             
-             if (sourceWallet) {
-                 refundMessage = `Sisa saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} akan dikembalikan ke ${sourceWallet.name}.`
-             }
+            const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
+
+            if (sourceWallet) {
+                refundMessage = `Sisa saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} akan dikembalikan ke ${sourceWallet.name}.`
+            }
         }
 
         const confirm = await showConfirm({
@@ -276,7 +276,7 @@ export default function WalletsPage() {
         // 3. Process Refund if confirmed and applicable
         if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
             const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
-             
+
             if (sourceWallet) {
                 const newBalance = sourceWallet.balance + walletToDelete.balance
                 await supabase.from('wallets').update({ balance: newBalance }).eq('id', sourceWallet.id)
@@ -387,20 +387,20 @@ export default function WalletsPage() {
                                     <p className="text-white font-extrabold text-3xl mb-4 relative z-10">Rp {totalBalance.toLocaleString('id-ID')}</p>
                                     <div className="flex items-center gap-2 flex-wrap relative z-10">
                                         {cashCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-[#165DFF] dark:text-white px-2.5 py-1 rounded-full">
                                                 <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full" />
                                                 {cashCount} Cash
                                             </span>
                                         )}
                                         {ewalletCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-[#165DFF] dark:text-white px-2.5 py-1 rounded-full">
                                                 <span className="w-1.5 h-1.5 bg-purple-300 rounded-full" />
                                                 {ewalletCount} E-Wallet
                                             </span>
                                         )}
                                         {bankCount > 0 && (
-                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-white px-2.5 py-1 rounded-full">
-                                                <span className="w-1.5 h-1.5 bg-blue-200 rounded-full" />
+                                            <span className="flex items-center gap-1 text-[11px] font-semibold bg-white dark:bg-[var(--bg-card)]/15 text-[#165DFF] dark:text-white px-2.5 py-1 rounded-full">
+                                                <span className="w-1.5 h-1.5 bg-blue-300 rounded-full" />
                                                 {bankCount} Bank
                                             </span>
                                         )}
@@ -435,11 +435,10 @@ export default function WalletsPage() {
                                                         <p className="font-bold text-sm text-[var(--text-primary)] shrink-0 ml-2">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                                     </div>
                                                     <div className="flex items-center justify-between mb-1.5">
-                                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
-                                                            wallet.type === 'bank' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' :
+                                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${wallet.type === 'bank' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600' :
                                                             wallet.type === 'ewallet' ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-600' :
-                                                            'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600'
-                                                        }`}>{wallet.type}</span>
+                                                                'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600'
+                                                            }`}>{wallet.type}</span>
                                                         <p className="text-[11px] text-[var(--text-secondary)]">{pct}% dari total</p>
                                                     </div>
                                                     {/* Progress bar */}
@@ -489,14 +488,14 @@ export default function WalletsPage() {
                             {activeWallets.map((wallet: Wallet) => (
                                 <div key={wallet.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[220px] relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
-                                         <button onClick={() => handleEdit(wallet)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
+                                        <button onClick={() => handleEdit(wallet)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
                                             <Pencil className="w-5 h-5" />
                                         </button>
                                         <button onClick={() => handleDelete(wallet.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95 group-hover:opacity-100">
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
-                                    
+
                                     <div className="z-10 mt-2">
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 ${getColor(wallet.type)} shadow-lg shadow-blue-500/20`}>
                                             {getIcon(wallet.type)}
@@ -504,17 +503,17 @@ export default function WalletsPage() {
                                         <h3 className="font-bold text-xl text-[var(--text-primary)] mb-1">{wallet.name}</h3>
                                         <span className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-50 dark:bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-slate-100 dark:border-[var(--border-default)]">{wallet.type}</span>
                                     </div>
-                                    
+
                                     <div className="z-10 mt-6">
                                         <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">Saldo Saat Ini</p>
                                         <p className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Rp {wallet.balance.toLocaleString('id-ID')}</p>
                                     </div>
-                                    
+
                                     {/* Decorative circle */}
                                     <div className={`absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-10 ${getColor(wallet.type)}`}></div>
                                 </div>
                             ))}
-                        
+
                             {/* Add New Wallet Card */}
                             <button
                                 onClick={() => { setIsModalOpen(true) }}
@@ -597,7 +596,7 @@ export default function WalletsPage() {
                                     onChange={setBalance}
                                 />
                             </div>
-                            
+
                             {/* Source Wallet Logic (Simplified for styling update) */}
                             <div>
                                 <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Sumber Dana (Opsional)</label>
@@ -656,8 +655,8 @@ export default function WalletsPage() {
                                 })()}
                             </div>
 
-                             {/* Checkbox and Preview */}
-                             {sourceWalletId && (
+                            {/* Checkbox and Preview */}
+                            {sourceWalletId && (
                                 <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] p-4 rounded-xl border border-slate-200 dark:border-[var(--border-default)]">
                                     <label className="flex items-center gap-3 cursor-pointer mb-2">
                                         <input
