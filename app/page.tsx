@@ -356,23 +356,28 @@ export default function MoneyManager() {
           .eq('id', 1)
 
         // If custom mode, also save to filter_history (upsert prevents duplicates)
+        // Guard: skip jika durasi < 3 hari — mencegah entri sampah hasil debounce setengah jalan
         if (filterMode === 'custom') {
-          const fmt = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-          const label = `${fmt(customRange.start)} – ${fmt(customRange.end)}`
-          const { data: upserted } = await supabase
-            .from('filter_history')
-            .upsert(
-              { start_date: customRange.start, end_date: customRange.end, label },
-              { onConflict: 'start_date,end_date' }
-            )
-            .select()
-          // Refresh local filterHistory state
-          const { data: historyData } = await supabase
-            .from('filter_history')
-            .select('*')
-            .order('start_date', { ascending: true })
-          if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
-          void upserted
+          const durationMs = new Date(customRange.end).getTime() - new Date(customRange.start).getTime()
+          const MIN_SAVE_DURATION_MS = 2 * 24 * 60 * 60 * 1000 // selisih >= 2 hari = minimal 3 hari
+          if (durationMs >= MIN_SAVE_DURATION_MS) {
+            const fmt = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+            const label = `${fmt(customRange.start)} – ${fmt(customRange.end)}`
+            const { data: upserted } = await supabase
+              .from('filter_history')
+              .upsert(
+                { start_date: customRange.start, end_date: customRange.end, label },
+                { onConflict: 'start_date,end_date' }
+              )
+              .select()
+            // Refresh local filterHistory state
+            const { data: historyData } = await supabase
+              .from('filter_history')
+              .select('*')
+              .order('start_date', { ascending: true })
+            if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
+            void upserted
+          }
         }
       }
 
@@ -1615,15 +1620,29 @@ export default function MoneyManager() {
       addTitleRow(wsSummary, 'Rekap per Rentang Tanggal — Semua Riwayat', 6, 'FF059669')
       addColHeaderRow(wsSummary, ['Rentang Tanggal', 'Pemasukan', 'Pengeluaran', 'Piutang', 'Talangan', 'Selisih'], 6)
 
-      if (filterHistory.length === 0) {
-        // Fallback: no history yet, show a note
-        const noteRow = wsSummary.addRow({ range: 'Belum ada history rentang tanggal. Gunakan filter custom dan data akan tercatat otomatis.' })
+      // Filter out trivial/ambiguous entries before rendering:
+      // 1. Skip rentang < 3 hari — hasil debounce saat user masih mengedit custom range
+      // 2. Dedup berdasarkan key start_date|end_date (safety net, seharusnya sudah unique di DB)
+      const MIN_DURATION_MS = 2 * 24 * 60 * 60 * 1000 // 3 hari minimum (selisih start→end >= 2 hari)
+      const seenKeys = new Set<string>()
+      const cleanHistory = filterHistory.filter(entry => {
+        const durationMs = new Date(entry.end_date).getTime() - new Date(entry.start_date).getTime()
+        if (durationMs < MIN_DURATION_MS) return false // skip rentang < 3 hari (kemungkinan sampah debounce)
+        const key = `${entry.start_date}|${entry.end_date}`
+        if (seenKeys.has(key)) return false
+        seenKeys.add(key)
+        return true
+      })
+
+      if (cleanHistory.length === 0) {
+        // Fallback: no valid history yet, show a note
+        const noteRow = wsSummary.addRow({ range: 'Belum ada history rentang tanggal. Gunakan filter custom minimal 3 hari dan data akan tercatat otomatis.' })
         noteRow.getCell('range').font = { italic: true, color: { argb: 'FF6B7280' } }
       } else {
         // Accumulate totals from each range row as we go
         let grandIn = 0, grandOut = 0
 
-        filterHistory.forEach((entry, idx) => {
+        cleanHistory.forEach((entry, idx) => {
           const start = new Date(entry.start_date)
           const end = new Date(entry.end_date)
           // Set end-of-day for end date to include all transactions on that day
@@ -1661,7 +1680,7 @@ export default function MoneyManager() {
         })
 
         // Grand total row — only show if more than 1 range (otherwise it's just a duplicate)
-        if (filterHistory.length > 1) {
+        if (cleanHistory.length > 1) {
           const grandDiff = grandIn - grandOut
           const grandRow = wsSummary.addRow({ range: 'TOTAL SEMUA RENTANG', income: grandIn, expense: grandOut, diff: grandDiff })
           grandRow.font = { bold: true }
