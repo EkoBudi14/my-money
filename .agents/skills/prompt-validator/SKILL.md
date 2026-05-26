@@ -13,6 +13,18 @@ triggers:
   - fix
   - buat fitur
   - hapus
+  - benerin
+  - coba cek
+  - cek
+  - cek dulu
+  - periksa
+  - periksa dulu
+  - lihat
+  - lihat dulu
+  - bug nih
+  - bug
+  - cek lagi
+  - cek lagi fitur ini
 ---
 
 # 14 — SOP Monitoring & Prompt Scope Validator

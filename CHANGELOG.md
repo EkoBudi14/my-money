@@ -25,3 +25,24 @@ Dipicu oleh prompt: "lanjut fix"
 Fitur terdampak: Export Excel Sheet Rekap per Rentang (Low), Quick-select filter history (Low)
 Status: Approved
 ---
+
+[2026-05-26 | 12:01] Fitur: Edit & Hapus Transaksi — Optimasi Performa
+Perubahan: (1) Optimistic update di deleteTransaction — transaksi langsung hilang dari UI saat user konfirmasi hapus, tanpa menunggu semua DB call selesai. Rollback otomatis jika DB gagal. (2) Optimistic update di handleSaveTransaction — state lokal diupdate dengan data[0] dari DB response, menggantikan full fetchTransactions(). (3) Parallelkan fetchWallets + fetchDebts menggunakan Promise.all(). Kalkulasi saldo dan logika keuangan tidak berubah.
+Dipicu oleh prompt: "perbaiki ini saya ngerasa kok kalo edit dan hapus transaksi kaya lama banget ya loadingnya"
+Fitur terdampak: Edit Transaksi (Medium), Hapus Transaksi (Medium), Daftar Transaksi (Low)
+Status: Approved
+---
+
+[2026-05-26 | 12:18] Fitur: Edit & Hapus Transaksi — Optimasi Performa Tahap 2
+Perubahan: Mengganti pemanggilan fetch yang berurutan (sequential) menjadi parallel (Promise.all) pada fungsi markDebtAsPaid dan handleBillsUpdate untuk mempercepat loading state setelah data berhasil disimpan.
+Dipicu oleh prompt: "ini udah mencakup semua edit sama delete di semua fitur?"
+Fitur terdampak: Pembayaran Piutang (Low), Update Tagihan Rutin (Low)
+Status: Approved
+---
+
+[2026-05-26 | 12:24] Fitur: Goals & Budget — Optimasi Performa Tahap 3
+Perubahan: Implementasi Optimistic Update pada fungsi Hapus Target Tabungan (Goals) dan Hapus Budget. Item langsung hilang dari UI saat dihapus, tanpa menunggu response DB. Rollback otomatis jika DB gagal.
+Dipicu oleh prompt: "perbaiki gapapa optimistic update juga deh"
+Fitur terdampak: Hapus Goals (Low), Hapus Budget (Low)
+Status: Approved
+---

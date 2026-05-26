@@ -266,14 +266,26 @@ export default function BudgetsPage() {
             message: 'Yakin ingin menghapus budget ini?'
         })
         if (!confirm) return
+        
+        // 1. Simpan state sebelumnya untuk rollback
+        const previousBudgets = [...budgets]
+
+        // 2. Optimistic update: langsung hapus dari state lokal
+        setBudgets(prev => prev.filter(b => b.id !== id))
+
+        // 3. Request ke database
         const { error } = await supabase.from('budgets').delete().eq('id', id)
+        
         if (!error) {
+            // Fetch di background untuk memastikan sync
             fetchData()
             showSuccess({
                 type: 'delete',
                 message: 'Budget berhasil dihapus dari daftar.'
             })
         } else {
+            // 4. Rollback jika gagal
+            setBudgets(previousBudgets)
             showToast('error', 'Gagal menghapus budget')
         }
     }

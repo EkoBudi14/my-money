@@ -131,14 +131,25 @@ export default function GoalsPage() {
         })
         if (!confirm) return
 
+        // 1. Simpan state sebelumnya untuk rollback
+        const previousGoals = [...goals]
+
+        // 2. Optimistic update: langsung hapus dari state lokal
+        setGoals(prev => prev.filter(g => g.id !== id))
+
+        // 3. Request ke database
         const { error } = await supabase.from('goals').delete().eq('id', id)
+        
         if (!error) {
+            // Fetch di background untuk memastikan sync
             fetchGoals()
             showSuccess({
                 type: 'delete',
                 message: 'Target tabungan berhasil dihapus.'
             })
         } else {
+            // 4. Rollback jika gagal
+            setGoals(previousGoals)
             showToast('error', 'Gagal menghapus target')
         }
     }

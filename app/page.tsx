@@ -172,8 +172,7 @@ export default function MoneyManager() {
 
   const handleBillsUpdate = () => {
     setBillsUpdateTrigger(prev => prev + 1)
-    fetchTransactions() // Refresh transactions list
-    fetchWallets()      // Refresh wallet balances
+    Promise.all([fetchTransactions(), fetchWallets()]) // Refresh transactions list and wallet balances parallelly
   }
 
   // Settings State
@@ -855,15 +854,22 @@ export default function MoneyManager() {
           await supabase.from('debts').insert(debtPayloads)
         }
       }
-      fetchDebts()
+      // Optimistic update: langsung update state lokal tanpa full re-fetch semua transaksi
+      if (data && data.length > 0) {
+        if (editingId) {
+          setTransactions(prev => prev.map(t => t.id === editingId ? (data[0] as any) : t))
+        } else {
+          setTransactions(prev => [data[0] as any, ...prev])
+        }
+      }
 
       showSuccess({
         type: editingId ? 'edit' : 'create',
         message: editingId ? 'Transaksi berhasil diperbarui!' : 'Transaksi baru berhasil dicatat!'
       })
-      fetchTransactions()
-      fetchBudgets()
       resetForm()
+      // Background fetches: refresh debts & budgets tanpa blokir UI
+      Promise.all([fetchDebts(), fetchBudgets()])
     }
 
     setSaving(false)
@@ -950,6 +956,9 @@ export default function MoneyManager() {
       showToast('error', 'Transaksi tidak ditemukan')
       return
     }
+
+    // Optimistic update: hapus dari state UI langsung (rollback jika gagal)
+    setTransactions(prev => prev.filter(t => t.id !== id))
 
     // Check if this transaction is a Debt Payment (Income)
     const { data: linkedDebtPayment } = await supabase
@@ -1085,15 +1094,15 @@ export default function MoneyManager() {
           }
         }
       }
-      fetchWallets()
-
       showSuccess({
         type: 'delete',
         message: 'Transaksi berhasil dihapus dan saldo dompet dikembalikan.'
       })
-      fetchTransactions()
-      fetchDebts()
+      // Parallelkan fetchWallets & fetchDebts (fetchTransactions tidak perlu, sudah diupdate optimistic)
+      Promise.all([fetchWallets(), fetchDebts()])
     } else {
+      // Rollback optimistic update jika delete gagal
+      fetchTransactions()
       console.error('Error deleting transaction:', error)
       showToast('error', 'Gagal menghapus transaksi (mungkin terikat data lain)')
     }
@@ -1208,9 +1217,7 @@ export default function MoneyManager() {
         title: 'Piutang Lunas! 🎉',
         message: 'Piutang berhasil ditandai lunas dan saldo dompet diperbarui.'
       })
-      fetchDebts()
-      fetchTransactions()
-      fetchWallets()
+      Promise.all([fetchDebts(), fetchTransactions(), fetchWallets()])
       setShowDebtModal(false)
     }
     setRepayingWalletId(null)
