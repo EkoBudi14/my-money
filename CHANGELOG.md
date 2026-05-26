@@ -46,3 +46,10 @@ Dipicu oleh prompt: "perbaiki gapapa optimistic update juga deh"
 Fitur terdampak: Hapus Goals (Low), Hapus Budget (Low)
 Status: Approved
 ---
+
+[2026-05-26 | 12:35] Fitur: Edit Transaksi — Perbaikan Bug Topup & Biaya Admin
+Perubahan: (1) Memperbaiki bug di mana field "Biaya Admin" selalu kosong saat menekan tombol Edit pada transaksi Topup (mengambil nominal dari history lokal). (2) Menambahkan kembali `fetchTransactions()` ke background sync setelah save, agar transaksi "Biaya Admin" yang baru terbuat/terupdate bisa langsung muncul di riwayat transaksi tanpa harus refresh halaman (efek samping dari optimistic update sebelumnya).
+Dipicu oleh prompt: "bisa perbaiki, ini saya top upda ada admin seribu tapi pas update kok tetep jadi 60.000, mustinya 61.000 kan di history coba cek?"
+Fitur terdampak: Edit Transaksi Topup (Medium), Riwayat Transaksi (Medium)
+Status: Approved
+---

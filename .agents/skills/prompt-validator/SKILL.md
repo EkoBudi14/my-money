@@ -25,6 +25,24 @@ triggers:
   - bug
   - cek lagi
   - cek lagi fitur ini
+  - bisa perbaiki
+  - coba
+  - coba liat
+  - ini kenapa dah
+  - ini kenapa
+  - ini gimana ya
+  - ini gimana
+  - ini kok gini
+  - ini kok jadi gini`
+  - harusnya gini
+  - harusnya gini lho
+  - ini
+  - ini kok
+  - error
+  - kok gini sih
+  - kok jadi gini
+  - kok jadi gini
+  - error nih
 ---
 
 # 14 — SOP Monitoring & Prompt Scope Validator

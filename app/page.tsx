@@ -868,8 +868,8 @@ export default function MoneyManager() {
         message: editingId ? 'Transaksi berhasil diperbarui!' : 'Transaksi baru berhasil dicatat!'
       })
       resetForm()
-      // Background fetches: refresh debts & budgets tanpa blokir UI
-      Promise.all([fetchDebts(), fetchBudgets()])
+      // Background fetches: refresh debts, budgets, & transactions (untuk memunculkan Biaya Admin) tanpa blokir UI
+      Promise.all([fetchDebts(), fetchBudgets(), fetchTransactions()])
     }
 
     setSaving(false)
@@ -910,7 +910,20 @@ export default function MoneyManager() {
     setEditingId(t.id)
     setTitle(t.title)
     setAmount(t.amount.toString())
-    setAdminFee('') // admin fee cannot be directly edited via parent topup 
+    
+    // Fix Bug: Load admin fee if it's a topup transaction
+    if (t.type === 'topup' && t.source_wallet_id) {
+      const adminFeeTrx = transactions.find(trx => 
+        trx.wallet_id === t.source_wallet_id && 
+        trx.title === 'Biaya Admin' && 
+        trx.type === 'pengeluaran' && 
+        trx.date === t.date
+      )
+      setAdminFee(adminFeeTrx ? adminFeeTrx.amount.toString() : '')
+    } else {
+      setAdminFee('')
+    }
+
     setCategory(t.category)
     setType(t.type)
     setSelectedWalletId(t.wallet_id?.toString() || '')
