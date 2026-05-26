@@ -9,6 +9,7 @@ triggers:
   - hai
   - hi
   - hello
+  - halo
   - selamat pagi
   - selamat siang
   - selamat malam
