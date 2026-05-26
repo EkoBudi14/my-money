@@ -1,5 +1,19 @@
-> 🔴 INSTRUKSI WAJIB: Baca dan patuhi seluruh aturan di dokumen ini 
-> sebelum memproses prompt apapun dari user. Tidak ada pengecualian.
+---
+name: Prompt Scope Validator
+description: >
+  Gunakan setiap kali user meminta perubahan,
+  penambahan, atau perbaikan fitur di project ini.
+  Validasi prompt sebelum eksekusi kode.
+  Do not use untuk salam pembuka atau pertanyaan umum.
+triggers:
+  - ubah
+  - tambah
+  - perbaiki
+  - update
+  - fix
+  - buat fitur
+  - hapus
+---
 
 # 14 — SOP Monitoring & Prompt Scope Validator
 
