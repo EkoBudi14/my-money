@@ -43,6 +43,7 @@ triggers:
   - kok jadi gini
   - kok jadi gini
   - error nih
+  - bisa
 ---
 
 # 14 — SOP Monitoring & Prompt Scope Validator
