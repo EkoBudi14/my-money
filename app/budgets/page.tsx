@@ -10,7 +10,7 @@ import { useSuccessModal } from '@/hooks/useSuccessModal'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
-    const [customCategories, setCustomCategories] = useState<{pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]}>({pengeluaran: [], pemasukan: []})
+    const [customCategories, setCustomCategories] = useState<{ pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] }>({ pengeluaran: [], pemasukan: [] })
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [wallets, setWallets] = useState<Wallet[]>([])
     const [loading, setLoading] = useState(true)
@@ -90,8 +90,8 @@ export default function BudgetsPage() {
         const { data: settings } = await supabase.from('user_settings').select('*').eq('id', 1).single()
         if (settings && settings.custom_categories) {
             try {
-                setCustomCategories(settings.custom_categories as {pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[]})
-            } catch(e) {}
+                setCustomCategories(settings.custom_categories as { pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] })
+            } catch (e) { }
         }
         if (settings && settings.filter_mode && filterMode === 'monthly') {
             // Default to user setting initially if not already changed
@@ -146,7 +146,7 @@ export default function BudgetsPage() {
         setCategory('')
         setAmount('')
         setEditingId(null)
-        
+
         let startD, endD
         if (filterMode === 'monthly') {
             startD = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0]
@@ -157,7 +157,7 @@ export default function BudgetsPage() {
         }
         setBudgetStartDate(startD)
         setBudgetEndDate(endD)
-        
+
         setIsModalOpen(false)
     }
 
@@ -171,7 +171,7 @@ export default function BudgetsPage() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!category || !amount || !budgetStartDate || !budgetEndDate) return showToast('error', "Mohon lengkapi data")
-        
+
         if (new Date(budgetStartDate) > new Date(budgetEndDate)) {
             return showToast('error', "Tanggal mulai tidak boleh lebih dari tanggal selesai")
         }
@@ -229,13 +229,16 @@ export default function BudgetsPage() {
         }
 
         // 1. Insert Transaction
+        // Fix timezone bug: pakai T12:00:00 agar tidak shift 1 hari di WIB (sama dengan pattern di handleSaveTransaction)
+        const todayStr = new Date().toISOString().split('T')[0]
+        const safeDate = new Date(`${todayStr}T12:00:00`).toISOString()
         const payload = {
             title: `Pengeluaran ${quickExpCategory}`,
             amount: parseFloat(quickExpAmount),
             type: 'pengeluaran',
             category: quickExpCategory,
             wallet_id: parseInt(quickExpWalletId),
-            date: new Date().toISOString(),
+            date: safeDate,
             created_at: new Date().toISOString()
         }
 
@@ -266,7 +269,7 @@ export default function BudgetsPage() {
             message: 'Yakin ingin menghapus budget ini?'
         })
         if (!confirm) return
-        
+
         // 1. Simpan state sebelumnya untuk rollback
         const previousBudgets = [...budgets]
 
@@ -275,7 +278,7 @@ export default function BudgetsPage() {
 
         // 3. Request ke database
         const { error } = await supabase.from('budgets').delete().eq('id', id)
-        
+
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchData()
@@ -329,9 +332,9 @@ export default function BudgetsPage() {
             {/* Top Header */}
             <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Manajemen Budget</h2>
+                    <h2 className="font-bold text-2xl text-[var(--text-primary)]">Manajemen Budget</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
+                <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
                         <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
                     </div>
@@ -360,7 +363,7 @@ export default function BudgetsPage() {
                                 {getPeriodLabel()}
                             </span>
                         </div>
-                         {filterMode === 'monthly' && (
+                        {filterMode === 'monthly' && (
                             <button
                                 onClick={nextMonth}
                                 className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
@@ -505,7 +508,7 @@ export default function BudgetsPage() {
                                             const isOver = spent > budget.amount
                                             const allCats = [
                                                 ...CATEGORIES.pengeluaran,
-                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
+                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
                                             ]
                                             const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
                                             const isLast = idx === budgets.length - 1
@@ -526,7 +529,7 @@ export default function BudgetsPage() {
                                                     {/* Progress bar */}
                                                     <div className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden mb-1.5">
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-50 dark:bg-rose-950/300' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
+                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
                                                             style={{ width: `${percent}%` }}
                                                         />
                                                     </div>
@@ -600,8 +603,8 @@ export default function BudgetsPage() {
                                     const percent = Math.min((spent / budget.amount) * 100, 100)
                                     const isOver = spent > budget.amount
                                     const allCats = [
-                                        ...CATEGORIES.pengeluaran, 
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
+                                        ...CATEGORIES.pengeluaran,
+                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
                                     ]
                                     const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
 
@@ -624,17 +627,17 @@ export default function BudgetsPage() {
                                                     <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">
                                                         Limit: Rp {budget.amount.toLocaleString('id-ID')}
                                                     </p>
-                                                    
+
                                                     {isOver && (
                                                         <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold mb-3 bg-rose-50 dark:bg-rose-950/30 p-2 rounded-lg">
-                                                            <AlertCircle className="w-3.5 h-3.5" /> 
+                                                            <AlertCircle className="w-3.5 h-3.5" />
                                                             <span>Over Budget!</span>
                                                         </div>
                                                     )}
 
                                                     <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-50 dark:bg-rose-950/300' : percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-[var(--primary)]'}`}
+                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
                                                             style={{ width: `${percent}%` }}
                                                         />
                                                     </div>
@@ -661,7 +664,7 @@ export default function BudgetsPage() {
                                         </div>
                                     )
                                 })}
-                                
+
                                 {/* Add New Card */}
                                 <button
                                     onClick={() => { resetForm(); setIsModalOpen(true); }}
@@ -686,7 +689,7 @@ export default function BudgetsPage() {
             </div>
 
             {/* Main Modal (Add/Edit Budget) */}
-             {isModalOpen && (
+            {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
                     <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -700,7 +703,7 @@ export default function BudgetsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Mulai</label>
-                                    <input 
+                                    <input
                                         type="date"
                                         className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
                                         value={budgetStartDate}
@@ -710,7 +713,7 @@ export default function BudgetsPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Selesai</label>
-                                    <input 
+                                    <input
                                         type="date"
                                         className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
                                         value={budgetEndDate}
@@ -719,12 +722,12 @@ export default function BudgetsPage() {
                                     />
                                 </div>
                             </div>
-                             <div>
+                            <div>
                                 <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">Pilih Kategori</label>
                                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                                     {[
                                         ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? {name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'} : {name: c.name, color: c.color})
+                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
                                     ].map(cat => (
                                         <button
                                             key={cat.name}
@@ -732,7 +735,7 @@ export default function BudgetsPage() {
                                             onClick={() => setCategory(cat.name)}
                                             className={`p-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2 ${category === cat.name ? `bg-blue-50 dark:bg-blue-950/30 border-[var(--primary)] text-[var(--primary)] ring-1 ring-[var(--primary)]` : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
                                         >
-                                           <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
+                                            <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
                                             {cat.name}
                                         </button>
                                     ))}
@@ -774,7 +777,7 @@ export default function BudgetsPage() {
                                     value={quickExpAmount}
                                     onChange={setQuickExpAmount}
                                     autoFocus
-                                    className="focus:ring-[var(--primary)]" 
+                                    className="focus:ring-[var(--primary)]"
                                 />
                             </div>
                             <div>

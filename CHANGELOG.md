@@ -53,3 +53,24 @@ Dipicu oleh prompt: "bisa perbaiki, ini saya top upda ada admin seribu tapi pas 
 Fitur terdampak: Edit Transaksi Topup (Medium), Riwayat Transaksi (Medium)
 Status: Approved
 ---
+
+[2026-05-27 | 19:22] Fitur: Budget — Progress Bar Warna (Bug Fix #1)
+Perubahan: Ganti class Tailwind tidak valid `bg-rose-50 dark:bg-rose-950/300` dan `bg-orange-50 dark:bg-orange-950/300` (nilai /300 tidak ada di Tailwind) menjadi `bg-rose-500` dan `bg-orange-400`. Berlaku di mobile view (L529) dan desktop view (L637). Progress bar over-budget dan hampir-over-budget kini tampil merah/oranye dengan benar.
+Dipicu oleh prompt: "fix bug dulu - Budget progress bar warna salah"
+Fitur terdampak: Budget Progress Bar Mobile (Medium), Budget Progress Bar Desktop (Medium)
+Status: Approved
+---
+
+[2026-05-27 | 19:22] Fitur: Budget Quick Expense — Timezone Bug Fix (#3)
+Perubahan: Ganti `date: new Date().toISOString()` menjadi pola `T12:00:00` yang konsisten dengan `handleSaveTransaction` di dashboard. Sekarang Quick Expense tidak akan tercatat di hari yang salah akibat selisih timezone WIB vs UTC di malam hari.
+Dipicu oleh prompt: "fix bug dulu - Quick Expense timezone bug"
+Fitur terdampak: Budget Quick Expense (Medium), Riwayat Transaksi (Low)
+Status: Approved
+---
+
+[2026-05-27 | 19:22] Fitur: Analytics — Filter Sync Real-time (Bug Fix #4)
+Perubahan: Tambah `window.addEventListener('focus', handleFocus)` di Analytics page. Setiap kali user kembali ke tab/halaman Analytics, settings filter (mode & custom range) di-refetch dari Supabase agar selalu sinkron dengan perubahan yang dilakukan di Dashboard. Listener dibersihkan saat komponen unmount (cleanup).
+Dipicu oleh prompt: "fix bug dulu - Filter Analytics tidak real-time sinkron dengan Dashboard"
+Fitur terdampak: Analytics Filter (Medium), Settings Sync (Low)
+Status: Approved
+---

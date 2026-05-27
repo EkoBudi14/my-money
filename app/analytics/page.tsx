@@ -9,10 +9,10 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
-    BarChart, 
-    Bar, 
-    XAxis, 
-    YAxis, 
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
     CartesianGrid,
     LabelList
 } from 'recharts'
@@ -72,6 +72,31 @@ export default function AnalyticsPage() {
         }
 
         loadSettings()
+    }, [])
+
+    // Bug #4 Fix: Sinkron filter saat user kembali ke tab/halaman Analytics
+    // Setiap kali window mendapat fokus, re-fetch settings dari Supabase agar filter selalu up-to-date dengan Dashboard
+    useEffect(() => {
+        const handleFocus = async () => {
+            const { data: settings } = await supabase
+                .from('user_settings')
+                .select('filter_mode, custom_start_date, custom_end_date')
+                .eq('id', 1)
+                .single()
+
+            if (settings) {
+                if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+                if (settings.custom_start_date && settings.custom_end_date) {
+                    setCustomRange({
+                        start: settings.custom_start_date,
+                        end: settings.custom_end_date
+                    })
+                }
+            }
+        }
+
+        window.addEventListener('focus', handleFocus)
+        return () => window.removeEventListener('focus', handleFocus)
     }, [])
 
     useEffect(() => {
@@ -261,7 +286,7 @@ export default function AnalyticsPage() {
 
     // Colors
     const COLORS = useMemo(() => ['var(--primary)', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'], [])
-    
+
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
@@ -324,39 +349,39 @@ export default function AnalyticsPage() {
             prevPeriodTxs.filter(t => t.type === 'pengeluaran' && !t.is_talangan).forEach(t => {
                 prevCatMap[t.category] = (prevCatMap[t.category] || 0) + t.amount
             })
-                let biggestRise: { cat: string; pct: number; amount: number } | null = null
-                let biggestDrop: { cat: string; pct: number; amount: number } | null = null
-                
-                const allInsightCats = new Set([...categoryData.map(c => c.name), ...Object.keys(prevCatMap)])
-                allInsightCats.forEach(name => {
-                    const curr = categoryData.find(c => c.name === name)?.value || 0
-                    const prev = prevCatMap[name] || 0
-                    if (prev > 0) {
-                        const pct = ((curr - prev) / prev) * 100
-                        if (pct > 10 && (!biggestRise || pct > biggestRise.pct))
-                            biggestRise = { cat: name, pct, amount: curr - prev }
-                        if (pct < -10 && (!biggestDrop || pct < biggestDrop.pct))
-                            biggestDrop = { cat: name, pct, amount: prev - curr }
-                    }
-                })
+            let biggestRise: { cat: string; pct: number; amount: number } | null = null
+            let biggestDrop: { cat: string; pct: number; amount: number } | null = null
 
-                if (biggestRise) {
-                    const r = biggestRise as { cat: string; pct: number; amount: number }
-                    const multiplier = (r.pct / 100) + 1
-                    const titleText = multiplier >= 2 
-                        ? `${r.cat} naik ${multiplier.toLocaleString('id-ID', { maximumFractionDigits: 1 })}x lipat`
-                        : `${r.cat} naik ${r.pct.toFixed(0)}%`
-                    result.push({ type: 'negative', emoji: '📈', title: titleText, desc: `Pengeluaran ${r.cat} bertambah Rp ${r.amount.toLocaleString('id-ID')} dibanding periode lalu.` })
+            const allInsightCats = new Set([...categoryData.map(c => c.name), ...Object.keys(prevCatMap)])
+            allInsightCats.forEach(name => {
+                const curr = categoryData.find(c => c.name === name)?.value || 0
+                const prev = prevCatMap[name] || 0
+                if (prev > 0) {
+                    const pct = ((curr - prev) / prev) * 100
+                    if (pct > 10 && (!biggestRise || pct > biggestRise.pct))
+                        biggestRise = { cat: name, pct, amount: curr - prev }
+                    if (pct < -10 && (!biggestDrop || pct < biggestDrop.pct))
+                        biggestDrop = { cat: name, pct, amount: prev - curr }
                 }
-                if (biggestDrop) {
-                    const d = biggestDrop as { cat: string; pct: number; amount: number }
-                    const absPct = Math.abs(d.pct)
-                    const titleText = absPct >= 99.5 
-                        ? `Pengeluaran ${d.cat} bersih (turun 100%)` 
-                        : `${d.cat} turun ${absPct.toFixed(0)}%`
-                    
-                    result.push({ type: 'positive', emoji: '📉', title: titleText, desc: `Kamu hemat Rp ${d.amount.toLocaleString('id-ID')} di ${d.cat} dibanding periode lalu. Bagus!` })
-                }
+            })
+
+            if (biggestRise) {
+                const r = biggestRise as { cat: string; pct: number; amount: number }
+                const multiplier = (r.pct / 100) + 1
+                const titleText = multiplier >= 2
+                    ? `${r.cat} naik ${multiplier.toLocaleString('id-ID', { maximumFractionDigits: 1 })}x lipat`
+                    : `${r.cat} naik ${r.pct.toFixed(0)}%`
+                result.push({ type: 'negative', emoji: '📈', title: titleText, desc: `Pengeluaran ${r.cat} bertambah Rp ${r.amount.toLocaleString('id-ID')} dibanding periode lalu.` })
+            }
+            if (biggestDrop) {
+                const d = biggestDrop as { cat: string; pct: number; amount: number }
+                const absPct = Math.abs(d.pct)
+                const titleText = absPct >= 99.5
+                    ? `Pengeluaran ${d.cat} bersih (turun 100%)`
+                    : `${d.cat} turun ${absPct.toFixed(0)}%`
+
+                result.push({ type: 'positive', emoji: '📉', title: titleText, desc: `Kamu hemat Rp ${d.amount.toLocaleString('id-ID')} di ${d.cat} dibanding periode lalu. Bagus!` })
+            }
 
             // --- Income comparison ---
             if (prevIncome > 0 && income > 0) {
@@ -535,11 +560,11 @@ export default function AnalyticsPage() {
 
     return (
         <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-             <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
+            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
                 <div>
-                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Analitik</h2>
+                    <h2 className="font-bold text-2xl text-[var(--text-primary)]">Analitik</h2>
                 </div>
-                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
+                <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
                     <div className="text-right">
                         <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
                         {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
@@ -569,7 +594,7 @@ export default function AnalyticsPage() {
                                     {getPeriodLabel()}
                                 </span>
                             </div>
-                             {filterMode === 'monthly' && (
+                            {filterMode === 'monthly' && (
                                 <button
                                     onClick={nextMonth}
                                     className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
@@ -636,57 +661,55 @@ export default function AnalyticsPage() {
                                     {(() => {
                                         const walletMap = new Map(wallets.map(w => [w.id, w.name]))
                                         return searchResults.map(tx => {
-                                        const walletName = (tx.wallet_id != null ? walletMap.get(tx.wallet_id) : undefined) || 'Tidak Diketahui'
-                                        const txDate = new Date(tx.date || tx.created_at)
-                                        const txTime = new Date(tx.created_at)
-                                        const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-                                        const isIncome = tx.type === 'pemasukan'
-                                        const isTopup = tx.type === 'topup'
-                                        return (
-                                            <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors w-full min-w-0">
-                                                {/* Type icon */}
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                    isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
-                                                }`}>
-                                                    {isTopup
-                                                        ? <Zap className="w-4 h-4 text-blue-500" />
-                                                        : isIncome
-                                                        ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                                                        : <ArrowDownRight className="w-4 h-4 text-rose-500" />
-                                                    }
-                                                </div>
-
-                                                {/* Info */}
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
-                                                         {isTopup && tx.source_wallet_id 
-                                                            ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
-                                                            : tx.title}
-                                                    </p>
-                                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                        <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
-                                                        <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
-                                                            <WalletIcon className="w-3 h-3" />
-                                                            {walletName}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
-                                                            {tx.category}
-                                                        </span>
-                                                        {tx.is_talangan && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>}
-                                                        {tx.is_piutang && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>}
+                                            const walletName = (tx.wallet_id != null ? walletMap.get(tx.wallet_id) : undefined) || 'Tidak Diketahui'
+                                            const txDate = new Date(tx.date || tx.created_at)
+                                            const txTime = new Date(tx.created_at)
+                                            const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                                            const isIncome = tx.type === 'pemasukan'
+                                            const isTopup = tx.type === 'topup'
+                                            return (
+                                                <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors w-full min-w-0">
+                                                    {/* Type icon */}
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
+                                                        }`}>
+                                                        {isTopup
+                                                            ? <Zap className="w-4 h-4 text-blue-500" />
+                                                            : isIncome
+                                                                ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                                                                : <ArrowDownRight className="w-4 h-4 text-rose-500" />
+                                                        }
                                                     </div>
-                                                </div>
 
-                                                {/* Amount */}
-                                                <p className={`text-sm font-bold shrink-0 ${
-                                                    isTopup ? 'text-blue-600' : isIncome ? 'text-emerald-600' : 'text-rose-500'
-                                                }`}>
-                                                    {isIncome || isTopup ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
-                                                </p>
-                                            </div>
-                                        )
-                                    })
-                                    })()} 
+                                                    {/* Info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                                                            {isTopup && tx.source_wallet_id
+                                                                ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
+                                                                : tx.title}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                            <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
+                                                            <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
+                                                                <WalletIcon className="w-3 h-3" />
+                                                                {walletName}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
+                                                                {tx.category}
+                                                            </span>
+                                                            {tx.is_talangan && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>}
+                                                            {tx.is_piutang && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Amount */}
+                                                    <p className={`text-sm font-bold shrink-0 ${isTopup ? 'text-blue-600' : isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                        }`}>
+                                                        {isIncome || isTopup ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                    </p>
+                                                </div>
+                                            )
+                                        })
+                                    })()}
                                 </div>
                             )}
                         </div>
@@ -769,24 +792,23 @@ export default function AnalyticsPage() {
                                         <h3 className="text-[var(--text-secondary)] font-medium">Total Pemasukan</h3>
                                     </div>
                                     <div className="relative">
-                                        <button 
+                                        <button
                                             onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
                                             className="p-1 text-slate-400 dark:text-slate-500 hover:text-emerald-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
-                                        
+
                                         {/* Invisible overlay */}
                                         {showIncomeTooltip && (
-                                            <div 
-                                                className="fixed inset-0 z-10" 
+                                            <div
+                                                className="fixed inset-0 z-10"
                                                 onClick={() => setShowIncomeTooltip(false)}
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                                            showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                        }`}>
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                            }`}>
                                             <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada rentang tanggal yang dipilih.</p>
                                             <div className="mt-2 pt-2 border-t border-slate-700/50">
                                                 <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> (uang yang dikembalikan orang lain ke kamu) tidak dihitung sebagai pemasukan.</p>
@@ -808,24 +830,23 @@ export default function AnalyticsPage() {
                                         <h3 className="text-[var(--text-secondary)] font-medium">Total Pengeluaran</h3>
                                     </div>
                                     <div className="relative">
-                                        <button 
+                                        <button
                                             onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
                                             className="p-1 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
-                                        
+
                                         {/* Invisible overlay */}
                                         {showExpenseTooltip && (
-                                            <div 
-                                                className="fixed inset-0 z-10" 
+                                            <div
+                                                className="fixed inset-0 z-10"
                                                 onClick={() => setShowExpenseTooltip(false)}
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                                            showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                        }`}>
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                            }`}>
                                             <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada rentang tanggal yang dipilih.</p>
                                             <div className="mt-2 pt-2 border-t border-slate-700/50">
                                                 <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> (membayarin orang terlebih dahulu) tidak dihitung sebagai pengeluaran.</p>
@@ -847,24 +868,23 @@ export default function AnalyticsPage() {
                                         <h3 className="text-[var(--text-secondary)] font-medium">Sisa Saldo Periode Ini</h3>
                                     </div>
                                     <div className="relative">
-                                        <button 
+                                        <button
                                             onClick={() => setShowTooltip(!showTooltip)}
                                             className="p-1 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
-                                        
+
                                         {/* Invisible overlay to close tooltip when clicking outside */}
                                         {showTooltip && (
-                                            <div 
-                                                className="fixed inset-0 z-10" 
+                                            <div
+                                                className="fixed inset-0 z-10"
                                                 onClick={() => setShowTooltip(false)}
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${
-                                            showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                        }`}>
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                            }`}>
                                             <p>Selisih antara <span className="text-emerald-400 font-bold">Pemasukan</span> dan <span className="text-rose-400 font-bold">Pengeluaran</span> murni pada periode ini.</p>
                                             <div className="mt-2 pt-2 border-t border-slate-700/50">
                                                 <p className="text-slate-300">Catatan: Tidak menghitung transaksi Piutang atau Talangan.</p>
@@ -940,9 +960,8 @@ export default function AnalyticsPage() {
                                                             <span className="text-[10px] font-bold bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-0.5 rounded-md text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">{tx.category}</span>
                                                         </div>
                                                     </div>
-                                                    <p className={`font-bold text-sm shrink-0 ${
-                                                        isIncome ? 'text-emerald-600' : 'text-rose-600'
-                                                    }`}>
+                                                    <p className={`font-bold text-sm shrink-0 ${isIncome ? 'text-emerald-600' : 'text-rose-600'
+                                                        }`}>
                                                         {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
                                                     </p>
                                                 </div>
@@ -969,27 +988,24 @@ export default function AnalyticsPage() {
                                     {insights.map((ins, i) => (
                                         <div
                                             key={i}
-                                            className={`p-4 rounded-2xl border flex items-start gap-3 transition-all hover:shadow-sm ${
-                                                ins.type === 'positive' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
+                                            className={`p-4 rounded-2xl border flex items-start gap-3 transition-all hover:shadow-sm ${ins.type === 'positive' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
                                                 ins.type === 'negative' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/30' :
-                                                ins.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100' :
-                                                'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
-                                            }`}
+                                                    ins.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100' :
+                                                        'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
+                                                }`}
                                         >
                                             <span className="text-xl mt-0.5 shrink-0">{ins.emoji}</span>
                                             <div className="min-w-0">
-                                                <p className={`font-bold text-sm ${
-                                                    ins.type === 'positive' ? 'text-emerald-700' :
+                                                <p className={`font-bold text-sm ${ins.type === 'positive' ? 'text-emerald-700' :
                                                     ins.type === 'negative' ? 'text-rose-700' :
-                                                    ins.type === 'warning' ? 'text-amber-700' :
-                                                    'text-blue-700'
-                                                }`}>{ins.title}</p>
-                                                <p className={`text-xs mt-1 leading-relaxed ${
-                                                    ins.type === 'positive' ? 'text-emerald-600' :
+                                                        ins.type === 'warning' ? 'text-amber-700' :
+                                                            'text-blue-700'
+                                                    }`}>{ins.title}</p>
+                                                <p className={`text-xs mt-1 leading-relaxed ${ins.type === 'positive' ? 'text-emerald-600' :
                                                     ins.type === 'negative' ? 'text-rose-600' :
-                                                    ins.type === 'warning' ? 'text-amber-600' :
-                                                    'text-blue-600'
-                                                }`}>{ins.desc}</p>
+                                                        ins.type === 'warning' ? 'text-amber-600' :
+                                                            'text-blue-600'
+                                                    }`}>{ins.desc}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -1022,23 +1038,22 @@ export default function AnalyticsPage() {
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     Perubahan
                                                     <div className="relative inline-flex">
-                                                        <button 
+                                                        <button
                                                             onClick={() => setShowChangeTooltip(!showChangeTooltip)}
                                                             className="text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full"
                                                         >
                                                             <Info className="w-3.5 h-3.5" />
                                                         </button>
-                                                        
+
                                                         {showChangeTooltip && (
-                                                            <div 
-                                                                className="fixed inset-0 z-10" 
+                                                            <div
+                                                                className="fixed inset-0 z-10"
                                                                 onClick={() => setShowChangeTooltip(false)}
                                                             />
                                                         )}
 
-                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${
-                                                            showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                                        }`}>
+                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                                            }`}>
                                                             <p>Persentase selisih lompatan nilai dari periode lalu.</p>
                                                             <div className="mt-2 pt-2 border-t border-slate-700/50">
                                                                 <p className="text-slate-300">💡 <span className="font-bold text-emerald-400">Catatan:</span> Persentase kenaikan <b>bisa melebihi 100%</b> jika lonjakan terjadi cukup besar. (Misal: nominal awal 100rb menjadi 500rb adalah naik 400%).</p>
@@ -1073,9 +1088,8 @@ export default function AnalyticsPage() {
                                                     <td className="px-5 py-3.5 text-right">
                                                         {pct !== null && periodComparison.hasPrevData ? (
                                                             <div className="flex flex-col items-end gap-1">
-                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                    isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                                }`}>
+                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
+                                                                    }`}>
                                                                     {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                                     {Math.abs(pct).toFixed(1)}%
                                                                 </span>
@@ -1093,10 +1107,9 @@ export default function AnalyticsPage() {
                                         {/* Saving Rate row */}
                                         <tr className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
                                             <td className="px-5 py-3.5 font-semibold text-[var(--text-primary)]">Saving Rate</td>
-                                            <td className={`px-5 py-3.5 text-right font-bold ${
-                                                periodComparison.currSavingRate >= 20 ? 'text-emerald-600' :
+                                            <td className={`px-5 py-3.5 text-right font-bold ${periodComparison.currSavingRate >= 20 ? 'text-emerald-600' :
                                                 periodComparison.currSavingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
-                                            }`}>{periodComparison.currSavingRate.toFixed(1)}%</td>
+                                                }`}>{periodComparison.currSavingRate.toFixed(1)}%</td>
                                             <td className="px-5 py-3.5 text-right text-[var(--text-secondary)] font-medium">
                                                 {periodComparison.hasPrevData ? `${periodComparison.prevSavingRate.toFixed(1)}%` : <span className="text-slate-300">—</span>}
                                             </td>
@@ -1104,9 +1117,8 @@ export default function AnalyticsPage() {
                                                 {periodComparison.hasPrevData ? (() => {
                                                     const diff = periodComparison.currSavingRate - periodComparison.prevSavingRate
                                                     return (
-                                                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                            diff >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                        }`}>
+                                                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${diff >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
+                                                            }`}>
                                                             {diff >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                             {Math.abs(diff).toFixed(1)}%
                                                         </span>
@@ -1140,9 +1152,8 @@ export default function AnalyticsPage() {
                                                     <td className="px-5 py-3 text-right">
                                                         {pct !== null && periodComparison.hasPrevData ? (
                                                             <div className="flex flex-col items-end gap-1">
-                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
-                                                                    isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                                }`}>
+                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
+                                                                    }`}>
                                                                     {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                                                     {Math.abs(pct).toFixed(0)}%
                                                                 </span>
@@ -1190,7 +1201,7 @@ export default function AnalyticsPage() {
                                                     <Cell key={`cell-${index}`} fill={entry.fill} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip 
+                                            <Tooltip
                                                 formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
                                                 contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
                                                 itemStyle={{ color: 'var(--text-primary)' }}
@@ -1210,24 +1221,24 @@ export default function AnalyticsPage() {
                                             <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 5, left: 40, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border-default)" />
                                                 <XAxis type="number" hide />
-                                                <YAxis 
-                                                    dataKey="name" 
-                                                    type="category" 
-                                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} 
+                                                <YAxis
+                                                    dataKey="name"
+                                                    type="category"
+                                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}
                                                     width={100}
                                                     axisLine={false}
                                                     tickLine={false}
                                                 />
-                                                <Tooltip 
+                                                <Tooltip
                                                     formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
                                                     cursor={{ fill: 'var(--bg-elevated)' }}
                                                     contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
                                                     itemStyle={{ color: 'var(--text-primary)' }}
                                                 />
                                                 <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={28}>
-                                                    <LabelList 
-                                                        dataKey="value" 
-                                                        position="insideEnd" 
+                                                    <LabelList
+                                                        dataKey="value"
+                                                        position="insideEnd"
                                                         formatter={(val: any) => `Rp ${(val || 0).toLocaleString('id-ID')}`}
                                                         style={{ fontSize: '11px', fill: '#ffffff', fontWeight: 700 }}
                                                     />
@@ -1245,7 +1256,7 @@ export default function AnalyticsPage() {
                                 </div>
                             </div>
 
-                             {/* Wallet Distribution */}
+                            {/* Wallet Distribution */}
                             <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 lg:col-span-2">
                                 <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Pengeluaran Berdasarkan Sumber Dana</h3>
                                 <div className="w-full h-[300px]">
@@ -1266,7 +1277,7 @@ export default function AnalyticsPage() {
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
-                                                <Tooltip 
+                                                <Tooltip
                                                     formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
                                                     contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
                                                     itemStyle={{ color: 'var(--text-primary)' }}
@@ -1324,9 +1335,8 @@ export default function AnalyticsPage() {
                                                         </div>
                                                     </div>
                                                     <ChevronDown
-                                                        className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0 ${
-                                                            isExpanded ? 'rotate-180' : ''
-                                                        }`}
+                                                        className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180' : ''
+                                                            }`}
                                                     />
                                                 </button>
 
@@ -1341,16 +1351,14 @@ export default function AnalyticsPage() {
                                                             return (
                                                                 <div
                                                                     key={tx.id}
-                                                                    className={`flex items-center gap-3 px-5 py-3.5 w-full min-w-0 ${
-                                                                        idx !== walletGroup.transactions.length - 1
-                                                                            ? 'border-b border-[var(--border-default)]'
-                                                                            : ''
-                                                                    } hover:bg-white dark:bg-[var(--bg-card)] transition-colors`}
+                                                                    className={`flex items-center gap-3 px-5 py-3.5 w-full min-w-0 ${idx !== walletGroup.transactions.length - 1
+                                                                        ? 'border-b border-[var(--border-default)]'
+                                                                        : ''
+                                                                        } hover:bg-white dark:bg-[var(--bg-card)] transition-colors`}
                                                                 >
                                                                     {/* Type indicator */}
-                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                                                        isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
-                                                                    }`}>
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
+                                                                        }`}>
                                                                         {isIncome
                                                                             ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
                                                                             : <ArrowDownRight className="w-4 h-4 text-rose-500" />
@@ -1375,9 +1383,8 @@ export default function AnalyticsPage() {
                                                                     </div>
 
                                                                     {/* Amount */}
-                                                                    <p className={`text-sm font-bold shrink-0 ${
-                                                                        isIncome ? 'text-emerald-600' : 'text-rose-500'
-                                                                    }`}>
+                                                                    <p className={`text-sm font-bold shrink-0 ${isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                                        }`}>
                                                                         {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
                                                                     </p>
                                                                 </div>
