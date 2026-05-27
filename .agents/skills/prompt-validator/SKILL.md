@@ -33,7 +33,7 @@ triggers:
   - ini gimana ya
   - ini gimana
   - ini kok gini
-  - ini kok jadi gini`
+  - ini kok jadi gini
   - harusnya gini
   - harusnya gini lho
   - ini
@@ -44,6 +44,8 @@ triggers:
   - kok jadi gini
   - error nih
   - bisa
+  - gas
+  - boleh
 ---
 
 # 14 — SOP Monitoring & Prompt Scope Validator
