@@ -33,6 +33,7 @@ format berikut persis, tidak boleh dilewati:
 5. 🛠️  Fix error
 6. 💡  Buat fitur dari nol
 7. 🗑️  Hapus fitur / data
+8. 🔍 Cari referensi fitur yang cocok
 
 Ketik nomor atau langsung ceritakan yang mau 
 dikerjakan — SOP Validator akan otomatis berjalan 
