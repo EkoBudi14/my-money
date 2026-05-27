@@ -41,7 +41,6 @@ triggers:
   - error
   - kok gini sih
   - kok jadi gini
-  - kok jadi gini
   - error nih
   - bisa
   - gas

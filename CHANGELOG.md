@@ -4,6 +4,14 @@
 
 ---
 
+[2026-05-27 | 22:32] Fitur: Recurring Income (Pemasukan Rutin)
+Perubahan: Extend fitur Tagihan Rutin menjadi "Rutin Bulanan" yang mendukung dua tipe: Tagihan (pengeluaran) dan Pemasukan Rutin (gaji, tunjangan, dll). Tambah field `type` di interface RecurringBill dan kolom DB. Update AddBillModal dengan toggle tipe + kategori dinamis. Update RecurringBillsList dengan tab Tagihan/Pemasukan, logika "Bayar" vs "Terima", saldo wallet bertambah untuk pemasukan & berkurang untuk tagihan.
+Dipicu oleh prompt: "gas fitur ini ya — Recurring Income"
+Fitur terdampak: Tagihan Rutin (Medium), Wallet Balance (Medium), Transaksi (Low)
+Status: Approved
+---
+
+
 [2026-05-25 | 19:32] Fitur: Dompet (UI Mobile)
 Perubahan: Menyelaraskan layout tombol Edit & Hapus di tampilan mobile agar sejajar mendatar, sama seperti di Tabungan.
 Status: Approved

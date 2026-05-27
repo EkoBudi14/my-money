@@ -84,6 +84,7 @@ export interface RecurringBill {
     amount: number
     due_date: number // 1-31
     category: string
+    type?: 'pengeluaran' | 'pemasukan' // default: 'pengeluaran' (backward compatible)
     created_at?: string
 }
 
