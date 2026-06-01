@@ -82,3 +82,36 @@ Dipicu oleh prompt: "fix bug dulu - Filter Analytics tidak real-time sinkron den
 Fitur terdampak: Analytics Filter (Medium), Settings Sync (Low)
 Status: Approved
 ---
+
+[2026-06-01 | 09:23] Fitur: Voice Transaction Input (Baru)
+Perubahan: Tambah fitur input transaksi via suara menggunakan Web Speech API + Gemini AI. User bicara → AI parsing teks → muncul hasil review (bisa diedit) → konfirmasi → masuk history. File baru: app/api/voice-transaction/route.ts (Gemini AI endpoint), app/voice-transaction/page.tsx (halaman UI). Sidebar diupdate dengan menu "Voice Input".
+Dipicu oleh prompt: "tambah fitur baru yaitu user nantinya speaking kira2 pengeluaran apa atau pemasukannya apa nantinya akan muncul hasilnya dan kemudian setelah muncul hasil nya konfirm baru masuk history"
+Fitur terdampak: Transaksi/DB Insert (Medium), Sidebar Navigation (Low)
+Status: Approved
+---
+
+[2026-06-01 | 10:48] Fitur: Voice Transaction Input (Fix Brave Browser)
+Perubahan: Migrasi dari Web Speech API (diblokir oleh Brave) ke MediaRecorder API. Audio direkam (maks 15s), dikirim via Base64 ke backend, dan diproses secara native menggunakan fitur multimodal Gemini 1.5 Flash untuk ekstraksi JSON + Transkripsi sekaligus.
+Dipicu oleh prompt: "coba cek ini fiturnya kok saya klik mic gabis amasih error nih / disini saya pakai brave browser"
+Fitur terdampak: Voice Transaction Frontend & Backend API (Tinggi)
+Status: Approved
+---
+
+[2026-06-01 | 11:05] Fitur: Voice Input Multi-Transaksi
+Perubahan: Merombak prompt Gemini API untuk menghasilkan array JSON, memungkinkan pengguna menyebutkan beberapa transaksi sekaligus (contoh: "Beli kopi 25 ribu dan bayar tol 15 ribu") dalam sekali rekam (15 detik). UI diperbarui untuk menampilkan *multiple cards* dan mendukung *batch insert* ke database.
+Dipicu oleh prompt: "gas bikin multi transaksi"
+Fitur terdampak: Voice Transaction Frontend, API Endpoint & Supabase Transaction Insert
+Status: Approved
+---
+
+[2026-06-01 | 11:24] Fitur: Voice Transaction — Minor Fix
+Perubahan: Hapus import Wand2 yang tidak terpakai, tambah kotak transkripsi "Yang AI Dengar" di halaman Review agar user bisa verifikasi hasil tangkapan suara AI.
+Status: Approved
+---
+
+[2026-06-01 | 11:29] Fitur: Voice Transaction — Penggabungan Transaksi (Keyword)
+Perubahan: Menambahkan aturan pada prompt Gemini untuk menggabungkan beberapa transaksi menjadi 1 transaksi (menjumlahkan nominalnya) jika mendeteksi kata kunci seperti "gabung", "totalin", "sekalian", dll.
+Dipicu oleh prompt: "kalo ada kata2 di gabung itu berarti dalam 1 kali saya bicara transaksinya di gabung"
+Fitur terdampak: Voice Transaction Backend (Prompt Gemini)
+Status: Approved
+---

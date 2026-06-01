@@ -12,6 +12,7 @@ import {
     MoreHorizontal,
     ChevronRight,
     ScanLine,
+    Mic,
     Moon,
     Sun
 } from 'lucide-react'
@@ -29,6 +30,7 @@ const allMenuItems = [
     { name: 'Goals', icon: Goal, href: '/goals' },
     { name: 'Catatan', icon: StickyNote, href: '/notes' },
     { name: 'Scan Struk', icon: ScanLine, href: '/scan-receipt' },
+    { name: 'Voice Input', icon: Mic, href: '/voice-transaction' },
 ]
 
 // Mobile: tampilkan 4 item utama di bottom nav, sisanya di "Lainnya"
