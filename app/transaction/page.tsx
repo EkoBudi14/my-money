@@ -26,9 +26,13 @@ function TransactionPageContent() {
 
   useEffect(() => {
     const fetchAll = async () => {
+      const twoMonthsAgo = new Date()
+      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
+      twoMonthsAgo.setDate(1)
+
       const [walletsRes, transactionsRes, budgetsRes, settingsRes] = await Promise.all([
         supabase.from('wallets').select('*'),
-        supabase.from('transactions').select('*').order('created_at', { ascending: false }),
+        supabase.from('transactions').select('*').gte('date', twoMonthsAgo.toISOString()).order('created_at', { ascending: false }),
         supabase.from('budgets').select('*'),
         supabase.from('user_settings').select('*').eq('id', 1).single()
       ])
@@ -43,7 +47,18 @@ function TransactionPageContent() {
 
       // If editing, find the transaction
       if (editId) {
-        const tx = (transactionsRes.data || []).find((t: Transaction) => t.id === parseInt(editId))
+        let tx = (transactionsRes.data || []).find((t: Transaction) => t.id === parseInt(editId))
+        
+        // Fallback: If not found in the 2-month limit, fetch specifically from DB
+        if (!tx) {
+          const { data: specificTx } = await supabase.from('transactions').select('*').eq('id', parseInt(editId)).single()
+          if (specificTx) {
+            tx = specificTx
+            // Optionally, append to transactions list so the modal has it for projection (if needed)
+            setTransactions(prev => [...prev, specificTx as unknown as Transaction])
+          }
+        }
+        
         if (tx) setEditingTransaction(tx)
       }
 
@@ -69,20 +84,10 @@ function TransactionPageContent() {
     setCustomCategories(updated)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F9FAFB] dark:bg-[var(--bg-page)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[var(--text-secondary)] font-medium">Memuat...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <TransactionModal
       isOpen={true}
+      isLoading={loading}
       editingTransaction={editingTransaction}
       wallets={wallets}
       transactions={transactions}

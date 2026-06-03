@@ -14,7 +14,8 @@ import {
     ScanLine,
     Mic,
     Moon,
-    Sun
+    Sun,
+    Plus
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -33,16 +34,24 @@ const allMenuItems = [
     { name: 'Voice Input', icon: Mic, href: '/voice-transaction' },
 ]
 
-// Mobile: tampilkan 4 item utama di bottom nav, sisanya di "Lainnya"
-const mobileMainItems = allMenuItems.slice(0, 4)
-const mobileMoreItems = allMenuItems.slice(4)
+// Mobile: 2 kiri + FAB center + 1 kanan + Lainnya
+const mobileLeftItems = allMenuItems.slice(0, 2) // Dashboard, Analitik
+const mobileRightItems = [allMenuItems[2]] // Dompet
+const quickActionItems = [
+    { name: 'Scan Struk', icon: ScanLine, href: '/scan-receipt' },
+    { name: 'Voice Input', icon: Mic, href: '/voice-transaction' },
+]
+// Lainnya: Tabungan, Budget, Goals, Catatan (tanpa Scan Struk & Voice Input)
+const mobileMoreItems = allMenuItems.slice(3, 7) // Tabungan, Budget, Goals, Catatan
 
 export default function Sidebar() {
     const pathname = usePathname()
     const [showMore, setShowMore] = useState(false)
+    const [showQuickActions, setShowQuickActions] = useState(false)
     const { theme, toggleTheme } = useTheme()
 
     const isMoreActive = mobileMoreItems.some(item => pathname === item.href)
+    const isQuickActionActive = quickActionItems.some(item => pathname === item.href)
 
     return (
         <>
@@ -95,36 +104,195 @@ export default function Sidebar() {
                 </div>
             </aside>
 
-            {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[70px] bg-[var(--bg-card)] border-t border-[var(--border-default)] z-50 flex items-center justify-around px-1">
-                {mobileMainItems.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
+            {/* Mobile Quick Action Speed Dial Backdrop */}
+            {showQuickActions && (
+                <div
+                    className="md:hidden fixed inset-0 z-[55]"
+                    onClick={() => setShowQuickActions(false)}
+                    style={{
+                        background: theme === 'dark'
+                            ? 'rgba(0, 0, 0, 0.5)'
+                            : 'rgba(0, 0, 0, 0.2)',
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
+                    }}
+                />
+            )}
+
+            {/* Mobile Quick Action Speed Dial Items */}
+            {showQuickActions && (
+                <div className="md:hidden fixed bottom-[90px] left-0 right-0 z-[60] flex flex-col items-center gap-3 px-4"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+                >
+                    {quickActionItems.map((item, index) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
+                            onClick={() => setShowQuickActions(false)}
+                            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300"
+                            style={{
+                                background: theme === 'dark'
+                                    ? 'rgba(17, 17, 24, 0.85)'
+                                    : 'rgba(255, 255, 255, 0.88)',
+                                backdropFilter: 'blur(20px) saturate(180%)',
+                                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                                border: theme === 'dark'
+                                    ? '1px solid rgba(255, 255, 255, 0.10)'
+                                    : '1px solid rgba(255, 255, 255, 0.5)',
+                                boxShadow: theme === 'dark'
+                                    ? '0 8px 32px rgba(0, 0, 0, 0.4)'
+                                    : '0 8px 32px rgba(0, 0, 0, 0.10)',
+                                animation: `slideUpFade 0.25s ease-out ${index * 0.08}s both`,
+                            }}
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`} />
-                            <span className={`text-[9px] font-medium ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
+                            <div
+                                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                style={{
+                                    background: pathname === item.href
+                                        ? 'var(--primary)'
+                                        : theme === 'dark'
+                                            ? 'rgba(77, 138, 255, 0.15)'
+                                            : 'rgba(22, 93, 255, 0.08)',
+                                }}
+                            >
+                                <item.icon
+                                    className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[var(--primary)]'}`}
+                                />
+                            </div>
+                            <span className={`font-semibold text-sm ${
+                                pathname === item.href ? 'text-[var(--primary)]' : 'text-[var(--text-primary)]'
+                            }`}>
                                 {item.name}
                             </span>
                         </Link>
-                    )
-                })}
+                    ))}
+                </div>
+            )}
 
-                {/* "Lainnya" Button */}
-                <button
-                    onClick={() => setShowMore(true)}
-                    className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
+            {/* Mobile Bottom Navigation — Glassmorphism iOS Style */}
+            <nav
+                className="md:hidden fixed bottom-0 left-0 right-0 z-[58]"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
+                <div
+                    className="mx-3 mb-3 rounded-2xl flex items-center justify-around px-1 h-[64px] relative"
+                    style={{
+                        background: theme === 'dark'
+                            ? 'rgba(17, 17, 24, 0.75)'
+                            : 'rgba(255, 255, 255, 0.72)',
+                        backdropFilter: 'blur(24px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                        border: theme === 'dark'
+                            ? '1px solid rgba(255, 255, 255, 0.08)'
+                            : '1px solid rgba(255, 255, 255, 0.35)',
+                        boxShadow: theme === 'dark'
+                            ? '0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3)'
+                            : '0 4px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)',
+                    }}
                 >
-                    <div className={`w-5 h-5 flex items-center justify-center ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
-                        <MoreHorizontal className="w-5 h-5" />
+                    {/* Left Items: Dashboard, Analitik */}
+                    {mobileLeftItems.map((item) => {
+                        const isActive = pathname === item.href
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                            >
+                                {isActive && (
+                                    <div
+                                        className="absolute inset-0 rounded-xl"
+                                        style={{
+                                            background: theme === 'dark'
+                                                ? 'rgba(77, 138, 255, 0.12)'
+                                                : 'rgba(22, 93, 255, 0.10)',
+                                        }}
+                                    />
+                                )}
+                                <item.icon
+                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
+                                    strokeWidth={isActive ? 2.3 : 1.8}
+                                />
+                                <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                                    {item.name}
+                                </span>
+                            </Link>
+                        )
+                    })}
+
+                    {/* Center FAB — Quick Actions (+) */}
+                    <div className="relative flex items-center justify-center" style={{ width: 56 }}>
+                        <button
+                            onClick={() => setShowQuickActions(!showQuickActions)}
+                            className="absolute -top-7 w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-300 active:scale-90"
+                            style={{
+                                background: isQuickActionActive
+                                    ? 'var(--primary)'
+                                    : 'linear-gradient(135deg, #165DFF 0%, #4D8AFF 100%)',
+                                boxShadow: showQuickActions
+                                    ? '0 4px 20px rgba(22, 93, 255, 0.5)'
+                                    : '0 4px 15px rgba(22, 93, 255, 0.35)',
+                                transform: showQuickActions ? 'rotate(45deg)' : 'rotate(0deg)',
+                            }}
+                        >
+                            <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+                        </button>
                     </div>
-                    <span className={`text-[9px] font-medium ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-secondary)]'}`}>
-                        Lainnya
-                    </span>
-                </button>
+
+                    {/* Right Items: Dompet */}
+                    {mobileRightItems.map((item) => {
+                        const isActive = pathname === item.href
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                            >
+                                {isActive && (
+                                    <div
+                                        className="absolute inset-0 rounded-xl"
+                                        style={{
+                                            background: theme === 'dark'
+                                                ? 'rgba(77, 138, 255, 0.12)'
+                                                : 'rgba(22, 93, 255, 0.10)',
+                                        }}
+                                    />
+                                )}
+                                <item.icon
+                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
+                                    strokeWidth={isActive ? 2.3 : 1.8}
+                                />
+                                <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                                    {item.name}
+                                </span>
+                            </Link>
+                        )
+                    })}
+
+                    {/* "Lainnya" Button */}
+                    <button
+                        onClick={() => setShowMore(true)}
+                        className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                    >
+                        {isMoreActive && (
+                            <div
+                                className="absolute inset-0 rounded-xl"
+                                style={{
+                                    background: theme === 'dark'
+                                        ? 'rgba(77, 138, 255, 0.12)'
+                                        : 'rgba(22, 93, 255, 0.10)',
+                                }}
+                            />
+                        )}
+                        <MoreHorizontal
+                            className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isMoreActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
+                            strokeWidth={isMoreActive ? 2.3 : 1.8}
+                        />
+                        <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                            Lainnya
+                        </span>
+                    </button>
+                </div>
             </nav>
 
             {/* Mobile "Lainnya" Bottom Sheet */}

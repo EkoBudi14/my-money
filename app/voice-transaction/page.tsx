@@ -26,6 +26,9 @@ interface ParsedTransaction {
   category: string
   date: string
   notes: string
+  wallet?: string
+  source_wallet?: string
+  destination_wallet?: string
 }
 
 type RecordingState = 'idle' | 'listening' | 'processing' | 'result' | 'saving' | 'success'
@@ -55,6 +58,13 @@ export default function VoiceTransactionPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<BlobPart[]>([])
   const streamRef = useRef<MediaStream | null>(null)
+
+  // Silence detection refs
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const silenceStartRef = useRef<number | null>(null)
+  const checkSilenceIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const hasSpokenRef = useRef<boolean>(false)
 
   // Recording timer (optional UX)
   const [recordingTime, setRecordingTime] = useState(0)
@@ -92,6 +102,20 @@ export default function VoiceTransactionPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
 
+      // Setup Web Audio API for Silence Detection
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext
+      const audioContext = new AudioContext()
+      audioContextRef.current = audioContext
+      const analyser = audioContext.createAnalyser()
+      analyserRef.current = analyser
+      analyser.fftSize = 512
+      analyser.minDecibels = -70 // Sensitivitas microphone
+      const source = audioContext.createMediaStreamSource(stream)
+      source.connect(analyser)
+
+      silenceStartRef.current = null
+      hasSpokenRef.current = false
+
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -122,13 +146,45 @@ export default function VoiceTransactionPage() {
       
       timerIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          if (prev >= 14) {
-            stopRecording() // Auto stop at 15s to save Gemini tokens
-            return 15
+          if (prev >= 29) {
+            stopRecording() // Auto stop at 30s to save Gemini tokens
+            return 30
           }
           return prev + 1
         })
       }, 1000)
+
+      // Interval for Silence Detection (100ms checks)
+      const SILENCE_THRESHOLD = 0.02 // 2% amplitude threshold for speaking
+      checkSilenceIntervalRef.current = setInterval(() => {
+        if (!analyserRef.current || mediaRecorder.state !== 'recording') return
+        
+        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount)
+        analyserRef.current.getByteTimeDomainData(dataArray)
+        
+        let sumSquares = 0
+        for (let i = 0; i < dataArray.length; i++) {
+          // Time domain data is 0-255 where 128 is silence (0 amplitude)
+          const normalized = (dataArray[i] - 128) / 128 
+          sumSquares += normalized * normalized
+        }
+        const rms = Math.sqrt(sumSquares / dataArray.length)
+        
+        if (rms > SILENCE_THRESHOLD) {
+          hasSpokenRef.current = true
+          silenceStartRef.current = null // Reset timer
+        } else {
+          if (!silenceStartRef.current) {
+            silenceStartRef.current = Date.now()
+          } else {
+            const silenceDuration = Date.now() - silenceStartRef.current
+            const maxSilence = hasSpokenRef.current ? 2500 : 5000 // 2.5s jika sudah bicara, 5s jika belum
+            if (silenceDuration > maxSilence) {
+              stopRecording()
+            }
+          }
+        }
+      }, 100)
 
     } catch (err) {
       console.error('Error accessing mic:', err)
@@ -147,6 +203,15 @@ export default function VoiceTransactionPage() {
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current)
     }
+    if (checkSilenceIntervalRef.current) {
+      clearInterval(checkSilenceIntervalRef.current)
+      checkSilenceIntervalRef.current = null
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(console.error)
+      audioContextRef.current = null
+    }
+    analyserRef.current = null
   }
 
   // ── AI Processing ──────────────────────────────────────────────────────────
@@ -177,6 +242,29 @@ export default function VoiceTransactionPage() {
       
       const transactions = result.data.transactions as ParsedTransaction[]
       
+      // Auto-detect wallet from AI
+      if (transactions.length > 0) {
+        const firstTx = transactions[0]
+        const activeWalletsList = wallets.filter(w => w.category === 'active')
+        
+        const findWallet = (name?: string) => {
+          if (!name) return null
+          const lowerName = name.toLowerCase()
+          return activeWalletsList.find(w => w.name.toLowerCase().includes(lowerName) || lowerName.includes(w.name.toLowerCase()))
+        }
+
+        if (firstTx.type === 'topup') {
+          const matchSrc = findWallet(firstTx.source_wallet)
+          if (matchSrc && matchSrc.id) setSourceWalletId(matchSrc.id.toString())
+          
+          const matchDest = findWallet(firstTx.destination_wallet || firstTx.wallet)
+          if (matchDest && matchDest.id) setSelectedWalletId(matchDest.id.toString())
+        } else {
+          const match = findWallet(firstTx.wallet)
+          if (match && match.id) setSelectedWalletId(match.id.toString())
+        }
+      }
+
       // Ensure date is set for all tx
       transactions.forEach(tx => {
         if (!tx.date) tx.date = new Date().toISOString().split('T')[0]
@@ -398,7 +486,7 @@ export default function VoiceTransactionPage() {
                       🎙️ Sedang mendengarkan...
                     </p>
                     <p className="text-sm text-[var(--text-secondary)]">
-                      Klik mic lagi untuk berhenti ({15 - recordingTime}s)
+                      Otomatis berhenti saat Anda selesai bicara ({30 - recordingTime}s)
                     </p>
                   </>
                 )}

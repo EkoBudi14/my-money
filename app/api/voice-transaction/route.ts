@@ -38,7 +38,8 @@ Tugas:
       "amount": angka_nominal_tanpa_titik_koma,
       "category": "salah satu dari: Kebutuhan Dapur / Makan di Luar / Transportasi / Tempat Tinggal / Tagihan / Belanja / Kesehatan / Cicilan & Utang / Pribadi & Hiburan / Edukasi & Donasi / Lainnya",
       "date": "YYYY-MM-DD",
-      "notes": "catatan tambahan jika ada, string kosong jika tidak ada"
+      "notes": "catatan tambahan jika ada, string kosong jika tidak ada",
+      "wallet": "nama dompet/rekening jika disebut (contoh: BCA, Gopay, Tunai), kosongkan jika tidak disebut"
     },
     {
       "type": "pemasukan",
@@ -46,7 +47,8 @@ Tugas:
       "amount": angka_nominal_tanpa_titik_koma,
       "category": "salah satu dari: Gaji / Bonus & Hadiah / Investasi / Penjualan / Lainnya",
       "date": "YYYY-MM-DD",
-      "notes": "catatan tambahan jika ada, string kosong jika tidak ada"
+      "notes": "catatan tambahan jika ada, string kosong jika tidak ada",
+      "wallet": "nama dompet/rekening jika disebut (contoh: BCA, Gopay, Tunai), kosongkan jika tidak disebut"
     },
     {
       "type": "topup",
@@ -54,7 +56,9 @@ Tugas:
       "amount": angka_nominal_tanpa_titik_koma,
       "category": "Transfer",
       "date": "YYYY-MM-DD",
-      "notes": "catatan tambahan jika ada, string kosong jika tidak ada"
+      "notes": "catatan tambahan jika ada, string kosong jika tidak ada",
+      "source_wallet": "dari dompet mana jika disebut, kosongkan jika tidak",
+      "destination_wallet": "ke dompet mana jika disebut, kosongkan jika tidak"
     }
   ]
 }

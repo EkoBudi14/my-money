@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
-import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon, ChevronLeft, ChevronRight, Settings, Calendar } from 'lucide-react'
+import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon, ChevronLeft, ChevronRight, Settings, Calendar, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -75,28 +76,11 @@ export default function BudgetsPage() {
     }, [currentDate])
 
     useEffect(() => {
-        fetchData()
-        fetchWallets()
+        fetchAllData()
     }, [currentDate, filterMode, customRange])
 
-    const fetchWallets = async () => {
-        const { data } = await supabase.from('wallets').select('*')
-        if (data) setWallets(data)
-    }
-
-    const fetchData = async () => {
+    const fetchAllData = async () => {
         setLoading(true)
-
-        const { data: settings } = await supabase.from('user_settings').select('*').eq('id', 1).single()
-        if (settings && settings.custom_categories) {
-            try {
-                setCustomCategories(settings.custom_categories as { pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] })
-            } catch (e) { }
-        }
-        if (settings && settings.filter_mode && filterMode === 'monthly') {
-            // Default to user setting initially if not already changed
-            // setFilterMode(settings.filter_mode as 'monthly' | 'custom')
-        }
 
         let targetDate = currentDate
         let startIso: string
@@ -116,28 +100,28 @@ export default function BudgetsPage() {
             targetDate = new Date(customRange.end)
         }
 
-        // 1. Get Budgets for the target date range
         const targetStartDateStr = startIso.split('T')[0]
         const targetEndDateStr = endIso.split('T')[0]
 
-        const { data: bData, error: bError } = await supabase
-            .from('budgets')
-            .select('*')
-            .lte('start_date', targetEndDateStr)
-            .gte('end_date', targetStartDateStr)
+        const [settingsRes, walletsRes, budgetsRes, transactionsRes] = await Promise.all([
+            supabase.from('user_settings').select('*').eq('id', 1).single(),
+            supabase.from('wallets').select('*'),
+            supabase.from('budgets').select('*').lte('start_date', targetEndDateStr).gte('end_date', targetStartDateStr),
+            supabase.from('transactions').select('*').gte('date', startIso).lte('date', endIso).eq('type', 'pengeluaran')
+        ])
 
-        if (bError) showToast('error', 'Gagal memuat budget')
+        if (settingsRes.data && settingsRes.data.custom_categories) {
+            try {
+                setCustomCategories(settingsRes.data.custom_categories as { pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] })
+            } catch (e) { }
+        }
 
-        // 2. Get Transactions for progress
-        const { data: tData } = await supabase
-            .from('transactions')
-            .select('*')
-            .gte('date', startIso)
-            .lte('date', endIso)
-            .eq('type', 'pengeluaran')
-
-        if (bData) setBudgets(bData)
-        if (tData) setTransactions(tData as unknown as Transaction[])
+        if (walletsRes.data) setWallets(walletsRes.data)
+        
+        if (budgetsRes.error) showToast('error', 'Gagal memuat budget')
+        if (budgetsRes.data) setBudgets(budgetsRes.data)
+        
+        if (transactionsRes.data) setTransactions(transactionsRes.data as unknown as Transaction[])
 
         setLoading(false)
     }
@@ -208,7 +192,7 @@ export default function BudgetsPage() {
             console.error(error)
             showToast('error', "Gagal menyimpan budget")
         } else {
-            fetchData()
+            fetchAllData()
             resetForm()
             showSuccess({
                 type: editingId ? 'edit' : 'create',
@@ -253,8 +237,7 @@ export default function BudgetsPage() {
         const newBalance = wallet.balance - parseFloat(quickExpAmount)
         await supabase.from('wallets').update({ balance: newBalance }).eq('id', wallet.id)
 
-        fetchData()
-        fetchWallets() // Refresh wallet balances
+        fetchAllData()
         resetQuickExpForm()
         showSuccess({
             type: 'create',
@@ -281,7 +264,7 @@ export default function BudgetsPage() {
 
         if (!error) {
             // Fetch di background untuk memastikan sync
-            fetchData()
+            fetchAllData()
             showSuccess({
                 type: 'delete',
                 message: 'Budget berhasil dihapus dari daftar.'
@@ -331,7 +314,10 @@ export default function BudgetsPage() {
         <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
             {/* Top Header */}
             <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
-                <div>
+                <div className="flex items-center gap-3">
+                    <Link href="/" className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-[var(--text-primary)] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-colors">
+                        <ArrowLeft className="w-6 h-6" />
+                    </Link>
                     <h2 className="font-bold text-2xl text-[var(--text-primary)]">Manajemen Budget</h2>
                 </div>
                 <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">

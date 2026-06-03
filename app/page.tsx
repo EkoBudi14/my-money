@@ -1891,43 +1891,71 @@ export default function MoneyManager() {
           </div>
         </div>
 
-        {/* Mobile Quick Actions */}
+        {/* Mobile Quick Actions (Bento Box Style) */}
         <div className="px-4 mt-5">
-          <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Aksi Cepat</p>
-          <div className="grid grid-cols-4 gap-3">
-            <Link
-              href="/transaction?type=pemasukan"
-              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/30 flex items-center justify-center shadow-sm">
-                <TrendingUp className="w-7 h-7 text-emerald-600" />
-              </div>
-              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Masuk</span>
-            </Link>
-            <Link
-              href="/transaction?type=pengeluaran"
-              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/30 flex items-center justify-center shadow-sm">
-                <TrendingDown className="w-7 h-7 text-rose-500" />
-              </div>
-              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Keluar</span>
-            </Link>
-            <Link
-              href="/transaction?type=topup"
-              className="flex flex-col items-center gap-2 active:scale-90 transition-all"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 flex items-center justify-center shadow-sm">
-                <WalletIcon className="w-7 h-7 text-[var(--primary)]" />
-              </div>
-              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Transfer</span>
-            </Link>
-            <Link href="/budgets" className="flex flex-col items-center gap-2 active:scale-90 transition-all">
-              <div className="w-14 h-14 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-800/30 flex items-center justify-center shadow-sm">
-                <CreditCard className="w-7 h-7 text-purple-600" />
-              </div>
-              <span className="text-[11px] font-semibold text-[var(--text-secondary)]">Anggaran</span>
-            </Link>
+          <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-4 border border-[var(--border-default)] shadow-sm">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Aksi Cepat</p>
+              <div className="h-1 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-full"></div>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-2">
+              {/* Masuk */}
+              <Link
+                href="/transaction?type=pemasukan"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              >
+                <div className="relative mb-2">
+                  <div className="qa-glow bg-emerald-400"></div>
+                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-emerald-400 to-emerald-600 dark:from-emerald-500 dark:to-emerald-700 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                    <TrendingUp className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-[var(--text-primary)]">Masuk</span>
+              </Link>
+              
+              {/* Keluar */}
+              <Link
+                href="/transaction?type=pengeluaran"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              >
+                <div className="relative mb-2">
+                  <div className="qa-glow bg-rose-400"></div>
+                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-rose-400 to-rose-600 dark:from-rose-500 dark:to-rose-700 flex items-center justify-center shadow-md shadow-rose-500/20">
+                    <TrendingDown className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-[var(--text-primary)]">Keluar</span>
+              </Link>
+              
+              {/* Transfer */}
+              <Link
+                href="/transaction?type=topup"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              >
+                <div className="relative mb-2">
+                  <div className="qa-glow bg-blue-400"></div>
+                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/20">
+                    <WalletIcon className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-[var(--text-primary)]">Transfer</span>
+              </Link>
+              
+              {/* Anggaran */}
+              <Link 
+                href="/budgets" 
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              >
+                <div className="relative mb-2">
+                  <div className="qa-glow bg-purple-400"></div>
+                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-purple-400 to-purple-600 dark:from-purple-500 dark:to-purple-700 flex items-center justify-center shadow-md shadow-purple-500/20">
+                    <CreditCard className="w-6 h-6 text-white drop-shadow-sm" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-[var(--text-primary)]">Anggaran</span>
+              </Link>
+            </div>
           </div>
         </div>
 

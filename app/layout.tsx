@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "@/components/Sidebar";
+import SplashScreen from "@/components/SplashScreen";
 import { ToastProvider } from "@/hooks/useToast";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
@@ -58,6 +59,7 @@ export default function RootLayout({
           <ToastProvider>
             <ConfirmProvider>
               <SuccessModalProvider>
+                <SplashScreen />
                 <div className="flex min-h-screen">
                   <Sidebar />
                   <div className="flex-1 min-w-0 overflow-x-hidden md:ml-[280px]">

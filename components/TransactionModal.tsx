@@ -66,6 +66,7 @@ interface Props {
   onCustomCategoriesChange: (updated: { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }) => void
   mode?: 'modal' | 'page'
   initialType?: 'pemasukan' | 'pengeluaran' | 'topup'
+  isLoading?: boolean
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ const fetchFreshWalletBalance = async (walletId: number): Promise<number | null>
 export default function TransactionModal({
   isOpen, editingTransaction, wallets, transactions, budgets,
   customCategories, onClose, onSaved, onCustomCategoriesChange,
-  mode = 'modal', initialType
+  mode = 'modal', initialType, isLoading = false
 }: Props) {
   const { showToast } = useToast()
   const { showConfirm } = useConfirm()
@@ -566,6 +567,12 @@ export default function TransactionModal({
         </div>
 
         {/* Form Content */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 mt-10 gap-3">
+            <div className="w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-[var(--text-secondary)] font-medium">Menyiapkan form...</p>
+          </div>
+        ) : (
         <form onSubmit={handleSaveTransaction} className="px-4 pt-5">
           {/* Topup wallet selectors */}
           {type === 'topup' && (
@@ -829,13 +836,12 @@ export default function TransactionModal({
             {/* Submit */}
             <button
               type="submit"
-              disabled={saving}
-              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
+              disabled={saving || isLoading}
+              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${(saving || isLoading) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
                 type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
                   'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
                 } text-white`}
             >
-              {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
               {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
             </button>
 
@@ -843,6 +849,7 @@ export default function TransactionModal({
             <div className="h-6" />
           </div>
         </form>
+        )}
       </div>
     )
   }

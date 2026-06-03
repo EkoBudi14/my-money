@@ -261,3 +261,96 @@ button {
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+
+/* ============================================================
+   QUICK ACTION BUTTONS — Mobile Dashboard
+   ============================================================ */
+@keyframes qa-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes qa-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.qa-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.qa-btn:active {
+  transform: scale(0.92) !important;
+}
+
+/* Shimmer sweep overlay */
+.qa-btn .qa-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.25) 55%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: qa-shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.dark .qa-btn .qa-icon::after {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: qa-shimmer 3.5s ease-in-out infinite;
+}
+
+/* Glow ring behind the icon */
+.qa-btn .qa-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: qa-glow-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(6px);
+}
+
+.qa-btn:hover .qa-glow,
+.qa-btn:active .qa-glow {
+  opacity: 1;
+}
+
+/* Always show subtle glow on mobile (no hover) */
+@media (hover: none) {
+  .qa-btn .qa-glow {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================================
+   FAB SPEED DIAL ANIMATION
+   ============================================================ */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
