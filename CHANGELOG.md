@@ -219,3 +219,8 @@ Dipicu oleh prompt: "coba cek dari fitur2 baru di tambah ini udah aman semua beb
 Fitur terdampak: Form Transaksi (Medium), Database Fetch (Low)
 Status: Approved
 ---
+
+[2026-06-07 | 16:25] Perbaikan: Splash Screen Muncul Ulang Saat Navigasi
+Perubahan: Menambahkan pengecekan `sessionStorage` di `SplashScreen.tsx`. Splash kini hanya ditampilkan sekali per sesi browser. Saat user navigasi ke halaman lain (`/transaction`, `/budgets`, dll), layout.tsx yang di-remount akan skip render splash jika key `splashShown` sudah tersimpan di sessionStorage.
+Status: Approved
+---

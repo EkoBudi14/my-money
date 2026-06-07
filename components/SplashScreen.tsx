@@ -4,10 +4,23 @@ import { useEffect, useState } from 'react'
 import { PackageCheck } from 'lucide-react'
 
 export default function SplashScreen() {
-    const [show, setShow] = useState(true)
+    // Cek sessionStorage: jika splash sudah pernah tampil di sesi ini, langsung hide
+    const [show, setShow] = useState(false)
     const [isFading, setIsFading] = useState(false)
 
     useEffect(() => {
+        const alreadyShown = sessionStorage.getItem('splashShown')
+
+        if (alreadyShown) {
+            // Sudah pernah tampil di sesi ini — skip splash
+            setShow(false)
+            return
+        }
+
+        // Pertama kali di sesi ini — tampilkan splash & tandai
+        setShow(true)
+        sessionStorage.setItem('splashShown', '1')
+
         // Wait for 1.5s, then start fading out
         const fadeTimer = setTimeout(() => {
             setIsFading(true)
