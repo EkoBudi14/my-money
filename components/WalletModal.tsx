@@ -450,7 +450,7 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
 
     if (isPage) {
         return (
-            <div className="fixed inset-0 z-50 bg-[#F9FAFB] dark:bg-[var(--bg-page)] md:relative md:min-h-screen flex flex-col animate-in slide-in-from-bottom-full md:slide-in-from-bottom-0 duration-300">
+            <div className="fixed inset-0 z-[59] bg-[#F9FAFB] dark:bg-[var(--bg-page)] md:relative md:min-h-screen flex flex-col animate-in slide-in-from-bottom-full md:slide-in-from-bottom-0 duration-300">
                 <div className="flex items-center justify-between p-5 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border-default)] shrink-0 sticky top-0 z-20">
                     <div className="flex items-center gap-3">
                         <button onClick={onClose} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-colors active:scale-95">

@@ -224,3 +224,8 @@ Status: Approved
 Perubahan: Menambahkan pengecekan `sessionStorage` di `SplashScreen.tsx`. Splash kini hanya ditampilkan sekali per sesi browser. Saat user navigasi ke halaman lain (`/transaction`, `/budgets`, dll), layout.tsx yang di-remount akan skip render splash jika key `splashShown` sudah tersimpan di sessionStorage.
 Status: Approved
 ---
+
+[2026-06-13 | 14:39] Perbaikan: Tombol Simpan Hilang di Edit Dompet (Mobile)
+Perubahan: Menaikkan z-index container halaman Edit Dompet dari `z-50` menjadi `z-[59]` di `WalletModal.tsx`. Sebelumnya tombol Simpan (fixed bottom) tertutup oleh Mobile Bottom Navigation (`z-[58]`). Perubahan hanya CSS, tidak menyentuh logic apapun.
+Status: Approved
+---
