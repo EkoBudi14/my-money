@@ -846,7 +846,7 @@ export default function TransactionModal({
             </button>
 
             {/* Bottom padding for safe area */}
-            <div className="h-6" />
+            <div className="h-15" />
           </div>
         </form>
         )}
@@ -903,7 +903,8 @@ export default function TransactionModal({
         </div>
 
         {/* Scrollable Content */}
-        <form onSubmit={handleSaveTransaction} className="flex-1 overflow-y-auto overscroll-contain">
+        <form onSubmit={handleSaveTransaction} className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto overscroll-contain">
 
           {/* Topup wallet selectors */}
           {type === 'topup' && (
@@ -1163,7 +1164,11 @@ export default function TransactionModal({
               />
             </div>
 
-            {/* Submit */}
+          </div>
+        </div>
+
+          {/* Sticky Submit Footer — outside scroll area, always above bottom nav */}
+          <div className="shrink-0 px-4 pt-3 pb-24 bg-white dark:bg-[var(--bg-card)] border-t border-slate-100 dark:border-[var(--border-default)]">
             <button
               type="submit"
               disabled={saving}

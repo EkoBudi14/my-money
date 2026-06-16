@@ -236,3 +236,8 @@ Dipicu oleh prompt: "ini bukan nambah worksheet baru tapi nambah tabel di worksh
 Fitur terdampak: Export Excel (Medium)
 Status: Approved
 ---
+
+[2026-06-16 | 21:53] Fitur: TransactionModal — Spacing Tombol Simpan (Mobile)
+Perubahan: Menambahkan jarak kosong (`h-28`) di bawah tombol Simpan pada Mode Halaman (Page Mode) di `TransactionModal.tsx`. Sebelumnya perbaikan hanya dilakukan di mode Modal/Bottom Sheet, sehingga saat dibuka lewat Quick Actions (Page Mode) tombol masih tertutup navigation bar. Kini tombol selalu aman dari area bottom navigation bar di kedua mode.
+Status: Approved
+---
