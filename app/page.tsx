@@ -1635,10 +1635,11 @@ export default function MoneyManager() {
         { key: 'expense', width: 22 },
         { key: 'piutang', width: 20 },
         { key: 'talangan', width: 20 },
+        { key: 'tabungan', width: 22 },
         { key: 'diff', width: 22 },
       ]
-      addTitleRow(wsSummary, 'Rekap per Rentang Tanggal — Semua Riwayat', 6, 'FF059669')
-      addColHeaderRow(wsSummary, ['Rentang Tanggal', 'Pemasukan', 'Pengeluaran', 'Piutang', 'Talangan', 'Selisih'], 6)
+      addTitleRow(wsSummary, 'Rekap per Rentang Tanggal — Semua Riwayat', 7, 'FF059669')
+      addColHeaderRow(wsSummary, ['Rentang Tanggal', 'Pemasukan', 'Pengeluaran', 'Piutang', 'Talangan', 'Tabungan', 'Selisih'], 7)
 
       // Filter out trivial/ambiguous entries before rendering:
       // 1. Skip rentang < 3 hari — hasil debounce saat user masih mengedit custom range
@@ -1660,7 +1661,9 @@ export default function MoneyManager() {
         noteRow.getCell('range').font = { italic: true, color: { argb: 'FF6B7280' } }
       } else {
         // Accumulate totals from each range row as we go
-        let grandIn = 0, grandOut = 0
+        let grandIn = 0, grandOut = 0, grandTabungan = 0
+
+        const savingsWalletIds = wallets.filter(w => w.category === 'savings').map(w => w.id)
 
         cleanHistory.forEach((entry, idx) => {
           const start = new Date(entry.start_date)
@@ -1677,13 +1680,27 @@ export default function MoneyManager() {
           const expense = rangeTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan).reduce((s, t) => s + t.amount, 0)
           const piutang = rangeTransactions.filter(t => t.is_piutang).reduce((s, t) => s + t.amount, 0)
           const talangan = rangeTransactions.filter(t => t.is_talangan).reduce((s, t) => s + t.amount, 0)
+          
+          // Logic Net Tabungan
+          const tabunganIn = rangeTransactions.filter(t => 
+            (t.type === 'pemasukan' && t.wallet_id && savingsWalletIds.includes(t.wallet_id)) || 
+            (t.type === 'topup' && t.wallet_id && savingsWalletIds.includes(t.wallet_id) && (!t.source_wallet_id || !savingsWalletIds.includes(t.source_wallet_id)))
+          ).reduce((s, t) => s + t.amount, 0)
+          
+          const tabunganOut = rangeTransactions.filter(t => 
+            (t.type === 'pengeluaran' && t.wallet_id && savingsWalletIds.includes(t.wallet_id)) ||
+            (t.type === 'topup' && t.source_wallet_id && savingsWalletIds.includes(t.source_wallet_id) && (!t.wallet_id || !savingsWalletIds.includes(t.wallet_id)))
+          ).reduce((s, t) => s + t.amount, 0)
+
+          const tabungan = tabunganIn - tabunganOut
           const diff = income - expense
 
           grandIn += income
           grandOut += expense
+          grandTabungan += tabungan
 
           const rangeLabel = entry.label || `${entry.start_date} – ${entry.end_date}`
-          const row = wsSummary.addRow({ range: rangeLabel, income, expense, piutang, talangan, diff })
+          const row = wsSummary.addRow({ range: rangeLabel, income, expense, piutang, talangan, tabungan, diff })
           row.height = 18
           row.getCell('income').numFmt = RP_FMT
           row.getCell('income').font = { color: { argb: 'FF059669' } }
@@ -1693,25 +1710,29 @@ export default function MoneyManager() {
           row.getCell('piutang').font = { color: { argb: 'FF9333EA' } }
           row.getCell('talangan').numFmt = RP_FMT
           row.getCell('talangan').font = { color: { argb: 'FFEA580C' } }
+          row.getCell('tabungan').numFmt = RP_FMT_NEG
+          row.getCell('tabungan').font = { bold: true, color: { argb: 'FF059669' } }
           row.getCell('diff').numFmt = RP_FMT_NEG
           row.getCell('diff').font = { bold: true, color: { argb: diff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
           if (idx % 2 === 0) row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0FDF4' } }
-          applyBorderToRow(row, 6)
+          applyBorderToRow(row, 7)
         })
 
         // Grand total row — only show if more than 1 range (otherwise it's just a duplicate)
         if (cleanHistory.length > 1) {
           const grandDiff = grandIn - grandOut
-          const grandRow = wsSummary.addRow({ range: 'TOTAL SEMUA RENTANG', income: grandIn, expense: grandOut, diff: grandDiff })
+          const grandRow = wsSummary.addRow({ range: 'TOTAL SEMUA RENTANG', income: grandIn, expense: grandOut, tabungan: grandTabungan, diff: grandDiff })
           grandRow.font = { bold: true }
           grandRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2FE' } }
           grandRow.getCell('income').numFmt = RP_FMT
           grandRow.getCell('income').font = { bold: true, color: { argb: 'FF059669' } }
           grandRow.getCell('expense').numFmt = RP_FMT
           grandRow.getCell('expense').font = { bold: true, color: { argb: 'FFDC2626' } }
+          grandRow.getCell('tabungan').numFmt = RP_FMT_NEG
+          grandRow.getCell('tabungan').font = { bold: true, color: { argb: 'FF059669' } }
           grandRow.getCell('diff').numFmt = RP_FMT_NEG
           grandRow.getCell('diff').font = { bold: true, color: { argb: grandDiff >= 0 ? 'FF165DFF' : 'FFDC2626' } }
-          applyBorderToRow(grandRow, 6, BOTTOM_THICK)
+          applyBorderToRow(grandRow, 7, BOTTOM_THICK)
         }
       }
 

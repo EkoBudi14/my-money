@@ -229,3 +229,10 @@ Status: Approved
 Perubahan: Menaikkan z-index container halaman Edit Dompet dari `z-50` menjadi `z-[59]` di `WalletModal.tsx`. Sebelumnya tombol Simpan (fixed bottom) tertutup oleh Mobile Bottom Navigation (`z-[58]`). Perubahan hanya CSS, tidak menyentuh logic apapun.
 Status: Approved
 ---
+
+[2026-06-16 | 09:30] Fitur: Export Excel — Tambah Kolom Tabungan
+Perubahan: Menambahkan perhitungan "Net Tabungan" pada Sheet "Rekap per Rentang" di fitur Export Excel (`app/page.tsx`). Tabungan dihitung dari (Pemasukan + Transfer Masuk ke dompet kategori savings) dikurangi (Pengeluaran + Transfer Keluar dari dompet kategori savings). Kolom Tabungan ditambahkan setelah kolom Talangan (total menjadi 7 kolom).
+Dipicu oleh prompt: "ini bukan nambah worksheet baru tapi nambah tabel di worksheet rekap per rentang, ini kan ada tabel pemasukan nah di sampingnya coba tambhin juga yaitu tabungan"
+Fitur terdampak: Export Excel (Medium)
+Status: Approved
+---
