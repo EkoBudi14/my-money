@@ -277,13 +277,13 @@ Status: Approved
 ---
 
 [2026-06-19 | 22:17] Perbaikan UI: iOS Clipboard Paste
-Perubahan: Mengganti mekanisme "Auto-detect clipboard" di halaman Scan Struk menjadi tombol eksplisit "Paste dari Clipboard" yang selalu tampil sejajar di bawah opsi Kamera dan Galeri. Ini memperbaiki masalah di iOS (Safari) di mana gambar hasil copy tidak terdeteksi otomatis akibat pembatasan izin (permission dialog spam) oleh sistem. Sekarang user dapat men-tap tombol secara manual untuk *paste* foto tanpa masalah izin.
+Perubahan: Mengganti mekanisme "Auto-detect clipboard" di halaman Scan Struk menjadi tombol eksplisit "Paste dari Clipboard" yang selalu tampil sejajar di bawah opsi Kamera dan Galeri. Ini memperbaiki masalah di iOS (Safari) di mana gambar hasil copy tidak terdeteksi otomatis akibat pembatasan izin (permission dialog spam) oleh sistem. Sekarang user dapat men-tap tombol secara manual untuk _paste_ foto tanpa masalah izin.
 Status: Approved
 
 ---
 
 [2026-06-19 | 22:27] Perbaikan UI & UX: iOS PWA Clipboard Paste Fallback
-Perubahan: Menambahkan mekanisme *fallback* untuk kasus di mana tombol "Paste dari Clipboard" otomatis diblokir secara sepihak oleh iOS Safari PWA (sering terjadi di *Home Screen*). Kini, jika izin ditolak (API error), aplikasi akan memunculkan sebuah input teks rahasia yang meminta pengguna untuk men-tap layar sekali lalu memilih "Paste" secara manual dari sistem operasi. Event *paste* global akan menangkap gambar dan menampilkannya dengan sukses.
+Perubahan: Menambahkan mekanisme _fallback_ untuk kasus di mana tombol "Paste dari Clipboard" otomatis diblokir secara sepihak oleh iOS Safari PWA (sering terjadi di _Home Screen_). Kini, jika izin ditolak (API error), aplikasi akan memunculkan sebuah input teks rahasia yang meminta pengguna untuk men-tap layar sekali lalu memilih "Paste" secara manual dari sistem operasi. Event _paste_ global akan menangkap gambar dan menampilkannya dengan sukses.
 Status: Approved
 
 ---

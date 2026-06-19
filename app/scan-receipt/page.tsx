@@ -96,33 +96,53 @@ export default function ScanReceiptPage() {
     useEffect(() => {
         const handleGlobalPaste = (e: ClipboardEvent) => {
             const items = e.clipboardData?.items
-            if (!items) return
+            if (!items || items.length === 0) return
             
+            let targetBlob: File | null = null
+            let debugTypes: string[] = []
+
+            for (let i = 0; i < items.length; i++) {
+                debugTypes.push(`${items[i].kind}:${items[i].type || 'unknown'}`)
+            }
+
+            // 1. Cari yang secara eksplisit adalah gambar
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type.startsWith('image/')) {
-                    const blob = items[i].getAsFile()
-                    if (!blob) continue
-                    
-                    const objectUrl = URL.createObjectURL(blob)
-                    const img = new Image()
-                    img.onload = () => {
-                        URL.revokeObjectURL(objectUrl)
-                        const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
-                        setImage(dataUrl)
-                        setScanResult(null)
-                        setIsSuccess(false)
-                        setShowManualPaste(false)
-                        showToast('success', '📋 Foto berhasil di-paste manual!')
-                    }
-                    img.onerror = () => {
-                        URL.revokeObjectURL(objectUrl)
-                        showToast('error', 'Gagal memuat gambar dari clipboard.')
-                    }
-                    img.src = objectUrl
-                    // Prevent default agar gambar tidak termuat di input text (jika ada)
-                    e.preventDefault()
-                    return
+                    targetBlob = items[i].getAsFile()
+                    if (targetBlob) break
                 }
+            }
+
+            // 2. Fallback untuk Live Photo / HEIC di iOS: kadang type kosong atau bukan image/
+            if (!targetBlob) {
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].kind === 'file' && !items[i].type.includes('video')) {
+                        targetBlob = items[i].getAsFile()
+                        if (targetBlob) break
+                    }
+                }
+            }
+
+            if (targetBlob) {
+                const objectUrl = URL.createObjectURL(targetBlob)
+                const img = new Image()
+                img.onload = () => {
+                    URL.revokeObjectURL(objectUrl)
+                    const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                    setImage(dataUrl)
+                    setScanResult(null)
+                    setIsSuccess(false)
+                    setShowManualPaste(false)
+                    showToast('success', '📋 Foto berhasil di-paste manual!')
+                }
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl)
+                    showToast('error', `Gagal membaca gambar (Tipe: ${targetBlob?.type || 'unknown'}). Format Live Photo ini mungkin ter-lock iOS. Saran: Gunakan tombol Galeri.`)
+                }
+                img.src = objectUrl
+                e.preventDefault()
+            } else {
+                showToast('error', `Gagal. iOS hanya mengirimkan tipe data: [${debugTypes.join(', ')}]. Saran: Gunakan tombol Galeri untuk Live Photo.`)
             }
         }
 
