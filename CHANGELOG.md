@@ -241,3 +241,17 @@ Status: Approved
 Perubahan: Menambahkan jarak kosong (`h-28`) di bawah tombol Simpan pada Mode Halaman (Page Mode) di `TransactionModal.tsx`. Sebelumnya perbaikan hanya dilakukan di mode Modal/Bottom Sheet, sehingga saat dibuka lewat Quick Actions (Page Mode) tombol masih tertutup navigation bar. Kini tombol selalu aman dari area bottom navigation bar di kedua mode.
 Status: Approved
 ---
+
+[2026-06-19 | 20:33] Fitur: PWA Share Target (Android) + Clipboard API (iOS)
+Perubahan: Menambahkan dua mekanisme agar user bisa mengirim foto struk dari galeri HP langsung ke fitur Scan Struk. (1) Android: tambah `share_target` di manifest.json — app muncul di share sheet OS saat user share foto. File baru `app/share-target/route.ts` menerima POST multipart/form-data, konversi ke base64, simpan di cookie sementara (60 detik), redirect ke /scan-receipt. (2) iOS: Clipboard API detection — banner "Ada foto di clipboard" muncul otomatis di upload area saat ada gambar di clipboard. Tap banner → foto langsung dimuat ke scan receipt. Tidak menyentuh handleSave, handleScan, compressImage, atau rate limit handling.
+Dipicu oleh prompt: "oke gas — share foto dari galeri HP ke PWA scan struk"
+Fitur terdampak: Scan Struk (Low — input saja, tidak menyentuh scan/save), PWA Manifest (Medium — perlu reinstall)
+Status: Approved
+---
+
+[2026-06-19 | 21:30] Perbaikan QA: PWA Share Target — Critical Bug Fixes
+Perubahan: (1) Ganti pendekatan cookie (gagal karena batas ~4KB) dengan server-side in-memory Map + UUID. route.ts menyimpan base64 di Map, redirect ke /scan-receipt?share_id=UUID. File baru /api/share-image/route.ts melayani pengambilan foto one-time (entry dihapus setelah diambil, 410 jika expired). (2) Hapus useSearchParams + Suspense issue — pakai window.location.search yang lebih sederhana. (3) Tambah router.replace setelah baca params — cegah toast muncul ulang saat refresh. (4) Fix GET handler pakai request URL origin bukan hardcode localhost. (5) Hapus visibilitychange listener clipboard — cegah permission dialog spam. (6) Tambah showToast di img.onerror clipboard. (7) Hapus image/gif dari manifest accept list.
+Dipicu oleh prompt: "gas perbaiki sesuai action plan" (setelah QA audit)
+Fitur terdampak: PWA Share Target Android (High — arsitektur berubah), Scan Struk (Low)
+Status: Approved
+---

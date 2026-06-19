@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2 } from 'lucide-react'
+import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { Wallet, CATEGORIES } from '@/types'
@@ -28,6 +28,9 @@ export default function ScanReceiptPage() {
     const [showCamera, setShowCamera] = useState(false)
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
     const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
+
+    // Share target & clipboard state
+    const [clipboardAvailable, setClipboardAvailable] = useState(false)
     
     const fileInputRef = useRef<HTMLInputElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null)
@@ -36,6 +39,106 @@ export default function ScanReceiptPage() {
     useEffect(() => {
         fetchWallets()
     }, [])
+
+    // ── ANDROID SHARE TARGET ──────────────────────────────────────────────────
+    // Ambil foto dari server-side store menggunakan share_id dari URL.
+    // Baca URL params via window.location.search (tidak butuh useSearchParams/Suspense).
+    // Bersihkan URL setelah dibaca agar toast tidak muncul ulang saat refresh.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const shareId = params.get('share_id')
+        const errorType = params.get('error')
+
+        // Bersihkan URL params setelah dibaca (cegah toast muncul ulang saat refresh)
+        if (shareId || errorType) {
+            router.replace('/scan-receipt')
+        }
+
+        if (errorType) {
+            const errorMessages: Record<string, string> = {
+                no_image: 'Tidak ada foto yang diterima dari galeri.',
+                invalid_type: 'File yang di-share bukan gambar.',
+                too_large: 'Foto terlalu besar (maks 15MB).',
+                failed: 'Gagal memproses foto dari galeri.'
+            }
+            showToast('error', errorMessages[errorType] || 'Gagal menerima foto.')
+            return
+        }
+
+        if (shareId) {
+            // Ambil gambar dari server-side temporary store via API
+            fetch(`/api/share-image?id=${shareId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error(
+                        res.status === 410
+                            ? 'Foto sudah kadaluarsa. Coba share ulang dari galeri.'
+                            : 'Foto tidak ditemukan. Coba share ulang dari galeri.'
+                    )
+                    return res.json()
+                })
+                .then(({ dataUrl }) => {
+                    setImage(dataUrl)
+                    setScanResult(null)
+                    setIsSuccess(false)
+                    showToast('success', '📸 Foto dari galeri berhasil dimuat!')
+                })
+                .catch((err: Error) => {
+                    showToast('error', err.message || 'Gagal memuat foto dari galeri.')
+                })
+        }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── iOS CLIPBOARD DETECTION ───────────────────────────────────────────────
+    // Cek sekali saat mount — tidak pakai visibilitychange agar tidak
+    // memicu permission dialog berulang setiap kali user kembali ke tab.
+    useEffect(() => {
+        const checkClipboard = async () => {
+            if (!navigator.clipboard || !('read' in navigator.clipboard)) return
+            try {
+                const items = await navigator.clipboard.read()
+                const hasImage = items.some(item =>
+                    item.types.some(type => type.startsWith('image/'))
+                )
+                setClipboardAvailable(hasImage)
+            } catch {
+                // Permission denied atau tidak ada konten — abaikan
+                setClipboardAvailable(false)
+            }
+        }
+        checkClipboard()
+    }, [])
+
+    // Ambil foto dari clipboard dan set sebagai image
+    const handlePasteFromClipboard = async () => {
+        try {
+            const items = await navigator.clipboard.read()
+            for (const item of items) {
+                const imageType = item.types.find(t => t.startsWith('image/'))
+                if (!imageType) continue
+                const blob = await item.getType(imageType)
+                const objectUrl = URL.createObjectURL(blob)
+                const img = new Image()
+                img.onload = () => {
+                    URL.revokeObjectURL(objectUrl)
+                    const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                    setImage(dataUrl)
+                    setScanResult(null)
+                    setIsSuccess(false)
+                    setClipboardAvailable(false)
+                    showToast('success', '📋 Foto dari clipboard berhasil dimuat!')
+                }
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl)
+                    showToast('error', 'Gagal memuat gambar dari clipboard. Coba copy ulang.')
+                }
+                img.src = objectUrl
+                return
+            }
+            showToast('error', 'Tidak ada gambar di clipboard.')
+        } catch {
+            showToast('error', 'Izin clipboard ditolak. Coba izinkan akses clipboard di browser.')
+        }
+    }
 
     // Countdown timer for rate limit
     useEffect(() => {
@@ -430,6 +533,24 @@ export default function ScanReceiptPage() {
                                         <Upload className="w-4 h-4" /> Galeri
                                     </button>
                                 </div>
+
+                                {/* ── iOS CLIPBOARD BANNER ──────────────────── */}
+                                {/* Muncul otomatis jika ada gambar di clipboard (copy dari galeri iOS) */}
+                                {clipboardAvailable && (
+                                    <button
+                                        onClick={handlePasteFromClipboard}
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                    >
+                                        <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <Clipboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Ada foto di clipboard</p>
+                                            <p className="text-xs text-indigo-500 dark:text-indigo-400">Tap untuk pakai foto yang sudah di-copy</p>
+                                        </div>
+                                        <span className="text-indigo-400 text-lg">→</span>
+                                    </button>
+                                )}
                             </div>
                         )}
 
