@@ -29,6 +29,9 @@ export default function ScanReceiptPage() {
     const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
     const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
 
+    // Clipboard state
+    const [showManualPaste, setShowManualPaste] = useState(false)
+
     // Share target & clipboard state
     // (Auto-detect dihapus, menggunakan tombol paste eksplisit untuk UX iOS yang lebih baik)    
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -87,10 +90,47 @@ export default function ScanReceiptPage() {
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // ── iOS CLIPBOARD DETECTION ───────────────────────────────────────────────
-    // Auto-detect dihapus. Menggunakan tombol eksplisit karena iOS Safari
-    // akan selalu meminta izin (spam popup) jika dibaca tanpa klik user.
-    // Ambil foto dari clipboard dan set sebagai image
+    // ── CLIPBOARD GLOBAL LISTENER (MANUAL PASTE) ─────────────────────────────
+    // Jika iOS memblokir tombol Paste otomatis, user bisa "Tap & Hold" -> Paste
+    // di area mana saja (atau di input khusus) dan event ini akan menangkapnya.
+    useEffect(() => {
+        const handleGlobalPaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items
+            if (!items) return
+            
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.startsWith('image/')) {
+                    const blob = items[i].getAsFile()
+                    if (!blob) continue
+                    
+                    const objectUrl = URL.createObjectURL(blob)
+                    const img = new Image()
+                    img.onload = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                        setImage(dataUrl)
+                        setScanResult(null)
+                        setIsSuccess(false)
+                        setShowManualPaste(false)
+                        showToast('success', '📋 Foto berhasil di-paste manual!')
+                    }
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        showToast('error', 'Gagal memuat gambar dari clipboard.')
+                    }
+                    img.src = objectUrl
+                    // Prevent default agar gambar tidak termuat di input text (jika ada)
+                    e.preventDefault()
+                    return
+                }
+            }
+        }
+
+        document.addEventListener('paste', handleGlobalPaste)
+        return () => document.removeEventListener('paste', handleGlobalPaste)
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Ambil foto dari clipboard via API (Tombol)
     const handlePasteFromClipboard = async () => {
         try {
             const items = await navigator.clipboard.read()
@@ -117,7 +157,9 @@ export default function ScanReceiptPage() {
             }
             showToast('error', 'Tidak ada gambar di clipboard.')
         } catch {
-            showToast('error', 'Izin clipboard ditolak. Coba izinkan akses clipboard di browser.')
+            // Jika ditolak (khususnya oleh iOS PWA Home Screen), tampilkan UI manual
+            setShowManualPaste(true)
+            showToast('error', 'Sistem memblokir tombol. Gunakan area Paste Manual di bawah.')
         }
     }
 
@@ -529,6 +571,21 @@ export default function ScanReceiptPage() {
                                     </div>
                                     <span className="text-indigo-400 text-lg">→</span>
                                 </button>
+
+                                {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
+                                {showManualPaste && (
+                                    <div className="mt-4 p-4 border-2 border-dashed border-indigo-300 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                        <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium mb-3 text-center">
+                                            iOS memblokir tombol paste. <br/>Gunakan cara manual:
+                                        </p>
+                                        <input 
+                                            type="text" 
+                                            inputMode="none" // Mencegah keyboard muncul di iOS
+                                            placeholder="Tap sekali, lalu pilih 'Paste'" 
+                                            className="w-full text-center py-3.5 bg-white dark:bg-[var(--bg-card)] border border-indigo-200 dark:border-indigo-800 rounded-xl text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 shadow-inner"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
 

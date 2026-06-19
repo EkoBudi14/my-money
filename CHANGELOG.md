@@ -281,3 +281,9 @@ Perubahan: Mengganti mekanisme "Auto-detect clipboard" di halaman Scan Struk men
 Status: Approved
 
 ---
+
+[2026-06-19 | 22:27] Perbaikan UI & UX: iOS PWA Clipboard Paste Fallback
+Perubahan: Menambahkan mekanisme *fallback* untuk kasus di mana tombol "Paste dari Clipboard" otomatis diblokir secara sepihak oleh iOS Safari PWA (sering terjadi di *Home Screen*). Kini, jika izin ditolak (API error), aplikasi akan memunculkan sebuah input teks rahasia yang meminta pengguna untuk men-tap layar sekali lalu memilih "Paste" secara manual dari sistem operasi. Event *paste* global akan menangkap gambar dan menampilkannya dengan sukses.
+Status: Approved
+
+---
