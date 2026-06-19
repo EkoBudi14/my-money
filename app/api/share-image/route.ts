@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { imageStore } from '@/app/share-target/route'
+import { supabase } from '@/lib/supabase'
 
 /**
  * GET /api/share-image?id=<uuid>
  * 
  * Diakses oleh client (scan-receipt page) untuk mengambil gambar
- * yang disimpan sementara oleh /share-target route handler.
+ * yang disimpan sementara oleh /share-target route handler di database.
  * 
- * Setelah data diambil, entry langsung dihapus dari store (one-time retrieval).
- * Jika ID tidak ditemukan atau sudah expired, return 404.
+ * Setelah data diambil, entry langsung dihapus dari DB (one-time retrieval).
+ * Jika ID tidak ditemukan, return 404.
  */
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -18,21 +18,20 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 })
     }
 
-    const entry = imageStore.get(id)
+    // 1. Ambil data dari Supabase
+    const { data, error } = await supabase
+        .from('temp_shared_images')
+        .select('base64_data')
+        .eq('id', id)
+        .single()
 
-    // Tidak ditemukan
-    if (!entry) {
+    // Tidak ditemukan atau error
+    if (error || !data) {
         return NextResponse.json({ error: 'Image not found or already retrieved' }, { status: 404 })
     }
 
-    // Sudah expired
-    if (entry.expires < Date.now()) {
-        imageStore.delete(id)
-        return NextResponse.json({ error: 'Image expired. Please share again.' }, { status: 410 })
-    }
+    // 2. Hapus setelah diambil (one-time retrieval — cegah reuse & hemat db)
+    await supabase.from('temp_shared_images').delete().eq('id', id)
 
-    // Hapus setelah diambil (one-time retrieval — cegah reuse)
-    imageStore.delete(id)
-
-    return NextResponse.json({ dataUrl: entry.data })
+    return NextResponse.json({ dataUrl: data.base64_data })
 }

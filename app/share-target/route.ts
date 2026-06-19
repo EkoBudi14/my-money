@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import { supabase } from '@/lib/supabase'
 
 /**
  * Server-side ephemeral image store (module-level, in-memory)
@@ -12,20 +13,6 @@ import { randomUUID } from 'crypto'
  * 2. Redirect ke /scan-receipt?share_id=UUID
  * 3. Client fetch GET /api/share-image?id=UUID → terima base64, Map entry dihapus
  */
-interface ImageEntry {
-    data: string
-    expires: number
-}
-
-// Module-level store: reset setiap server restart — fine untuk TTL 60 detik
-const imageStore = new Map<string, ImageEntry>()
-
-function cleanExpiredEntries() {
-    const now = Date.now()
-    for (const [key, entry] of imageStore) {
-        if (entry.expires < now) imageStore.delete(key)
-    }
-}
 
 /**
  * POST /share-target
@@ -59,15 +46,20 @@ export async function POST(request: NextRequest) {
         const base64 = buffer.toString('base64')
         const dataUrl = `data:${file.type};base64,${base64}`
 
-        // Bersihkan entri yang sudah expired sebelum tambah yang baru
-        cleanExpiredEntries()
-
-        // Simpan di server-side store dengan UUID key (TTL 60 detik)
         const shareId = randomUUID()
-        imageStore.set(shareId, {
-            data: dataUrl,
-            expires: Date.now() + 60_000 // 60 detik
-        })
+
+        // Simpan ke Supabase agar safe antar serverless function
+        const { error: dbError } = await supabase
+            .from('temp_shared_images')
+            .insert({
+                id: shareId,
+                base64_data: dataUrl
+            })
+
+        if (dbError) {
+            console.error('[share-target] Supabase Insert Error:', dbError)
+            return NextResponse.redirect(new URL('/scan-receipt?error=failed', request.url))
+        }
 
         // Redirect ke scan-receipt dengan UUID — bukan cookie, tidak ada size limit
         return NextResponse.redirect(new URL(`/scan-receipt?share_id=${shareId}`, request.url))
@@ -90,5 +82,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/scan-receipt', origin))
 }
 
-// Export imageStore agar bisa diakses oleh /api/share-image route
-export { imageStore }

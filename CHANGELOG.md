@@ -207,10 +207,11 @@ Status: Approved
 ---
 
 [2026-06-03 | 22:52] Fitur: Tombol Back (Mobile) di Halaman Anggaran
-Perubahan: Menambahkan tombol panah kembali (Back) pada header halaman Anggaran (`app/budgets/page.tsx`) khusus untuk tampilan *mobile*. Ini memudahkan navigasi user untuk kembali ke Dashboard (Beranda) setelah mengecek anggaran tanpa perlu menggunakan tombol *back* bawaan browser.
+Perubahan: Menambahkan tombol panah kembali (Back) pada header halaman Anggaran (`app/budgets/page.tsx`) khusus untuk tampilan _mobile_. Ini memudahkan navigasi user untuk kembali ke Dashboard (Beranda) setelah mengecek anggaran tanpa perlu menggunakan tombol _back_ bawaan browser.
 Dipicu oleh prompt: "coba cek di tampilan mobile di menu angggaran engga ada tombol back"
 Fitur terdampak: UI Mobile Halaman Anggaran (Low)
 Status: Approved
+
 ---
 
 [2026-06-03 | 23:15] Perbaikan: Edit Transaksi Lama (Fallback Fetch)
@@ -218,16 +219,19 @@ Perubahan: Memperbaiki bug di form edit transaksi (`app/transaction/page.tsx`). 
 Dipicu oleh prompt: "coba cek dari fitur2 baru di tambah ini udah aman semua bebas bug dan ngga nyenggol yang lain kan ini, coba liat di perubahanya dah?"
 Fitur terdampak: Form Transaksi (Medium), Database Fetch (Low)
 Status: Approved
+
 ---
 
 [2026-06-07 | 16:25] Perbaikan: Splash Screen Muncul Ulang Saat Navigasi
 Perubahan: Menambahkan pengecekan `sessionStorage` di `SplashScreen.tsx`. Splash kini hanya ditampilkan sekali per sesi browser. Saat user navigasi ke halaman lain (`/transaction`, `/budgets`, dll), layout.tsx yang di-remount akan skip render splash jika key `splashShown` sudah tersimpan di sessionStorage.
 Status: Approved
+
 ---
 
 [2026-06-13 | 14:39] Perbaikan: Tombol Simpan Hilang di Edit Dompet (Mobile)
 Perubahan: Menaikkan z-index container halaman Edit Dompet dari `z-50` menjadi `z-[59]` di `WalletModal.tsx`. Sebelumnya tombol Simpan (fixed bottom) tertutup oleh Mobile Bottom Navigation (`z-[58]`). Perubahan hanya CSS, tidak menyentuh logic apapun.
 Status: Approved
+
 ---
 
 [2026-06-16 | 09:30] Fitur: Export Excel — Tambah Kolom Tabungan
@@ -235,11 +239,13 @@ Perubahan: Menambahkan perhitungan "Net Tabungan" pada Sheet "Rekap per Rentang"
 Dipicu oleh prompt: "ini bukan nambah worksheet baru tapi nambah tabel di worksheet rekap per rentang, ini kan ada tabel pemasukan nah di sampingnya coba tambhin juga yaitu tabungan"
 Fitur terdampak: Export Excel (Medium)
 Status: Approved
+
 ---
 
 [2026-06-16 | 21:53] Fitur: TransactionModal — Spacing Tombol Simpan (Mobile)
 Perubahan: Menambahkan jarak kosong (`h-28`) di bawah tombol Simpan pada Mode Halaman (Page Mode) di `TransactionModal.tsx`. Sebelumnya perbaikan hanya dilakukan di mode Modal/Bottom Sheet, sehingga saat dibuka lewat Quick Actions (Page Mode) tombol masih tertutup navigation bar. Kini tombol selalu aman dari area bottom navigation bar di kedua mode.
 Status: Approved
+
 ---
 
 [2026-06-19 | 20:33] Fitur: PWA Share Target (Android) + Clipboard API (iOS)
@@ -247,6 +253,7 @@ Perubahan: Menambahkan dua mekanisme agar user bisa mengirim foto struk dari gal
 Dipicu oleh prompt: "oke gas — share foto dari galeri HP ke PWA scan struk"
 Fitur terdampak: Scan Struk (Low — input saja, tidak menyentuh scan/save), PWA Manifest (Medium — perlu reinstall)
 Status: Approved
+
 ---
 
 [2026-06-19 | 21:30] Perbaikan QA: PWA Share Target — Critical Bug Fixes
@@ -254,4 +261,17 @@ Perubahan: (1) Ganti pendekatan cookie (gagal karena batas ~4KB) dengan server-s
 Dipicu oleh prompt: "gas perbaiki sesuai action plan" (setelah QA audit)
 Fitur terdampak: PWA Share Target Android (High — arsitektur berubah), Scan Struk (Low)
 Status: Approved
+
+---
+
+[2026-06-19 | 21:46] Perbaikan Build: Next.js Route Export Error
+Perubahan: Memindahkan definisi `imageStore` dari `app/share-target/route.ts` ke file terpisah `lib/image-store.ts`. Ini memperbaiki error build Next.js di mana variabel `imageStore` tidak boleh diexport dari file konfigurasi rute (`route.ts`), yang hanya mengizinkan export fungsi HTTP handler (GET, POST, dll).
+Status: Approved
+
+---
+
+[2026-06-19 | 22:08] Perbaikan Arsitektur QA: PWA Share Target to Supabase
+Perubahan: Mengganti in-memory `Map` (yang tidak aman dan berpotensi gagal di environment serverless Vercel) menjadi penyimpanan ke database Supabase sementara (`temp_shared_images`). `/share-target` akan melakukan INSERT gambar ke DB, dan `/api/share-image` akan melakukan SELECT dan langsung DELETE saat gambar direquest. Menghapus resiko memory leak dan state isolation antar lambda instance. File `lib/image-store.ts` dihapus.
+Status: Approved
+
 ---
