@@ -30,8 +30,7 @@ export default function ScanReceiptPage() {
     const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
 
     // Share target & clipboard state
-    const [clipboardAvailable, setClipboardAvailable] = useState(false)
-    
+    // (Auto-detect dihapus, menggunakan tombol paste eksplisit untuk UX iOS yang lebih baik)    
     const fileInputRef = useRef<HTMLInputElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -89,25 +88,8 @@ export default function ScanReceiptPage() {
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── iOS CLIPBOARD DETECTION ───────────────────────────────────────────────
-    // Cek sekali saat mount — tidak pakai visibilitychange agar tidak
-    // memicu permission dialog berulang setiap kali user kembali ke tab.
-    useEffect(() => {
-        const checkClipboard = async () => {
-            if (!navigator.clipboard || !('read' in navigator.clipboard)) return
-            try {
-                const items = await navigator.clipboard.read()
-                const hasImage = items.some(item =>
-                    item.types.some(type => type.startsWith('image/'))
-                )
-                setClipboardAvailable(hasImage)
-            } catch {
-                // Permission denied atau tidak ada konten — abaikan
-                setClipboardAvailable(false)
-            }
-        }
-        checkClipboard()
-    }, [])
-
+    // Auto-detect dihapus. Menggunakan tombol eksplisit karena iOS Safari
+    // akan selalu meminta izin (spam popup) jika dibaca tanpa klik user.
     // Ambil foto dari clipboard dan set sebagai image
     const handlePasteFromClipboard = async () => {
         try {
@@ -124,7 +106,6 @@ export default function ScanReceiptPage() {
                     setImage(dataUrl)
                     setScanResult(null)
                     setIsSuccess(false)
-                    setClipboardAvailable(false)
                     showToast('success', '📋 Foto dari clipboard berhasil dimuat!')
                 }
                 img.onerror = () => {
@@ -534,23 +515,20 @@ export default function ScanReceiptPage() {
                                     </button>
                                 </div>
 
-                                {/* ── iOS CLIPBOARD BANNER ──────────────────── */}
-                                {/* Muncul otomatis jika ada gambar di clipboard (copy dari galeri iOS) */}
-                                {clipboardAvailable && (
-                                    <button
-                                        onClick={handlePasteFromClipboard}
-                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                    >
-                                        <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <Clipboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                        </div>
-                                        <div className="flex-1 text-left">
-                                            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Ada foto di clipboard</p>
-                                            <p className="text-xs text-indigo-500 dark:text-indigo-400">Tap untuk pakai foto yang sudah di-copy</p>
-                                        </div>
-                                        <span className="text-indigo-400 text-lg">→</span>
-                                    </button>
-                                )}
+                                {/* ── CLIPBOARD BUTTON ───────────────────────── */}
+                                <button
+                                    onClick={handlePasteFromClipboard}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all"
+                                >
+                                    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Clipboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                    </div>
+                                    <div className="flex-1 text-left">
+                                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Paste dari Clipboard</p>
+                                        <p className="text-xs text-indigo-500 dark:text-indigo-400">Gunakan foto yang di-copy dari Galeri</p>
+                                    </div>
+                                    <span className="text-indigo-400 text-lg">→</span>
+                                </button>
                             </div>
                         )}
 

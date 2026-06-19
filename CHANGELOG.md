@@ -275,3 +275,9 @@ Perubahan: Mengganti in-memory `Map` (yang tidak aman dan berpotensi gagal di en
 Status: Approved
 
 ---
+
+[2026-06-19 | 22:17] Perbaikan UI: iOS Clipboard Paste
+Perubahan: Mengganti mekanisme "Auto-detect clipboard" di halaman Scan Struk menjadi tombol eksplisit "Paste dari Clipboard" yang selalu tampil sejajar di bawah opsi Kamera dan Galeri. Ini memperbaiki masalah di iOS (Safari) di mana gambar hasil copy tidak terdeteksi otomatis akibat pembatasan izin (permission dialog spam) oleh sistem. Sekarang user dapat men-tap tombol secara manual untuk *paste* foto tanpa masalah izin.
+Status: Approved
+
+---
