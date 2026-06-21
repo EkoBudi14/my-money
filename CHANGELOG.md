@@ -287,3 +287,19 @@ Perubahan: Menambahkan mekanisme _fallback_ untuk kasus di mana tombol "Paste da
 Status: Approved
 
 ---
+
+[2026-06-21 | 21:00] Fitur: iOS Paste Fix (HEIC & Base64)
+Perubahan: Mengubah logika paste di halaman Scan Struk (app/scan-receipt/page.tsx) untuk menangani Live Photos iOS dan gambar berukuran kecil. Menambahkan library heic2any untuk melakukan konversi file HEIC/HEIF secara otomatis dari clipboard menjadi JPEG sebelum digambar di canvas. Menambahkan fallback pembacaan text/html untuk mengekstrak URI Base64 (data:image/...) apabila iOS menyalin gambar kecil (seperti screenshot crop) yang gagal dibaca sebagai file utuh.
+Dipicu oleh prompt: "coba cek fitur yang bisa copas img ke web saya di ios saya nemu bug ini kalo gambar nya kecil gabisa di copas foto yg tipe live, udah di matiin tipe live nya juga sama gabisa di copas"
+Fitur terdampak: Scan Struk (Medium)
+Status: Approved
+
+---
+
+[2026-06-21 | 21:54] Perbaikan QA: iOS Paste — HEIC Heuristic & Error Handling
+Perubahan: (1) Fix bug htmlFallbackFound — pengecekan error saat text/html ada tapi Base64-nya tidak valid sekarang berjalan dengan benar. (2) Tambah deteksi HEIC heuristik: type kosong ('') dan 'application/octet-stream' juga dicoba dikonversi via heic2any, menangani Live Photo yang type-nya tidak terbaca iOS. (3) Konversi HEIC kini dilindungi try-catch inner — jika blob ternyata bukan HEIC asli, blob asli tetap dipakai tanpa crash. (4) Ganti showToast success → info saat menerjemahkan HEIC. (5) Tambah state isConverting: tombol Paste menampilkan spinner + disabled selama konversi berlangsung.
+Dipicu oleh: QA review setelah implementasi iOS Paste Fix
+Fitur terdampak: Scan Struk Clipboard Paste (Medium)
+Status: Approved
+
+---

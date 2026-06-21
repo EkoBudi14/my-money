@@ -31,6 +31,7 @@ export default function ScanReceiptPage() {
 
     // Clipboard state
     const [showManualPaste, setShowManualPaste] = useState(false)
+    const [isConverting, setIsConverting] = useState(false) // Konversi HEIC loading state
 
     // Share target & clipboard state
     // (Auto-detect dihapus, menggunakan tombol paste eksplisit untuk UX iOS yang lebih baik)    
@@ -94,7 +95,7 @@ export default function ScanReceiptPage() {
     // Jika iOS memblokir tombol Paste otomatis, user bisa "Tap & Hold" -> Paste
     // di area mana saja (atau di input khusus) dan event ini akan menangkapnya.
     useEffect(() => {
-        const handleGlobalPaste = (e: ClipboardEvent) => {
+        const handleGlobalPaste = async (e: ClipboardEvent) => {
             const items = e.clipboardData?.items
             if (!items || items.length === 0) return
             
@@ -124,25 +125,84 @@ export default function ScanReceiptPage() {
             }
 
             if (targetBlob) {
-                const objectUrl = URL.createObjectURL(targetBlob)
-                const img = new Image()
-                img.onload = () => {
-                    URL.revokeObjectURL(objectUrl)
-                    const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
-                    setImage(dataUrl)
-                    setScanResult(null)
-                    setIsSuccess(false)
-                    setShowManualPaste(false)
-                    showToast('success', '📋 Foto berhasil di-paste manual!')
-                }
-                img.onerror = () => {
-                    URL.revokeObjectURL(objectUrl)
-                    showToast('error', `Gagal membaca gambar (Tipe: ${targetBlob?.type || 'unknown'}). Format Live Photo ini mungkin ter-lock iOS. Saran: Gunakan tombol Galeri.`)
-                }
-                img.src = objectUrl
                 e.preventDefault()
+                setIsConverting(true)
+                try {
+                    let finalBlob: Blob = targetBlob
+                    // Deteksi HEIC: eksplisit type HEIC/HEIF, atau type kosong/octet-stream
+                    // (iOS sering memberikan Live Photo dengan type kosong dari clipboard)
+                    const isLikelyHeic = 
+                        targetBlob.type === 'image/heic' ||
+                        targetBlob.type === 'image/heif' ||
+                        targetBlob.type === '' ||
+                        targetBlob.type === 'application/octet-stream'
+                    
+                    if (isLikelyHeic) {
+                        showToast('info', 'Menerjemahkan foto ke format standar...')
+                        try {
+                            const heic2any = (await import('heic2any')).default
+                            const converted = await heic2any({ blob: targetBlob, toType: 'image/jpeg', quality: 0.8 })
+                            finalBlob = Array.isArray(converted) ? converted[0] : converted
+                        } catch {
+                            // Jika konversi HEIC gagal (mungkin bukan HEIC asli), lanjutkan dengan blob asli
+                        }
+                    }
+
+                    const objectUrl = URL.createObjectURL(finalBlob)
+                    const img = new Image()
+                    img.onload = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                        setImage(dataUrl)
+                        setScanResult(null)
+                        setIsSuccess(false)
+                        setShowManualPaste(false)
+                        setIsConverting(false)
+                        showToast('success', '📋 Foto berhasil di-paste!')
+                    }
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        setIsConverting(false)
+                        showToast('error', `Gagal membaca gambar (Tipe: ${finalBlob.type || 'unknown'}). Saran: Gunakan tombol Galeri.`)
+                    }
+                    img.src = objectUrl
+                } catch (err: any) {
+                    setIsConverting(false)
+                    showToast('error', `Gagal memproses gambar: ${err.message}`)
+                }
             } else {
-                showToast('error', `Gagal. iOS hanya mengirimkan tipe data: [${debugTypes.join(', ')}]. Saran: Gunakan tombol Galeri untuk Live Photo.`)
+                // 3. Fallback: Cek text/html untuk Base64 URI (Biasanya iOS mengirim gambar kecil dalam HTML)
+                let htmlItemFound = false
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type === 'text/html') {
+                        htmlItemFound = true
+                        e.preventDefault()
+                        items[i].getAsString((htmlString) => {
+                            const match = htmlString.match(/<img[^>]+src="([^">]+)"/)
+                            if (match && match[1] && match[1].startsWith('data:image/')) {
+                                const img = new Image()
+                                img.onload = () => {
+                                    const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                                    setImage(dataUrl)
+                                    setScanResult(null)
+                                    setIsSuccess(false)
+                                    setShowManualPaste(false)
+                                    showToast('success', '📋 Foto kecil berhasil di-paste!')
+                                }
+                                img.onerror = () => showToast('error', 'Gagal memuat gambar dari clipboard.')
+                                img.src = match[1]
+                            } else {
+                                // text/html ada tapi tidak mengandung Base64 yang valid
+                                showToast('error', `Gagal membaca gambar. Tipe data: [${debugTypes.join(', ')}]. Saran: Gunakan tombol Galeri.`)
+                            }
+                        })
+                        return
+                    }
+                }
+                
+                if (!htmlItemFound) {
+                    showToast('error', `Gagal. iOS hanya mengirimkan tipe data: [${debugTypes.join(', ')}]. Saran: Gunakan tombol Galeri.`)
+                }
             }
         }
 
@@ -152,32 +212,88 @@ export default function ScanReceiptPage() {
 
     // Ambil foto dari clipboard via API (Tombol)
     const handlePasteFromClipboard = async () => {
+        setIsConverting(true)
         try {
             const items = await navigator.clipboard.read()
             for (const item of items) {
                 const imageType = item.types.find(t => t.startsWith('image/'))
-                if (!imageType) continue
-                const blob = await item.getType(imageType)
-                const objectUrl = URL.createObjectURL(blob)
-                const img = new Image()
-                img.onload = () => {
-                    URL.revokeObjectURL(objectUrl)
-                    const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
-                    setImage(dataUrl)
-                    setScanResult(null)
-                    setIsSuccess(false)
-                    showToast('success', '📋 Foto dari clipboard berhasil dimuat!')
+                if (imageType) {
+                    let blob = await item.getType(imageType)
+                    
+                    // Deteksi HEIC: eksplisit atau heuristik
+                    const isLikelyHeic =
+                        imageType === 'image/heic' ||
+                        imageType === 'image/heif' ||
+                        blob.type === 'image/heic' ||
+                        blob.type === '' ||
+                        blob.type === 'application/octet-stream'
+                    
+                    if (isLikelyHeic) {
+                        showToast('info', 'Menerjemahkan foto ke format standar...')
+                        try {
+                            const heic2any = (await import('heic2any')).default
+                            const converted = await heic2any({ blob, toType: 'image/jpeg', quality: 0.8 })
+                            blob = Array.isArray(converted) ? converted[0] as Blob : converted as Blob
+                        } catch {
+                            // Jika bukan HEIC asli, lanjutkan dengan blob original
+                        }
+                    }
+
+                    const objectUrl = URL.createObjectURL(blob)
+                    const img = new Image()
+                    img.onload = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                        setImage(dataUrl)
+                        setScanResult(null)
+                        setIsSuccess(false)
+                        setIsConverting(false)
+                        showToast('success', '📋 Foto dari clipboard berhasil dimuat!')
+                    }
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl)
+                        setIsConverting(false)
+                        showToast('error', 'Gagal memuat gambar dari clipboard. Coba copy ulang.')
+                    }
+                    img.src = objectUrl
+                    return
                 }
-                img.onerror = () => {
-                    URL.revokeObjectURL(objectUrl)
-                    showToast('error', 'Gagal memuat gambar dari clipboard. Coba copy ulang.')
+
+                // Fallback untuk gambar kecil (text/html dengan Base64)
+                const htmlType = item.types.find(t => t === 'text/html')
+                if (htmlType) {
+                    const blob = await item.getType(htmlType)
+                    const htmlText = await blob.text()
+                    const match = htmlText.match(/<img[^>]+src="([^">]+)"/)
+                    if (match && match[1] && match[1].startsWith('data:image/')) {
+                        const img = new Image()
+                        img.onload = () => {
+                            const dataUrl = compressImage(img, img.naturalWidth, img.naturalHeight)
+                            setImage(dataUrl)
+                            setScanResult(null)
+                            setIsSuccess(false)
+                            setIsConverting(false)
+                            showToast('success', '📋 Foto dari clipboard berhasil dimuat!')
+                        }
+                        img.onerror = () => {
+                            setIsConverting(false)
+                            showToast('error', 'Gagal memuat gambar base64 dari clipboard.')
+                        }
+                        img.src = match[1]
+                        return
+                    } else {
+                        // text/html ada tapi Base64 tidak valid
+                        setIsConverting(false)
+                        showToast('error', 'Format gambar tidak dikenali. Coba copy ulang dari Galeri.')
+                        return
+                    }
                 }
-                img.src = objectUrl
-                return
             }
+            setIsConverting(false)
             showToast('error', 'Tidak ada gambar di clipboard.')
         } catch {
             // Jika ditolak (khususnya oleh iOS PWA Home Screen), tampilkan UI manual
+            setIsConverting(false)
             setShowManualPaste(true)
             showToast('error', 'Sistem memblokir tombol. Gunakan area Paste Manual di bawah.')
         }
@@ -580,16 +696,24 @@ export default function ScanReceiptPage() {
                                 {/* ── CLIPBOARD BUTTON ───────────────────────── */}
                                 <button
                                     onClick={handlePasteFromClipboard}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all"
+                                    disabled={isConverting}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
                                 >
                                     <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                        <Clipboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                        {isConverting
+                                            ? <Loader2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
+                                            : <Clipboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                        }
                                     </div>
                                     <div className="flex-1 text-left">
-                                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Paste dari Clipboard</p>
-                                        <p className="text-xs text-indigo-500 dark:text-indigo-400">Gunakan foto yang di-copy dari Galeri</p>
+                                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                                            {isConverting ? 'Memproses foto...' : 'Paste dari Clipboard'}
+                                        </p>
+                                        <p className="text-xs text-indigo-500 dark:text-indigo-400">
+                                            {isConverting ? 'Mohon tunggu sebentar' : 'Gunakan foto yang di-copy dari Galeri'}
+                                        </p>
                                     </div>
-                                    <span className="text-indigo-400 text-lg">→</span>
+                                    {!isConverting && <span className="text-indigo-400 text-lg">→</span>}
                                 </button>
 
                                 {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
