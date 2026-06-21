@@ -178,7 +178,7 @@ export default function ScanReceiptPage() {
                         htmlItemFound = true
                         e.preventDefault()
                         items[i].getAsString((htmlString) => {
-                            const match = htmlString.match(/<img[^>]+src="([^">]+)"/)
+                            const match = htmlString.match(/<img[^>]+src="([^">]+)"/i)
                             if (match && match[1] && match[1].startsWith('data:image/')) {
                                 const img = new Image()
                                 img.onload = () => {
@@ -189,7 +189,10 @@ export default function ScanReceiptPage() {
                                     setShowManualPaste(false)
                                     showToast('success', '📋 Foto kecil berhasil di-paste!')
                                 }
-                                img.onerror = () => showToast('error', 'Gagal memuat gambar dari clipboard.')
+                                img.onerror = () => {
+                                    setIsConverting(false)
+                                    showToast('error', 'Gagal memuat gambar dari clipboard.')
+                                }
                                 img.src = match[1]
                             } else {
                                 // text/html ada tapi tidak mengandung Base64 yang valid
@@ -264,7 +267,7 @@ export default function ScanReceiptPage() {
                 if (htmlType) {
                     const blob = await item.getType(htmlType)
                     const htmlText = await blob.text()
-                    const match = htmlText.match(/<img[^>]+src="([^">]+)"/)
+                    const match = htmlText.match(/<img[^>]+src="([^">]+)"/i)
                     if (match && match[1] && match[1].startsWith('data:image/')) {
                         const img = new Image()
                         img.onload = () => {
@@ -678,7 +681,8 @@ export default function ScanReceiptPage() {
                                     {/* Foto — buka kamera via getUserMedia */}
                                     <button
                                         onClick={() => openCamera('environment')}
-                                        className="flex items-center justify-center gap-2 py-3.5 bg-[var(--primary)] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
+                                        disabled={isConverting}
+                                        className="flex items-center justify-center gap-2 py-3.5 bg-[var(--primary)] text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Camera className="w-4 h-4" /> Foto
                                     </button>
@@ -687,7 +691,8 @@ export default function ScanReceiptPage() {
                                     <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="flex items-center justify-center gap-2 py-3.5 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                        disabled={isConverting}
+                                        className="flex items-center justify-center gap-2 py-3.5 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Upload className="w-4 h-4" /> Galeri
                                     </button>

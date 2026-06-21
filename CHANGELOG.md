@@ -303,3 +303,9 @@ Fitur terdampak: Scan Struk Clipboard Paste (Medium)
 Status: Approved
 
 ---
+
+[2026-06-21 | 22:03] Perbaikan QA Round 2: iOS Paste — Minor Edge Cases
+Perubahan: (1) Tambah setIsConverting(false) di img.onerror pada path text/html di handleGlobalPaste — mencegah tombol Paste stuck disabled jika img.onerror terpanggil. (2) Tambah prop disabled={isConverting} pada tombol Kamera dan Galeri — mencegah race condition overwrite image saat konversi HEIC masih berjalan. (3) Ubah regex pencarian tag img menjadi case-insensitive (/i) di kedua handler — menangani HTML dari iOS yang mengirim IMG SRC dengan huruf kapital.
+Dipicu oleh: QA Round 2
+Fitur terdampak: Scan Struk Clipboard Paste (Low)
+Status: Approved
