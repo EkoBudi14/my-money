@@ -116,6 +116,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
 
     const handleConfirmPayment = async () => {
         if (!selectedPaymentBill || !selectedWalletId || !paymentAmount || !paymentDate) return
+        if (payingBillId !== null) return
         
         const amountNum = parseFloat(paymentAmount)
         if (isNaN(amountNum) || amountNum <= 0) {
@@ -216,8 +217,8 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             text = daysLeft === 0 ? 'Hari ini!' : `${daysLeft} hari lagi`
         } else if (daysLeft < 0) {
             status = 'past'
-            color = 'bg-green-100 text-green-700' 
-            text = 'Selesai bulan ini'
+            color = 'bg-rose-100 dark:bg-rose-950/40 text-rose-600' 
+            text = 'Terlewat'
         }
 
         return { status, color, text }

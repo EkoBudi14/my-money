@@ -309,3 +309,19 @@ Perubahan: (1) Tambah setIsConverting(false) di img.onerror pada path text/html 
 Dipicu oleh: QA Round 2
 Fitur terdampak: Scan Struk Clipboard Paste (Low)
 Status: Approved
+
+---
+
+[2026-06-22 | 21:23] Perbaikan: Mencegah Double Payment & Submit Ganda
+Perubahan: Menambahkan proteksi pencegahan klik beruntun (race condition) pada fungsi `handleConfirmPayment` (untuk Tagihan Rutin) dan `handleSaveTransaction` (untuk Form Transaksi Utama). Mencegah tereksekusinya operasi insert transaksi dan update saldo dompet sebanyak dua kali secara paralel.
+Dipicu oleh prompt: "coba cek klo kalo ada tagihan terus saya klik bayar kok double dia ya di history nya bug nih bisa2 duitnya bayar 2 kali lagi"
+Fitur terdampak: Pembayaran Tagihan (Medium), Transaksi & Saldo (Low)
+Status: Approved
+
+---
+
+[2026-06-22 | 21:26] Perbaikan UI: Teks Tagihan Terlewat (Misleading Badge)
+Perubahan: Mengubah teks label dari "Selesai bulan ini" (hijau) menjadi "Terlewat" (merah/rose) pada komponen Tagihan Rutin untuk tagihan yang belum dibayar tapi sudah melewati tanggal jatuh tempo (`daysLeft < 0`).
+Dipicu oleh prompt: "ini kok saya sudah bayar bulanan netflix ini masih muncul dah"
+Fitur terdampak: UI Tagihan Rutin (Low)
+Status: Approved

@@ -555,6 +555,8 @@ export default function MoneyManager() {
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (saving) return
+
     const finalTitle = type === 'topup' ? (title || 'Topup Saldo') : (title || category)
     const amountNum = parseFloat(amount)
     const adminFeeNum = type === 'topup' && adminFee ? parseFloat(adminFee) : 0
