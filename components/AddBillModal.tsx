@@ -95,7 +95,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
 
     return (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90dvh] overflow-y-auto">
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">

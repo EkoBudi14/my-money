@@ -1113,8 +1113,8 @@ export default function MoneyManager() {
         type: 'delete',
         message: 'Transaksi berhasil dihapus dan saldo dompet dikembalikan.'
       })
-      // Parallelkan fetchWallets & fetchDebts (fetchTransactions tidak perlu, sudah diupdate optimistic)
-      Promise.all([fetchWallets(), fetchDebts()])
+      // Parallelkan fetchWallets & fetchDebts, await agar UI ter-update setelah rollback saldo
+      await Promise.all([fetchWallets(), fetchDebts()])
     } else {
       // Rollback optimistic update jika delete gagal
       fetchTransactions()

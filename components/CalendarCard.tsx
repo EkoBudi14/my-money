@@ -127,45 +127,66 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
         setShowPaymentModal(true)
     }
 
+    const isPemasukan = (bill: RecurringBill) => bill.type === 'pemasukan'
+
     const handleConfirmCalendarPayment = async () => {
         if (!selectedPaymentBill || !selectedWalletId || !paymentAmount || !paymentDate) return
         
         const amountNum = parseFloat(paymentAmount)
         if (isNaN(amountNum) || amountNum <= 0) {
-            showToast('error', 'Jumlah pembayaran tidak valid')
+            showToast('error', 'Jumlah tidak valid')
             return
         }
         
-        const wallet = wallets.find(w => w.id === selectedWalletId)
-        if (!wallet) {
-            showToast('error', 'Dompet tidak ditemukan')
+        const isIncome = isPemasukan(selectedPaymentBill)
+
+        // Fetch saldo terbaru dari DB (anti race condition)
+        const { data: freshWalletData, error: walletFetchError } = await supabase
+            .from('wallets')
+            .select('balance')
+            .eq('id', selectedWalletId)
+            .single()
+
+        if (walletFetchError || !freshWalletData) {
+            showToast('error', 'Gagal memverifikasi saldo dompet')
             return
         }
-        
-        if (wallet.balance < amountNum) {
-            showToast('error', `Saldo tidak mencukupi! Saldo ${wallet.name}: Rp ${wallet.balance.toLocaleString('id-ID')}`)
+
+        const freshBalance = freshWalletData.balance
+
+        // Cek saldo hanya untuk pengeluaran
+        if (!isIncome && freshBalance < amountNum) {
+            const walletName = wallets.find(w => w.id === selectedWalletId)?.name || 'Dompet'
+            showToast('error', `Saldo tidak mencukupi! Saldo ${walletName}: Rp ${freshBalance.toLocaleString('id-ID')}`)
             return
         }
         
         setPayingBillId(selectedPaymentBill.id)
         try {
+            const safePaymentDate = new Date(`${paymentDate}T12:00:00`).toISOString()
             const paymentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
             
+            // Buat transaksi sesuai tipe bill (pemasukan atau pengeluaran)
             const { data: txData, error: txError } = await supabase.from('transactions').insert({
                 title: selectedPaymentBill.name,
                 amount: amountNum,
-                type: 'pengeluaran',
-                category: 'Tagihan',
+                type: isIncome ? 'pemasukan' : 'pengeluaran',
+                category: selectedPaymentBill.category,
                 wallet_id: selectedWalletId,
-                date: new Date(paymentDate).toISOString(),
+                date: safePaymentDate,
                 created_at: new Date().toISOString()
             }).select().single()
             
             if (txError) throw txError
             if (!txData) throw new Error('Transaction created but no data returned')
+
+            // Update saldo: pemasukan tambah, pengeluaran kurang
+            const newBalance = isIncome
+                ? freshBalance + amountNum
+                : freshBalance - amountNum
             
             await supabase.from('wallets').update({
-                balance: wallet.balance - amountNum
+                balance: newBalance
             }).eq('id', selectedWalletId)
             
             await supabase.from('bill_payments').insert({
@@ -175,7 +196,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                 transaction_id: txData.id
             })
             
-            showToast('success', 'Tagihan berhasil dibayar!')
+            showToast('success', isIncome ? 'Pemasukan berhasil dicatat! 🎉' : 'Tagihan berhasil dibayar!')
             
             // Refresh data
             const { data: walletsData } = await supabase.from('wallets').select('*')
@@ -186,7 +207,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             setShowPaymentModal(false)
         } catch (error) {
             console.error(error)
-            showToast('error', 'Gagal membayar tagihan')
+            showToast('error', isIncome ? 'Gagal mencatat pemasukan' : 'Gagal membayar tagihan')
         } finally {
             setPayingBillId(null)
         }
@@ -553,42 +574,57 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                 const isPaid = billPayments[bill.id]
                                 return (
                                     <div key={bill.id} className={`flex items-center justify-between p-3 rounded-xl border ${
-                                        isPaid ? 'bg-green-50 dark:bg-green-950/30 border-green-100' : 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
+                                        isPaid
+                                            ? 'bg-green-50 dark:bg-green-950/30 border-green-100'
+                                            : isPemasukan(bill)
+                                                ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30'
+                                                : 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
                                     } group`}>
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                                                isPaid ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                                                isPaid
+                                                    ? 'bg-green-100 text-green-600'
+                                                    : isPemasukan(bill)
+                                                        ? 'bg-emerald-100 text-emerald-600'
+                                                        : 'bg-blue-100 text-blue-600'
                                             }`}>
                                                 {isPaid ? <CheckCircle2 size={16} /> : bill.name.charAt(0)}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">{bill.name}</p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                                    {isPaid ? 'Sudah dibayar' : 'Tagihan Rutin'}
+                                                    {isPaid
+                                                        ? (isPemasukan(bill) ? 'Sudah diterima' : 'Sudah dibayar')
+                                                        : (isPemasukan(bill) ? 'Pemasukan Rutin' : 'Tagihan Rutin')
+                                                    }
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <p className={`text-sm font-bold ${
-                                                isPaid ? 'text-green-600' : 'text-blue-600'
+                                                isPaid ? 'text-green-600' : isPemasukan(bill) ? 'text-emerald-600' : 'text-blue-600'
                                             }`}>
-                                                Rp {bill.amount.toLocaleString('id-ID')}
+                                                {isPemasukan(bill) ? '+' : ''}Rp {bill.amount.toLocaleString('id-ID')}
                                             </p>
                                             
                                             {isPaid ? (
                                                 <button
                                                     onClick={() => handleDeleteBillPayment(bill.id)}
                                                     className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-all"
-                                                    title="Batalkan Pembayaran"
+                                                    title="Batalkan"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={() => handleCalendarPayBill(bill)}
-                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/300 text-white hover:bg-blue-600 transition-all"
+                                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold text-white transition-all ${
+                                                        isPemasukan(bill)
+                                                            ? 'bg-emerald-500 hover:bg-emerald-600'
+                                                            : 'bg-blue-600 hover:bg-blue-700'
+                                                    }`}
                                                 >
-                                                    Bayar
+                                                    {isPemasukan(bill) ? 'Terima' : 'Bayar'}
                                                 </button>
                                             )}
                                         </div>
@@ -625,7 +661,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                     <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
-                                Bayar Tagihan
+                                {selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Terima Pemasukan' : 'Bayar Tagihan'}
                             </h3>
                             <button 
                                 onClick={() => setShowPaymentModal(false)}
@@ -669,7 +705,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                    Bayar dari Dompet
+                                    {selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Masuk ke Dompet' : 'Bayar dari Dompet'}
                                 </label>
                                 <select
                                     className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
@@ -701,7 +737,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                 {payingBillId ? (
                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
                                 ) : (
-                                    'Bayar'
+                                    selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Terima' : 'Bayar'
                                 )}
                             </button>
                         </div>

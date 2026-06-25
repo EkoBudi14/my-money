@@ -325,3 +325,11 @@ Perubahan: Mengubah teks label dari "Selesai bulan ini" (hijau) menjadi "Terlewa
 Dipicu oleh prompt: "ini kok saya sudah bayar bulanan netflix ini masih muncul dah"
 Fitur terdampak: UI Tagihan Rutin (Low)
 Status: Approved
+
+---
+
+[2026-06-25 | 22:12] Perbaikan: 3 Bug Fix — Kalender, AddBillModal Scroll, Hapus Pemasukan Tidak Rollback
+Perubahan: (1) CalendarCard.tsx — label, warna background card, warna avatar, warna amount, dan tombol di kalender dibedakan berdasarkan bill.type. Pemasukan rutin tampil dengan warna emerald, label "Pemasukan Rutin", tombol "Terima". handleConfirmCalendarPayment diupdate: cek tipe bill, buat transaksi pemasukan/pengeluaran sesuai, update saldo dengan benar (+/-), gunakan safeDate T12:00:00. (2) AddBillModal.tsx — tambah max-h-[90dvh] dan overflow-y-auto pada modal container agar form bisa di-scroll di layar mobile yang kecil. (3) app/page.tsx deleteTransaction — ganti Promise.all(...) menjadi await Promise.all(...) di L1117 agar fetchWallets() selesai sebelum React re-render, sehingga saldo di UI ter-update setelah rollback berhasil.
+Dipicu oleh prompt: "bug nih nambah pemasukan kok muncul bayar di calender, gabisa di scroll, hapus pemasukan saldo tidak berkurang"
+Fitur terdampak: Kalender (Medium), Tagihan/Pemasukan Rutin (Medium), Hapus Transaksi Saldo (Medium), AddBillModal UI (Low)
+Status: Approved
