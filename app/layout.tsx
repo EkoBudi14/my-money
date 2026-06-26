@@ -8,13 +8,21 @@ const lexendDeca = Lexend_Deca({
 });
 
 export const metadata: Metadata = {
-  title: "SwiftLog - Money Manager",
-  description: "Modern Logistics-style Money Management",
+  title: "CatatDuit - Money Manager",
+  description: "Aplikasi pencatat keuangan pribadi modern",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon-32x32.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SwiftLog",
+    title: "CatatDuit",
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -23,10 +31,12 @@ export const metadata: Metadata = {
 
 import Sidebar from "@/components/Sidebar";
 import SplashScreen from "@/components/SplashScreen";
+import ContentWrapper from "@/components/ContentWrapper";
 import { ToastProvider } from "@/hooks/useToast";
 import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { SidebarProvider } from "@/hooks/useSidebar";
 
 export default function RootLayout({
   children,
@@ -56,19 +66,21 @@ export default function RootLayout({
         className={`${lexendDeca.variable} antialiased bg-[var(--bg-page)]`}
       >
         <ThemeProvider>
-          <ToastProvider>
-            <ConfirmProvider>
-              <SuccessModalProvider>
-                <SplashScreen />
-                <div className="flex min-h-screen">
-                  <Sidebar />
-                  <div className="flex-1 min-w-0 overflow-x-hidden md:ml-[280px]">
-                     {children}
+          <SidebarProvider>
+            <ToastProvider>
+              <ConfirmProvider>
+                <SuccessModalProvider>
+                  <SplashScreen />
+                  <div className="flex min-h-screen">
+                    <Sidebar />
+                    <ContentWrapper>
+                      {children}
+                    </ContentWrapper>
                   </div>
-                </div>
-              </SuccessModalProvider>
-            </ConfirmProvider>
-          </ToastProvider>
+                </SuccessModalProvider>
+              </ConfirmProvider>
+            </ToastProvider>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

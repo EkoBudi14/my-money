@@ -333,3 +333,53 @@ Perubahan: (1) CalendarCard.tsx — label, warna background card, warna avatar, 
 Dipicu oleh prompt: "bug nih nambah pemasukan kok muncul bayar di calender, gabisa di scroll, hapus pemasukan saldo tidak berkurang"
 Fitur terdampak: Kalender (Medium), Tagihan/Pemasukan Rutin (Medium), Hapus Transaksi Saldo (Medium), AddBillModal UI (Low)
 Status: Approved
+
+---
+
+[2026-06-26 | 19:52] Perbaikan UI: AddBillModal — Z-Index & Scroll Tombol Simpan
+Perubahan: Menaikkan z-index wrapper modal dari z-50 ke z-[70] agar modal tidak tertutup mobile bottom nav (z-[58]). Mengubah posisi modal dari items-center menjadi items-end sm:items-center sehingga muncul dari bawah di mobile (UX lebih natural). Menurunkan max-h dari 90dvh ke 85dvh dan menambah pb-6 pada container untuk memastikan tombol Simpan selalu terlihat.
+Status: Approved
+
+---
+
+[2026-06-26 | 19:52] Perbaikan UI: Favicon — Ganti Logo Vercel ke CatatDuit
+Perubahan: Update metadata di app/layout.tsx untuk explicitly set favicon ke /favicon-32x32.png dan /apple-touch-icon.png yang sudah custom (bukan logo Vercel default Next.js). Update title dari "SwiftLog" menjadi "CatatDuit" di metadata dan appleWebApp.
+Status: Approved
+
+---
+
+[2026-06-26 | 19:52] Fitur: Mobile Nav — Floating Polish & Hide/Show Toggle
+Perubahan: (1) Menambahkan state isNavVisible di Sidebar.tsx dengan animasi translateY(110%) saat disembunyikan menggunakan cubic-bezier smooth transition 0.4s. (2) Handle bar kecil di atas nav pill yang bisa di-tap untuk menyembunyikan nav. (3) Tombol floating "Menu" glassmorphism muncul di pojok kanan bawah saat nav tersembunyi — tap untuk menampilkan kembali. (4) Upgrade visual: rounded-[22px], blur(28px), shadow lebih dalam, margin mx-4 mb-4 untuk kesan floating lebih kuat.
+Status: Approved
+
+---
+
+[2026-06-26 | 20:58] Fitur: Desktop Sidebar — Floating Glassmorphism + Hide/Show Toggle
+Perubahan: (1) Ubah desktop sidebar dari fixed panel biasa menjadi floating overlay drawer dengan glassmorphism (blur 32px, rounded-[22px], shadow dalam). (2) Tambah state isSidebarOpen (default true). (3) Animasi translateX(-108%) saat hidden, cubic-bezier 0.4s saat toggle. (4) Backdrop semi-transparan muncul saat sidebar terbuka — klik backdrop untuk menutup. (5) Tombol "Menu" floating glassmorphism muncul di pojok kiri atas saat sidebar tertutup. (6) Tombol X di header sidebar untuk menutup. (7) Hapus md:ml-[280px] di layout.tsx karena sidebar kini overlay (tidak push konten).
+Dipicu oleh prompt: "ini kan saya bilang jadi floating, dan bisa di hide dan show"
+Fitur terdampak: Desktop Sidebar Navigation (High), Layout Content Area (Low)
+Status: Approved
+
+---
+
+[2026-06-26 | 21:02] Perbaikan: Desktop Sidebar — Push Mode (Konten Bergeser)
+Perubahan: Mengubah sidebar desktop dari overlay drawer (konten tertutup backdrop) menjadi push mode (konten bergeser). Buat hooks/useSidebar.tsx (SidebarProvider + useSidebar context). Buat components/ContentWrapper.tsx (client component dengan animasi margin-left 0→292px, cubic-bezier 0.4s). Update layout.tsx pakai SidebarProvider + ContentWrapper. Update Sidebar.tsx pakai useSidebar context (hapus local state). Hapus backdrop overlay.
+Dipicu oleh prompt: "kalo lagi buka menunya tetep bisa di akses jadi kaya saat show halaman yang di samping auto kegeser"
+Fitur terdampak: Desktop Sidebar Navigation (Medium), Layout Content Area (Medium)
+Status: Approved
+
+---
+
+[2026-06-26 | 21:09] Perbaikan: Desktop Sidebar — Edge Tab & Smooth Polish
+Perubahan: (1) Mengubah layout desktop sidebar agar menempel penuh (flush-left) di sisi kiri layar dengan menghilangkan outer padding & border-left. Sidebar inner diset rounded kanan saja (rounded-r-[24px]). (2) Memperbaiki ContentWrapper agar margin saat sidebar ditutup bernilai 0px, sehingga tidak menyisakan ruang kosong/gap di sisi kiri konten utama. (3) Menambahkan transitionDelay pada toggle edge tab agar muncul secara natural setelah animasi sidebar tertutup selesai (0.15s), menghindari visual tumpang tindih. (4) Lebar sidebar disesuaikan menjadi 280px murni.
+Dipicu oleh prompt: "ini gabisa dibuat lebih smooth lagi apa? jelek bgt ini ada gap gitu"
+Fitur terdampak: UI Desktop Sidebar (High), Desktop Layout Margin (Medium)
+Status: Approved
+
+---
+
+[2026-06-26 | 21:33] Perbaikan: Desktop Sidebar — Restore Floating Design & Middle Toggle
+Perubahan: (1) Mengembalikan style sidebar ke mode "floating" (memiliki padding 12px di sisi kiri, atas, bawah) dan ujung rounded penuh (rounded-[22px]). (2) Mengubah tombol edge tab kembali menjadi pill mengambang bertuliskan "> Menu". (3) Mempertahankan posisi tombol toggle di bagian tengah layar (top: 50%, translateY: -50%) agar tidak bertabrakan dengan header konten ("CatatDuit" dsb). (4) Content margin-left kembali menggunakan 292px saat terbuka dan 0px saat tertutup.
+Dipicu oleh prompt: "ini dibagian kirinya kok nempel gini ya? kan saya maunya floating??"
+Fitur terdampak: UI Desktop Sidebar (High)
+Status: Approved

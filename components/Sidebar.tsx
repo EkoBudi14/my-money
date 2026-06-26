@@ -21,6 +21,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useTheme } from '@/hooks/useTheme'
+import { useSidebar } from '@/hooks/useSidebar'
 
 const allMenuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
@@ -48,6 +49,8 @@ export default function Sidebar() {
     const pathname = usePathname()
     const [showMore, setShowMore] = useState(false)
     const [showQuickActions, setShowQuickActions] = useState(false)
+    const [isNavVisible, setIsNavVisible] = useState(true)
+    const { isSidebarOpen, setIsSidebarOpen } = useSidebar()
     const { theme, toggleTheme } = useTheme()
 
     const isMoreActive = mobileMoreItems.some(item => pathname === item.href)
@@ -55,54 +58,175 @@ export default function Sidebar() {
 
     return (
         <>
-            {/* Desktop Sidebar */}
-            <aside className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[280px] bg-[var(--bg-card)] border-r border-[var(--border-default)] z-50 flex-col overflow-hidden">
-                <div className="h-[90px] flex items-center px-6 border-b border-[var(--border-default)]">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[var(--primary)] rounded-xl flex items-center justify-center">
-                            <PackageCheck className="w-5 h-5 text-white" />
-                        </div>
-                        <h1 className="font-bold text-xl text-[var(--text-primary)]">CatatDuit</h1>
-                    </div>
-                </div>
+            {/* ── DESKTOP SIDEBAR ── */}
 
-                <div className="flex-1 px-5 py-6 space-y-8 overflow-y-auto">
-                    <div className="flex flex-col gap-1">
+            {/* Floating Sidebar Panel */}
+            <aside
+                className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[292px] z-50 flex-col"
+                style={{
+                    padding: '12px 0 12px 12px',
+                    transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-108%)',
+                    transition: 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
+                }}
+            >
+                <div
+                    className="flex-1 flex flex-col rounded-[22px] overflow-hidden"
+                    style={{
+                        background: theme === 'dark'
+                            ? 'rgba(15, 15, 20, 0.88)'
+                            : 'rgba(255, 255, 255, 0.90)',
+                        backdropFilter: 'blur(32px) saturate(200%)',
+                        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+                        border: theme === 'dark'
+                            ? '1px solid rgba(255,255,255,0.10)'
+                            : '1px solid rgba(255,255,255,0.6)',
+                        boxShadow: theme === 'dark'
+                            ? '0 12px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)'
+                            : '0 12px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
+                    }}
+                >
+                    {/* Header */}
+                    <div className="h-[72px] flex items-center justify-between px-5 border-b border-[var(--border-default)]">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-[var(--primary)] rounded-xl flex items-center justify-center shadow-sm">
+                                <PackageCheck className="w-4 h-4 text-white" />
+                            </div>
+                            <h1 className="font-bold text-lg text-[var(--text-primary)]">CatatDuit</h1>
+                        </div>
+                        {/* Close button */}
+                        <button
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+                            style={{
+                                background: theme === 'dark'
+                                    ? 'rgba(255,255,255,0.07)'
+                                    : 'rgba(0,0,0,0.05)',
+                            }}
+                            title="Sembunyikan sidebar"
+                        >
+                            <X className="w-4 h-4 text-[var(--text-secondary)]" />
+                        </button>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
                         {allMenuItems.map((item) => {
                             const isActive = pathname === item.href
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${isActive ? 'bg-[#F9FAFB] dark:bg-[var(--bg-page)] dark:bg-[var(--bg-elevated)]' : 'hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] dark:hover:bg-[var(--bg-elevated)]'}`}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                                    style={{
+                                        background: isActive
+                                            ? theme === 'dark'
+                                                ? 'rgba(77, 138, 255, 0.14)'
+                                                : 'rgba(22, 93, 255, 0.08)'
+                                            : 'transparent',
+                                    }}
+                                    onMouseEnter={e => {
+                                        if (!isActive) {
+                                            (e.currentTarget as HTMLElement).style.background = theme === 'dark'
+                                                ? 'rgba(255,255,255,0.05)'
+                                                : 'rgba(0,0,0,0.04)'
+                                        }
+                                    }}
+                                    onMouseLeave={e => {
+                                        if (!isActive) {
+                                            (e.currentTarget as HTMLElement).style.background = 'transparent'
+                                        }
+                                    }}
                                 >
-                                    <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`} />
-                                    <span className={`font-medium text-sm transition-colors ${isActive ? 'text-[var(--text-primary)] font-semibold' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
+                                    <item.icon
+                                        className="w-5 h-5 transition-colors"
+                                        style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
+                                        strokeWidth={isActive ? 2.2 : 1.8}
+                                    />
+                                    <span
+                                        className="text-sm transition-colors"
+                                        style={{
+                                            fontWeight: isActive ? 600 : 500,
+                                            color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                                        }}
+                                    >
                                         {item.name}
                                     </span>
+                                    {isActive && (
+                                        <div
+                                            className="ml-auto w-1.5 h-1.5 rounded-full"
+                                            style={{ background: 'var(--primary)' }}
+                                        />
+                                    )}
                                 </Link>
                             )
                         })}
                     </div>
-                </div>
 
-                {/* Dark Mode Toggle — Desktop Sidebar Bottom */}
-                <div className="px-5 py-4 border-t border-[var(--border-default)]">
-                    <button
-                        onClick={toggleTheme}
-                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] dark:hover:bg-[var(--bg-elevated)] transition-all duration-200 group"
-                    >
-                        {theme === 'dark' ? (
-                            <Sun className="w-5 h-5 text-amber-400" />
-                        ) : (
-                            <Moon className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]" />
-                        )}
-                        <span className="font-medium text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
-                            {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
-                        </span>
-                    </button>
+                    {/* Dark Mode Toggle — Bottom */}
+                    <div className="px-4 pb-4 pt-2 border-t border-[var(--border-default)]">
+                        <button
+                            onClick={toggleTheme}
+                            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group"
+                            style={{ background: 'transparent' }}
+                            onMouseEnter={e => {
+                                (e.currentTarget as HTMLElement).style.background = theme === 'dark'
+                                    ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                            }}
+                            onMouseLeave={e => {
+                                (e.currentTarget as HTMLElement).style.background = 'transparent'
+                            }}
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="w-5 h-5 text-amber-400" />
+                            ) : (
+                                <Moon className="w-5 h-5 text-[var(--text-secondary)]" />
+                            )}
+                            <span className="font-medium text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                                {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </aside>
+
+            {/* Desktop Toggle Button — floating pill, muncul saat sidebar tertutup */}
+            <button
+                className="hidden md:flex fixed z-50 items-center gap-2 transition-all duration-400"
+                onClick={() => setIsSidebarOpen(true)}
+                style={{
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    left: isSidebarOpen ? '-80px' : '16px',
+                    opacity: isSidebarOpen ? 0 : 1,
+                    pointerEvents: isSidebarOpen ? 'none' : 'auto',
+                    background: theme === 'dark'
+                        ? 'rgba(15, 15, 20, 0.88)'
+                        : 'rgba(255, 255, 255, 0.90)',
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    border: theme === 'dark'
+                        ? '1px solid rgba(255,255,255,0.12)'
+                        : '1px solid rgba(255,255,255,0.55)',
+                    boxShadow: '0 4px 20px rgba(22, 93, 255, 0.22)',
+                    borderRadius: '14px',
+                    padding: '10px 14px',
+                    transition: 'left 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease',
+                    transitionDelay: isSidebarOpen ? '0s' : '0.15s',
+                }}
+                title="Tampilkan sidebar"
+            >
+                <ChevronRight
+                    className="w-4 h-4"
+                    style={{ color: 'var(--primary)' }}
+                    strokeWidth={2.5}
+                />
+                <span style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--primary)',
+                    letterSpacing: '0.02em',
+                }}>Menu</span>
+            </button>
 
             {/* Mobile Quick Action Speed Dial Backdrop */}
             {showQuickActions && (
@@ -169,25 +293,83 @@ export default function Sidebar() {
                 </div>
             )}
 
-            {/* Mobile Bottom Navigation — Glassmorphism iOS Style */}
+            {/* Mobile Bottom Navigation — Floating Glassmorphism */}
+            {/* Show Nav Button — appears when nav is hidden */}
+            <button
+                className="md:hidden fixed z-[58] transition-all duration-500"
+                onClick={() => setIsNavVisible(true)}
+                style={{
+                    bottom: isNavVisible ? '-60px' : '16px',
+                    right: '16px',
+                    opacity: isNavVisible ? 0 : 1,
+                    pointerEvents: isNavVisible ? 'none' : 'auto',
+                    background: theme === 'dark'
+                        ? 'rgba(17, 17, 24, 0.85)'
+                        : 'rgba(255, 255, 255, 0.88)',
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    border: theme === 'dark'
+                        ? '1px solid rgba(255, 255, 255, 0.12)'
+                        : '1px solid rgba(255, 255, 255, 0.5)',
+                    boxShadow: '0 8px 32px rgba(22, 93, 255, 0.25)',
+                    borderRadius: '20px',
+                    padding: '10px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                }}
+            >
+                <ChevronRight
+                    className="w-4 h-4 -rotate-90"
+                    style={{ color: 'var(--primary)' }}
+                    strokeWidth={2.5}
+                />
+                <span style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: 'var(--primary)',
+                    letterSpacing: '0.02em',
+                }}>Menu</span>
+            </button>
+
             <nav
                 className="md:hidden fixed bottom-0 left-0 right-0 z-[58]"
-                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+                style={{
+                    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                    transform: isNavVisible ? 'translateY(0)' : 'translateY(110%)',
+                    transition: 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
+                }}
             >
+                {/* Handle bar — tap to hide */}
                 <div
-                    className="mx-3 mb-3 rounded-2xl flex items-center justify-around px-1 h-[64px] relative"
+                    className="flex justify-center pb-1 pt-1 cursor-pointer"
+                    onClick={() => setIsNavVisible(false)}
+                    title="Sembunyikan menu"
+                >
+                    <div
+                        className="w-8 h-1 rounded-full transition-colors duration-200"
+                        style={{
+                            background: theme === 'dark'
+                                ? 'rgba(255,255,255,0.2)'
+                                : 'rgba(0,0,0,0.15)',
+                        }}
+                    />
+                </div>
+
+                <div
+                    className="mx-4 mb-4 rounded-[22px] flex items-center justify-around px-1 h-[64px] relative"
                     style={{
                         background: theme === 'dark'
-                            ? 'rgba(17, 17, 24, 0.75)'
-                            : 'rgba(255, 255, 255, 0.72)',
-                        backdropFilter: 'blur(24px) saturate(180%)',
-                        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                            ? 'rgba(17, 17, 24, 0.80)'
+                            : 'rgba(255, 255, 255, 0.78)',
+                        backdropFilter: 'blur(28px) saturate(200%)',
+                        WebkitBackdropFilter: 'blur(28px) saturate(200%)',
                         border: theme === 'dark'
-                            ? '1px solid rgba(255, 255, 255, 0.08)'
-                            : '1px solid rgba(255, 255, 255, 0.35)',
+                            ? '1px solid rgba(255, 255, 255, 0.10)'
+                            : '1px solid rgba(255, 255, 255, 0.45)',
                         boxShadow: theme === 'dark'
-                            ? '0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3)'
-                            : '0 4px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)',
+                            ? '0 8px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.06)'
+                            : '0 8px 40px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.8)',
                     }}
                 >
                     {/* Left Items: Dashboard, Analitik */}
@@ -294,6 +476,7 @@ export default function Sidebar() {
                     </button>
                 </div>
             </nav>
+
 
             {/* Mobile "Lainnya" Bottom Sheet */}
             {showMore && (
