@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CatatDuit Neobrutalism Prototype</title>
+    <style>
+      :root {
+        --bg: #f8f4ec;
+        --panel: #fffdf8;
+        --ink: #141414;
+        --line: #141414;
+        --yellow: #ffd84d;
+        --mint: #bbf7d0;
+        --sky: #b6e3ff;
+        --peach: #ffc7a6;
+        --pink: #ffb7d8;
+        --lav: #d9c8ff;
+        --danger: #ff7f7f;
+        --shadow: 6px 6px 0 #141414;
+        --shadow-sm: 4px 4px 0 #141414;
+        --radius: 28px;
+        --radius-md: 22px;
+        --radius-sm: 16px;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+
+      h1, h2, h3, h4, p { margin: 0; }
+      .page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 32px;
+      }
+
+      .hero {
+        border: 3px solid var(--line);
+        background: linear-gradient(135deg, #fff8dd 0%, #fffdf8 55%, #dff5ff 100%);
+        border-radius: 36px;
+        box-shadow: 8px 8px 0 #141414;
+        padding: 28px;
+        display: grid;
+        gap: 20px;
+        grid-template-columns: 1.4fr 1fr;
+        margin-bottom: 28px;
+      }
+
+      .badge, .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 3px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .hero h1 {
+        font-size: clamp(32px, 4vw, 64px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        max-width: 10ch;
+      }
+
+      .hero p {
+        font-size: 16px;
+        line-height: 1.65;
+        max-width: 56ch;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .btn {
+        border: 3px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow-sm);
+        padding: 14px 18px;
+        font-weight: 800;
+        background: var(--yellow);
+      }
+
+      .btn.alt { background: white; }
+
+      .hero-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card {
+        border: 3px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .card.yellow { background: #fff5b8; }
+      .card.mint { background: #dffff0; }
+      .card.sky { background: #dff4ff; }
+      .card.peach { background: #ffe5d6; }
+      .card.pink { background: #ffd9e9; }
+      .card.lav { background: #ebe2ff; }
+      .card.tight { padding: 18px; }
+
+      .small-label {
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+      }
+
+      .money {
+        font-size: clamp(26px, 3vw, 44px);
+        font-weight: 900;
+        letter-spacing: -0.05em;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 20px;
+        align-self: start;
+        display: grid;
+        gap: 18px;
+      }
+
+      .nav a {
+        display: block;
+        text-decoration: none;
+        color: var(--ink);
+        background: white;
+        border: 3px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow-sm);
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        font-weight: 800;
+      }
+
+      .nav a.active { background: var(--yellow); }
+
+      .content {
+        display: grid;
+        gap: 24px;
+      }
+
+      .grid-4 { display: grid; gap: 18px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .grid-3 { display: grid; gap: 18px; grid-template-columns: 1.2fr 1.2fr 0.8fr; }
+      .grid-2 { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+      .section-title {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .section-title h2 {
+        font-size: 30px;
+        letter-spacing: -0.04em;
+      }
+
+      .transaction {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 0;
+        border-top: 2px dashed rgba(20, 20, 20, 0.22);
+      }
+
+      .transaction:first-child { border-top: 0; padding-top: 0; }
+
+      .icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 3px solid var(--line);
+        border-radius: 16px;
+        background: white;
+        font-size: 22px;
+      }
+
+      .amount.pos { color: #0f7b3b; font-weight: 900; }
+      .amount.neg { color: #b42318; font-weight: 900; }
+
+      .kpi-ring {
+        height: 140px;
+        border: 3px dashed var(--line);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        background: rgba(255,255,255,0.5);
+      }
+
+      .mobile-wrap {
+        margin-top: 36px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .phone {
+        border: 3px solid var(--line);
+        border-radius: 36px;
+        padding: 16px;
+        background: #1d1d1d;
+        box-shadow: 8px 8px 0 #141414;
+      }
+
+      .phone-screen {
+        min-height: 740px;
+        border-radius: 24px;
+        background: var(--bg);
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+        overflow: hidden;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .mini-card {
+        border: 3px solid var(--line);
+        border-radius: 22px;
+        padding: 16px;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .bottom-nav {
+        margin-top: auto;
+        border: 3px solid var(--line);
+        border-radius: 22px;
+        background: white;
+        box-shadow: var(--shadow-sm);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .bottom-nav div {
+        text-align: center;
+        padding: 10px 6px;
+        border-radius: 14px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .bottom-nav .active {
+        border: 2px solid var(--line);
+        background: var(--yellow);
+      }
+
+      .fab {
+        position: relative;
+        margin-left: auto;
+        width: 62px;
+        height: 62px;
+        display: grid;
+        place-items: center;
+        border: 3px solid var(--line);
+        border-radius: 999px;
+        background: var(--peach);
+        box-shadow: var(--shadow-sm);
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        border: 3px solid var(--line);
+        border-radius: 18px;
+        background: white;
+        box-shadow: var(--shadow-sm);
+        padding: 14px 16px;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .chip {
+        border: 3px solid var(--line);
+        border-radius: 999px;
+        background: white;
+        box-shadow: var(--shadow-sm);
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .chip.active { background: var(--mint); }
+
+      @media (max-width: 1200px) {
+        .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-3 { grid-template-columns: 1fr; }
+        .mobile-wrap { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 960px) {
+        .hero,
+        .layout,
+        .grid-2 { grid-template-columns: 1fr; }
+        .sidebar { position: static; }
+        .page { padding: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div>
+          <div class="badge">NeoBrutalism, tapi lebih kalem untuk finance app</div>
+          <h1>CatatDuit yang bold, rapi, dan bikin betah.</h1>
+          <p>
+            Arah visual ini mempertahankan border tebal, shadow offset, dan kartu playful,
+            tetapi dikontrol dengan palet yang lebih hangat, ritme whitespace yang lebih lega,
+            dan hierarki nominal uang yang jauh lebih nyaman dipindai di desktop maupun mobile.
+          </p>
+          <div class="btn-row">
+            <div class="btn">Desktop shell</div>
+            <div class="btn alt">Mobile bottom nav</div>
+            <div class="btn alt">Transaction-first UI</div>
+          </div>
+        </div>
+        <div class="hero-grid">
+          <div class="card yellow tight">
+            <div class="small-label">Primary metric</div>
+            <div class="money">Rp 12.480.200</div>
+            <p>Saldo aktif dengan emphasis paling tinggi.</p>
+          </div>
+          <div class="card mint tight">
+            <div class="small-label">Quick action</div>
+            <div class="money">+ 3 tap</div>
+            <p>Pemasukan, pengeluaran, transfer langsung terlihat.</p>
+          </div>
+          <div class="card sky tight">
+            <div class="small-label">Analytics</div>
+            <div class="money">4 blok</div>
+            <p>Insight, breakdown, wallet flow, comparison.</p>
+          </div>
+          <div class="card peach tight">
+            <div class="small-label">Mobile UX</div>
+            <div class="money">Thumb-safe</div>
+            <p>Bottom nav, FAB, form besar, dan chip yang gampang disentuh.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <div class="card yellow">
+            <div class="small-label">Brand</div>
+            <h2 style="font-size:36px; letter-spacing:-0.05em;">CatatDuit</h2>
+            <p style="margin-top:10px; line-height:1.6;">Finance dashboard yang playful, jelas, dan tidak bikin capek.</p>
+          </div>
+          <div class="nav card">
+            <a class="active">Dashboard</a>
+            <a>Analitik</a>
+            <a>Dompet</a>
+            <a>Tabungan</a>
+            <a>Budget</a>
+            <a>Goals</a>
+            <a>Catatan</a>
+            <a>Scan Struk</a>
+            <a>Voice Input</a>
+          </div>
+        </aside>
+
+        <div class="content">
+          <section>
+            <div class="section-title">
+              <h2>Dashboard desktop</h2>
+              <div class="pill">Fokus: saldo, aksi cepat, cashflow, transaksi</div>
+            </div>
+            <div class="grid-4">
+              <div class="card yellow">
+                <div class="small-label">Saldo aktif</div>
+                <div class="money">Rp 4.230.000</div>
+                <p>Uang siap dipakai hari ini.</p>
+              </div>
+              <div class="card mint">
+                <div class="small-label">Tabungan inti</div>
+                <div class="money">Rp 35.6jt</div>
+                <p>Aset dan simpanan utama.</p>
+              </div>
+              <div class="card peach">
+                <div class="small-label">Pemasukan</div>
+                <div class="money">+ 9.1jt</div>
+                <p>Bulan ini naik 1.9%.</p>
+              </div>
+              <div class="card pink">
+                <div class="small-label">Pengeluaran</div>
+                <div class="money">- 237rb</div>
+                <p>Turun drastis dari periode lalu.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-3">
+            <div class="card">
+              <div class="section-title">
+                <h2>Quick actions</h2>
+                <div class="pill">3 aksi utama</div>
+              </div>
+              <div class="btn-row">
+                <div class="btn">+ Pemasukan</div>
+                <div class="btn" style="background:var(--peach)">- Pengeluaran</div>
+                <div class="btn" style="background:var(--sky)">⇄ Transfer</div>
+                <div class="btn alt">Budget</div>
+              </div>
+            </div>
+            <div class="card mint">
+              <div class="section-title">
+                <h2>Cashflow</h2>
+                <div class="pill">Chart modular</div>
+              </div>
+              <div style="height:180px; border:3px dashed var(--line); border-radius:24px; background:rgba(255,255,255,0.45);"></div>
+            </div>
+            <div class="card yellow">
+              <div class="section-title">
+                <h2>Saving rate</h2>
+              </div>
+              <div class="kpi-ring">97.4%</div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="card">
+              <div class="section-title">
+                <h2>Riwayat transaksi</h2>
+                <div class="pill">Live feed</div>
+              </div>
+              <div class="transaction">
+                <div class="icon">💸</div>
+                <div>
+                  <strong>Pelunasan piutang</strong>
+                  <p>26 Jun 2026 • 13.39 • Lainnya</p>
+                </div>
+                <div class="amount pos">+ Rp 30.000</div>
+              </div>
+              <div class="transaction">
+                <div class="icon">🍢</div>
+                <div>
+                  <strong>Beli taichan</strong>
+                  <p>26 Jun 2026 • 06.59 • Makan di luar</p>
+                </div>
+                <div class="amount neg">- Rp 25.000</div>
+              </div>
+              <div class="transaction">
+                <div class="icon">🥛</div>
+                <div>
+                  <strong>Beli susu</strong>
+                  <p>26 Jun 2026 • 02.45 • Belanja</p>
+                </div>
+                <div class="amount neg">- Rp 28.400</div>
+              </div>
+            </div>
+
+            <div style="display:grid; gap:18px;">
+              <div class="card sky">
+                <div class="section-title">
+                  <h2>Tagihan rutin</h2>
+                  <div class="pill">2 aktif</div>
+                </div>
+                <div class="transaction">
+                  <div class="icon">🌐</div>
+                  <div>
+                    <strong>Biznet</strong>
+                    <p>Sudah dibayar bulan ini</p>
+                  </div>
+                  <div class="amount neg">Rp 417.250</div>
+                </div>
+                <div class="transaction">
+                  <div class="icon">🎬</div>
+                  <div>
+                    <strong>Netflix</strong>
+                    <p>Berulang bulanan</p>
+                  </div>
+                  <div class="amount neg">Rp 65.000</div>
+                </div>
+              </div>
+
+              <div class="card lav">
+                <div class="section-title">
+                  <h2>Catatan & agenda</h2>
+                  <div class="pill">Personal finance</div>
+                </div>
+                <p style="line-height:1.7;">
+                  Pinjam-meminjam, pengingat tagihan, dan target bulanan diposisikan sebagai
+                  blok pendamping, bukan mengganggu area transaksi inti.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="card peach">
+              <div class="section-title">
+                <h2>Analitik</h2>
+                <div class="pill">Lebih mudah dibaca</div>
+              </div>
+              <p style="margin-bottom:12px; line-height:1.7;">
+                Insight dipecah jadi kartu besar: total pemasukan, total pengeluaran, saving rate,
+                kategori terbesar, dan perbandingan periode. Tidak lagi terasa seperti daftar panjang.
+              </p>
+              <div class="btn-row">
+                <div class="chip active">Insight</div>
+                <div class="chip">Kategori</div>
+                <div class="chip">Wallet flow</div>
+                <div class="chip">Perbandingan</div>
+              </div>
+            </div>
+            <div class="card mint">
+              <div class="section-title">
+                <h2>Input pages</h2>
+                <div class="pill">Besar dan cepat</div>
+              </div>
+              <p style="line-height:1.7;">
+                Form `Pemasukan`, `Pengeluaran`, `Transfer`, `Scan Struk`, dan `Voice Input`
+                memakai CTA besar, field tinggi, dan chip kategori yang mudah disentuh di mobile.
+              </p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section style="margin-top:42px;">
+        <div class="section-title">
+          <h2>Mobile concept</h2>
+          <div class="pill">Bottom nav + FAB + large form controls</div>
+        </div>
+        <div class="mobile-wrap">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="topbar">
+                <div class="badge">CatatDuit</div>
+                <div class="pill">EB</div>
+              </div>
+              <div class="mini-card" style="background:#fff5b8;">
+                <div class="small-label">Saldo aktif</div>
+                <div class="money">Rp 4.23jt</div>
+                <p>Ready to use</p>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="mini-card" style="background:#dffff0;">
+                  <div class="small-label">Masuk</div>
+                  <strong>Rp 9.1jt</strong>
+                </div>
+                <div class="mini-card" style="background:#ffe5d6;">
+                  <div class="small-label">Keluar</div>
+                  <strong>Rp 237rb</strong>
+                </div>
+              </div>
+              <div class="mini-card">
+                <div class="small-label">Aksi cepat</div>
+                <div class="chip-row">
+                  <div class="chip active">+ Masuk</div>
+                  <div class="chip">- Keluar</div>
+                  <div class="chip">⇄ Transfer</div>
+                </div>
+              </div>
+              <div class="mini-card">
+                <div class="small-label">Transaksi terbaru</div>
+                <div class="transaction">
+                  <div class="icon">🍢</div>
+                  <div><strong>Taichan</strong><p>Makan di luar</p></div>
+                  <div class="amount neg">25k</div>
+                </div>
+                <div class="transaction">
+                  <div class="icon">💸</div>
+                  <div><strong>Pelunasan</strong><p>Piutang</p></div>
+                  <div class="amount pos">30k</div>
+                </div>
+              </div>
+              <div class="fab">+</div>
+              <div class="bottom-nav">
+                <div class="active">Home</div>
+                <div>Analitik</div>
+                <div>Wallet</div>
+                <div>Tools</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="topbar">
+                <div class="badge">Pengeluaran baru</div>
+                <div class="pill">3 langkah</div>
+              </div>
+              <div class="mini-card" style="background:#ffe5d6;">
+                <div class="small-label">Jumlah</div>
+                <div class="money">Rp 125.000</div>
+              </div>
+              <div class="chip-row">
+                <div class="chip">Pemasukan</div>
+                <div class="chip active">Pengeluaran</div>
+                <div class="chip">Transfer</div>
+              </div>
+              <div class="form-grid">
+                <div class="field">Dompet: My BCA</div>
+                <div class="field">Tanggal: Hari ini</div>
+                <div class="field">Catatan: makan siang tim</div>
+              </div>
+              <div class="mini-card">
+                <div class="small-label">Kategori</div>
+                <div class="chip-row">
+                  <div class="chip active">Makan di luar</div>
+                  <div class="chip">Belanja</div>
+                  <div class="chip">Tagihan</div>
+                  <div class="chip">Transportasi</div>
+                </div>
+              </div>
+              <div class="btn" style="text-align:center;">Simpan transaksi</div>
+              <div class="bottom-nav">
+                <div>Home</div>
+                <div>Analitik</div>
+                <div class="active">Tambah</div>
+                <div>Tools</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="topbar">
+                <div class="badge">Voice & Receipt Tools</div>
+                <div class="pill">AI quick capture</div>
+              </div>
+              <div class="mini-card" style="background:#dff4ff;">
+                <div class="small-label">Voice Input</div>
+                <div class="money" style="font-size:30px;">Tekan mic</div>
+                <p>"Tadi makan siang 35 ribu"</p>
+              </div>
+              <div class="mini-card" style="background:#dffff0;">
+                <div class="small-label">Scan Struk</div>
+                <p>Zona upload besar, status scan jelas, dan preview item sebelum simpan.</p>
+              </div>
+              <div class="mini-card">
+                <div class="small-label">AI result preview</div>
+                <div class="transaction">
+                  <div class="icon">🧾</div>
+                  <div><strong>Ayam geprek</strong><p>Makan di luar</p></div>
+                  <div class="amount neg">18k</div>
+                </div>
+                <div class="transaction">
+                  <div class="icon">🥤</div>
+                  <div><strong>Es teh</strong><p>Lainnya</p></div>
+                  <div class="amount neg">5k</div>
+                </div>
+              </div>
+              <div class="btn" style="text-align:center; background:var(--mint);">Konfirmasi hasil AI</div>
+              <div class="bottom-nav">
+                <div>Home</div>
+                <div>Analitik</div>
+                <div>Wallet</div>
+                <div class="active">Tools</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

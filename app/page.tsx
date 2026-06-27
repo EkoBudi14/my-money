@@ -11,6 +11,11 @@ import CurrencyCard from '@/components/CurrencyCard'
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
 import RecurringBillsList from '@/components/RecurringBillsList'
+import { BrutalCard } from '@/components/ui/brutal-card'
+import { BrutalButton } from '@/components/ui/brutal-button'
+import { BrutalInput } from '@/components/ui/brutal-input'
+import { BrutalChip } from '@/components/ui/brutal-chip'
+import { AppShell } from '@/components/layout/app-shell'
 import { Wallet, Transaction, Goal, Budget, Debt, CustomCategoryDef } from '@/types'
 import {
   Plus,
@@ -1790,15 +1795,15 @@ export default function MoneyManager() {
     <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
 
       {/* ============= DESKTOP TOP HEADER ============= */}
-      <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-8">
+      <div className="hidden md:flex items-center justify-between w-full h-[90px] shrink-0 border-b-[3px] border-[var(--neo-ink)] bg-[var(--bg-card)] px-8 shadow-[0_4px_0_#141414]">
         <div className="flex items-center gap-4">
-          <h2 className="font-bold text-2xl text-[var(--text-primary)]">CatatDuit</h2>
+          <h2 className="font-black tracking-tighter text-3xl text-[var(--text-primary)]">CatatDuit</h2>
         </div>
         <div className="flex items-center gap-3 pl-3">
           <div className="text-right">
-            <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
+            <p className="font-black text-[var(--text-primary)] text-sm">Eko Budi</p>
           </div>
-          <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
+          <div className="w-11 h-11 bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-full flex items-center justify-center text-[var(--neo-ink)] font-black">
             EB
           </div>
         </div>
@@ -1808,19 +1813,19 @@ export default function MoneyManager() {
       <div className="md:hidden flex flex-col pb-[80px]">
 
         {/* Mobile Top Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border-default)]">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 bg-[var(--bg-card)] border-b-[3px] border-[var(--neo-ink)] shadow-[0_4px_0_#141414] mb-2">
           <div>
-            <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">CatatDuit</p>
-            <h1 className="font-bold text-xl text-[var(--text-primary)]">Hemat Yuk! 💪</h1>
+            <p className="neo-label">CatatDuit</p>
+            <h1 className="font-black text-2xl text-[var(--text-primary)] tracking-tighter uppercase">Hemat Yuk! 💪</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] active:scale-90 transition-all"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)] active:translate-y-0.5 active:shadow-[0_0_0_var(--neo-ink)] transition-all"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-5 h-5 font-black" />
             </button>
-            <div className="w-9 h-9 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <div className="w-10 h-10 bg-[var(--neo-peach)] rounded-full border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--neo-ink)] font-black text-sm">
               EB
             </div>
           </div>
@@ -1828,65 +1833,81 @@ export default function MoneyManager() {
 
         {/* Mobile Settings Panel */}
         {showSettings && (
-          <div className="mx-4 mt-3 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-lg border border-slate-100 dark:border-[var(--border-default)] p-4 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                Filter & Periode
-              </h3>
-              <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex bg-slate-100 dark:bg-[var(--bg-elevated)] p-1 rounded-xl mb-3">
-              <button onClick={() => setFilterMode('monthly')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Bulanan</button>
-              <button onClick={() => setFilterMode('custom')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Custom</button>
-            </div>
-            {filterMode === 'monthly' ? (
-              <div className="grid grid-cols-2 gap-2">
-                <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none">
-                  {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
-                </select>
-                <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none">
-                  {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+          <div className="mx-4 mt-3 animate-in fade-in zoom-in-95 duration-200">
+            <BrutalCard size="sm" tight>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-black text-[var(--text-primary)] text-base flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-[var(--neo-ink)]" />
+                  Filter & Periode
+                </h3>
+                <button onClick={() => setShowSettings(false)} className="text-[var(--text-muted)] hover:text-[var(--neo-ink)] transition-colors border-2 border-transparent hover:border-[var(--neo-ink)] hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-full p-1">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            ) : (
-              <div className="space-y-2">
-                <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] outline-none" />
-                <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full p-2 bg-slate-50 dark:bg-[var(--bg-input)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm text-[var(--text-primary)] outline-none" />
+              <div className="flex gap-2 mb-4">
+                <BrutalChip
+                  active={filterMode === 'monthly'}
+                  colorScheme="sky"
+                  onClick={() => setFilterMode('monthly')}
+                  className="flex-1 py-2 text-center"
+                >
+                  Bulanan
+                </BrutalChip>
+                <BrutalChip
+                  active={filterMode === 'custom'}
+                  colorScheme="mint"
+                  onClick={() => setFilterMode('custom')}
+                  className="flex-1 py-2 text-center"
+                >
+                  Custom
+                </BrutalChip>
               </div>
-            )}
-            <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-2 py-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors">Reset ke Bulan Ini</button>
+              {filterMode === 'monthly' ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <select value={currentDate.getMonth()} onChange={(e) => { const d = new Date(currentDate); d.setMonth(parseInt(e.target.value)); setCurrentDate(d); }} className="px-[18px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-sm font-black text-[var(--text-primary)] outline-none appearance-none">
+                    {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => <option key={i} value={i}>{m}</option>)}
+                  </select>
+                  <select value={currentDate.getFullYear()} onChange={(e) => { const d = new Date(currentDate); d.setFullYear(parseInt(e.target.value)); setCurrentDate(d); }} className="px-[18px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-sm font-black text-[var(--text-primary)] outline-none appearance-none">
+                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
+                  <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
+                </div>
+              )}
+              <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-4 brutal-btn !py-3 !bg-white">Reset ke Bulan Ini</button>
+            </BrutalCard>
           </div>
         )}
 
         {/* Mobile Hero Card */}
-        <div className="mx-4 mt-4 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#0E4BD9] p-5 shadow-lg shadow-blue-500/20 relative overflow-hidden">
+        <div className="mx-4 mt-4 brutal-card bg-[var(--neo-sky)] p-5 relative overflow-hidden">
           {/* Decorative circles */}
-          <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
-          <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
+          <div className="absolute -top-6 -right-6 w-28 h-28 bg-black/5 rounded-full" />
+          <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-black/5 rounded-full" />
 
           {/* Period Row */}
           <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <button onClick={prevMonth} disabled={filterMode === 'custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+            <div className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-3 py-1.5 rounded-full border-[2px] border-black shadow-[2px_2px_0_black]">
+              <button onClick={prevMonth} disabled={filterMode === 'custom'} className="text-black active:scale-90 transition-all disabled:opacity-40 font-bold">
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-white/90 text-xs font-semibold">{getPeriodLabel()}</span>
-              <button onClick={nextMonth} disabled={filterMode === 'custom'} className="text-white/80 active:scale-90 transition-all disabled:opacity-40">
+              <span className="text-black text-xs font-bold">{getPeriodLabel()}</span>
+              <button onClick={nextMonth} disabled={filterMode === 'custom'} className="text-black active:scale-90 transition-all disabled:opacity-40 font-bold">
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
-            <button onClick={() => setShowBalance(!showBalance)} className="text-white/70 active:scale-90 transition-all">
+            <button onClick={() => setShowBalance(!showBalance)} className="bg-white/40 p-1.5 rounded-full border-[2px] border-black shadow-[2px_2px_0_black] text-black active:scale-90 transition-all">
               {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
 
           {/* Total Balance */}
           <div className="mb-1 relative z-10">
-            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Total Semua Uang</p>
-            <p className="text-white font-bold text-3xl leading-tight">
+            <p className="neo-label !text-black/80 mb-1">Total Semua Uang</p>
+            <p className="neo-amount !text-black drop-shadow-sm">
               {showBalance
                 ? `Rp ${wallets.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
                 : 'Rp ••••••••'}
@@ -1895,30 +1916,30 @@ export default function MoneyManager() {
 
           {/* Income & Expense mini stats */}
           <div className="grid grid-cols-2 gap-3 mt-5 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <div className="bg-white/40 backdrop-blur-sm rounded-xl p-3 border-[2px] border-black shadow-[2px_2px_0_black]">
               <div className="flex items-center gap-1.5 mb-1">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
-                <p className="text-white/70 text-[10px] font-semibold">Pemasukan</p>
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
+                <p className="text-black/80 text-[10px] font-bold">Pemasukan</p>
               </div>
-              <p className="text-white font-bold text-sm">
+              <p className="text-black font-bold text-sm">
                 {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••'}
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <div className="bg-white/40 backdrop-blur-sm rounded-xl p-3 border-[2px] border-black shadow-[2px_2px_0_black]">
               <div className="flex items-center gap-1.5 mb-1">
-                <TrendingDown className="w-3.5 h-3.5 text-rose-300" />
-                <p className="text-white/70 text-[10px] font-semibold">Pengeluaran</p>
+                <TrendingDown className="w-4 h-4 text-rose-600" />
+                <p className="text-black/80 text-[10px] font-bold">Pengeluaran</p>
               </div>
-              <p className="text-white font-bold text-sm">Rp {currentExpense.toLocaleString('id-ID')}</p>
+              <p className="text-black font-bold text-sm">Rp {currentExpense.toLocaleString('id-ID')}</p>
             </div>
           </div>
         </div>
 
         {/* Mobile Quick Actions (Bento Box Style) */}
         <div className="px-4 mt-5">
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-4 border border-[var(--border-default)] shadow-sm">
+          <div className="brutal-card p-4 bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-4 px-1">
-              <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Aksi Cepat</p>
+              <p className="neo-label">Aksi Cepat</p>
               <div className="h-1 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-full"></div>
             </div>
             
@@ -1926,57 +1947,53 @@ export default function MoneyManager() {
               {/* Masuk */}
               <Link
                 href="/transaction?type=pemasukan"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
               >
                 <div className="relative mb-2">
-                  <div className="qa-glow bg-emerald-400"></div>
-                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-emerald-400 to-emerald-600 dark:from-emerald-500 dark:to-emerald-700 flex items-center justify-center shadow-md shadow-emerald-500/20">
-                    <TrendingUp className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="w-[52px] h-[52px] rounded-[18px] bg-emerald-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
+                    <TrendingUp className="w-6 h-6 text-black" />
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-[var(--text-primary)]">Masuk</span>
+                <span className="neo-label !text-[10px] !text-[var(--text-primary)] mt-1">Masuk</span>
               </Link>
               
               {/* Keluar */}
               <Link
                 href="/transaction?type=pengeluaran"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
               >
                 <div className="relative mb-2">
-                  <div className="qa-glow bg-rose-400"></div>
-                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-rose-400 to-rose-600 dark:from-rose-500 dark:to-rose-700 flex items-center justify-center shadow-md shadow-rose-500/20">
-                    <TrendingDown className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="w-[52px] h-[52px] rounded-[18px] bg-rose-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
+                    <TrendingDown className="w-6 h-6 text-black" />
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-[var(--text-primary)]">Keluar</span>
+                <span className="neo-label !text-[10px] !text-[var(--text-primary)] mt-1">Keluar</span>
               </Link>
               
               {/* Transfer */}
               <Link
                 href="/transaction?type=topup"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
               >
                 <div className="relative mb-2">
-                  <div className="qa-glow bg-blue-400"></div>
-                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/20">
-                    <WalletIcon className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="w-[52px] h-[52px] rounded-[18px] bg-blue-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
+                    <WalletIcon className="w-6 h-6 text-black" />
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-[var(--text-primary)]">Transfer</span>
+                <span className="neo-label !text-[10px] !text-[var(--text-primary)] mt-1">Transfer</span>
               </Link>
               
               {/* Anggaran */}
               <Link 
                 href="/budgets" 
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
               >
                 <div className="relative mb-2">
-                  <div className="qa-glow bg-purple-400"></div>
-                  <div className="qa-icon relative w-12 h-12 rounded-[14px] bg-gradient-to-br from-purple-400 to-purple-600 dark:from-purple-500 dark:to-purple-700 flex items-center justify-center shadow-md shadow-purple-500/20">
-                    <CreditCard className="w-6 h-6 text-white drop-shadow-sm" />
+                  <div className="w-[52px] h-[52px] rounded-[18px] bg-purple-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
+                    <CreditCard className="w-6 h-6 text-black" />
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-[var(--text-primary)]">Anggaran</span>
+                <span className="neo-label !text-[10px] !text-[var(--text-primary)] mt-1">Anggaran</span>
               </Link>
             </div>
           </div>
@@ -1985,19 +2002,19 @@ export default function MoneyManager() {
         {/* Mobile Stats Row */}
         <div className="px-4 mt-5 grid grid-cols-2 gap-3">
           {/* Saldo Aktif */}
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-4 border border-[var(--border-default)] shadow-sm">
+          <div className="brutal-card p-4 bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
                   <CreditCard className="w-4 h-4 text-[var(--primary)]" />
                 </div>
-                <p className="text-[11px] font-semibold text-[var(--text-secondary)]">Saldo Aktif</p>
+                <p className="neo-label">Saldo Aktif</p>
               </div>
               <button onClick={() => setShowActiveBalance(!showActiveBalance)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] active:scale-90 transition-all">
                 {showActiveBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="font-bold text-base text-[var(--text-primary)] leading-tight">
+            <p className="neo-amount !text-[20px] leading-tight">
               {showActiveBalance
                 ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}`
                 : 'Rp ••••••'}
@@ -2005,7 +2022,7 @@ export default function MoneyManager() {
             <p className="text-[10px] text-[var(--text-secondary)] mt-1">Siap digunakan</p>
           </div>
           {/* Pemasukan Bulan Ini */}
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-4 border border-[var(--border-default)] shadow-sm">
+          <div className="brutal-card p-4 bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
@@ -2033,7 +2050,7 @@ export default function MoneyManager() {
 
         {/* Mobile Debt Quick View */}
         {debts.some(d => d.status === 'pending') && (
-          <div className="mx-4 mt-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-2xl p-4 transition-all">
+          <div className="mx-4 mt-4 brutal-card bg-amber-50 dark:bg-amber-950/30 p-4 transition-all">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -2049,9 +2066,9 @@ export default function MoneyManager() {
             {showMobileDebtList && (
               <div className="mt-4 flex flex-col gap-2">
                 {debts.filter(d => d.status === 'pending').map(debt => (
-                  <div key={debt.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[var(--bg-card)] border border-amber-100 shadow-sm">
+                  <div key={debt.id} className="flex items-center justify-between p-3 brutal-card-sm bg-white dark:bg-[var(--bg-card)]">
                     <div>
-                      <p className="font-bold text-amber-900 text-sm">{debt.person_name}</p>
+                      <h3 className="font-black text-amber-900 uppercase tracking-tight">Ada Piutang Aktif</h3>
                       <p className="text-xs text-amber-700 font-semibold">Rp {debt.amount.toLocaleString('id-ID')}</p>
                     </div>
                     <button
@@ -2070,7 +2087,7 @@ export default function MoneyManager() {
         {/* Mobile Transaction History - All Transactions Scrollable */}
         <div className="mx-4 mt-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="font-bold text-[var(--text-primary)]">Riwayat Transaksi</p>
+            <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Riwayat Transaksi</h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportExcel}
@@ -2093,7 +2110,7 @@ export default function MoneyManager() {
               </Link>
             </div>
           </div>
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden max-h-[420px] overflow-y-auto custom-scrollbar">
+          <div className="brutal-card bg-[var(--bg-card)] overflow-hidden max-h-[420px] overflow-y-auto custom-scrollbar">
             {loading ? (
               <div className="flex items-center justify-center p-10">
                 <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
@@ -2154,7 +2171,7 @@ export default function MoneyManager() {
                       >
                         {deletingId === t.id ? (
                           <span className="flex items-center gap-1">
-                            <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
                           </span>
                         ) : 'Hapus'}
                       </button>
@@ -2168,7 +2185,7 @@ export default function MoneyManager() {
 
         {/* Mobile Note Preview */}
         {latestNote && (
-          <Link href="/notes" className="mx-4 mt-4 block rounded-2xl border border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-4 active:opacity-80 transition-all relative">
+          <Link href="/notes" className="mx-4 mt-4 block brutal-card border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-4 active:translate-y-1 transition-all relative">
             {noteCount > 1 && (
               <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-5 min-w-[20px] px-1 flex items-center justify-center rounded-full border-2 border-white dark:border-[var(--bg-page)] shadow-sm">
                 {noteCount > 99 ? '99+' : noteCount}
@@ -2185,7 +2202,7 @@ export default function MoneyManager() {
 
         {/* Mobile Chart - Arus Kas & Pertumbuhan */}
         <div className="mx-4 mt-5">
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm p-4">
+          <div className="brutal-card bg-[var(--bg-card)] p-4">
             <div className="mb-4">
               <h3 className="font-bold text-[var(--text-primary)]">Arus Kas & Pertumbuhan</h3>
               <p className="text-xs text-[var(--text-secondary)]">Analisis Perbandingan</p>
@@ -2196,7 +2213,7 @@ export default function MoneyManager() {
 
         {/* Mobile Tagihan Rutin */}
         <div className="mx-4 mt-4">
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
+          <div className="brutal-card bg-[var(--bg-card)] overflow-hidden">
             <div className="px-4 py-3 border-b border-[var(--border-default)]">
               <h3 className="font-bold text-[var(--text-primary)]">Tagihan Rutin</h3>
             </div>
@@ -2225,8 +2242,8 @@ export default function MoneyManager() {
         {/* Date Filter & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-[var(--text-primary)] text-2xl md:text-3xl font-bold mb-1">Hemat Yuk !!!</h1>
-            <p className="text-[var(--text-secondary)] text-sm">Financial metrics for {getPeriodLabel()}.</p>
+            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tighter mb-1 text-[var(--text-primary)]">Hemat Yuk !!!</h1>
+            <p className="neo-label">Financial metrics for {getPeriodLabel()}.</p>
           </div>
 
           <div className="flex items-center gap-3 bg-white dark:bg-[var(--bg-card)] p-1.5 rounded-full border border-[var(--border-default)] shadow-sm">
@@ -2263,103 +2280,105 @@ export default function MoneyManager() {
 
         {/* Settings / Filter Panel */}
         {showSettings && (
-          <div className="w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-slate-100 dark:border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                Filter & Periode
-              </h3>
-              <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 animate-in fade-in zoom-in-95 duration-200">
+            <div className="brutal-card bg-[var(--bg-card)] p-5 border-[3px] border-[var(--neo-ink)] shadow-[6px_6px_0_var(--neo-ink)]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-black text-[var(--text-primary)] text-base flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-[var(--neo-ink)]" />
+                  Filter & Periode
+                </h3>
+                <button onClick={() => setShowSettings(false)} className="text-[var(--text-muted)] hover:text-[var(--neo-ink)] transition-colors border-2 border-transparent hover:border-[var(--neo-ink)] hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-full p-1">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
 
-            {/* Mode Switcher */}
-            <div className="flex bg-slate-100 dark:bg-[var(--bg-hover)] p-1 rounded-xl mb-4">
-              <button
-                onClick={() => setFilterMode('monthly')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
-              >
-                Bulanan
-              </button>
-              <button
-                onClick={() => setFilterMode('custom')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
-              >
-                Custom
-              </button>
-            </div>
+              {/* Mode Switcher */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setFilterMode('monthly')}
+                  className={`flex-1 py-2 text-xs font-black uppercase rounded-lg border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] transition-all ${filterMode === 'monthly' ? 'bg-[var(--neo-sky)]' : 'bg-white'}`}
+                >
+                  Bulanan
+                </button>
+                <button
+                  onClick={() => setFilterMode('custom')}
+                  className={`flex-1 py-2 text-xs font-black uppercase rounded-lg border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] transition-all ${filterMode === 'custom' ? 'bg-[var(--neo-mint)]' : 'bg-white'}`}
+                >
+                  Custom
+                </button>
+              </div>
 
-            <div className="space-y-4">
-              {filterMode === 'monthly' ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Bulan</label>
-                    <select
-                      value={currentDate.getMonth()}
-                      onChange={(e) => {
-                        const newMonth = parseInt(e.target.value);
-                        const newDate = new Date(currentDate);
-                        newDate.setMonth(newMonth);
-                        setCurrentDate(newDate);
-                      }}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                    >
-                      {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
-                        <option key={i} value={i}>{m}</option>
-                      ))}
-                    </select>
+              <div className="space-y-4">
+                {filterMode === 'monthly' ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="neo-label mb-1.5 block">Bulan</label>
+                      <select
+                        value={currentDate.getMonth()}
+                        onChange={(e) => {
+                          const newMonth = parseInt(e.target.value);
+                          const newDate = new Date(currentDate);
+                          newDate.setMonth(newMonth);
+                          setCurrentDate(newDate);
+                        }}
+                        className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none appearance-none"
+                      >
+                        {['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((m, i) => (
+                          <option key={i} value={i}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="neo-label mb-1.5 block">Tahun</label>
+                      <select
+                        value={currentDate.getFullYear()}
+                        onChange={(e) => {
+                          const newYear = parseInt(e.target.value);
+                          const newDate = new Date(currentDate);
+                          newDate.setFullYear(newYear);
+                          setCurrentDate(newDate);
+                        }}
+                        className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none appearance-none"
+                      >
+                        {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Tahun</label>
-                    <select
-                      value={currentDate.getFullYear()}
-                      onChange={(e) => {
-                        const newYear = parseInt(e.target.value);
-                        const newDate = new Date(currentDate);
-                        newDate.setFullYear(newYear);
-                        setCurrentDate(newDate);
-                      }}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                    >
-                      {[2023, 2024, 2025, 2026, 2027, 2028].map((y) => (
-                        <option key={y} value={y}>{y}</option>
-                      ))}
-                    </select>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="neo-label mb-1.5 block">Dari Tanggal</label>
+                      <input
+                        type="date"
+                        value={customRange.start}
+                        onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
+                        className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="neo-label mb-1.5 block">Sampai Tanggal</label>
+                      <input
+                        type="date"
+                        value={customRange.end}
+                        onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
+                        className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none"
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Dari Tanggal</label>
-                    <input
-                      type="date"
-                      value={customRange.start}
-                      onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Sampai Tanggal</label>
-                    <input
-                      type="date"
-                      value={customRange.end}
-                      onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                    />
-                  </div>
-                </div>
-              )}
-              <button
-                onClick={() => {
-                  setFilterMode('monthly')
-                  setCurrentDate(new Date())
-                  setShowSettings(false)
-                }}
-                className="w-full py-2 text-xs font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors"
-              >
-                Reset ke Bulan Ini
-              </button>
+                )}
+                <button
+                  onClick={() => {
+                    setFilterMode('monthly')
+                    setCurrentDate(new Date())
+                    setShowSettings(false)
+                  }}
+                  className="w-full py-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-slate-50 transition-all font-black text-xs uppercase"
+                >
+                  Reset ke Bulan Ini
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -2367,13 +2386,13 @@ export default function MoneyManager() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Card 1: Total Tabungan (Revenue style) */}
-          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col brutal-card p-6 gap-3 bg-[var(--bg-card)] hover:-translate-y-1 transition-transform duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#30B22D]/10 rounded-xl flex items-center justify-center shrink-0">
                   <WalletIcon className="size-6 text-[#30B22D]" />
                 </div>
-                <p className="font-medium text-[var(--text-secondary)]">Total Semua Uang</p>
+                <p className="neo-label">Total Semua Uang</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -2392,7 +2411,7 @@ export default function MoneyManager() {
                   <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showTotalTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                     }`}>
                     <p>Total saldo dari semua dompet bertipe <span className="text-emerald-400 font-bold">Tabungan</span>.</p>
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                    <div className="mt-2 pt-2 border-t-2 border-slate-700/50">
                       <p className="text-slate-300">Uang yang disimpan dan tidak untuk pengeluaran harian.</p>
                     </div>
                     {/* Arrow up */}
@@ -2401,7 +2420,7 @@ export default function MoneyManager() {
                 </div>
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
+            <p className="neo-amount">
               {showBalance ? `Rp ${wallets.filter(w => w.category === 'savings').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
@@ -2413,13 +2432,13 @@ export default function MoneyManager() {
           </div>
 
           {/* Card 2: Saldo Aktif (Shipments style) */}
-          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col brutal-card p-6 gap-3 bg-[var(--bg-card)] hover:-translate-y-1 transition-transform duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[var(--primary)]/10 rounded-xl flex items-center justify-center shrink-0">
                   <CreditCard className="size-6 text-[var(--primary)]" />
                 </div>
-                <p className="font-medium text-[var(--text-secondary)]">Saldo Aktif</p>
+                <p className="neo-label">Saldo Aktif</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -2438,7 +2457,7 @@ export default function MoneyManager() {
                   <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showActiveTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                     }`}>
                     <p>Total sisa saldo dari dompet bertipe <span className="text-[var(--primary)] font-bold">Aktif</span>.</p>
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                    <div className="mt-2 pt-2 border-t-2 border-slate-700/50">
                       <p className="text-slate-300">Uang yang siap digunakan untuk transaksi sehari-hari.</p>
                     </div>
                     {/* Arrow up */}
@@ -2447,7 +2466,7 @@ export default function MoneyManager() {
                 </div>
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
+            <p className="neo-amount">
               {showActiveBalance ? `Rp ${wallets.filter(w => w.category === 'active').reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
@@ -2459,13 +2478,13 @@ export default function MoneyManager() {
           </div>
 
           {/* Card 3: Pemasukan (On-Time Rate style) */}
-          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col brutal-card p-6 gap-3 bg-[var(--bg-card)] hover:-translate-y-1 transition-transform duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#FED71F]/10 rounded-xl flex items-center justify-center shrink-0">
                   <TrendingUp className="size-6 text-[#DAA200]" />
                 </div>
-                <p className="font-medium text-[var(--text-secondary)]">Pemasukan</p>
+                <p className="neo-label">Pemasukan</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -2484,7 +2503,7 @@ export default function MoneyManager() {
                   <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                     }`}>
                     <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada bulan ini.</p>
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                    <div className="mt-2 pt-2 border-t-2 border-slate-700/50">
                       <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> tidak dihitung sebagai pemasukan.</p>
                     </div>
                     {/* Arrow up */}
@@ -2498,7 +2517,7 @@ export default function MoneyManager() {
                 )}
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
+            <p className="neo-amount">
               {showIncome ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
             </p>
             <div className="flex justify-between items-center">
@@ -2510,13 +2529,13 @@ export default function MoneyManager() {
           </div>
 
           {/* Card 4: Pengeluaran (Active Fleet style) */}
-          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] p-6 gap-3 bg-white dark:bg-[var(--bg-card)] hover:shadow-sm transition-all duration-300 group">
+          <div className="flex flex-col brutal-card p-6 gap-3 bg-[var(--bg-card)] hover:-translate-y-1 transition-transform duration-300 group">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[6px]">
                 <div className="size-11 bg-[#ED6B60]/10 rounded-xl flex items-center justify-center shrink-0">
                   <TrendingDown className="size-6 text-[#ED6B60]" />
                 </div>
-                <p className="font-medium text-[var(--text-secondary)]">Pengeluaran</p>
+                <p className="neo-label">Pengeluaran</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -2535,7 +2554,7 @@ export default function MoneyManager() {
                   <div className={`absolute right-0 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                     }`}>
                     <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada bulan ini.</p>
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
+                    <div className="mt-2 pt-2 border-t-2 border-slate-700/50">
                       <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> tidak dihitung sebagai pengeluaran.</p>
                     </div>
                     {/* Arrow up */}
@@ -2549,7 +2568,7 @@ export default function MoneyManager() {
                 )}
               </div>
             </div>
-            <p className="font-bold text-[28px] leading-10 text-[var(--text-primary)]">
+            <p className="neo-amount">
               Rp {currentExpense.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-[var(--text-secondary)]">Bulan ini</p>
@@ -2558,7 +2577,7 @@ export default function MoneyManager() {
 
         {/* Note (Mobile Only - After Stats, Before Chart) */}
         {latestNote && (
-          <Link href="/notes" className="block lg:hidden rounded-2xl border border-[#FED71F] bg-[#FEF9C3] p-5 hover:shadow-md transition-all cursor-pointer relative">
+          <Link href="/notes" className="block lg:hidden brutal-card border-[#FED71F] bg-[#FEF9C3] p-5 hover:-translate-y-1 transition-transform cursor-pointer relative">
             {noteCount > 1 && (
               <div className="absolute -top-2 -right-2 bg-rose-50 dark:bg-rose-950/300 !text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-rose-200">
                 {noteCount > 99 ? '99+' : noteCount}
@@ -2581,10 +2600,10 @@ export default function MoneyManager() {
 
         {/* Charts & Bills */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col rounded-2xl border border-[var(--border-default)] p-6 bg-white dark:bg-[var(--bg-card)]">
+          <div className="lg:col-span-2 flex flex-col brutal-card p-6 bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-bold text-lg text-[var(--text-primary)]">Arus Kas & Pertumbuhan</h3>
+                <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Arus Kas & Pertumbuhan</h3>
                 <p className="text-sm text-[var(--text-secondary)]">Analisis Perbandingan</p>
               </div>
             </div>
@@ -2596,9 +2615,9 @@ export default function MoneyManager() {
 
           <div className="flex flex-col gap-6">
             {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
-            <div className="rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] overflow-hidden">
+            <div className="brutal-card bg-[var(--bg-card)] overflow-hidden">
               <div className="p-5 border-b border-[var(--border-default)]">
-                <h3 className="font-bold text-[var(--text-primary)]">Tagihan Rutin</h3>
+                <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Tagihan Rutin</h3>
               </div>
               <div className="p-2">
                 <RecurringBillsList refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
@@ -2607,7 +2626,7 @@ export default function MoneyManager() {
 
             {/* Note (Desktop Only - Below Tagihan Rutin) */}
             {latestNote && (
-              <Link href="/notes" className="hidden lg:block rounded-2xl border border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-5 hover:shadow-md transition-all cursor-pointer relative">
+              <Link href="/notes" className="hidden lg:block brutal-card border-[#FED71F] dark:border-amber-700/50 bg-[#FEF9C3] dark:bg-amber-950/30 p-5 hover:-translate-y-1 transition-transform cursor-pointer relative">
                 {noteCount > 1 && (
                   <div className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold h-6 min-w-[24px] px-1 flex items-center justify-center rounded-full border-2 border-white dark:border-[var(--bg-card)] shadow-sm ring-1 ring-rose-200 dark:ring-rose-800">
                     {noteCount > 99 ? '99+' : noteCount}
@@ -2626,16 +2645,16 @@ export default function MoneyManager() {
 
         {/* Debts Section */}
         {debts.some(d => d.status === 'pending') && (
-          <div className="rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] p-6">
+          <div className="brutal-card bg-[var(--bg-card)] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-[var(--text-primary)]">Daftar Piutang</h3>
+              <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Daftar Piutang</h3>
               <span className="bg-[#FED71F]/20 text-[#B45309] text-xs font-bold px-3 py-1 rounded-full">
                 {debts.filter(d => d.status === 'pending').length} Active
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {debts.filter(d => d.status === 'pending').map(debt => (
-                <div key={debt.id} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border-default)] bg-[#F9FAFB] dark:bg-[var(--bg-page)]">
+                <div key={debt.id} className="flex items-center justify-between p-4 brutal-card-sm bg-[#F9FAFB] dark:bg-[var(--bg-page)]">
                   <div>
                     <p className="font-bold text-[var(--text-primary)]">{debt.person_name}</p>
                     <p className="text-xs text-[var(--text-secondary)]">Rp {debt.amount.toLocaleString('id-ID')}</p>
@@ -2655,9 +2674,9 @@ export default function MoneyManager() {
         {/* Transactions & Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Transactions List (Top Routes style) */}
-          <div className="flex flex-col rounded-2xl border border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] overflow-hidden">
+          <div className="flex flex-col brutal-card bg-[var(--bg-card)] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-[var(--border-default)]">
-              <h3 className="font-bold text-lg text-[var(--text-primary)]">Riwayat Transaksi</h3>
+              <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Riwayat Transaksi</h3>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleExportExcel}
@@ -2684,12 +2703,9 @@ export default function MoneyManager() {
               ) : (
                 filteredTransactions.map(t => {
                   const { Icon, color } = getCategoryIcon(t.category, t.type)
-                  // Strip utility classes from color string and map to style if needed, or just use as is if compatible
-                  // The original logic returns tailwind classes like 'bg-orange-100 text-orange-600'
-                  // We might want to adjust these to be softer/SwiftLog style if possible, but let's keep for functionality
                   return (
-                    <div key={t.id} className="flex items-center gap-4 p-5 border-b border-[var(--border-default)] hover:bg-[#F9FAFB] dark:hover:bg-[var(--bg-hover)] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                    <div key={t.id} className="flex items-center gap-4 py-[14px] px-6 border-t-2 border-dashed border-[#141414]/20 hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-all group cursor-pointer" onClick={() => handleEditClick(t)}>
+                      <div className={`w-[48px] h-[48px] rounded-[16px] border-[3px] border-[var(--neo-ink)] flex items-center justify-center shrink-0 bg-white ${color}`}>
                         <Icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -2729,10 +2745,10 @@ export default function MoneyManager() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-bold ${t.type === 'topup' ? 'text-blue-600' :
+                        <p className={`text-base font-black tracking-tight ${t.type === 'topup' ? 'text-blue-600' :
                           t.type === 'pemasukan'
-                            ? (t.is_piutang ? 'text-amber-500' : 'text-[#30B22D]')
-                            : (t.is_talangan ? 'text-purple-500' : 'text-[var(--text-primary)]')
+                            ? (t.is_piutang ? 'text-amber-500' : 'text-[#0f7b3b]')
+                            : (t.is_talangan ? 'text-purple-500' : 'text-[#b42318]')
                           }`}>
                           {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                         </p>
@@ -2743,7 +2759,7 @@ export default function MoneyManager() {
                         >
                           {deletingId === t.id ? (
                             <span className="flex items-center gap-1">
-                              <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-3 h-3 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
                               Hapus...
                             </span>
                           ) : 'Hapus'}
@@ -2777,57 +2793,52 @@ export default function MoneyManager() {
           resetForm()
           setIsModalOpen(true)
         }}
-        className="hidden md:flex fixed bottom-10 right-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white p-4 rounded-full shadow-premium-lg hover:shadow-purple-500/50 transition-all active:scale-90 hover:scale-110 z-40"
+        className="hidden md:flex fixed bottom-10 right-10 bg-[var(--neo-mint)] text-[var(--neo-ink)] p-4 rounded-full border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--neo-ink)] transition-all active:translate-y-0 active:shadow-[0_0_0_var(--neo-ink)] z-40"
       >
-        <Plus className="w-8 h-8" />
+        <Plus className="w-8 h-8 font-black" />
       </button>
 
       {/* Add/Edit Transaction Overlay/Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={resetForm}
           ></div>
 
           {/* ===== MOBILE BOTTOM SHEET ===== */}
-          <div className="md:hidden w-full rounded-t-3xl bg-white dark:bg-[var(--bg-card)] shadow-2xl z-50 relative animate-in slide-in-from-bottom-10 fade-in duration-200 h-[92vh] flex flex-col overflow-hidden">
+          <div className="md:hidden w-full rounded-t-[32px] bg-[var(--bg-card)] border-t-[3px] border-x-[3px] border-[var(--neo-ink)] shadow-[0_-8px_0_#141414] z-50 relative animate-in slide-in-from-bottom-10 fade-in duration-200 h-[92vh] flex flex-col overflow-hidden">
             {/* Drag Handle */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+              <div className="w-12 h-1.5 bg-[var(--neo-ink)] rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 shrink-0">
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+            <div className="flex items-center justify-between px-5 py-3 shrink-0 border-b-2 border-[var(--neo-ink)]/10">
+              <h3 className="text-xl font-black uppercase text-[var(--text-primary)] tracking-tight">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
               </h3>
-              <button onClick={resetForm} className="p-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
+              <button onClick={resetForm} className="p-2 border-2 border-transparent hover:border-[var(--neo-ink)] rounded-full hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)] transition-all">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Type Tabs */}
-            <div className="px-5 shrink-0">
-              <div className="flex border-b border-[var(--border-default)]">
+            <div className="px-5 shrink-0 pt-3 pb-2">
+              <div className="flex gap-2 flex-wrap">
                 {[
-                  { key: 'pemasukan', label: 'Pemasukan' },
-                  { key: 'pengeluaran', label: 'Pengeluaran' },
-                  { key: 'topup', label: 'Topup' },
+                  { key: 'pemasukan', label: 'Pemasukan', color: 'mint' },
+                  { key: 'pengeluaran', label: 'Pengeluaran', color: 'peach' },
+                  { key: 'topup', label: 'Topup', color: 'lav' },
                 ].map(tab => (
-                  <button
+                  <BrutalChip
                     key={tab.key}
-                    type="button"
+                    active={type === tab.key}
+                    colorScheme={tab.color as any}
                     onClick={() => { setType(tab.key as 'pemasukan' | 'pengeluaran' | 'topup'); setCategory(tab.key === 'topup' ? 'Topup' : ''); }}
-                    className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
-                      ? tab.key === 'pemasukan' ? 'border-[var(--primary)] text-[var(--primary)]'
-                        : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-500'
-                          : 'border-violet-600 text-violet-600'
-                      : 'border-transparent text-slate-400 dark:text-slate-500'
-                      }`}
                   >
                     {tab.label}
-                  </button>
+                  </BrutalChip>
                 ))}
               </div>
             </div>
@@ -2838,10 +2849,10 @@ export default function MoneyManager() {
               {/* Topup: Source → Destination (before amount card) */}
               {type === 'topup' && (
                 <div className="mx-4 mt-4 flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                    <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Sumber Dana</p>
+                  <BrutalCard colorScheme="sky" size="sm" tight className="flex-1">
+                    <p className="neo-label mb-1">Sumber Dana</p>
                     <select
-                      className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none"
+                      className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                       value={sourceWalletId}
                       onChange={(e) => setSourceWalletId(e.target.value)}
                       required
@@ -2849,14 +2860,14 @@ export default function MoneyManager() {
                       <option value="" disabled>Pilih Sumber</option>
                       {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
                     </select>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
+                  </BrutalCard>
+                  <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </div>
-                  <div className="flex-1 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/30 rounded-xl p-3">
-                    <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
+                  <BrutalCard colorScheme="lav" size="sm" tight className="flex-1">
+                    <p className="neo-label mb-1">Tujuan Topup</p>
                     <select
-                      className="w-full bg-transparent outline-none font-semibold text-violet-800 text-sm appearance-none"
+                      className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                       value={selectedWalletId}
                       onChange={(e) => setSelectedWalletId(e.target.value)}
                       required
@@ -2864,28 +2875,26 @@ export default function MoneyManager() {
                       <option value="" disabled>Pilih Tujuan</option>
                       {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
                     </select>
-                  </div>
+                  </BrutalCard>
                 </div>
               )}
 
               {/* Amount Display */}
-              <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
-                type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-                  'bg-gradient-to-br from-violet-600 to-purple-700'
+              <div className={`mx-4 mt-4 brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
+                type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
+                  'bg-[var(--neo-lav)]'
                 }`}>
-                <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
-                <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
+                <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
                 {/* Visible amount input — transparent on gradient */}
                 <div className="relative z-10 mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-extrabold text-3xl shrink-0">Rp</span>
+                    <span className="text-[var(--text-primary)] font-black text-4xl shrink-0">Rp</span>
                     <input
                       id="mobile-amount-input"
                       type="text"
                       inputMode="numeric"
                       placeholder="0"
-                      className="flex-1 bg-transparent border-none outline-none text-white font-extrabold text-3xl placeholder:text-white/30 min-w-0"
+                      className="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] font-black text-4xl placeholder:text-[var(--text-primary)]/30 min-w-0"
                       value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, '')
@@ -2901,13 +2910,13 @@ export default function MoneyManager() {
                       const raw = amount.replace(/\D/g, '')
                       if (!raw) { setAmount('1000') } else { setAmount(raw + '000') }
                     }}
-                    className="mt-2 px-3 py-1 bg-white/20 hover:bg-white  text-white font-bold text-sm rounded-lg active:scale-95 transition-all"
+                    className="mt-3 px-3 py-1.5 brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all"
                   >
                     +000
                   </button>
                 </div>
                 {/* Quick Amount Buttons — contextual per type */}
-                <div className="flex gap-2 flex-wrap mt-3 relative z-10">
+                <div className="flex gap-2 flex-wrap mt-4 relative z-10">
                   {(type === 'pengeluaran'
                     ? [10000, 50000, 100000, 500000]
                     : [50000, 100000, 500000, 1000000]
@@ -2916,7 +2925,7 @@ export default function MoneyManager() {
                       key={val}
                       type="button"
                       onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))}
-                      className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white  active:scale-95 transition-all"
+                      className="brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all"
                     >
                       +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                     </button>
@@ -2928,20 +2937,20 @@ export default function MoneyManager() {
                 {/* Date & Wallet */}
                 {type !== 'topup' ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tanggal</label>
+                    <BrutalCard size="sm" tight>
+                      <p className="neo-label mb-1">Tanggal</p>
                       <input
                         type="date"
-                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all"
+                        className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
                         required
                       />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Dompet</label>
+                    </BrutalCard>
+                    <BrutalCard size="sm" tight>
+                      <p className="neo-label mb-1">Dompet</p>
                       <select
-                        className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all appearance-none"
+                        className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                         value={selectedWalletId}
                         onChange={(e) => setSelectedWalletId(e.target.value)}
                         required
@@ -2951,93 +2960,90 @@ export default function MoneyManager() {
                           <option key={w.id} value={w.id}>{w.name}</option>
                         ))}
                       </select>
-                    </div>
+                    </BrutalCard>
                   </div>
                 ) : (
                   /* Topup-specific: Biaya Admin + Summary + Date */
                   <div className="space-y-3">
-                    {/* Biaya Admin compact row */}
-                    <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-4">
+                    <BrutalCard size="sm" tight>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-bold text-sm text-[var(--text-primary)]">Biaya Admin</p>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Optional — Isi jika ada potongan</p>
+                          <p className="neo-label">Biaya Admin</p>
+                          <p className="neo-label mt-1">Optional — Isi jika ada potongan</p>
                         </div>
                         <input
                           type="text"
                           inputMode="numeric"
                           placeholder="0"
-                          className="w-28 text-right bg-slate-100 dark:bg-[var(--bg-hover)] border border-slate-200 dark:border-[var(--border-default)] rounded-lg px-3 py-1.5 font-bold text-base text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
+                          className="w-28 text-right bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] px-3 py-1.5 font-black text-base text-[var(--text-primary)] focus:outline-none"
                           value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                           onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
                         />
                       </div>
-                    </div>
+                    </BrutalCard>
 
-                    {/* Summary rows */}
-                    <div className="bg-white dark:bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl px-4 py-3 space-y-2">
+                    <BrutalCard size="sm" tight className="space-y-2">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Nominal topup</span>
-                        <span className="font-semibold text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
+                        <span className="neo-label">Nominal topup</span>
+                        <span className="font-black text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Biaya admin</span>
-                        <span className="font-semibold text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
+                        <span className="neo-label">Biaya admin</span>
+                        <span className="font-black text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
                       </div>
-                      <div className="border-t border-[var(--border-default)] pt-2 flex justify-between items-center text-sm">
-                        <span className="font-bold text-violet-700">Total keluar</span>
-                        <span className="font-bold text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span>
+                      <div className="border-t-2 border-[var(--neo-ink)] pt-2 flex justify-between items-center text-sm">
+                        <span className="font-black text-violet-700">Total keluar</span>
+                        <span className="font-black text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span>
                       </div>
-                    </div>
+                    </BrutalCard>
 
-                    {/* Date - full width */}
-                    <div>
-                      <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tanggal</label>
-                      <input type="date" className="w-full px-3 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
-                    </div>
+                    <BrutalCard size="sm" tight>
+                      <p className="neo-label mb-1">Tanggal</p>
+                      <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                    </BrutalCard>
                   </div>
                 )}
 
                 {/* Piutang Toggle */}
                 {type === 'pemasukan' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
                     <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                       <div className="flex items-center gap-3">
-                        <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500'}`}>💸 Ini adalah Piutang?</span>
-                        <p className={`text-[11px] ${isPiutang ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>Tandai jika uang akan dikembalikan</p>
+                        <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
+                        <p className={`neo-label mt-1 ${isPiutang ? '!text-[var(--neo-ink)]/70' : '!text-[var(--text-muted)]'}`}>Tandai jika uang akan dikembalikan</p>
                       </div>
                       {/* Toggle switch */}
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isPiutang && (
-                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
                     )}
                   </div>
                 )}
 
                 {/* Split Bill Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
                     <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
-                      <span className={`text-sm font-bold ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>Ada yang nitip bayar? (Split Bill)</span>
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-[var(--primary)]' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isSplitBill && (
-                      <div className="space-y-3 mt-3 animate-in slide-in-from-top-2 duration-200">
+                      <div className="space-y-3 mt-3">
                         {splitEntries.map((entry, idx) => (
                           <div key={idx} className="flex gap-2 items-start">
                             <div className="flex-1 grid grid-cols-2 gap-2">
-                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
-                              <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n); }} className="!text-sm !p-3" />
+                              <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n); }} />
+                              <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n); }} className="!text-[14px] !px-[18px] !py-[14px] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] font-[800] text-[var(--neo-ink)] bg-white" />
                             </div>
-                            {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                            {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"><Trash2 className="w-4 h-4" /></button>}
                           </div>
                         ))}
-                        <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1"><Plus className="w-3 h-3" /> Tambah Orang Lain</button>
+                        <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-black text-[var(--neo-ink)] flex items-center gap-1 mt-2 p-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px]"><Plus className="w-3 h-3" /> Tambah Orang Lain</button>
                       </div>
                     )}
                   </div>
@@ -3045,15 +3051,15 @@ export default function MoneyManager() {
 
                 {/* Talangan Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
                     <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
-                      <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500'}`}>🤝 Ini Talangan?</span>
-                      <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-purple-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                        <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                      <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>🤝 Ini Talangan?</span>
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
                     </div>
                     {isTalangan && (
-                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                      <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
                     )}
                   </div>
                 )}
@@ -3062,10 +3068,10 @@ export default function MoneyManager() {
                 {type !== 'topup' && (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Kategori <span className="text-rose-500">*</span></label>
-                      <span className="text-[10px] text-[var(--primary)] font-bold">Wajib dipilih</span>
+                      <label className="neo-label">Kategori <span className="text-rose-500">*</span></label>
+                      <span className="neo-label !text-[var(--primary)]">Wajib dipilih</span>
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-4 gap-2.5">
                       {[
                         ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
                         ...(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).map(c => {
@@ -3079,43 +3085,43 @@ export default function MoneyManager() {
                             key={cat.name}
                             type="button"
                             onClick={() => setCategory(cat.name)}
-                            className={`flex flex-col items-center justify-center p-2.5 rounded-2xl transition-all border-2 ${isSelected ? 'border-[var(--primary)] bg-blue-50 dark:bg-blue-950/30' : 'border-transparent bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
+                            className="flex flex-col items-center justify-center group"
                           >
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1.5 ${cat.color}`}>
-                              <cat.icon className="w-5 h-5" />
+                            <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
+                              <cat.icon className="w-6 h-6 stroke-[2.5px]" />
                             </div>
-                            <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>{cat.name}</span>
+                            <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>{cat.name}</span>
                           </button>
                         )
                       })}
-                      <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[var(--primary)] transition-all">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500">
-                          <Plus className="w-5 h-5" />
+                      <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group">
+                        <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
+                          <Plus className="w-6 h-6 stroke-[3px]" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Custom</span>
+                        <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
                       </button>
                     </div>
                     {showAddCategory && (
-                      <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] animate-in slide-in-from-top-2 duration-200">
+                      <BrutalCard className="mt-4 animate-in slide-in-from-top-2 duration-200">
                         <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
-                          <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
+                          <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
+                          <button type="button" onClick={resetCategoryForm} className="text-[var(--text-muted)] hover:text-[var(--neo-ink)] transition-colors"><X className="w-5 h-5 border-2 border-transparent hover:border-[var(--neo-ink)] rounded-full hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)]" /></button>
                         </div>
                         {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                           <div className="mb-6 space-y-2">
-                            <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                            <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
                             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                               {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                                 const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                                 return (
-                                  <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
+                                  <div key={idx} className="flex flex-row items-center justify-between bg-[var(--bg-card)] p-2.5 border-[3px] border-[var(--neo-ink)] rounded-[14px]">
                                     <div className="flex items-center gap-3">
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{name}</span>
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-[var(--neo-ink)] ${isStr ? 'bg-[var(--bg-elevated)] text-[var(--text-muted)]' : c.color}`}><Ico className="w-4 h-4" /></div>
+                                      <span className="text-sm font-black text-[var(--text-primary)] px-1">{name}</span>
                                     </div>
-                                    <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
-                                      <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                      <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <div className="flex items-center border-l-[3px] border-[var(--neo-ink)] pl-2 ml-2">
+                                      <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] hover:bg-[var(--neo-sky)] border-2 border-transparent hover:border-[var(--neo-ink)] rounded-[10px] transition-colors"><Pencil className="w-4 h-4" /></button>
+                                      <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] rounded-[10px] transition-colors"><Trash2 className="w-4 h-4" /></button>
                                     </div>
                                   </div>
                                 )
@@ -3123,78 +3129,59 @@ export default function MoneyManager() {
                             </div>
                           </div>
                         )}
-                        <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
-                          <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                        <div className="space-y-4 border-t-[3px] border-[var(--neo-ink)] pt-4">
+                          <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-sm focus:outline-none font-[800] text-[var(--text-primary)]" />
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
+                            <label className="neo-label mb-2 block">Pilih Icon</label>
                             <div className="grid grid-cols-7 gap-2">
-                              {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}><Ico className="w-5 h-5" /></button>) })}
+                              {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[14px] border-2 transition-all ${isSel ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-[var(--neo-ink)]/20 bg-[var(--bg-card)] hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)]'}`}><Ico className="w-5 h-5" /></button>) })}
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
+                            <label className="neo-label mb-2 block">Pilih Warna</label>
                             <div className="grid grid-cols-6 gap-2">
-                              {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
+                              {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-[14px] flex items-center justify-center transition-all border-2 ${isSel ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
                             </div>
                           </div>
-                          <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                          <div className="pt-2">
+                            <button type="button" onClick={handleSaveCustomCategory} className="w-full brutal-btn !py-3 !bg-[var(--neo-sky)]">Simpan Kategori</button>
+                          </div>
                         </div>
-                      </div>
+                      </BrutalCard>
                     )}
                   </div>
                 )}
 
                 {/* Budget Indicator */}
                 {budgetInfo && (
-                  <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                  <BrutalCard size="sm" tight className={budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                      <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>
+                      <span className="neo-label">Budget {budgetInfo.budget.category}</span>
+                      <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>
                         {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-end mb-2">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-slate-400 dark:text-slate-500">Terpakai + Baru</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs text-slate-400 dark:text-slate-500">Total Budget</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
-                      </div>
-                    </div>
-
-                    <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+                    <div className="w-full h-2 border-2 border-[var(--neo-ink)] rounded-full overflow-hidden mb-2 bg-[var(--bg-elevated)]">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`}
+                        className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`}
                         style={{ width: `${budgetInfo.percent}%` }}
                       />
                     </div>
-
-                    {budgetInfo.isOver ? (
-                      <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 dark:bg-rose-950/40 p-2 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 shrink-0" />
-                        <p>
-                          Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-2">
-                        Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
-                      </p>
-                    )}
-                  </div>
+                    <p className="text-xs text-center text-[var(--text-muted)]">
+                      Sisa: <strong className="text-[var(--text-primary)] font-black">Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
+                    </p>
+                  </BrutalCard>
                 )}
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 dark:text-slate-500 font-normal">(Opsional)</span></label>
+                  <label className="neo-label mb-1.5 block">Catatan <span className="font-normal">(Opsional)</span></label>
                   <input
                     type="text"
                     placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all font-medium text-base"
+                    className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] outline-none transition-all font-[800] text-[14px] text-[var(--text-primary)]"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
@@ -3204,140 +3191,132 @@ export default function MoneyManager() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-[#165DFF] to-[#0E4BD9] shadow-blue-500/30' :
-                    type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-700 shadow-rose-500/30' :
-                      'bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-500/30'
-                    } text-white`}
+                  className={`w-full brutal-btn !py-4 !text-base ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}
                 >
-                  {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                  {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : 'Simpan Transaksi')}
+                  {saving && <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin mr-2 inline-block align-middle" />}
+                  {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
                 </button>
               </div>
             </form>
           </div>
 
           {/* ===== DESKTOP MODAL ===== */}
-          <div className="hidden md:block glass backdrop-blur-2xl w-full max-w-lg rounded-3xl shadow-premium-lg border border-white/20 z-50 p-6 pb-10 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+          <div className="hidden md:block w-full max-w-lg rounded-3xl bg-white dark:bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_#141414] z-50 p-6 pb-10 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
+              <h3 className="text-xl font-black uppercase text-slate-800 dark:text-[var(--text-primary)]">
                 {editingId ? 'Edit Transaksi' : 'Tambah Transaksi'}
               </h3>
               <button
                 onClick={resetForm}
-                className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
+                className="p-2 border-2 border-transparent hover:border-[var(--neo-ink)] hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-full text-[var(--neo-ink)] transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSaveTransaction} className="space-y-6">
-
-              {/* Type Switcher */}
-              <div className="flex bg-slate-100 dark:bg-[var(--bg-hover)] p-1 rounded-2xl">
-                <button
-                  type="button"
-                  onClick={() => { setType('pemasukan'); setCategory(''); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pemasukan' ? 'bg-white dark:bg-[var(--bg-card)] text-emerald-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
-                >
-                  Pemasukan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setType('pengeluaran'); setCategory(''); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pengeluaran' ? 'bg-white dark:bg-[var(--bg-card)] text-rose-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
-                >
-                  Pengeluaran
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setType('topup'); setCategory('Topup'); }}
-                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'topup' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}
-                >
-                  Topup
-                </button>
+              {/* Type Tabs */}
+              <div className="flex gap-2">
+                {[
+                  { key: 'pemasukan', label: 'Pemasukan', color: 'mint' },
+                  { key: 'pengeluaran', label: 'Pengeluaran', color: 'peach' },
+                  { key: 'topup', label: 'Topup', color: 'lav' },
+                ].map(tab => (
+                  <BrutalChip
+                    key={tab.key}
+                    active={type === tab.key}
+                    colorScheme={tab.color as any}
+                    onClick={() => { setType(tab.key as 'pemasukan' | 'pengeluaran' | 'topup'); setCategory(tab.key === 'topup' ? 'Topup' : ''); }}
+                    className="flex-1 text-center py-3"
+                  >
+                    {tab.label}
+                  </BrutalChip>
+                ))}
               </div>
 
               {/* Date & Wallet Grid */}
               <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
-                <div className={type === 'topup' ? 'md:col-span-1' : ''}>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tanggal</label>
+                <BrutalCard size="sm" tight className={type === 'topup' ? 'md:col-span-1' : ''}>
+                  <p className="neo-label mb-1">Tanggal</p>
                   <input
                     type="date"
-                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                    className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}
                     required
                   />
-                </div>
+                </BrutalCard>
                 {type === 'topup' ? (
                   <>
-                    <div className="border border-slate-200 dark:border-[var(--border-default)] p-3 rounded-xl bg-slate-50 dark:bg-[var(--bg-elevated)] relative">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Sumber Dana</label>
+                    <BrutalCard size="sm" tight colorScheme="sky">
+                      <p className="neo-label mb-1">Sumber Dana</p>
                       <select
-                        className="w-full bg-transparent outline-none font-semibold text-slate-800 dark:text-[var(--text-primary)] text-sm"
+                        className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                         value={sourceWalletId}
                         onChange={(e) => setSourceWalletId(e.target.value)}
                         required
                       >
                         <option value="" disabled>Pilih Sumber</option>
                         {wallets.map(w => (
-                          <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                          <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>
                         ))}
                       </select>
-                    </div>
-                    <div className="border border-blue-200 dark:border-blue-800/30 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
+                    </BrutalCard>
+                    <BrutalCard size="sm" tight colorScheme="lav">
+                      <p className="neo-label mb-1">Tujuan Topup</p>
                       <select
-                        className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm"
+                        className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                         value={selectedWalletId}
                         onChange={(e) => setSelectedWalletId(e.target.value)}
                         required
                       >
                         <option value="" disabled>Pilih Tujuan</option>
                         {wallets.map(w => (
-                          <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                          <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>
                         ))}
                       </select>
-                    </div>
+                    </BrutalCard>
                   </>
                 ) : (
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Dompet</label>
+                  <BrutalCard size="sm" tight>
+                    <p className="neo-label mb-1">Dompet</p>
                     <select
-                      className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                      className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none"
                       value={selectedWalletId}
                       onChange={(e) => setSelectedWalletId(e.target.value)}
                       required
                     >
                       <option value="" disabled>Pilih Dompet</option>
                       {wallets.map(w => (
-                        <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
+                        <option key={w.id} value={w.id}>{w.name}</option>
                       ))}
                     </select>
-                  </div>
+                  </BrutalCard>
                 )}
               </div>
 
               {/* Amount Input */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="neo-label mb-2 block">
                     {type === 'topup' ? 'Nominal Topup (Rp)' : 'Jumlah (Rp)'}
                   </label>
                   <MoneyInput
                     value={amount}
                     onChange={setAmount}
                     autoFocus={!editingId}
+                    className="!px-[18px] !py-[14px] !bg-[var(--bg-input)] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]"
                   />
                 </div>
 
                 {type === 'topup' && (
-                  <div className="animate-in slide-in-from-top-2 duration-200">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Biaya Admin (Opsional)</label>
+                  <div>
+                    <label className="neo-label mb-2 block">Biaya Admin (Opsional)</label>
                     <MoneyInput
                       value={adminFee}
                       onChange={setAdminFee}
                       placeholder="0"
+                      className="!px-[18px] !py-[14px] !bg-[var(--bg-input)] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]"
                     />
                   </div>
                 )}
@@ -3345,34 +3324,33 @@ export default function MoneyManager() {
 
               {/* Piutang Toggle - hanya untuk Pemasukan */}
               {type === 'pemasukan' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
                   <div
                     onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isPiutang ? 'border-amber-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isPiutang && <div className="w-2.5 h-2.5 bg-amber-50 dark:bg-amber-950/300 rounded-full animate-in zoom-in duration-200" />}
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>
+                      <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>
                         💸 Ini adalah Piutang?
                       </span>
                     </div>
-                    {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
                   </div>
 
                   {isPiutang && (
-                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                    <div className="mt-4">
                       <input
                         type="text"
                         placeholder="Nama peminjam (Opsional)"
-                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium"
+                        className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]"
                         value={piutangPerson}
                         onChange={(e) => setPiutangPerson(e.target.value)}
                       />
-                      <p className="text-xs text-amber-600 mt-2 flex items-start gap-1.5">
+                      <p className="neo-label mt-2 flex items-start gap-1.5 !text-[var(--neo-ink)]/80">
                         <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                        Nominal akan masuk ke saldo dompet, tapi <strong>tidak dihitung</strong> sebagai pemasukan di statistik.
+                        Nominal akan masuk ke saldo dompet, tapi tidak dihitung sebagai pemasukan di statistik.
                       </p>
                     </div>
                   )}
@@ -3381,22 +3359,21 @@ export default function MoneyManager() {
 
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
                   <div
                     onClick={() => setIsSplitBill(!isSplitBill)}
                     className="flex items-center justify-between cursor-pointer group select-none mb-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[var(--primary)]' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isSplitBill && <div className="w-2.5 h-2.5 bg-[var(--primary)] rounded-full animate-in zoom-in duration-200" />}
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                      <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                     </div>
-                    {isSplitBill && <span className="text-[10px] uppercase font-bold text-[var(--primary)] bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-blue-100 dark:border-blue-800/30">Aktif</span>}
                   </div>
 
                   {isSplitBill && (
-                    <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-3 mt-3">
 
                       {splitEntries.map((entry, idx) => (
                         <div key={idx} className="flex gap-2 items-start">
@@ -3405,7 +3382,7 @@ export default function MoneyManager() {
                               <input
                                 type="text"
                                 placeholder={`Nama Teman #${idx + 1}`}
-                                className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]"
                                 value={entry.name}
                                 onChange={(e) => {
                                   const newEntries = [...splitEntries]
@@ -3423,7 +3400,7 @@ export default function MoneyManager() {
                                   newEntries[idx].amount = val
                                   setSplitEntries(newEntries)
                                 }}
-                                className="!text-sm !p-3"
+                                className="!px-[18px] !py-[14px] !bg-white !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--neo-ink)]"
                               />
                             </div>
                           </div>
@@ -3434,7 +3411,7 @@ export default function MoneyManager() {
                                 const newEntries = splitEntries.filter((_, i) => i !== idx)
                                 setSplitEntries(newEntries)
                               }}
-                              className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"
+                              className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -3471,34 +3448,33 @@ export default function MoneyManager() {
 
               {/* Talangan Toggle - hanya untuk Pengeluaran */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
                   <div
                     onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isTalangan ? 'border-purple-500' : 'border-slate-300 group-hover:border-slate-400'}`}>
-                        {isTalangan && <div className="w-2.5 h-2.5 bg-purple-50 dark:bg-purple-950/300 rounded-full animate-in zoom-in duration-200" />}
+                      <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                        <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
-                      <span className={`text-sm font-bold transition-colors ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500 group-hover:text-slate-800 dark:hover:text-[var(--text-primary)] dark:text-[var(--text-primary)]'}`}>
+                      <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>
                         🤝 Ini Talangan (bayarin orang lain)?
                       </span>
                     </div>
-                    {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">Aktif</span>}
                   </div>
 
                   {isTalangan && (
-                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                    <div className="mt-4">
                       <input
                         type="text"
                         placeholder="Nama orang yang ditalangin (Opsional)"
-                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium"
+                        className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]"
                         value={talanganPerson}
                         onChange={(e) => setTalanganPerson(e.target.value)}
                       />
-                      <p className="text-xs text-purple-600 mt-2 flex items-start gap-1.5">
+                      <p className="neo-label mt-2 flex items-start gap-1.5 !text-[var(--neo-ink)]/80">
                         <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                        Saldo dompet tetap berkurang, tapi <strong>tidak dihitung</strong> sebagai pengeluaran pribadi di statistik.
+                        Saldo dompet tetap berkurang, tapi tidak dihitung sebagai pengeluaran pribadi di statistik.
                       </p>
                     </div>
                   )}
@@ -3508,7 +3484,10 @@ export default function MoneyManager() {
 
               {type !== 'topup' && (
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="neo-label">Kategori <span className="text-rose-500">*</span></label>
+                    <span className="neo-label !text-[var(--primary)]">Wajib dipilih</span>
+                  </div>
                   <div className="grid grid-cols-4 gap-3">
                     {[
                       ...(CATEGORIES[type as 'pemasukan' | 'pengeluaran'].map(c => ({ ...c, isCustom: false, originalObj: null }))),
@@ -3523,53 +3502,53 @@ export default function MoneyManager() {
                           <button
                             type="button"
                             onClick={() => setCategory(cat.name)}
-                            className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : 'border-transparent hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
+                            className="w-full h-full flex flex-col items-center justify-center group"
                           >
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color}`}>
-                              <cat.icon className="w-5 h-5" />
+                            <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
+                              <cat.icon className="w-6 h-6 stroke-[2.5px]" />
                             </div>
-                            <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600 dark:text-slate-500'}`}>
+                            <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>
                               {cat.name}
                             </span>
                           </button>
                         </div>
                       )
                     })}
-                    <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500">
-                        <Plus className="w-5 h-5" />
+                    <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group">
+                      <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
+                        <Plus className="w-6 h-6 stroke-[3px]" />
                       </div>
-                      <span className="text-[10px] font-bold text-center leading-tight text-slate-500 dark:text-slate-400">Custom</span>
+                      <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
                     </button>
                   </div>
 
                   {showAddCategory && (
-                    <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] animate-in slide-in-from-top-2 duration-200">
+                    <BrutalCard className="mt-4 animate-in slide-in-from-top-2 duration-200">
                       <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
-                        <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
+                        <span className="font-black text-slate-700 dark:text-[var(--text-primary)]">Kelola Kategori Custom</span>
+                        <button type="button" onClick={resetCategoryForm} className="text-[var(--text-muted)] hover:text-[var(--neo-ink)] transition-colors"><X className="w-5 h-5 border-2 border-transparent hover:border-[var(--neo-ink)] rounded-full hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)]" /></button>
                       </div>
 
                       {/* Existing Custom Categories List */}
                       {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                         <div className="mb-6 space-y-2">
-                          <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                          <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
                           <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                             {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                               const isStr = typeof c === 'string'
                               const name = isStr ? c : c.name
                               const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                               return (
-                                <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
+                                <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border-[3px] border-[var(--neo-ink)] rounded-[14px]">
                                   <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-[var(--neo-ink)] ${isStr ? 'bg-[var(--bg-elevated)] text-slate-500' : c.color}`}>
                                       <Ico className="w-4 h-4" />
                                     </div>
-                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 px-1">{name}</span>
+                                    <span className="text-sm font-black text-[var(--text-primary)] px-1">{name}</span>
                                   </div>
-                                  <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
-                                    <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                    <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                  <div className="flex items-center border-l-[3px] border-[var(--neo-ink)] pl-2 ml-2">
+                                    <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] hover:bg-[var(--neo-sky)] border-2 border-transparent hover:border-[var(--neo-ink)] rounded-[10px] transition-colors"><Pencil className="w-4 h-4" /></button>
+                                    <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] rounded-[10px] transition-colors"><Trash2 className="w-4 h-4" /></button>
                                   </div>
                                 </div>
                               )
@@ -3578,21 +3557,21 @@ export default function MoneyManager() {
                         </div>
                       )}
 
-                      <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
-                        <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                      <div className="space-y-4 border-t-[3px] border-[var(--neo-ink)] pt-4">
+                        <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
                         {/* Name */}
                         <div>
-                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                          <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-sm focus:outline-none font-[800] text-[var(--text-primary)]" />
                         </div>
                         {/* Icon Picker */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
+                          <label className="neo-label mb-2 block">Pilih Icon</label>
                           <div className="grid grid-cols-7 gap-2">
                             {Object.keys(AVAILABLE_ICONS).map(iconKey => {
                               const Ico = AVAILABLE_ICONS[iconKey]
                               const isSelected = newCategoryIcon === iconKey
                               return (
-                                <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}>
+                                <button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[14px] border-2 transition-all ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-[var(--neo-ink)]/20 bg-white dark:bg-[var(--bg-card)] hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)]'}`}>
                                   <Ico className="w-5 h-5" />
                                 </button>
                               )
@@ -3601,12 +3580,12 @@ export default function MoneyManager() {
                         </div>
                         {/* Color Picker */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
+                          <label className="neo-label mb-2 block">Pilih Warna</label>
                           <div className="grid grid-cols-6 gap-2">
                             {COLOR_PALETTES.map((colorSet, idx) => {
                               const isSelected = newCategoryColor === colorSet
                               return (
-                                <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>
+                                <button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-[14px] flex items-center justify-center transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>
                                   {isSelected && <div className="w-3 h-3 bg-current rounded-full" />}
                                 </button>
                               )
@@ -3614,67 +3593,67 @@ export default function MoneyManager() {
                           </div>
                         </div>
                         {/* Actions */}
-                        <div className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[var(--border-default)]">
-                          <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                        <div className="pt-2">
+                          <button type="button" onClick={handleSaveCustomCategory} className="w-full brutal-btn !py-3 !bg-[var(--neo-sky)]">Simpan Kategori</button>
                         </div>
                       </div>
-                    </div>
+                    </BrutalCard>
                   )}
                 </div>
               )}
 
               {/* Budget Awareness Indicator */}
               {budgetInfo && (
-                <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+                <BrutalCard size="sm" tight className={budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                    <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>
+                    <span className="neo-label">Budget {budgetInfo.budget.category}</span>
+                    <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>
                       {budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-end mb-2">
                     <div className="flex flex-col">
-                      <span className="text-xs text-slate-400 dark:text-slate-500">Terpakai + Baru</span>
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
+                      <span className="neo-label !text-[var(--text-muted)] mt-0">Terpakai + Baru</span>
+                      <span className="font-black text-[var(--text-primary)]">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-xs text-slate-400 dark:text-slate-500">Total Budget</span>
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+                      <span className="neo-label !text-[var(--text-muted)] mt-0">Total Budget</span>
+                      <span className="font-black text-[var(--text-primary)]">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
                     </div>
                   </div>
 
-                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+                  <div className="w-full h-2 border-2 border-[var(--neo-ink)] bg-[var(--bg-elevated)] rounded-full overflow-hidden mb-2">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`}
+                      className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`}
                       style={{ width: `${budgetInfo.percent}%` }}
                     />
                   </div>
 
                   {budgetInfo.isOver ? (
-                    <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 dark:bg-rose-950/40 p-2 rounded-lg">
+                    <div className="flex items-start gap-2 text-rose-600 text-xs font-black mt-2 bg-rose-100 dark:bg-rose-950/40 border-2 border-rose-300 p-2 rounded-[10px]">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       <p>
                         Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-center text-slate-500 dark:text-slate-400">
-                      Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
+                    <p className="text-xs text-center text-[var(--text-muted)] font-black">
+                      Sisa budget: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong>
                     </p>
                   )}
-                </div>
+                </BrutalCard>
               )}
 
               {/* Title Input */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  Catatan <span className="text-slate-400 dark:text-slate-500 font-normal text-xs">(Opsional)</span>
+                <label className="neo-label mb-2 block">
+                  Catatan <span className="font-normal">(Opsional)</span>
                 </label>
                 <input
                   type="text"
                   placeholder={category ? `Contoh: ${category} Enak` : "Catatan Transaksi"}
-                  className="w-full p-4 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium"
+                  className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -3683,12 +3662,12 @@ export default function MoneyManager() {
               <button
                 type="submit"
                 disabled={saving}
-                className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full brutal-btn !py-4 !text-base ${saving ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}
               >
                 {saving && (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin mr-2 inline-block align-middle"></div>
                 )}
-                {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : 'Simpan Transaksi')}
+                {saving ? 'Menyimpan...' : (editingId ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
               </button>
             </form>
           </div>
@@ -3703,11 +3682,11 @@ export default function MoneyManager() {
             onClick={() => setShowWelcome(false)}
           ></div>
 
-          <div className="glass backdrop-blur-2xl w-full max-w-lg rounded-3xl shadow-premium-lg border border-white/20 z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
+          <div className="w-full max-w-lg rounded-[32px] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_#141414] bg-[var(--bg-card)] z-50 p-8 relative animate-in slide-in-from-bottom-10 fade-in zoom-in-95 duration-300">
             {/* Steps Indicator */}
             <div className="flex gap-2 mb-6 justify-center">
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200 dark:bg-slate-700'}`}></div>
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${welcomeStep === 2 ? 'w-8 bg-blue-600' : 'w-2 bg-slate-200 dark:bg-slate-700'}`}></div>
+              <div className={`h-2 rounded-full transition-all duration-300 ${welcomeStep === 1 ? 'w-10 bg-[var(--neo-ink)]' : 'w-3 bg-[var(--neo-ink)]/20'}`}></div>
+              <div className={`h-2 rounded-full transition-all duration-300 ${welcomeStep === 2 ? 'w-10 bg-[var(--neo-ink)]' : 'w-3 bg-[var(--neo-ink)]/20'}`}></div>
             </div>
 
             {welcomeStep === 1 ? (
@@ -3715,44 +3694,44 @@ export default function MoneyManager() {
               <div className="text-center">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
 
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">
+                <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] mb-2 tracking-tight">
                   Selamat Datang di My Money!
                 </h2>
-                <p className="text-slate-600 dark:text-slate-500 mb-6 text-sm">
+                <p className="text-[var(--text-muted)] font-bold mb-6 text-sm">
                   Kami sudah siapkan 2 dompet untuk transaksi harian Anda:
                 </p>
 
                 {/* Active Wallets Preview */}
-                <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-2xl p-4 mb-6 space-y-3 text-left">
-                  <div className="flex items-start gap-3 bg-white dark:bg-[var(--bg-card)] p-3 rounded-xl border border-slate-100 dark:border-[var(--border-default)] shadow-sm">
+                <div className="bg-[var(--neo-sky)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[20px] p-4 mb-6 space-y-3 text-left">
+                  <div className="flex items-start gap-3 bg-white p-3 rounded-[14px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="text-2xl mt-1">💵</div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
-                        <p className="font-bold text-slate-800 dark:text-[var(--text-primary)]">Tunai</p>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
+                        <p className="font-black text-[var(--neo-ink)]">Tunai</p>
+                        <span className="text-[10px] bg-[var(--neo-mint)] text-[var(--neo-ink)] border-2 border-[var(--neo-ink)] px-2 py-0.5 rounded-full font-black uppercase">Saldo Aktif</span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Untuk uang cash sehari-hari</p>
+                      <p className="text-xs font-bold text-[var(--text-muted)] mt-0.5">Untuk uang cash sehari-hari</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 bg-white dark:bg-[var(--bg-card)] p-3 rounded-xl border border-slate-100 dark:border-[var(--border-default)] shadow-sm">
+                  <div className="flex items-start gap-3 bg-white p-3 rounded-[14px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="text-2xl mt-1">🏦</div>
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
-                        <p className="font-bold text-slate-800 dark:text-[var(--text-primary)]">Rekening Bank</p>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Saldo Aktif</span>
+                        <p className="font-black text-[var(--neo-ink)]">Rekening Bank</p>
+                        <span className="text-[10px] bg-[var(--neo-mint)] text-[var(--neo-ink)] border-2 border-[var(--neo-ink)] px-2 py-0.5 rounded-full font-black uppercase">Saldo Aktif</span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Untuk transfer & belanja online</p>
+                      <p className="text-xs font-bold text-[var(--text-muted)] mt-0.5">Untuk transfer & belanja online</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Education Box */}
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 rounded-xl p-4 mb-6 text-left flex gap-3">
+                <div className="bg-[var(--neo-yellow)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] p-4 mb-6 text-left flex gap-3">
                   <div className="text-xl">💡</div>
                   <div>
-                    <p className="text-xs text-blue-900 font-bold mb-1">Info Penting</p>
-                    <p className="text-xs text-blue-800 leading-relaxed">
+                    <p className="text-[10px] uppercase font-black text-[var(--neo-ink)] mb-1">Info Penting</p>
+                    <p className="text-xs font-bold text-[var(--neo-ink)]/80 leading-relaxed">
                       <strong>Saldo Aktif</strong> adalah uang yang siap dibelanjakan. Pisahkan dari <strong>Tabungan</strong> agar tidak terpakai!
                     </p>
                   </div>
@@ -3762,13 +3741,13 @@ export default function MoneyManager() {
                 <div className="space-y-3">
                   <button
                     onClick={() => setWelcomeStep(2)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                    className="w-full brutal-btn !py-4 !bg-[var(--neo-mint)] flex items-center justify-center gap-2"
                   >
                     Lanjut: Setup Tabungan ➡️
                   </button>
                   <button
                     onClick={() => setShowWelcome(false)}
-                    className="w-full bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-medium py-3 rounded-2xl transition-colors text-sm"
+                    className="w-full brutal-btn-ghost !py-3 !text-sm"
                   >
                     Mulai Tracking Saja
                   </button>
@@ -3779,27 +3758,27 @@ export default function MoneyManager() {
               <div className="text-center animate-in slide-in-from-right-10 duration-300">
                 <div className="text-5xl mb-4">🏦</div>
 
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2">
+                <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2 uppercase tracking-tight">
                   Setup Tabungan (Opsional)
                 </h2>
-                <p className="text-slate-600 dark:text-slate-500 mb-8 text-sm px-4">
+                <p className="text-[var(--text-muted)] font-bold mb-8 text-sm px-4">
                   Pisahkan uang untuk kebutuhan darurat agar aman & tidak terpakai foya-foya!
                 </p>
 
                 {/* Savings Preview Card */}
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white text-left mb-8 shadow-xl shadow-blue-500/20 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">🛡️</div>
-                  <div className="flex justify-between items-start mb-6">
+                <div className="bg-[var(--neo-lav)] border-[3px] border-[var(--neo-ink)] shadow-[6px_6px_0_var(--neo-ink)] rounded-[24px] p-6 text-[var(--neo-ink)] text-left mb-8 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl">🛡️</div>
+                  <div className="flex justify-between items-start mb-6 relative z-10">
                     <div>
-                      <p className="text-blue-100 text-xs font-medium mb-1">Dompet Baru</p>
-                      <h3 className="text-xl font-bold">Tabungan 🏦</h3>
+                      <p className="text-[var(--neo-ink)]/70 text-xs font-black uppercase mb-1">Dompet Baru</p>
+                      <h3 className="text-xl font-black">Tabungan 🏦</h3>
                     </div>
-                    <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-medium border border-white/20">
+                    <span className="bg-white border-2 border-[var(--neo-ink)] px-2 py-1 rounded-[8px] text-[10px] font-black uppercase">
                       Tabungan
                     </span>
                   </div>
-                  <p className="text-3xl font-bold mb-1">Rp 0</p>
-                  <p className="text-blue-100 text-xs">Saldo awal</p>
+                  <p className="text-3xl font-black mb-1 relative z-10">Rp 0</p>
+                  <p className="text-[var(--neo-ink)]/70 text-xs font-bold relative z-10">Saldo awal</p>
                 </div>
 
                 {/* Actions */}
@@ -3807,11 +3786,11 @@ export default function MoneyManager() {
                   <button
                     onClick={createQuickSavingsWallet}
                     disabled={creatingWallet}
-                    className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 ${creatingWallet ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className={`w-full brutal-btn !py-4 !bg-[var(--neo-sky)] flex items-center justify-center gap-2 ${creatingWallet ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
                     {creatingWallet ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
                         Membuat Dompet...
                       </>
                     ) : (
@@ -3820,7 +3799,7 @@ export default function MoneyManager() {
                   </button>
                   <button
                     onClick={() => setShowWelcome(false)}
-                    className="w-full bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] text-slate-500 dark:text-slate-400 font-medium py-3 rounded-2xl transition-colors text-sm"
+                    className="w-full brutal-btn-ghost !py-3 !text-sm"
                   >
                     Lewati, nanti saja
                   </button>
@@ -3828,7 +3807,7 @@ export default function MoneyManager() {
 
                 <button
                   onClick={() => setWelcomeStep(1)}
-                  className="mt-4 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"
+                  className="mt-6 text-xs font-black text-[var(--text-muted)] hover:text-[var(--neo-ink)]"
                 >
                   ⬅️ Kembali
                 </button>
@@ -3841,29 +3820,30 @@ export default function MoneyManager() {
       {/* Debt Repayment Modal */}
       {showDebtModal && selectedDebt && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl w-full max-w-sm relative shadow-xl animate-in zoom-in-95 duration-200">
-            <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowDebtModal(false)}></div>
+          <div className="bg-[var(--bg-card)] p-6 rounded-[24px] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_#141414] w-full max-w-sm relative animate-in zoom-in-95 duration-200">
+            <button onClick={() => setShowDebtModal(false)} className="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--neo-ink)] border-2 border-transparent hover:border-[var(--neo-ink)] rounded-full hover:bg-[var(--neo-pink)] hover:shadow-[2px_2px_0_var(--neo-ink)] transition-all p-1">
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+              <div className="w-16 h-16 bg-[var(--neo-sky)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] flex items-center justify-center mx-auto mb-4 text-3xl">
                 🧑‍🤝‍🧑
               </div>
-              <h3 className="font-bold text-lg text-slate-800 dark:text-[var(--text-primary)]">Lunasi Piutang</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <h3 className="font-black text-xl uppercase text-[var(--text-primary)]">Lunasi Piutang</h3>
+              <p className="text-sm font-bold text-[var(--text-muted)] mt-1">
                 {selectedDebt ? `Pilih dompet penerima dana dari ${selectedDebt.person_name}` : 'Pilih dompet penerima dana'}
               </p>
               {selectedDebt && (
-                <div className="mt-3 bg-blue-50 dark:bg-blue-950/30 py-2 rounded-lg">
-                  <span className="text-blue-600 font-bold text-xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
+                <div className="mt-4 bg-[var(--neo-mint)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] py-2 rounded-[14px]">
+                  <span className="text-[var(--neo-ink)] font-black text-2xl">Rp {selectedDebt.amount.toLocaleString('id-ID')}</span>
                 </div>
               )}
             </div>
 
-            <div className="space-y-3 mb-4">
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Masuk ke Dompet</p>
-              <div className="grid gap-2 max-h-64 overflow-y-auto pr-2">
+            <div className="space-y-3 mb-6">
+              <p className="neo-label text-center">Masuk ke Dompet</p>
+              <div className="grid gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                 {wallets.map(w => {
                   const isProcessing = repayingWalletId === w.id
                   return (
@@ -3871,22 +3851,22 @@ export default function MoneyManager() {
                       key={w.id}
                       onClick={() => selectedDebt && markDebtAsPaid(selectedDebt, w.id)}
                       disabled={repayingWalletId !== null}
-                      className={`w-full flex justify-between items-center p-4 rounded-xl border transition-all group ${isProcessing
-                        ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 cursor-wait'
+                      className={`w-full flex justify-between items-center p-4 rounded-[16px] border-[3px] transition-all group ${isProcessing
+                        ? 'bg-[var(--neo-sky)] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] cursor-wait'
                         : repayingWalletId !== null
-                          ? 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)] opacity-50 cursor-not-allowed'
-                          : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)] hover:border-green-500 hover:bg-green-50 dark:bg-green-950/30'
+                          ? 'bg-[var(--bg-elevated)] border-[var(--border-default)] opacity-50 cursor-not-allowed'
+                          : 'bg-white border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:bg-[var(--neo-mint)] hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--neo-ink)] active:translate-y-0 active:shadow-[0_0_0_var(--neo-ink)]'
                         }`}
                     >
                       <div className="flex items-center gap-3">
                         {isProcessing && (
-                          <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></div>
+                          <div className="w-5 h-5 rounded-full border-[3px] border-[var(--neo-ink)] border-t-transparent animate-spin"></div>
                         )}
-                        <span className={`font-medium ${isProcessing ? 'text-blue-700' : 'text-slate-700 dark:text-slate-300'} group-hover:text-green-700`}>
+                        <span className={`font-black text-lg ${isProcessing ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>
                           {w.name} {isProcessing && '(Memproses...)'}
                         </span>
                       </div>
-                      <span className="text-xs bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-bold bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] text-[var(--text-primary)] px-2 py-1 rounded-[8px]">
                         Rp {w.balance.toLocaleString('id-ID')}
                       </span>
                     </button>
@@ -3897,7 +3877,7 @@ export default function MoneyManager() {
 
             <button
               onClick={() => setShowDebtModal(false)}
-              className="w-full py-3 text-slate-400 dark:text-slate-500 font-bold hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors"
+              className="w-full brutal-btn-ghost !py-3 !text-sm"
             >
               Batal
             </button>

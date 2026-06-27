@@ -559,17 +559,16 @@ export default function AnalyticsPage() {
 
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
+        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
+                style={{ borderBottom: 'var(--neo-border)' }}>
                 <div>
-                    <h2 className="font-bold text-2xl text-[var(--text-primary)]">Analitik</h2>
+                    <h2 className="font-black uppercase tracking-tighter text-3xl text-[var(--text-primary)]">Analitik</h2>
                 </div>
-                <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
-                    <div className="text-right">
-                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                        {/* <p className="text-[var(--text-secondary)] text-xs">Premium User</p> */}
-                    </div>
-                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
+                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
+                    <p className="font-black uppercase tracking-tight text-[var(--text-primary)] text-sm">Eko Budi</p>
+                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
+                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
                         EB
                     </div>
                 </div>
@@ -577,27 +576,29 @@ export default function AnalyticsPage() {
 
             <div className="p-4 pb-28 md:p-8 md:pb-8 space-y-6 md:space-y-8">
                 {/* Control Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border-default)] shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 brutal-card-sm p-4">
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1 rounded-xl">
+                        <div className="flex items-center gap-2 rounded-[14px] p-1" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
                             {filterMode === 'monthly' && (
                                 <button
                                     onClick={prevMonth}
-                                    className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
+                                    className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
+                                    style={{ color: 'var(--text-muted)' }}
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
                             )}
                             <div className="flex items-center gap-2 px-4 py-1.5">
-                                <Calendar className="w-4 h-4 text-[var(--primary)]" />
-                                <span className="font-bold text-[var(--text-primary)] whitespace-nowrap min-w-[140px] text-center">
+                                <Calendar className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
+                                <span className="font-black text-[var(--text-primary)] whitespace-nowrap min-w-[140px] text-center">
                                     {getPeriodLabel()}
                                 </span>
                             </div>
                             {filterMode === 'monthly' && (
                                 <button
                                     onClick={nextMonth}
-                                    className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
+                                    className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
+                                    style={{ color: 'var(--text-muted)' }}
                                 >
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
@@ -608,7 +609,11 @@ export default function AnalyticsPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowSettings(!showSettings)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[var(--primary)] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] font-black transition-all active:scale-95"
+                            style={showSettings
+                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
+                                : { background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }
+                            }
                         >
                             <Settings className="w-4 h-4" />
                             <span>Filter</span>
@@ -618,20 +623,21 @@ export default function AnalyticsPage() {
 
                 {/* Search Bar */}
                 <div className="relative">
-                    <div className="flex items-center gap-3 bg-white dark:bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl px-4 py-3 shadow-sm">
-                        <Search className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
+                    <div className="flex items-center gap-3 brutal-card-sm px-4 py-3">
+                        <Search className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                         <input
                             type="text"
                             data-no-ring=""
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Cari transaksi berdasarkan nama, kategori, atau dompet..."
-                            className="flex-1 bg-white dark:bg-[var(--bg-card)] text-[16px] md:text-sm text-[var(--text-primary)] placeholder-slate-400 outline-none font-medium"
+                            className="flex-1 bg-transparent text-[16px] md:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none font-black"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors"
+                                className="font-bold transition-colors rounded-[10px] p-1"
+                                style={{ color: 'var(--text-muted)' }}
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -642,7 +648,7 @@ export default function AnalyticsPage() {
                     {searchQuery.trim() && (
                         <div className="mt-2 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-lg overflow-hidden">
                             <div className="px-4 py-3 border-b border-[var(--border-default)] flex items-center justify-between">
-                                <span className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                                <span className="neo-label !text-[10px]">
                                     {searchResults.length > 0 ? `${searchResults.length} hasil ditemukan` : 'Tidak ada hasil'}
                                 </span>
                                 {searchResults.length === 50 && (
@@ -682,7 +688,7 @@ export default function AnalyticsPage() {
 
                                                     {/* Info */}
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                                                        <p className="font-black text-sm text-[var(--text-primary)] truncate">
                                                             {isTopup && tx.source_wallet_id
                                                                 ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
                                                                 : tx.title}
@@ -719,31 +725,39 @@ export default function AnalyticsPage() {
                 {/* Settings Panel */}
                 {showSettings && (
                     <>
-                        <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setShowSettings(false)}
-                        />
-                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="fixed inset-0 z-10" onClick={() => setShowSettings(false)} />
+                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 brutal-card p-5 animate-in fade-in zoom-in-95 duration-200"
+                            style={{ background: 'var(--bg-card)' }}>
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-[var(--text-primary)]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
+                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Pengaturan Filter</h3>
+                                <button onClick={() => setShowSettings(false)}
+                                    className="p-1.5 rounded-[10px] transition-colors"
+                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1.5 rounded-xl">
+                                    <label className="neo-label">Mode Tampilan</label>
+                                    <div className="grid grid-cols-2 gap-2 rounded-[14px] p-1.5" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
                                         <button
                                             onClick={() => setFilterMode('monthly')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
+                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
+                                            style={filterMode === 'monthly'
+                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
+                                                : { color: 'var(--text-muted)' }
+                                            }
                                         >
                                             Bulanan
                                         </button>
                                         <button
                                             onClick={() => setFilterMode('custom')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
+                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
+                                            style={filterMode === 'custom'
+                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
+                                                : { color: 'var(--text-muted)' }
+                                            }
                                         >
                                             Custom
                                         </button>
@@ -751,23 +765,25 @@ export default function AnalyticsPage() {
                                 </div>
 
                                 {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2 border-t border-[var(--border-default)]">
+                                    <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Dari Tanggal</label>
+                                            <label className="neo-label">Dari Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
+                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
+                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Sampai Tanggal</label>
+                                            <label className="neo-label">Sampai Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
+                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
+                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                             />
                                         </div>
                                     </div>
@@ -778,23 +794,25 @@ export default function AnalyticsPage() {
                 )}
 
                 {loading ? (
-                    <div className="text-center py-20 text-slate-400 dark:text-slate-500 animate-pulse">Memuat analitik...</div>
+                    <div className="text-center py-20 text-[var(--text-muted)] font-semibold animate-pulse">Memuat analitik...</div>
                 ) : (
                     <>
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
+                            <div className="brutal-card-md brutal-card-mint p-6">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-600 group-hover:bg-emerald-100 transition-colors">
+                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center text-[var(--success)]"
+                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
                                             <TrendingUp className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[var(--text-secondary)] font-medium">Total Pemasukan</h3>
+                                        <h3 className="neo-label">Total Pemasukan</h3>
                                     </div>
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
-                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-emerald-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
+                                            className="p-1 transition-colors rounded-full relative z-20"
+                                            style={{ color: 'var(--text-muted)' }}
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -807,32 +825,34 @@ export default function AnalyticsPage() {
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                                             }`}>
                                             <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada rentang tanggal yang dipilih.</p>
-                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                                <p className="text-slate-300">Catatan: <span className="font-bold">Pembayaran Piutang</span> (uang yang dikembalikan orang lain ke kamu) tidak dihitung sebagai pemasukan.</p>
+                                            <div className="mt-2 pt-2 border-t border-white/20">
+                                                <p className="text-white/70">Catatan: <span className="font-bold">Pembayaran Piutang</span> (uang yang dikembalikan orang lain ke kamu) tidak dihitung sebagai pemasukan.</p>
                                             </div>
                                             {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold text-[var(--text-primary)]">Rp {income.toLocaleString('id-ID')}</p>
+                                <p className="neo-amount-pos mt-2">Rp {income.toLocaleString('id-ID')}</p>
                             </div>
 
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
+                            <div className="brutal-card-md brutal-card-peach p-6">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl text-rose-600 group-hover:bg-rose-100 dark:bg-rose-950/40 transition-colors">
+                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
                                             <TrendingDown className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[var(--text-secondary)] font-medium">Total Pengeluaran</h3>
+                                        <h3 className="neo-label">Total Pengeluaran</h3>
                                     </div>
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
-                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
+                                            className="p-1 transition-colors rounded-full relative z-20"
+                                            style={{ color: 'var(--text-muted)' }}
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -845,32 +865,34 @@ export default function AnalyticsPage() {
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                                             }`}>
                                             <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada rentang tanggal yang dipilih.</p>
-                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                                <p className="text-slate-300">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> (membayarin orang terlebih dahulu) tidak dihitung sebagai pengeluaran.</p>
+                                            <div className="mt-2 pt-2 border-t border-white/20">
+                                                <p className="text-white/70">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> (membayarin orang terlebih dahulu) tidak dihitung sebagai pengeluaran.</p>
                                             </div>
                                             {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold text-[var(--text-primary)]">Rp {expense.toLocaleString('id-ID')}</p>
+                                <p className="neo-amount-neg mt-2">Rp {expense.toLocaleString('id-ID')}</p>
                             </div>
 
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 group">
+                            <div className={`brutal-card-md p-6 ${netBalance >= 0 ? 'brutal-card-sky' : 'brutal-card-peach'}`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-[var(--primary)] group-hover:bg-blue-100 transition-colors">
+                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center"
+                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}>
                                             <WalletIcon className="w-6 h-6" />
                                         </div>
-                                        <h3 className="text-[var(--text-secondary)] font-medium">Sisa Saldo Periode Ini</h3>
+                                        <h3 className="neo-label">Sisa Saldo Periode Ini</h3>
                                     </div>
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowTooltip(!showTooltip)}
-                                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] relative z-20"
+                                            className="p-1 transition-colors rounded-full relative z-20"
+                                            style={{ color: 'var(--text-muted)' }}
                                         >
                                             <Info className="w-4 h-4" />
                                         </button>
@@ -883,18 +905,18 @@ export default function AnalyticsPage() {
                                             />
                                         )}
 
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed ${showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                                             }`}>
                                             <p>Selisih antara <span className="text-emerald-400 font-bold">Pemasukan</span> dan <span className="text-rose-400 font-bold">Pengeluaran</span> murni pada periode ini.</p>
-                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                                <p className="text-slate-300">Catatan: Tidak menghitung transaksi Piutang atau Talangan.</p>
+                                            <div className="mt-2 pt-2 border-t border-white/20">
+                                                <p className="text-white/70">Catatan: Tidak menghitung transaksi Piutang atau Talangan.</p>
                                             </div>
                                             {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`text-2xl font-bold ${netBalance >= 0 ? 'text-[var(--text-primary)]' : 'text-rose-600'}`}>
+                                <p className={`neo-amount mt-2 ${netBalance >= 0 ? '' : 'neo-amount-neg'}`}>
                                     Rp {netBalance.toLocaleString('id-ID')}
                                 </p>
                             </div>
@@ -903,12 +925,12 @@ export default function AnalyticsPage() {
                         {/* Quick Insights Row (Top Expenses & Recent Activity) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Top Expenses */}
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
+                            <div className="brutal-card-md p-6" style={{ background: 'var(--neo-peach)' }}>
                                 <div className="flex items-center gap-3 mb-5">
-                                    <div className="p-2 bg-rose-50 dark:bg-rose-950/30 rounded-lg text-rose-500">
+                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--error)' }}>
                                         <TrendingDown className="w-5 h-5" />
                                     </div>
-                                    <h3 className="font-bold text-[var(--text-primary)]">Pengeluaran Terbesar</h3>
+                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Pengeluaran Terbesar</h3>
                                 </div>
                                 {topExpenses.length > 0 ? (
                                     <div className="space-y-4">
@@ -938,12 +960,12 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Recent Activity */}
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
+                            <div className="brutal-card-md p-6" style={{ background: 'var(--neo-sky)' }}>
                                 <div className="flex items-center gap-3 mb-5">
-                                    <div className="p-2 bg-[var(--primary)]/10 rounded-lg text-[var(--primary)]">
+                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-primary)' }}>
                                         <Zap className="w-5 h-5" />
                                     </div>
-                                    <h3 className="font-bold text-[var(--text-primary)]">Aktivitas Terakhir</h3>
+                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Aktivitas Terakhir</h3>
                                 </div>
                                 {recentActivity.length > 0 ? (
                                     <div className="space-y-4">
@@ -980,32 +1002,24 @@ export default function AnalyticsPage() {
                         {insights.length > 0 && (
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-[var(--primary)]" />
-                                    <h3 className="font-bold text-[var(--text-primary)]">Spending Insights</h3>
-                                    <span className="text-xs text-[var(--text-secondary)] font-medium">— analisis otomatis periode ini</span>
+                                    <Zap className="w-4 h-4 text-[var(--text-primary)]" />
+                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Spending Insights</h3>
+                                    <span className="text-xs font-bold text-[var(--text-muted)]">— analisis otomatis periode ini</span>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {insights.map((ins, i) => (
                                         <div
                                             key={i}
-                                            className={`p-4 rounded-2xl border flex items-start gap-3 transition-all hover:shadow-sm ${ins.type === 'positive' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
-                                                ins.type === 'negative' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/30' :
-                                                    ins.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100' :
-                                                        'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
+                                            className={`p-4 rounded-[14px] flex items-start gap-3 transition-all brutal-shadow-sm ${ins.type === 'positive' ? 'bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)]' :
+                                                ins.type === 'negative' ? 'bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)]' :
+                                                    ins.type === 'warning' ? 'bg-[var(--neo-yellow-vivid)] border-2 border-[var(--neo-ink)]' :
+                                                        'bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)]'
                                                 }`}
                                         >
                                             <span className="text-xl mt-0.5 shrink-0">{ins.emoji}</span>
                                             <div className="min-w-0">
-                                                <p className={`font-bold text-sm ${ins.type === 'positive' ? 'text-emerald-700' :
-                                                    ins.type === 'negative' ? 'text-rose-700' :
-                                                        ins.type === 'warning' ? 'text-amber-700' :
-                                                            'text-blue-700'
-                                                    }`}>{ins.title}</p>
-                                                <p className={`text-xs mt-1 leading-relaxed ${ins.type === 'positive' ? 'text-emerald-600' :
-                                                    ins.type === 'negative' ? 'text-rose-600' :
-                                                        ins.type === 'warning' ? 'text-amber-600' :
-                                                            'text-blue-600'
-                                                    }`}>{ins.desc}</p>
+                                                <p className="font-black text-sm text-[var(--text-primary)]">{ins.title}</p>
+                                                <p className="text-xs mt-1 font-bold leading-relaxed text-[var(--text-primary)]/80">{ins.desc}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -1014,33 +1028,33 @@ export default function AnalyticsPage() {
                         )}
 
                         {/* Period Comparison Table */}
-                        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
-                            <div className="p-5 border-b border-[var(--border-default)] flex items-center gap-2">
-                                <ArrowUpRight className="w-4 h-4 text-[var(--primary)]" />
-                                <h3 className="font-bold text-[var(--text-primary)]">Perbandingan Periode</h3>
-                                <span className="text-xs text-[var(--text-secondary)] font-medium ml-1">— otomatis vs periode sebelumnya</span>
+                        <div className="brutal-card overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
+                            <div className="p-5 flex items-center gap-2" style={{ borderBottom: '2px solid var(--border-default)' }}>
+                                <ArrowUpRight className="w-4 h-4 text-[var(--text-primary)]" />
+                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Perbandingan Periode</h3>
+                                <span className="text-xs font-bold text-[var(--text-muted)] ml-1">— otomatis vs periode sebelumnya</span>
                             </div>
 
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm min-w-[600px]">
                                     <thead>
-                                        <tr className="bg-slate-50 dark:bg-[var(--bg-elevated)]">
-                                            <th className="text-left px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider w-36">Item</th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                                        <tr className="bg-[var(--bg-elevated)]">
+                                            <th className="text-left px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider w-36">Item</th>
+                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-primary)] uppercase tracking-wider">
                                                 <div>Periode Ini</div>
-                                                <div className="text-[10px] font-medium text-[var(--primary)] normal-case mt-0.5">{periodComparison.currentLabel}</div>
+                                                <div className="text-[10px] font-bold text-[var(--text-primary)] normal-case mt-0.5">{periodComparison.currentLabel}</div>
                                             </th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider">
                                                 <div>Periode Lalu</div>
-                                                <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 normal-case mt-0.5">{periodComparison.prevLabel}</div>
+                                                <div className="text-[10px] font-bold text-[var(--text-muted)] normal-case mt-0.5">{periodComparison.prevLabel}</div>
                                             </th>
-                                            <th className="text-right px-5 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     Perubahan
                                                     <div className="relative inline-flex">
                                                         <button
                                                             onClick={() => setShowChangeTooltip(!showChangeTooltip)}
-                                                            className="text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-colors rounded-full"
+                                                            className="transition-colors rounded-full text-[var(--text-muted)]"
                                                         >
                                                             <Info className="w-3.5 h-3.5" />
                                                         </button>
@@ -1052,13 +1066,13 @@ export default function AnalyticsPage() {
                                                             />
                                                         )}
 
-                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
+                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
                                                             }`}>
                                                             <p>Persentase selisih lompatan nilai dari periode lalu.</p>
-                                                            <div className="mt-2 pt-2 border-t border-slate-700/50">
-                                                                <p className="text-slate-300">💡 <span className="font-bold text-emerald-400">Catatan:</span> Persentase kenaikan <b>bisa melebihi 100%</b> jika lonjakan terjadi cukup besar. (Misal: nominal awal 100rb menjadi 500rb adalah naik 400%).</p>
+                                                            <div className="mt-2 pt-2 border-t border-white/20">
+                                                                <p className="text-white/70">💡 <span className="font-bold text-emerald-400">Catatan:</span> Persentase kenaikan <b>bisa melebihi 100%</b> jika lonjakan terjadi cukup besar. (Misal: nominal awal 100rb menjadi 500rb adalah naik 400%).</p>
                                                             </div>
-                                                            <div className="absolute -top-1.5 right-1 w-3 h-3 bg-slate-800 rotate-45"></div>
+                                                            <div className="absolute -top-1.5 right-1 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1182,8 +1196,8 @@ export default function AnalyticsPage() {
                         {/* Charts Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Summary Pie Chart */}
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
-                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Ringkasan Arus Kas</h3>
+                            <div className="brutal-card-md p-6">
+                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Ringkasan Arus Kas</h3>
                                 <div className="w-full h-[300px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -1213,8 +1227,8 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Category Bar Chart */}
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300">
-                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Pengeluaran per Kategori</h3>
+                            <div className="brutal-card-md p-6">
+                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Pengeluaran per Kategori</h3>
                                 <div className="w-full h-[300px]">
                                     {categoryData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
@@ -1257,8 +1271,8 @@ export default function AnalyticsPage() {
                             </div>
 
                             {/* Wallet Distribution */}
-                            <div className="bg-white dark:bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-default)] hover:shadow-sm transition-all duration-300 lg:col-span-2">
-                                <h3 className="font-bold text-lg text-[var(--text-primary)] mb-6">Pengeluaran Berdasarkan Sumber Dana</h3>
+                            <div className="brutal-card-md p-6 lg:col-span-2">
+                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Pengeluaran Berdasarkan Sumber Dana</h3>
                                 <div className="w-full h-[300px]">
                                     {walletData.length > 0 ? (
                                         <ResponsiveContainer width="100%" height="100%">
@@ -1298,11 +1312,11 @@ export default function AnalyticsPage() {
                         </div>
 
                         {/* Wallet Transaction Breakdown */}
-                        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] overflow-hidden">
-                            <div className="p-5 border-b border-[var(--border-default)] flex items-center gap-2">
-                                <WalletIcon className="w-4 h-4 text-[var(--primary)]" />
-                                <h3 className="font-bold text-[var(--text-primary)]">Transaksi Per Dompet</h3>
-                                <span className="text-xs text-[var(--text-secondary)] font-medium ml-1">— rincian per sumber dana</span>
+                        <div className="brutal-card overflow-hidden">
+                            <div className="p-5 flex items-center gap-2" style={{ borderBottom: '2px solid var(--border-default)' }}>
+                                <WalletIcon className="w-4 h-4 text-[var(--text-primary)]" />
+                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Transaksi Per Dompet</h3>
+                                <span className="text-xs font-bold text-[var(--text-muted)] ml-1">— rincian per sumber dana</span>
                             </div>
 
                             {walletTransactionBreakdown.length === 0 ? (
@@ -1321,28 +1335,28 @@ export default function AnalyticsPage() {
                                                 {/* Wallet Header — clickable accordion toggle */}
                                                 <button
                                                     onClick={() => setExpandedWallet(isExpanded ? null : walletGroup.walletName)}
-                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/70 transition-colors text-left group"
+                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-[var(--bg-elevated)] transition-colors text-left group"
                                                 >
-                                                    <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center shrink-0">
-                                                        <WalletIcon className="w-4 h-4 text-[var(--primary)]" />
+                                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0" style={{ background: 'var(--neo-sky)', border: '2px solid var(--neo-ink)' }}>
+                                                        <WalletIcon className="w-4 h-4 text-[var(--neo-ink)]" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-[var(--text-primary)] text-sm">{walletGroup.walletName}</p>
+                                                        <p className="font-black text-[var(--text-primary)] text-sm">{walletGroup.walletName}</p>
                                                         <div className="flex items-center gap-3 mt-0.5">
-                                                            <span className="text-xs text-emerald-600 font-medium">+Rp {walletGroup.totalIncome.toLocaleString('id-ID')}</span>
-                                                            <span className="text-xs text-rose-500 font-medium">-Rp {walletGroup.totalExpense.toLocaleString('id-ID')}</span>
-                                                            <span className="text-xs text-[var(--text-secondary)]">{walletGroup.transactions.length} transaksi</span>
+                                                            <span className="text-xs text-emerald-600 font-bold">+Rp {walletGroup.totalIncome.toLocaleString('id-ID')}</span>
+                                                            <span className="text-xs text-rose-500 font-bold">-Rp {walletGroup.totalExpense.toLocaleString('id-ID')}</span>
+                                                            <span className="text-xs font-bold text-[var(--text-muted)]">{walletGroup.transactions.length} transaksi</span>
                                                         </div>
                                                     </div>
                                                     <ChevronDown
-                                                        className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180' : ''
+                                                        className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180' : ''
                                                             }`}
                                                     />
                                                 </button>
 
                                                 {/* Transaction List */}
                                                 {isExpanded && (
-                                                    <div className="bg-slate-50 dark:bg-[var(--bg-elevated)]/50 border-t border-[var(--border-default)] overflow-x-hidden">
+                                                    <div className="bg-[var(--bg-elevated)] overflow-x-hidden" style={{ borderTop: '2px solid var(--border-default)' }}>
                                                         {walletGroup.transactions.map((tx, idx) => {
                                                             const txDate = new Date(tx.date || tx.created_at)
                                                             const txTime = new Date(tx.created_at)
@@ -1351,10 +1365,10 @@ export default function AnalyticsPage() {
                                                             return (
                                                                 <div
                                                                     key={tx.id}
-                                                                    className={`flex items-center gap-3 px-5 py-3.5 w-full min-w-0 ${idx !== walletGroup.transactions.length - 1
-                                                                        ? 'border-b border-[var(--border-default)]'
+                                                                    className={`flex items-center gap-3 px-5 py-[14px] w-full min-w-0 ${idx !== walletGroup.transactions.length - 1
+                                                                        ? 'border-b-2 border-dashed border-[#141414]/20'
                                                                         : ''
-                                                                        } hover:bg-white dark:bg-[var(--bg-card)] transition-colors`}
+                                                                        } hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors`}
                                                                 >
                                                                     {/* Type indicator */}
                                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
@@ -1383,7 +1397,7 @@ export default function AnalyticsPage() {
                                                                     </div>
 
                                                                     {/* Amount */}
-                                                                    <p className={`text-sm font-bold shrink-0 ${isIncome ? 'text-emerald-600' : 'text-rose-500'
+                                                                    <p className={`text-base font-black tracking-tight shrink-0 ${isIncome ? 'text-[#0f7b3b]' : 'text-[#b42318]'
                                                                         }`}>
                                                                         {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
                                                                     </p>

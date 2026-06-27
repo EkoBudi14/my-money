@@ -260,25 +260,25 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
         <form onSubmit={handleSave} className="space-y-5 flex flex-col flex-1 min-h-0">
             <div className={`space-y-5 overflow-y-auto custom-scrollbar ${isPage ? 'flex-1 p-6 pb-32' : 'flex-1 p-1'}`}>
                 <div>
-                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Nama {category === 'savings' ? 'Aset' : 'Dompet'}</label>
+                    <label className="neo-label mb-2 block">Nama {category === 'savings' ? 'Aset' : 'Dompet'}</label>
                     <input
                         type="text"
                         placeholder="Contoh: BCA Utama"
-                        className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-sm font-medium"
+                        className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         autoFocus
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tipe</label>
+                    <label className="neo-label mb-2 block">Tipe</label>
                     <div className="grid grid-cols-3 gap-3">
                         {['bank', 'ewallet', 'cash'].map((t) => (
                             <button
                                 key={t}
                                 type="button"
                                 onClick={() => setType(t as any)}
-                                className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${type === t ? 'bg-blue-50 dark:bg-blue-950/30 border-[var(--primary)] text-[var(--primary)] shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
+                                className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${type === t ? 'bg-[var(--neo-yellow)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
                             >
                                 {t.toUpperCase()}
                             </button>
@@ -286,29 +286,29 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Kategori</label>
+                    <label className="neo-label mb-2 block">Kategori</label>
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
                             onClick={() => setCategory('active')}
-                            className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'active' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 text-blue-700 shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
+                            className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${category === 'active' ? 'bg-[var(--neo-sky)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
                         >
                             SALDO AKTIF
                         </button>
                         <button
                             type="button"
                             onClick={() => setCategory('savings')}
-                            className={`py-3 px-3 rounded-xl text-sm font-bold border transition-all ${category === 'savings' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-700 shadow-sm' : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
+                            className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${category === 'savings' ? 'bg-[var(--neo-mint)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
                         >
                             TABUNGAN INTI
                         </button>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                    <p className="text-xs text-[var(--text-muted)] font-semibold mt-2">
                         {category === 'active' ? 'Dihitung sebagai saldo aktif di dashboard.' : 'Tidak dihitung di saldo aktif utama.'}
                     </p>
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Nilai Saat Ini (Rp)</label>
+                    <label className="neo-label mb-2 block">Nilai Saat Ini (Rp)</label>
                     <MoneyInput
                         value={balance}
                         onChange={setBalance}
@@ -316,8 +316,8 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Sumber Dana (Opsional)</label>
-                    <p className="text-xs text-[var(--text-secondary)] mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
+                    <label className="neo-label mb-1 block">Sumber Dana (Opsional)</label>
+                    <p className="text-xs text-[var(--text-secondary)] font-semibold mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
                     {(() => {
                         const allWallets = [...activeWallets, ...savingsWallets]
                         const isRefundScenario: boolean = editId ? (() => {
@@ -332,9 +332,9 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                         return (
                             <>
                                 <select
-                                    className={`w-full p-3.5 border rounded-xl outline-none text-slate-700 dark:text-slate-300 transition-colors text-sm font-medium appearance-none ${isDisabled
-                                        ? 'bg-slate-100 dark:bg-[var(--bg-hover)] border-slate-300 cursor-not-allowed opacity-70'
-                                        : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)] focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400'
+                                    className={`w-full px-[18px] py-[14px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] font-[800] outline-none appearance-none ${isDisabled
+                                        ? 'bg-[var(--bg-hover)] cursor-not-allowed opacity-70 text-[var(--text-muted)]'
+                                        : 'bg-white text-[var(--text-primary)]'
                                         }`}
                                     value={sourceWalletId}
                                     onChange={(e) => setSourceWalletId(e.target.value)}
@@ -374,7 +374,7 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                 </div>
 
                 {sourceWalletId && (
-                    <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] p-4 rounded-xl border border-slate-200 dark:border-[var(--border-default)]">
+                    <div className="bg-[var(--bg-card)] p-4 rounded-[18px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]">
                         <label className="flex items-center gap-3 cursor-pointer mb-2">
                             <input
                                 type="checkbox"
@@ -431,17 +431,17 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
             </div>
 
             {isPage ? (
-                <div className="fixed bottom-0 left-0 right-0 p-5 bg-white dark:bg-[var(--bg-card)] border-t border-[var(--border-default)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.2)] md:relative md:shadow-none z-20">
-                    <button disabled={saving} type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
-                        {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
+                <div className="fixed bottom-0 left-0 right-0 p-5 bg-[var(--bg-card)] border-t-[3px] border-[var(--neo-ink)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] md:relative md:shadow-none z-20">
+                    <button disabled={saving} type="submit" className="w-full brutal-btn !py-4 !text-base !bg-[var(--neo-yellow-vivid)]">
+                        {saving ? <div className="w-5 h-5 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
                         Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
                     </button>
                 </div>
             ) : (
-                <div className="shrink-0 pt-2 pb-1">
-                    <button disabled={saving} type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm flex items-center justify-center gap-2 mt-2">
-                        {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
-                        Simpan
+                <div className="shrink-0 pt-4 pb-1">
+                    <button disabled={saving} type="submit" className="w-full brutal-btn !py-3.5 !text-sm !bg-[var(--neo-yellow-vivid)]">
+                        {saving ? <div className="w-4 h-4 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                        Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
                     </button>
                 </div>
             )}
@@ -469,10 +469,10 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-            <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+            <div className="bg-[var(--bg-card)] w-full max-w-md rounded-[24px] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 <div className="flex justify-between items-center mb-6 shrink-0">
-                    <h3 className="text-xl font-bold text-[var(--text-primary)]">{title}</h3>
-                    <button onClick={onClose} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
+                    <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">{title}</h3>
+                    <button onClick={onClose} className="p-2 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border-[2px] border-transparent hover:border-[var(--neo-ink)] shadow-none hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] transition-all">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

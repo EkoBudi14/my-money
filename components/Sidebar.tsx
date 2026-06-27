@@ -61,7 +61,7 @@ export default function Sidebar() {
             {/* ── DESKTOP SIDEBAR ── */}
 
             {/* Floating Sidebar Panel */}
-            <aside
+    <aside
                 className="hidden md:flex fixed left-0 top-0 h-[100dvh] w-[292px] z-50 flex-col"
                 style={{
                     padding: '12px 0 12px 12px',
@@ -70,37 +70,40 @@ export default function Sidebar() {
                 }}
             >
                 <div
-                    className="flex-1 flex flex-col rounded-[22px] overflow-hidden"
+                    className="flex-1 flex flex-col rounded-[24px] overflow-hidden"
                     style={{
-                        background: theme === 'dark'
-                            ? 'rgba(15, 15, 20, 0.88)'
-                            : 'rgba(255, 255, 255, 0.90)',
-                        backdropFilter: 'blur(32px) saturate(200%)',
-                        WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+                        background: theme === 'dark' ? '#252118' : '#fffdf8',
                         border: theme === 'dark'
-                            ? '1px solid rgba(255,255,255,0.10)'
-                            : '1px solid rgba(255,255,255,0.6)',
+                            ? '3px solid rgba(242, 242, 238, 0.25)'
+                            : '3px solid #141414',
                         boxShadow: theme === 'dark'
-                            ? '0 12px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)'
-                            : '0 12px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
+                            ? '5px 5px 0 rgba(242, 242, 238, 0.18)'
+                            : '6px 6px 0 #141414',
                     }}
                 >
                     {/* Header */}
-                    <div className="h-[72px] flex items-center justify-between px-5 border-b border-[var(--border-default)]">
+                    <div className="h-[72px] flex items-center justify-between px-5 border-b"
+                        style={{ borderColor: theme === 'dark' ? 'rgba(242,242,238,0.12)' : '#e8e2d6' }}
+                    >
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-[var(--primary)] rounded-xl flex items-center justify-center shadow-sm">
-                                <PackageCheck className="w-4 h-4 text-white" />
+                            <div
+                                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                                style={{
+                                    background: theme === 'dark' ? '#ffd84d' : '#141414',
+                                    border: theme === 'dark' ? 'none' : 'none',
+                                }}
+                            >
+                                <PackageCheck className="w-4 h-4" style={{ color: theme === 'dark' ? '#141414' : '#ffffff' }} />
                             </div>
-                            <h1 className="font-bold text-lg text-[var(--text-primary)]">CatatDuit</h1>
+                            <h1 className="font-black text-lg tracking-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>CatatDuit</h1>
                         </div>
                         {/* Close button */}
                         <button
                             onClick={() => setIsSidebarOpen(false)}
                             className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
                             style={{
-                                background: theme === 'dark'
-                                    ? 'rgba(255,255,255,0.07)'
-                                    : 'rgba(0,0,0,0.05)',
+                                background: theme === 'dark' ? 'rgba(242,242,238,0.08)' : 'rgba(20,20,20,0.06)',
+                                border: theme === 'dark' ? '1px solid rgba(242,242,238,0.12)' : '1px solid rgba(20,20,20,0.10)',
                             }}
                             title="Sembunyikan sidebar"
                         >
@@ -109,26 +112,26 @@ export default function Sidebar() {
                     </div>
 
                     {/* Menu Items */}
-                    <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+                    <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                         {allMenuItems.map((item) => {
                             const isActive = pathname === item.href
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                                    className="flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-150 group"
                                     style={{
                                         background: isActive
-                                            ? theme === 'dark'
-                                                ? 'rgba(77, 138, 255, 0.14)'
-                                                : 'rgba(22, 93, 255, 0.08)'
+                                            ? (theme === 'dark' ? 'rgba(255,216,77,0.15)' : '#fff5b8')
                                             : 'transparent',
+                                        border: isActive ? '2px solid #141414' : '2px solid transparent',
+                                        fontWeight: isActive ? 800 : 500,
                                     }}
                                     onMouseEnter={e => {
                                         if (!isActive) {
                                             (e.currentTarget as HTMLElement).style.background = theme === 'dark'
-                                                ? 'rgba(255,255,255,0.05)'
-                                                : 'rgba(0,0,0,0.04)'
+                                                ? 'rgba(242,242,238,0.05)'
+                                                : 'rgba(20,20,20,0.04)'
                                         }
                                     }}
                                     onMouseLeave={e => {
@@ -139,22 +142,23 @@ export default function Sidebar() {
                                 >
                                     <item.icon
                                         className="w-5 h-5 transition-colors"
-                                        style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
-                                        strokeWidth={isActive ? 2.2 : 1.8}
+                                        style={{ color: isActive ? 'var(--neo-ink, #141414)' : 'var(--text-secondary)' }}
+                                        strokeWidth={isActive ? 2.5 : 1.8}
                                     />
                                     <span
                                         className="text-sm transition-colors"
                                         style={{
-                                            fontWeight: isActive ? 600 : 500,
-                                            color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                                            fontWeight: isActive ? 800 : 500,
+                                            color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                            letterSpacing: isActive ? '-0.02em' : 'normal',
                                         }}
                                     >
                                         {item.name}
                                     </span>
                                     {isActive && (
                                         <div
-                                            className="ml-auto w-1.5 h-1.5 rounded-full"
-                                            style={{ background: 'var(--primary)' }}
+                                            className="ml-auto w-2 h-2 rounded-full"
+                                            style={{ background: 'var(--text-primary)' }}
                                         />
                                     )}
                                 </Link>
@@ -163,14 +167,16 @@ export default function Sidebar() {
                     </div>
 
                     {/* Dark Mode Toggle — Bottom */}
-                    <div className="px-4 pb-4 pt-2 border-t border-[var(--border-default)]">
+                    <div className="px-3 pb-4 pt-2 border-t"
+                        style={{ borderColor: theme === 'dark' ? 'rgba(242,242,238,0.12)' : '#e8e2d6' }}
+                    >
                         <button
                             onClick={toggleTheme}
-                            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group"
-                            style={{ background: 'transparent' }}
+                            className="flex items-center gap-3 w-full px-4 py-3 rounded-[16px] transition-all duration-150 group"
+                            style={{ background: 'transparent', border: '2px solid transparent' }}
                             onMouseEnter={e => {
                                 (e.currentTarget as HTMLElement).style.background = theme === 'dark'
-                                    ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                                    ? 'rgba(242,242,238,0.05)' : 'rgba(20,20,20,0.04)'
                             }}
                             onMouseLeave={e => {
                                 (e.currentTarget as HTMLElement).style.background = 'transparent'
@@ -199,16 +205,10 @@ export default function Sidebar() {
                     left: isSidebarOpen ? '-80px' : '16px',
                     opacity: isSidebarOpen ? 0 : 1,
                     pointerEvents: isSidebarOpen ? 'none' : 'auto',
-                    background: theme === 'dark'
-                        ? 'rgba(15, 15, 20, 0.88)'
-                        : 'rgba(255, 255, 255, 0.90)',
-                    backdropFilter: 'blur(20px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    border: theme === 'dark'
-                        ? '1px solid rgba(255,255,255,0.12)'
-                        : '1px solid rgba(255,255,255,0.55)',
-                    boxShadow: '0 4px 20px rgba(22, 93, 255, 0.22)',
-                    borderRadius: '14px',
+                    background: theme === 'dark' ? '#252118' : '#ffd84d',
+                    border: theme === 'dark' ? '3px solid rgba(242,242,238,0.25)' : '3px solid #141414',
+                    boxShadow: theme === 'dark' ? '3px 3px 0 rgba(242,242,238,0.15)' : '4px 4px 0 #141414',
+                    borderRadius: '16px',
                     padding: '10px 14px',
                     transition: 'left 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease',
                     transitionDelay: isSidebarOpen ? '0s' : '0.15s',
@@ -217,14 +217,14 @@ export default function Sidebar() {
             >
                 <ChevronRight
                     className="w-4 h-4"
-                    style={{ color: 'var(--primary)' }}
+                    style={{ color: theme === 'dark' ? 'var(--primary)' : '#141414' }}
                     strokeWidth={2.5}
                 />
                 <span style={{
                     fontSize: '12px',
-                    fontWeight: 700,
-                    color: 'var(--primary)',
-                    letterSpacing: '0.02em',
+                    fontWeight: 800,
+                    color: theme === 'dark' ? 'var(--primary)' : '#141414',
+                    letterSpacing: '-0.01em',
                 }}>Menu</span>
             </button>
 
@@ -253,34 +253,23 @@ export default function Sidebar() {
                             key={item.href}
                             href={item.href}
                             onClick={() => setShowQuickActions(false)}
-                            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300"
+                            className="flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-200"
                             style={{
-                                background: theme === 'dark'
-                                    ? 'rgba(17, 17, 24, 0.85)'
-                                    : 'rgba(255, 255, 255, 0.88)',
-                                backdropFilter: 'blur(20px) saturate(180%)',
-                                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                                border: theme === 'dark'
-                                    ? '1px solid rgba(255, 255, 255, 0.10)'
-                                    : '1px solid rgba(255, 255, 255, 0.5)',
-                                boxShadow: theme === 'dark'
-                                    ? '0 8px 32px rgba(0, 0, 0, 0.4)'
-                                    : '0 8px 32px rgba(0, 0, 0, 0.10)',
+                                background: theme === 'dark' ? '#252118' : '#fffdf8',
+                                border: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
+                                boxShadow: theme === 'dark' ? '3px 3px 0 rgba(242,242,238,0.12)' : '4px 4px 0 #141414',
                                 animation: `slideUpFade 0.25s ease-out ${index * 0.08}s both`,
                             }}
                         >
                             <div
                                 className="w-10 h-10 rounded-xl flex items-center justify-center"
                                 style={{
-                                    background: pathname === item.href
-                                        ? 'var(--primary)'
-                                        : theme === 'dark'
-                                            ? 'rgba(77, 138, 255, 0.15)'
-                                            : 'rgba(22, 93, 255, 0.08)',
+                                    background: pathname === item.href ? '#141414' : (theme === 'dark' ? '#2e2a20' : '#f5f0e8'),
+                                    border: pathname === item.href ? 'none' : '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#e8e2d6'),
                                 }}
                             >
                                 <item.icon
-                                    className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[var(--primary)]'}`}
+                                    className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[var(--text-secondary)]'}`}
                                 />
                             </div>
                             <span className={`font-semibold text-sm ${
@@ -303,15 +292,9 @@ export default function Sidebar() {
                     right: '16px',
                     opacity: isNavVisible ? 0 : 1,
                     pointerEvents: isNavVisible ? 'none' : 'auto',
-                    background: theme === 'dark'
-                        ? 'rgba(17, 17, 24, 0.85)'
-                        : 'rgba(255, 255, 255, 0.88)',
-                    backdropFilter: 'blur(20px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    border: theme === 'dark'
-                        ? '1px solid rgba(255, 255, 255, 0.12)'
-                        : '1px solid rgba(255, 255, 255, 0.5)',
-                    boxShadow: '0 8px 32px rgba(22, 93, 255, 0.25)',
+                    background: theme === 'dark' ? '#252118' : '#ffd84d',
+                    border: theme === 'dark' ? '3px solid rgba(242,242,238,0.25)' : '3px solid #141414',
+                    boxShadow: theme === 'dark' ? '3px 3px 0 rgba(242,242,238,0.15)' : '4px 4px 0 #141414',
                     borderRadius: '20px',
                     padding: '10px 16px',
                     display: 'flex',
@@ -321,14 +304,14 @@ export default function Sidebar() {
             >
                 <ChevronRight
                     className="w-4 h-4 -rotate-90"
-                    style={{ color: 'var(--primary)' }}
+                    style={{ color: theme === 'dark' ? 'var(--primary)' : '#141414' }}
                     strokeWidth={2.5}
                 />
                 <span style={{
                     fontSize: '11px',
-                    fontWeight: 700,
-                    color: 'var(--primary)',
-                    letterSpacing: '0.02em',
+                    fontWeight: 800,
+                    color: theme === 'dark' ? 'var(--primary)' : '#141414',
+                    letterSpacing: '-0.01em',
                 }}>Menu</span>
             </button>
 
@@ -359,17 +342,11 @@ export default function Sidebar() {
                 <div
                     className="mx-4 mb-4 rounded-[22px] flex items-center justify-around px-1 h-[64px] relative"
                     style={{
-                        background: theme === 'dark'
-                            ? 'rgba(17, 17, 24, 0.80)'
-                            : 'rgba(255, 255, 255, 0.78)',
-                        backdropFilter: 'blur(28px) saturate(200%)',
-                        WebkitBackdropFilter: 'blur(28px) saturate(200%)',
-                        border: theme === 'dark'
-                            ? '1px solid rgba(255, 255, 255, 0.10)'
-                            : '1px solid rgba(255, 255, 255, 0.45)',
+                        background: theme === 'dark' ? '#252118' : '#fffdf8',
+                        border: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
                         boxShadow: theme === 'dark'
-                            ? '0 8px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.06)'
-                            : '0 8px 40px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.8)',
+                            ? '3px 3px 0 rgba(242,242,238,0.12)'
+                            : '4px 4px 0 #141414',
                     }}
                 >
                     {/* Left Items: Dashboard, Analitik */}
@@ -379,23 +356,29 @@ export default function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-[14px] transition-all duration-200"
                             >
                                 {isActive && (
                                     <div
-                                        className="absolute inset-0 rounded-xl"
+                                        className="absolute inset-0 rounded-[14px]"
                                         style={{
-                                            background: theme === 'dark'
-                                                ? 'rgba(77, 138, 255, 0.12)'
-                                                : 'rgba(22, 93, 255, 0.10)',
+                                            background: 'var(--neo-yellow)',
+                                            border: '2px solid var(--neo-ink)',
                                         }}
                                     />
                                 )}
                                 <item.icon
-                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
-                                    strokeWidth={isActive ? 2.3 : 1.8}
+                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-200 ${isActive ? 'scale-105' : ''}`}
+                                    style={{ color: isActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)' }}
+                                    strokeWidth={isActive ? 2.5 : 1.8}
                                 />
-                                <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                                <span
+                                    className="text-[9px] relative z-10 transition-all duration-200"
+                                    style={{
+                                        fontWeight: isActive ? 800 : 600,
+                                        color: isActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)',
+                                    }}
+                                >
                                     {item.name}
                                 </span>
                             </Link>
@@ -406,18 +389,15 @@ export default function Sidebar() {
                     <div className="relative flex items-center justify-center" style={{ width: 56 }}>
                         <button
                             onClick={() => setShowQuickActions(!showQuickActions)}
-                            className="absolute -top-7 w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-300 active:scale-90"
+                            className="absolute -top-7 w-[62px] h-[62px] rounded-full flex items-center justify-center transition-all duration-200 active:scale-90"
                             style={{
-                                background: isQuickActionActive
-                                    ? 'var(--primary)'
-                                    : 'linear-gradient(135deg, #165DFF 0%, #4D8AFF 100%)',
-                                boxShadow: showQuickActions
-                                    ? '0 4px 20px rgba(22, 93, 255, 0.5)'
-                                    : '0 4px 15px rgba(22, 93, 255, 0.35)',
-                                transform: showQuickActions ? 'rotate(45deg)' : 'rotate(0deg)',
+                                background: 'var(--neo-peach)',
+                                border: '3px solid var(--neo-ink)',
+                                boxShadow: showQuickActions ? '2px 2px 0 var(--neo-ink)' : '4px 4px 0 var(--neo-ink)',
+                                transform: showQuickActions ? 'rotate(45deg) translate(1px, 1px)' : 'rotate(0deg)',
                             }}
                         >
-                            <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+                            <Plus className="w-8 h-8" style={{ color: 'var(--neo-ink)' }} strokeWidth={3} />
                         </button>
                     </div>
 
@@ -428,23 +408,29 @@ export default function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                                className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-[14px] transition-all duration-200"
                             >
                                 {isActive && (
                                     <div
-                                        className="absolute inset-0 rounded-xl"
+                                        className="absolute inset-0 rounded-[14px]"
                                         style={{
-                                            background: theme === 'dark'
-                                                ? 'rgba(77, 138, 255, 0.12)'
-                                                : 'rgba(22, 93, 255, 0.10)',
+                                            background: 'var(--neo-yellow)',
+                                            border: '2px solid var(--neo-ink)',
                                         }}
                                     />
                                 )}
                                 <item.icon
-                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
-                                    strokeWidth={isActive ? 2.3 : 1.8}
+                                    className={`w-[22px] h-[22px] relative z-10 transition-all duration-200 ${isActive ? 'scale-105' : ''}`}
+                                    style={{ color: isActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)' }}
+                                    strokeWidth={isActive ? 2.5 : 1.8}
                                 />
-                                <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                                <span
+                                    className="text-[9px] relative z-10 transition-all duration-200"
+                                    style={{
+                                        fontWeight: isActive ? 800 : 600,
+                                        color: isActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)',
+                                    }}
+                                >
                                     {item.name}
                                 </span>
                             </Link>
@@ -454,23 +440,29 @@ export default function Sidebar() {
                     {/* "Lainnya" Button */}
                     <button
                         onClick={() => setShowMore(true)}
-                        className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-xl transition-all duration-300"
+                        className="flex flex-col items-center justify-center gap-0.5 relative px-3 py-1.5 rounded-[14px] transition-all duration-200"
                     >
                         {isMoreActive && (
                             <div
-                                className="absolute inset-0 rounded-xl"
+                                className="absolute inset-0 rounded-[14px]"
                                 style={{
-                                    background: theme === 'dark'
-                                        ? 'rgba(77, 138, 255, 0.12)'
-                                        : 'rgba(22, 93, 255, 0.10)',
+                                    background: 'var(--neo-yellow)',
+                                    border: '2px solid var(--neo-ink)',
                                 }}
                             />
                         )}
                         <MoreHorizontal
-                            className={`w-[22px] h-[22px] relative z-10 transition-all duration-300 ${isMoreActive ? 'text-[var(--primary)] scale-110' : 'text-[var(--text-muted)]'}`}
-                            strokeWidth={isMoreActive ? 2.3 : 1.8}
+                            className="w-[22px] h-[22px] relative z-10 transition-all duration-200"
+                            style={{ color: isMoreActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)' }}
+                            strokeWidth={isMoreActive ? 2.5 : 1.8}
                         />
-                        <span className={`text-[9px] font-semibold relative z-10 transition-all duration-300 ${isMoreActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`}>
+                        <span
+                            className="text-[9px] relative z-10 transition-all duration-200"
+                            style={{
+                                fontWeight: isMoreActive ? 800 : 600,
+                                color: isMoreActive ? (theme === 'dark' ? '#ffd84d' : '#141414') : 'var(--text-muted)',
+                            }}
+                        >
                             Lainnya
                         </span>
                     </button>
@@ -488,15 +480,24 @@ export default function Sidebar() {
                     />
 
                     {/* Sheet */}
-                    <div className="relative w-full bg-[var(--bg-card)] rounded-t-3xl shadow-2xl z-10 pb-safe animate-in slide-in-from-bottom duration-300">
+                    <div className="relative w-full rounded-t-3xl shadow-2xl z-10 pb-safe animate-in slide-in-from-bottom duration-300"
+                        style={{
+                            background: theme === 'dark' ? '#252118' : '#fffdf8',
+                            borderTop: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
+                            borderLeft: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
+                            borderRight: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
+                        }}
+                    >
                         {/* Handle Bar */}
                         <div className="flex justify-center pt-3 pb-1">
                             <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full" />
                         </div>
 
                         {/* Header */}
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-default)]">
-                            <span className="font-semibold text-[var(--text-primary)] text-base">Menu Lainnya</span>
+                        <div className="flex items-center justify-between px-5 py-3 border-b"
+                            style={{ borderColor: theme === 'dark' ? 'rgba(242,242,238,0.12)' : '#e8e2d6' }}
+                        >
+                            <span className="font-black text-[var(--text-primary)] text-base tracking-tight">Menu Lainnya</span>
                             <button
                                 onClick={() => setShowMore(false)}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
@@ -514,15 +515,21 @@ export default function Sidebar() {
                                         key={item.href}
                                         href={item.href}
                                         onClick={() => setShowMore(false)}
-                                        className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 ${isActive ? 'bg-[var(--bg-elevated)]' : 'active:bg-[var(--bg-elevated)]'}`}
+                                        className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-150 ${isActive ? 'bg-[var(--bg-elevated)]' : 'active:bg-[var(--bg-hover)]'}`}
                                     >
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? 'bg-[var(--primary)]' : 'bg-[#F9FAFB] dark:bg-[var(--bg-page)]'}`}>
+                                        <div
+                                            className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                                            style={{
+                                                background: isActive ? '#141414' : (theme === 'dark' ? '#2e2a20' : '#f5f0e8'),
+                                                border: isActive ? 'none' : '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#e8e2d6'),
+                                            }}
+                                        >
                                             <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
                                         </div>
-                                        <span className={`font-medium text-sm flex-1 ${isActive ? 'text-[var(--text-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}>
+                                        <span className={`font-medium text-sm flex-1 ${isActive ? 'text-[var(--text-primary)] font-black tracking-tight' : 'text-[var(--text-secondary)]'}`}>
                                             {item.name}
                                         </span>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'}`} />
+                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`} />
                                     </Link>
                                 )
                             })}
@@ -530,9 +537,15 @@ export default function Sidebar() {
                             {/* Dark Mode Toggle in Mobile More Menu */}
                             <button
                                 onClick={toggleTheme}
-                                className="flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200 active:bg-[var(--bg-elevated)]"
+                                className="flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-150 active:bg-[var(--bg-hover)]"
                             >
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#F9FAFB] dark:bg-[var(--bg-page)]">
+                                <div
+                                    className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                                    style={{
+                                        background: theme === 'dark' ? '#2e2a20' : '#f5f0e8',
+                                        border: '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#e8e2d6'),
+                                    }}
+                                >
                                     {theme === 'dark' ? (
                                         <Sun className="w-5 h-5 text-amber-400" />
                                     ) : (

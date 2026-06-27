@@ -3,85 +3,111 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Lexend Deca', sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* ============================================================
-   LIGHT MODE — ORIGINAL COLORS (tidak berubah sama sekali)
+   NEOBRUTALISM DESIGN SYSTEM — CatatDuit
+   Referensi: prototype.html + redesign.md
    ============================================================ */
+
+/* ── LIGHT MODE ── */
 :root {
   --primary: #165DFF;
   --primary-hover: #0E4BD9;
 
-  /* Background layers - ORIGINAL */
-  --bg-page: #EFF2F7;
-  --bg-card: #ffffff;
-  --bg-elevated: #F8FAFC;
-  --bg-hover: #F1F5F9;
-  --bg-input: #F8FAFC;
+  /* ── Neobrutalism Core Tokens ── */
+  --neo-ink: #141414;
+  --neo-shadow: 6px 6px 0 #141414;
+  --neo-shadow-sm: 4px 4px 0 #141414;
+  --neo-shadow-xs: 3px 3px 0 #141414;
+  --neo-radius: 28px;
+  --neo-radius-md: 22px;
+  --neo-radius-sm: 16px;
+  --neo-border: 3px solid #141414;
 
-  /* Text - ORIGINAL */
-  --text-primary: #080C1A;
-  --text-secondary: #6A7686;
-  --text-muted: #94A3B8;
+  /* ── Neobrutalism Color Swatches ── */
+  --neo-yellow: #fff5b8;
+  --neo-yellow-vivid: #ffd84d;
+  --neo-mint: #dffff0;
+  --neo-sky: #dff4ff;
+  --neo-peach: #ffe5d6;
+  --neo-pink: #ffd9e9;
+  --neo-lav: #ebe2ff;
 
-  /* Border - ORIGINAL */
-  --border-default: #F3F4F3;
-  --border-strong: #E2E8F0;
+  /* ── Background Layers — warm neobrutalism palette ── */
+  --bg-page: #f8f4ec;
+  --bg-card: #fffdf8;
+  --bg-elevated: #ffffff;
+  --bg-hover: rgba(255, 216, 77, 0.15);
+  --bg-input: #ffffff;
 
-  /* Status Colors */
-  --success: #30B22D;
-  --success-light: #DCFCE7;
-  --error: #ED6B60;
-  --error-light: #FEE2E2;
-  --warning: #FED71F;
-  --warning-light: #FEF9C3;
+  /* ── Text ── */
+  --text-primary: #141414;
+  --text-secondary: #4a4540;
+  --text-muted: #7a746e;
 
-  /* Layout */
+  /* ── Border ── */
+  --border-default: #e8e2d6;
+  --border-strong: #141414;
+
+  /* ── Status Colors ── */
+  --success: #0f7b3b;
+  --success-light: #dffff0;
+  --error: #b42318;
+  --error-light: #ffe5d6;
+  --warning: #7b5600;
+  --warning-light: #fff5b8;
+
+  /* ── Layout ── */
   --sidebar-width: 280px;
 
-  /* Legacy aliases */
+  /* ── Legacy aliases (agar existing components tetap berfungsi) ── */
   --foreground: var(--text-primary);
   --secondary: var(--text-secondary);
   --muted: var(--bg-page);
   --border: var(--border-default);
-  --card-grey: #F1F3F6;
+  --card-grey: #f5f0e8;
 }
 
-/* ============================================================
-   DARK MODE — PURE BLACK/DARK, CLEAN & ELEGANT
-   ============================================================ */
+/* ── DARK MODE — Neobrutalism dark variant ── */
 .dark {
-  --primary: #4D8AFF;
-  --primary-hover: #6B9FFF;
+  --primary: #ffd84d;
+  --primary-hover: #ffce1a;
 
-  /* Background layers — truly dark, NO muddy colors */
-  --bg-page: #0A0A0F;
-  /* Pure near-black page bg */
-  --bg-card: #111118;
-  /* Slightly lighter for cards */
-  --bg-elevated: #18181F;
-  /* Elevated elements */
-  --bg-hover: #1E1E28;
-  /* Hover states */
-  --bg-input: #111118;
-  /* Input backgrounds */
+  /* Dark neobrutalism shadows */
+  --neo-ink: #f2f2ee;
+  --neo-shadow: 5px 5px 0 rgba(242, 242, 238, 0.20);
+  --neo-shadow-sm: 3px 3px 0 rgba(242, 242, 238, 0.15);
+  --neo-shadow-xs: 2px 2px 0 rgba(242, 242, 238, 0.10);
+  --neo-border: 3px solid rgba(242, 242, 238, 0.30);
 
-  /* Text — clean white/light grey */
-  --text-primary: #F2F2F7;
-  /* Near white */
-  --text-secondary: #8E8EA0;
-  /* Muted grey */
-  --text-muted: #5C5C70;
-  /* Very muted */
+  /* Dark swatches */
+  --neo-yellow: rgba(255, 216, 77, 0.12);
+  --neo-yellow-vivid: #ffd84d;
+  --neo-mint: rgba(187, 247, 208, 0.10);
+  --neo-sky: rgba(182, 227, 255, 0.10);
+  --neo-peach: rgba(255, 199, 166, 0.10);
+  --neo-pink: rgba(255, 183, 216, 0.10);
+  --neo-lav: rgba(217, 200, 255, 0.10);
 
-  /* Border — subtle dark */
-  --border-default: #222230;
-  /* Very subtle border */
-  --border-strong: #2C2C3A;
-  /* Stronger border */
+  /* Background layers — dark warm neobrutalism */
+  --bg-page: #1d1a14;
+  --bg-card: #252118;
+  --bg-elevated: #2e2a20;
+  --bg-hover: rgba(255, 216, 77, 0.08);
+  --bg-input: #252118;
 
-  /* Status Colors — adapted for dark */
+  /* Text */
+  --text-primary: #f2f2ee;
+  --text-secondary: #a8a49a;
+  --text-muted: #6a6660;
+
+  /* Border */
+  --border-default: #3a3530;
+  --border-strong: rgba(242, 242, 238, 0.30);
+
+  /* Status — adapted for dark */
   --success: #34D399;
   --success-light: #052E16;
   --error: #F87171;
@@ -89,7 +115,7 @@
   --warning: #FBBF24;
   --warning-light: #431407;
 
-  --card-grey: #18181F;
+  --card-grey: #2e2a20;
 }
 
 /* ============================================================
@@ -98,7 +124,7 @@
 body {
   background-color: var(--bg-page);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: 'Inter', var(--font-sans);
   overflow-x: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -112,41 +138,214 @@ h5,
 h6 {
   color: var(--text-primary);
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* ============================================================
-   COMPONENT STYLES
+   NEOBRUTALISM UTILITY CLASSES
+   ============================================================ */
+
+/* ── Cards ── */
+.brutal-card {
+  background: var(--bg-card);
+  border: 3px solid var(--neo-ink);
+  border-radius: var(--neo-radius);
+  box-shadow: var(--neo-shadow);
+}
+
+.brutal-card-md {
+  background: var(--bg-card);
+  border: 3px solid var(--neo-ink);
+  border-radius: var(--neo-radius-md);
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.brutal-card-sm {
+  background: var(--bg-card);
+  border: 3px solid var(--neo-ink);
+  border-radius: var(--neo-radius-sm);
+  box-shadow: var(--neo-shadow-sm);
+}
+
+/* Color-tinted card variants */
+.brutal-card-yellow { background: var(--neo-yellow) !important; }
+.brutal-card-mint   { background: var(--neo-mint) !important; }
+.brutal-card-sky    { background: var(--neo-sky) !important; }
+.brutal-card-peach  { background: var(--neo-peach) !important; }
+.brutal-card-pink   { background: var(--neo-pink) !important; }
+.brutal-card-lav    { background: var(--neo-lav) !important; }
+
+/* ── Buttons ── */
+.brutal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--neo-yellow-vivid);
+  border: 3px solid var(--neo-ink);
+  border-radius: 18px;
+  box-shadow: var(--neo-shadow-sm);
+  padding: 12px 20px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--neo-ink);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  letter-spacing: -0.01em;
+}
+
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--neo-ink);
+}
+
+.brutal-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--neo-ink);
+}
+
+.brutal-btn-ghost {
+  background: var(--bg-elevated);
+  box-shadow: var(--neo-shadow-sm);
+  border: 3px solid var(--neo-ink);
+  border-radius: 18px;
+  padding: 12px 20px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.brutal-btn-ghost:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--neo-ink);
+}
+
+/* ── Shadow utilities ── */
+.neo-shadow    { box-shadow: var(--neo-shadow); }
+.neo-shadow-sm { box-shadow: var(--neo-shadow-sm); }
+.neo-shadow-xs { box-shadow: var(--neo-shadow-xs); }
+
+/* ── Border utilities ── */
+.neo-border   { border: 3px solid var(--neo-ink); }
+.neo-border-2 { border: 2px solid var(--neo-ink); }
+
+/* ── Pill / Badge ── */
+.neo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 3px solid var(--neo-ink);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: var(--bg-elevated);
+  box-shadow: var(--neo-shadow-sm);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+/* ── Small uppercase label ── */
+.neo-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ── Money / amount display ── */
+.neo-amount {
+  font-size: clamp(24px, 3vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* ── Section header ── */
+.neo-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.neo-section-header h2 {
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+
+/* ── Transaction row ── */
+.neo-transaction-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 2px dashed rgba(20, 20, 20, 0.18);
+}
+
+.neo-transaction-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dark .neo-transaction-row {
+  border-top-color: rgba(242, 242, 238, 0.12);
+}
+
+/* ── Icon box ── */
+.neo-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--neo-ink);
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  font-size: 20px;
+}
+
+/* ── Amount colors ── */
+.neo-amount-pos { color: var(--success); font-weight: 900; }
+.neo-amount-neg { color: var(--error); font-weight: 900; }
+
+/* ============================================================
+   COMPONENT STYLES (updated for neobrutalism)
    ============================================================ */
 .glass {
   background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  border: 2px solid var(--border-default);
+  box-shadow: var(--neo-shadow-sm);
 }
 
 .dark .glass {
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  border-color: var(--border-default);
+  box-shadow: var(--neo-shadow-sm);
 }
 
 .shadow-premium-lg {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--neo-shadow);
 }
 
 .dark .shadow-premium-lg {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--neo-shadow);
 }
 
 .card-hover {
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(22, 93, 255, 0.1);
-  border-color: var(--primary);
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--neo-ink);
 }
 
 .dark .card-hover:hover {
-  box-shadow: 0 8px 25px rgba(77, 138, 255, 0.15);
+  box-shadow: 8px 8px 0 rgba(242, 242, 238, 0.20);
 }
 
 /* ============================================================
@@ -162,20 +361,20 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #c8c2b4;
   border-radius: 10px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2C2C3A;
+  background: #3a3530;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #a8a29a;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #3C3C50;
+  background: #4a4540;
 }
 
 /* ============================================================
@@ -184,21 +383,22 @@ h6 {
 input,
 select,
 textarea {
-  border-radius: 0.75rem;
+  border-radius: 14px;
 }
 
 input:not([data-no-ring]):focus,
 select:focus,
 textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.15);
+  border-color: var(--neo-ink);
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.10);
   outline: none;
 }
 
 .dark input:not([data-no-ring]):focus,
 .dark select:focus,
 .dark textarea:focus {
-  box-shadow: 0 0 0 3px rgba(77, 138, 255, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 216, 77, 0.15);
 }
 
 /* Search input */
@@ -222,9 +422,9 @@ input[data-no-ring]:focus {
   -webkit-text-fill-color: var(--text-primary) !important;
 }
 
-/* Button Radius */
+/* Button radius */
 button {
-  border-radius: 0.75rem;
+  border-radius: 14px;
 }
 
 /* ============================================================
@@ -233,8 +433,8 @@ button {
 
 /* Option text in dark mode selects */
 .dark option {
-  background-color: #111118;
-  color: #F2F2F7;
+  background-color: #252118;
+  color: #f2f2ee;
 }
 
 /* Native date/time inputs in dark mode */
@@ -246,7 +446,7 @@ button {
   color: var(--text-primary) !important;
 }
 
-/* Select elements with bg-slate-50 in dark mode */
+/* Select elements in dark mode */
 .dark select {
   background-color: var(--bg-input);
   color: var(--text-primary);

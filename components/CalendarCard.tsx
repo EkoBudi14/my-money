@@ -386,7 +386,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
     }
 
     return (
-        <div className="glass shadow-premium-lg p-6 rounded-[2rem] border border-white/20 h-full flex flex-col backdrop-blur-xl card-hover relative overflow-hidden">
+        <div className="brutal-card p-6 bg-[var(--bg-card)] relative overflow-hidden flex flex-col h-full">
              {/* Live Clock */}
              <div className="mb-6 border-b border-slate-100 dark:border-[var(--border-default)] pb-4 text-center">
                 {isMounted ? (

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Lexend_Deca } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const lexendDeca = Lexend_Deca({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-lexend-deca",
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -63,7 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${lexendDeca.variable} antialiased bg-[var(--bg-page)]`}
+        className={`${inter.variable} antialiased bg-[var(--bg-page)]`}
       >
         <ThemeProvider>
           <SidebarProvider>

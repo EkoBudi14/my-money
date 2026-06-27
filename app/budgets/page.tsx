@@ -311,20 +311,20 @@ export default function BudgetsPage() {
     }
 
     return (
-        <main className="flex-1 bg-[#F9FAFB] dark:bg-[#F9FAFB] dark:bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
+        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
             {/* Top Header */}
-            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-card)] px-5 md:px-8">
+            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
+                style={{ borderBottom: 'var(--neo-border)' }}>
                 <div className="flex items-center gap-3">
-                    <Link href="/" className="md:hidden p-2 -ml-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-[var(--text-primary)] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-colors">
+                    <Link href="/" className="md:hidden p-2 -ml-2 rounded-[12px] transition-colors" style={{ color: 'var(--text-muted)' }}>
                         <ArrowLeft className="w-6 h-6" />
                     </Link>
-                    <h2 className="font-bold text-2xl text-[var(--text-primary)]">Manajemen Budget</h2>
+                    <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Manajemen Budget</h2>
                 </div>
-                <div className="hidden md:flex items-center gap-3 pl-3 border-l border-[var(--border-default)] ml-auto">
-                    <div className="text-right">
-                        <p className="font-semibold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    </div>
-                    <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold border-2 border-white shadow-sm">
+                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
+                    <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
+                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
+                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
                         EB
                     </div>
                 </div>
@@ -333,26 +333,28 @@ export default function BudgetsPage() {
             <div className="relative min-h-[calc(100vh-90px)]">
 
                 {/* Control Bar - Filter UI */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-[var(--bg-card)] p-4 mx-4 md:mx-8 mt-6 rounded-2xl border border-[var(--border-default)] shadow-sm">
-                    <div className="flex w-full md:w-auto items-center gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1 rounded-xl">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mx-4 md:mx-8 mt-6 brutal-card-sm p-4">
+                    <div className="flex w-full md:w-auto items-center gap-2 rounded-[14px] p-1" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
                         {filterMode === 'monthly' && (
                             <button
                                 onClick={prevMonth}
-                                className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
+                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
+                                style={{ color: 'var(--text-muted)' }}
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                         )}
                         <div className="flex-1 flex items-center justify-center gap-2 px-4 py-1.5 min-w-[140px]">
-                            <Calendar className="w-4 h-4 text-[var(--primary)]" />
-                            <span className="font-bold text-[var(--text-primary)] whitespace-nowrap text-center text-sm">
+                            <Calendar className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
+                            <span className="font-black text-[var(--text-primary)] whitespace-nowrap text-center text-sm">
                                 {getPeriodLabel()}
                             </span>
                         </div>
                         {filterMode === 'monthly' && (
                             <button
                                 onClick={nextMonth}
-                                className="p-2 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] transition-all"
+                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
+                                style={{ color: 'var(--text-muted)' }}
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>
@@ -362,7 +364,11 @@ export default function BudgetsPage() {
                     <div className="flex w-full md:w-auto items-center gap-2">
                         <button
                             onClick={() => setShowSettings(!showSettings)}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all ${showSettings ? 'bg-[var(--primary)] text-white shadow-lg shadow-blue-500/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-[14px] font-black transition-all active:scale-95"
+                            style={showSettings
+                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
+                                : { background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }
+                            }
                         >
                             <Settings className="w-4 h-4" />
                             <span>Filter</span>
@@ -373,31 +379,39 @@ export default function BudgetsPage() {
                 {/* Settings Panel */}
                 {showSettings && (
                     <>
-                        <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setShowSettings(false)}
-                        />
-                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] bg-white dark:bg-[var(--bg-card)] rounded-2xl shadow-xl border border-[var(--border-default)] p-5 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="fixed inset-0 z-10" onClick={() => setShowSettings(false)} />
+                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] brutal-card p-5 animate-in fade-in zoom-in-95 duration-200"
+                            style={{ background: 'var(--bg-card)' }}>
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-[var(--text-primary)]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500">
+                                <h3 className="font-black uppercase tracking-tighter text-xl text-[var(--text-primary)]">Pengaturan Filter</h3>
+                                <button onClick={() => setShowSettings(false)}
+                                    className="p-1.5 rounded-[10px] transition-colors"
+                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-[var(--bg-elevated)] p-1.5 rounded-xl">
+                                    <label className="neo-label">Mode Tampilan</label>
+                                    <div className="grid grid-cols-2 gap-2 rounded-[14px] p-1.5" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
                                         <button
                                             onClick={() => setFilterMode('monthly')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'monthly' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
+                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
+                                            style={filterMode === 'monthly'
+                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
+                                                : { color: 'var(--text-muted)' }
+                                            }
                                         >
                                             Bulanan
                                         </button>
                                         <button
                                             onClick={() => setFilterMode('custom')}
-                                            className={`px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-[var(--bg-card)] shadow-sm text-[var(--primary)]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500'}`}
+                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
+                                            style={filterMode === 'custom'
+                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
+                                                : { color: 'var(--text-muted)' }
+                                            }
                                         >
                                             Custom
                                         </button>
@@ -405,23 +419,25 @@ export default function BudgetsPage() {
                                 </div>
 
                                 {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2 border-t border-[var(--border-default)]">
+                                    <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Dari Tanggal</label>
+                                            <label className="neo-label">Dari Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
+                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
+                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--text-secondary)]">Sampai Tanggal</label>
+                                            <label className="neo-label">Sampai Tanggal</label>
                                             <input
                                                 type="date"
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-[var(--primary)] transition-all font-bold text-[var(--text-primary)]"
+                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
+                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                             />
                                         </div>
                                     </div>
@@ -435,7 +451,7 @@ export default function BudgetsPage() {
                 <div className="md:hidden pb-[80px]">
                     {loading ? (
                         <div className="flex items-center justify-center py-16">
-                            <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+                            <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
                         </div>
                     ) : (() => {
                         const totalBudget = budgets.reduce((acc, b) => acc + b.amount, 0)
@@ -446,48 +462,43 @@ export default function BudgetsPage() {
 
                         return (
                             <>
-                                {/* Summary Card */}
-                                <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden shadow-lg ${isOverall ? 'bg-gradient-to-br from-rose-500 to-rose-700 shadow-rose-500/25' : 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9] shadow-blue-500/25'}`}>
-                                    <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
-                                    <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
-                                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">
-                                        {getPeriodLabel()}
-                                    </p>
-                                    <div className="flex items-end justify-between mb-3 relative z-10">
+                                {/* Summary Card — Neobrutalism */}
+                                <div className={`mx-4 mt-4 brutal-card-md p-5 ${isOverall ? 'brutal-card-peach' : 'brutal-card-yellow'}`}>
+                                    <p className="neo-label mb-1">{getPeriodLabel()}</p>
+                                    <div className="flex items-end justify-between mt-1 mb-3">
                                         <div>
-                                            <p className="text-white/70 text-xs mb-0.5">Total Terpakai</p>
-                                            <p className="text-white font-extrabold text-2xl">Rp {totalSpent.toLocaleString('id-ID')}</p>
+                                            <p className="neo-label mb-0.5">Total Terpakai</p>
+                                            <p className="neo-amount">Rp {totalSpent.toLocaleString('id-ID')}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-white/70 text-xs mb-0.5">Total Budget</p>
-                                            <p className="text-white font-bold text-base">Rp {totalBudget.toLocaleString('id-ID')}</p>
+                                            <p className="neo-label mb-0.5">Total Budget</p>
+                                            <p className="font-black text-base text-[var(--text-primary)]">Rp {totalBudget.toLocaleString('id-ID')}</p>
                                         </div>
                                     </div>
                                     {/* Overall progress */}
-                                    <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mb-2 relative z-10">
-                                        <div className="h-full rounded-full bg-white dark:bg-[var(--bg-card)]/80 transition-all duration-500" style={{ width: `${overallPct}%` }} />
+                                    <div className="w-full h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(20,20,20,0.12)' }}>
+                                        <div className="h-full rounded-full transition-all duration-500"
+                                            style={{ width: `${overallPct}%`, background: isOverall ? 'var(--error)' : 'var(--neo-ink)' }} />
                                     </div>
-                                    <div className="flex items-center justify-between relative z-10">
-                                        <p className="text-white/70 text-[11px]">Sisa: <span className="text-white font-bold">Rp {totalRemaining.toLocaleString('id-ID')}</span></p>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isOverall ? 'bg-white/20 text-white' : 'bg-white/20 text-white'}`}>
-                                            {overallPct}% terpakai
-                                        </span>
+                                    <div className="flex items-center justify-between">
+                                        <p className="neo-label">Sisa: <span className="font-black text-[var(--text-primary)]">Rp {totalRemaining.toLocaleString('id-ID')}</span></p>
+                                        <span className="neo-pill text-[10px]">{overallPct}% terpakai</span>
                                     </div>
                                 </div>
 
                                 {/* Info Bar */}
                                 <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="text-sm font-bold text-[var(--text-primary)]">{budgets.length} kategori budget</p>
-                                    <p className="text-[11px] text-[var(--text-secondary)]">Tap untuk edit / hapus / catat</p>
+                                    <p className="font-black uppercase tracking-tight text-[var(--text-primary)]">{budgets.length} kategori budget</p>
+                                    <p className="neo-label mt-1">Tap untuk edit / hapus / catat</p>
                                 </div>
 
                                 {/* Budget List */}
                                 {budgets.length === 0 ? (
-                                    <div className="mx-4 text-center py-10 text-slate-400 dark:text-slate-500 border-2 border-dashed border-[var(--border-default)] rounded-2xl bg-white dark:bg-[var(--bg-card)]">
-                                        <p className="text-sm">Belum ada budget bulan ini.</p>
+                                    <div className="mx-4 brutal-card-sm p-10 text-center">
+                                        <p className="text-sm font-semibold text-[var(--text-muted)]">Belum ada budget bulan ini.</p>
                                     </div>
                                 ) : (
-                                    <div className="mx-4 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-sm overflow-hidden">
+                                    <div className="mx-4 space-y-2">
                                         {budgets.map((budget, idx) => {
                                             const spent = getSpentAmount(budget.category)
                                             const percent = Math.min((spent / budget.amount) * 100, 100)
@@ -497,60 +508,61 @@ export default function BudgetsPage() {
                                                 ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
                                             ]
                                             const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-                                            const isLast = idx === budgets.length - 1
 
                                             return (
-                                                <div key={budget.id} className={`px-4 pt-3.5 pb-3 ${!isLast ? 'border-b border-[var(--border-default)]' : ''}`}>
+                                                <div key={budget.id} className="brutal-card-sm p-4"
+                                                    style={{ background: isOver ? 'var(--neo-peach)' : 'var(--bg-card)' }}>
                                                     {/* Top Row: Category badge + amounts */}
                                                     <div className="flex items-start justify-between mb-2">
-                                                        <div className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 ${catColor}`}>
-                                                            {budget.category}
-                                                        </div>
+                                                        <span className="neo-pill text-[10px]">{budget.category}</span>
                                                         <div className="text-right ml-2">
-                                                            <p className="font-bold text-sm text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
-                                                            <p className="text-[11px] text-[var(--text-secondary)]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
+                                                            <p className="font-black text-sm text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
+                                                            <p className="text-[11px] font-semibold text-[var(--text-muted)]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
                                                         </div>
                                                     </div>
 
                                                     {/* Progress bar */}
-                                                    <div className="w-full h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden mb-1.5">
+                                                    <div className="w-full h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(20,20,20,0.12)' }}>
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
-                                                            style={{ width: `${percent}%` }}
+                                                            className="h-full rounded-full transition-all duration-500"
+                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
                                                         />
                                                     </div>
 
                                                     {/* Sisa / % */}
                                                     <div className="flex items-center justify-between mb-3">
                                                         {isOver ? (
-                                                            <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1">
+                                                            <span className="text-[10px] font-black flex items-center gap-1" style={{ color: 'var(--error)' }}>
                                                                 <AlertCircle className="w-3 h-3" /> Over Budget!
                                                             </span>
                                                         ) : (
-                                                            <span className="text-[10px] text-[var(--text-secondary)]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
+                                                            <span className="text-[10px] font-semibold text-[var(--text-muted)]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
                                                         )}
-                                                        <span className="text-[10px] font-semibold text-[var(--text-secondary)]">{Math.round(percent)}%</span>
+                                                        <span className="text-[10px] font-black text-[var(--text-primary)]">{Math.round(percent)}%</span>
                                                     </div>
 
-                                                    {/* Action Buttons — 3 columns like Goals */}
+                                                    {/* Action Buttons — 3 columns */}
                                                     <div className="grid grid-cols-3 gap-2">
                                                         <button
                                                             onClick={() => handleEdit(budget)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-600 dark:text-slate-500 font-bold rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] active:scale-95 transition-all"
+                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
+                                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
                                                             Edit
                                                         </button>
                                                         <button
                                                             onClick={() => openQuickExp(budget.category)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-[var(--primary)] text-white font-bold rounded-xl text-xs hover:bg-[#1455E5] active:scale-95 transition-all shadow-sm"
+                                                            className="py-2 flex items-center justify-center gap-1.5 font-black rounded-[12px] text-xs active:scale-95 transition-all"
+                                                            style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }}
                                                         >
                                                             <Plus className="w-3.5 h-3.5" />
                                                             Catat
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(budget.id)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 font-bold rounded-xl text-xs hover:bg-rose-100 dark:bg-rose-950/40 active:scale-95 transition-all"
+                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
+                                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                             Hapus
@@ -565,12 +577,14 @@ export default function BudgetsPage() {
                                 {/* Tambah Budget Button */}
                                 <button
                                     onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all active:scale-[0.98]"
+                                    className="mx-4 mt-3 w-[calc(100%-2rem)] rounded-[20px] p-4 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
+                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] flex items-center justify-center">
-                                        <Plus className="w-4 h-4" />
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center"
+                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)' }}>
+                                        <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
                                     </div>
-                                    <span className="font-bold text-sm">Buat Budget Baru</span>
+                                    <span className="font-black">Buat Budget Baru</span>
                                 </button>
                             </>
                         )
@@ -580,11 +594,11 @@ export default function BudgetsPage() {
                 {/* ===== DESKTOP VIEW ===== */}
                 <div className="hidden md:block p-8">
                     {loading ? (
-                        <div className="text-center py-12 text-slate-400 dark:text-slate-500">Loading...</div>
+                        <div className="text-center py-12 text-[var(--text-muted)] font-semibold animate-pulse">Memuat budget...</div>
                     ) : (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {budgets.map(budget => {
+                                {budgets.map((budget, idx) => {
                                     const spent = getSpentAmount(budget.category)
                                     const percent = Math.min((spent / budget.amount) * 100, 100)
                                     const isOver = spent > budget.amount
@@ -593,58 +607,65 @@ export default function BudgetsPage() {
                                         ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
                                     ]
                                     const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
+                                    // Cycle card colors for variety
+                                    const BUDGET_COLORS = ['var(--neo-yellow)', 'var(--neo-sky)', 'var(--neo-mint)', 'var(--neo-lav)']
 
                                     return (
-                                        <div key={budget.id} className="bg-white dark:bg-[var(--bg-card)] p-6 pb-8 rounded-3xl border border-[var(--border-default)] hover:shadow-lg transition-all duration-300 group flex flex-col justify-between min-h-[320px] card-hover">
+                                        <div key={budget.id}
+                                            className="brutal-card card-hover flex flex-col justify-between min-h-[320px] p-6 pb-8"
+                                            style={{ background: isOver ? 'var(--neo-peach)' : BUDGET_COLORS[idx % BUDGET_COLORS.length] }}>
                                             <div>
-                                                <div className="flex justify-between items-start mb-6">
-                                                    <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${catColor}`}>
-                                                        {budget.category}
-                                                    </div>
-                                                    <button onClick={() => handleDelete(budget.id)} className="p-3 bg-white dark:bg-[var(--bg-card)]/80 backdrop-blur-sm border border-slate-100 dark:border-[var(--border-default)] rounded-xl text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus">
-                                                        <Trash2 className="w-5 h-5" />
+                                                <div className="flex justify-between items-start mb-5">
+                                                    <span className="neo-pill text-xs">{budget.category}</span>
+                                                    <button onClick={() => handleDelete(budget.id)}
+                                                        className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
+                                                        style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
 
-                                                <div className="mb-6">
-                                                    <div className="flex justify-between items-end mb-2">
-                                                        <p className="text-3xl font-extrabold text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
-                                                    </div>
-                                                    <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">
+                                                <div className="mb-5">
+                                                    <p className="neo-label">Total Terpakai</p>
+                                                    <p className="text-3xl font-black text-[var(--text-primary)] mt-1 tracking-tight">Rp {spent.toLocaleString('id-ID')}</p>
+                                                    <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">
                                                         Limit: Rp {budget.amount.toLocaleString('id-ID')}
                                                     </p>
 
                                                     {isOver && (
-                                                        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold mb-3 bg-rose-50 dark:bg-rose-950/30 p-2 rounded-lg">
+                                                        <div className="flex items-center gap-1.5 text-xs font-black mt-2 mb-1 p-2 rounded-[10px]"
+                                                            style={{ background: 'rgba(20,20,20,0.08)', color: 'var(--error)' }}>
                                                             <AlertCircle className="w-3.5 h-3.5" />
                                                             <span>Over Budget!</span>
                                                         </div>
                                                     )}
 
-                                                    <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                                                    <div className="w-full h-2.5 rounded-full overflow-hidden mt-3"
+                                                        style={{ background: 'rgba(20,20,20,0.12)' }}>
                                                         <div
-                                                            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-orange-400' : 'bg-[var(--primary)]'}`}
-                                                            style={{ width: `${percent}%` }}
+                                                            className="h-full rounded-full transition-all duration-500"
+                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
                                                         />
                                                     </div>
-                                                    <p className="text-xs text-[var(--text-secondary)] mt-3 font-medium">
-                                                        Sisa: <span className="text-[var(--text-primary)]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
+                                                    <p className="text-xs font-semibold text-[var(--text-muted)] mt-2">
+                                                        Sisa: <span className="font-black text-[var(--text-primary)]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--border-default)]">
+                                            <div className="grid grid-cols-2 gap-3 pt-4" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
                                                 <button
                                                     onClick={() => handleEdit(budget)}
-                                                    className="py-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-all shadow-sm hover:shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                                    className="py-3 font-bold rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
                                                 >
-                                                    <Pencil className="w-5 h-5" /> Edit
+                                                    <Pencil className="w-4 h-4" /> Edit
                                                 </button>
                                                 <button
                                                     onClick={() => openQuickExp(budget.category)}
-                                                    className="py-3.5 bg-[var(--primary)] !text-white font-bold rounded-xl hover:bg-[#1455E5] transition-all text-sm flex justify-center items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+                                                    className="py-3 font-black rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
+                                                    style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)', color: 'var(--neo-ink)' }}
                                                 >
-                                                    <Plus className="w-5 h-5 !text-white" /> Catat
+                                                    <Plus className="w-4 h-4" /> Catat
                                                 </button>
                                             </div>
                                         </div>
@@ -654,18 +675,20 @@ export default function BudgetsPage() {
                                 {/* Add New Card */}
                                 <button
                                     onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-blue-50 dark:bg-blue-950/30/30 transition-all min-h-[320px] group"
+                                    className="rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 font-bold text-sm transition-all min-h-[320px] group active:scale-[0.98]"
+                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
                                 >
-                                    <div className="bg-[var(--bg-elevated)] group-hover:bg-[var(--primary)] p-4 rounded-full transition-colors">
-                                        <Plus className="w-8 h-8 text-slate-500 dark:text-slate-400 group-hover:text-white transition-colors" />
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
+                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)' }}>
+                                        <Plus className="w-6 h-6 text-[var(--neo-ink)]" />
                                     </div>
-                                    <span className="font-bold text-sm">Buat Budget Baru</span>
+                                    <span className="font-black">Buat Budget Baru</span>
                                 </button>
                             </div>
 
                             {budgets.length === 0 && (
-                                <div className="text-center py-12 text-slate-400 dark:text-slate-500 border-2 border-dashed border-[var(--border-default)] rounded-3xl bg-white dark:bg-[var(--bg-card)]">
-                                    <p>Belum ada budget untuk bulan ini.</p>
+                                <div className="brutal-card-sm text-center py-12">
+                                    <p className="font-semibold text-[var(--text-muted)]">Belum ada budget untuk bulan ini.</p>
                                 </div>
                             )}
                         </div>
@@ -677,31 +700,36 @@ export default function BudgetsPage() {
             {/* Main Modal (Add/Edit Budget) */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetForm}></div>
-                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-md rounded-3xl shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetForm} />
+                    <div className="w-full max-w-md z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
+                        style={{ background: 'var(--bg-card)' }}>
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                            <button onClick={resetForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
+                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
+                            <button onClick={resetForm}
+                                className="p-2 rounded-[12px] transition-colors"
+                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Mulai</label>
+                                    <label className="neo-label block mb-2">Tanggal Mulai</label>
                                     <input
                                         type="date"
-                                        className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
+                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
+                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
                                         value={budgetStartDate}
                                         onChange={(e) => setBudgetStartDate(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Tanggal Selesai</label>
+                                    <label className="neo-label block mb-2">Tanggal Selesai</label>
                                     <input
                                         type="date"
-                                        className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
+                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
+                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
                                         value={budgetEndDate}
                                         onChange={(e) => setBudgetEndDate(e.target.value)}
                                         required
@@ -709,7 +737,7 @@ export default function BudgetsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">Pilih Kategori</label>
+                                <label className="neo-label block mb-3">Pilih Kategori</label>
                                 <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                                     {[
                                         ...CATEGORIES.pengeluaran,
@@ -719,7 +747,11 @@ export default function BudgetsPage() {
                                             key={cat.name}
                                             type="button"
                                             onClick={() => setCategory(cat.name)}
-                                            className={`p-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all text-left flex items-center gap-2 ${category === cat.name ? `bg-blue-50 dark:bg-blue-950/30 border-[var(--primary)] text-[var(--primary)] ring-1 ring-[var(--primary)]` : 'border-slate-200 dark:border-[var(--border-default)] text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}
+                                            className="p-3 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all text-left flex items-center gap-2 active:scale-95"
+                                            style={category === cat.name
+                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
+                                                : { background: 'var(--bg-elevated)', border: '2px solid rgba(20,20,20,0.15)', color: 'var(--text-muted)' }
+                                            }
                                         >
                                             <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
                                             {cat.name}
@@ -728,13 +760,13 @@ export default function BudgetsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Batasan (Rp)</label>
+                                <label className="neo-label block mb-2">Batasan (Rp)</label>
                                 <MoneyInput
                                     value={amount}
                                     onChange={setAmount}
                                 />
                             </div>
-                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
                                 Simpan Budget
                             </button>
                         </form>
@@ -745,20 +777,23 @@ export default function BudgetsPage() {
             {/* Quick Expense Modal */}
             {isQuickExpModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm}></div>
-                    <div className="bg-white dark:bg-[var(--bg-card)] w-full max-w-sm rounded-3xl p-6 shadow-2xl z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm} />
+                    <div className="w-full max-w-sm z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
+                        style={{ background: 'var(--bg-card)' }}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h3 className="text-xl font-bold text-[var(--text-primary)]">Catat Pengeluaran</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Kategori: <span className="font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 rounded-md">{quickExpCategory}</span></p>
+                                <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">Catat Pengeluaran</h3>
+                                <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">Kategori: <span className="neo-pill text-xs font-black">{quickExpCategory}</span></p>
                             </div>
-                            <button onClick={resetQuickExpForm} className="p-2 bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-colors">
+                            <button onClick={resetQuickExpForm}
+                                className="p-2 rounded-[12px] transition-colors"
+                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleQuickExpenseSave} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Jumlah (Rp)</label>
+                                <label className="neo-label block mb-2">Jumlah (Rp)</label>
                                 <MoneyInput
                                     value={quickExpAmount}
                                     onChange={setQuickExpAmount}
@@ -767,9 +802,10 @@ export default function BudgetsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">Ambil dari Dompet</label>
+                                <label className="neo-label block mb-2">Ambil dari Dompet</label>
                                 <select
-                                    className="w-full p-3.5 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none text-sm font-medium text-[var(--text-primary)]"
+                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] outline-none"
+                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                     value={quickExpWalletId}
                                     onChange={(e) => setQuickExpWalletId(e.target.value)}
                                     required
@@ -780,7 +816,7 @@ export default function BudgetsPage() {
                                     ))}
                                 </select>
                             </div>
-                            <button type="submit" className="w-full bg-[var(--primary)] hover:bg-[#1455E5] !text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95 text-sm">
+                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
                                 Simpan Pengeluaran
                             </button>
                         </form>

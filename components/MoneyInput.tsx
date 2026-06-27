@@ -72,7 +72,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    className={`w-full p-4 pr-20 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-bold text-2xl tracking-wide ${className}`}
+                    className={`w-full px-[18px] py-[14px] pr-[80px] bg-white dark:bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] rounded-[18px] shadow-[4px_4px_0_var(--neo-ink)] focus:outline-none transition-all font-[800] text-2xl tracking-wide ${className}`}
                     value={formatDisplay(value)}
                     onChange={handleChange}
                     autoFocus={autoFocus}
@@ -81,7 +81,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     <button
                         type="button"
                         onClick={addThousands}
-                        className="h-full px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:bg-slate-600 text-slate-600 dark:text-slate-500 rounded-xl font-bold text-sm transition-colors flex items-center gap-1 active:scale-95"
+                        className="h-full px-3 bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] font-[800] text-sm transition-transform flex items-center gap-1 active:translate-y-[2px] active:translate-x-[2px] active:shadow-[0px_0px_0_var(--neo-ink)]"
                         tabIndex={-1} // prevent auto focus on this button
                     >
                         +000

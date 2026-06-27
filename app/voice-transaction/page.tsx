@@ -380,27 +380,26 @@ export default function VoiceTransactionPage() {
 
   const activeWallets = wallets.filter(w => w.category === 'active')
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#F9FAFB] dark:bg-[var(--bg-page)] pb-32 md:pb-10">
+    <main className="min-h-screen bg-[var(--bg-page)] pb-32 md:pb-10">
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className="bg-white dark:bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between shadow-sm sticky top-0 z-40 border-b border-[var(--border-default)]">
+      <header className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] sticky top-0 z-40 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-violet-100 dark:bg-violet-950/40 rounded-xl flex items-center justify-center">
-            <Mic className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          <div className="w-10 h-10 brutal-card-sm bg-[var(--neo-sky)] flex items-center justify-center border-[2px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] !p-0">
+            <Mic className="w-5 h-5 text-[var(--neo-ink)]" />
           </div>
           <div>
-            <h1 className="font-bold text-[var(--text-primary)] text-lg leading-tight">
+            <h1 className="font-black text-[var(--text-primary)] text-lg leading-tight">
               Voice Input
             </h1>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-[var(--text-secondary)] font-bold">
               Catat transaksi dengan suara
             </p>
           </div>
         </div>
         <button
           onClick={() => router.push('/')}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]"
         >
           <X className="w-4 h-4" />
         </button>
@@ -409,24 +408,24 @@ export default function VoiceTransactionPage() {
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
         {/* ── SUCCESS STATE ────────────────────────────────────────────────── */}
         {state === 'success' && (
-          <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-8 shadow-sm border border-[var(--border-default)] text-center animate-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/40 rounded-full flex items-center justify-center mx-auto mb-5">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          <div className="brutal-card p-8 text-center animate-in zoom-in-95 duration-300 bg-[var(--bg-card)]">
+            <div className="w-20 h-20 bg-[var(--neo-mint)] rounded-full border-4 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-10 h-10 text-[var(--neo-ink)]" />
             </div>
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+            <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2">
               Berhasil Disimpan!
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 mt-8">
               <button
                 onClick={handleReset}
-                className="w-full py-3.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                className="w-full brutal-btn !py-3.5 !bg-[var(--neo-sky)] text-white flex items-center justify-center gap-2"
               >
                 <Mic className="w-4 h-4" />
                 Catat Transaksi Lagi
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="w-full py-3.5 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors"
+                className="w-full brutal-btn !py-3.5 !bg-white text-[var(--text-primary)]"
               >
                 Kembali ke Dashboard
               </button>
@@ -438,12 +437,12 @@ export default function VoiceTransactionPage() {
         {(state === 'idle' || state === 'listening' || state === 'processing') && (
           <>
             {/* Mic Button Area */}
-            <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl p-8 shadow-sm border border-[var(--border-default)] flex flex-col items-center gap-6">
+            <div className="brutal-card p-8 bg-[var(--bg-card)] flex flex-col items-center gap-6">
               <div className="relative flex items-center justify-center">
                 {state === 'listening' && (
                   <>
-                    <div className="absolute rounded-full bg-violet-400/30 animate-ping" style={{ width: '120px', height: '120px', animationDuration: '2s' }} />
-                    <div className="absolute rounded-full bg-violet-400/20 animate-ping" style={{ width: '140px', height: '140px', animationDuration: '3s', animationDelay: '0.5s' }} />
+                    <div className="absolute rounded-full bg-[var(--neo-peach)]/30 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '120px', height: '120px', animationDuration: '2s' }} />
+                    <div className="absolute rounded-full bg-[var(--neo-peach)]/20 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '140px', height: '140px', animationDuration: '3s', animationDelay: '0.5s' }} />
                   </>
                 )}
 
@@ -451,62 +450,62 @@ export default function VoiceTransactionPage() {
                   id="voice-mic-btn"
                   onClick={state === 'idle' ? startRecording : stopRecording}
                   disabled={state === 'processing'}
-                  className={`relative z-10 w-28 h-28 rounded-full flex items-center justify-center transition-all duration-200 shadow-xl ${
+                  className={`relative z-10 w-28 h-28 rounded-[32px] border-[4px] border-[var(--neo-ink)] flex items-center justify-center transition-all duration-200 shadow-[8px_8px_0_var(--neo-ink)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[6px_6px_0_var(--neo-ink)] active:translate-x-[8px] active:translate-y-[8px] active:shadow-none ${
                     state === 'listening'
-                      ? 'bg-violet-600 hover:bg-violet-700 scale-105 shadow-violet-200 dark:shadow-violet-900'
+                      ? 'bg-[var(--neo-peach)]'
                       : state === 'processing'
-                      ? 'bg-slate-200 dark:bg-slate-700 cursor-wait'
-                      : 'bg-violet-600 hover:bg-violet-700 hover:scale-105 shadow-violet-200 dark:shadow-violet-900/50'
+                      ? 'bg-slate-200 cursor-wait'
+                      : 'bg-[var(--neo-lav)]'
                   }`}
                 >
                   {state === 'processing' ? (
-                    <Loader2 className="w-10 h-10 text-slate-400 dark:text-slate-500 animate-spin" />
+                    <Loader2 className="w-10 h-10 text-[var(--neo-ink)] animate-spin" />
                   ) : state === 'listening' ? (
-                    <MicOff className="w-10 h-10 text-white" />
+                    <MicOff className="w-10 h-10 text-[var(--neo-ink)]" />
                   ) : (
-                    <Mic className="w-10 h-10 text-white" />
+                    <Mic className="w-10 h-10 text-[var(--neo-ink)]" />
                   )}
                 </button>
               </div>
 
-              <div className="text-center space-y-1.5">
+              <div className="text-center space-y-1.5 mt-4">
                 {state === 'idle' && (
                   <>
-                    <p className="font-semibold text-[var(--text-primary)]">
+                    <p className="font-black text-[var(--text-primary)] text-lg">
                       Tekan mic & bicara
                     </p>
-                    <p className="text-sm text-[var(--text-secondary)]">
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">
                       Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"
                     </p>
                   </>
                 )}
                 {state === 'listening' && (
                   <>
-                    <p className="font-semibold text-violet-600 dark:text-violet-400 animate-pulse">
+                    <p className="font-black text-[var(--neo-ink)] text-lg animate-pulse">
                       🎙️ Sedang mendengarkan...
                     </p>
-                    <p className="text-sm text-[var(--text-secondary)]">
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">
                       Otomatis berhenti saat Anda selesai bicara ({30 - recordingTime}s)
                     </p>
                   </>
                 )}
                 {state === 'processing' && (
                   <>
-                    <p className="font-semibold text-[var(--text-primary)]">
+                    <p className="font-black text-[var(--text-primary)] text-lg">
                       AI sedang menganalisa...
                     </p>
-                    <p className="text-sm text-[var(--text-secondary)]">Mohon tunggu sebentar</p>
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">Mohon tunggu sebentar</p>
                   </>
                 )}
               </div>
             </div>
 
             {error && (
-              <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 rounded-2xl px-5 py-4 animate-in fade-in">
-                <p className="text-sm text-rose-700 dark:text-rose-400 font-medium">{error}</p>
+              <div className="brutal-card-sm p-4 animate-in fade-in bg-[var(--neo-peach)]">
+                <p className="text-sm font-black text-[var(--text-primary)]">{error}</p>
                 <button
                   onClick={handleReset}
-                  className="mt-2 text-xs text-rose-500 dark:text-rose-400 underline"
+                  className="mt-2 text-xs font-bold text-[var(--text-primary)] underline decoration-[var(--neo-ink)] decoration-2"
                 >
                   Coba lagi
                 </button>
@@ -521,11 +520,11 @@ export default function VoiceTransactionPage() {
 
             {/* Transcript recap */}
             {transcript && (
-              <div className="bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-800/40 rounded-2xl px-5 py-4 flex items-start gap-3">
-                <Mic className="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" />
+              <div className="brutal-card-sm p-4 bg-[var(--neo-yellow)] flex items-start gap-3">
+                <Mic className="w-4 h-4 text-[var(--neo-ink)] mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1">Yang AI Dengar</p>
-                  <p className="text-sm text-[var(--text-secondary)] italic leading-relaxed">"{transcript}"</p>
+                  <p className="text-xs font-black text-[var(--neo-ink)] uppercase tracking-wider mb-1">Yang AI Dengar</p>
+                  <p className="text-sm text-[var(--text-primary)] font-bold italic leading-relaxed">"{transcript}"</p>
                 </div>
               </div>
             )}
@@ -544,19 +543,19 @@ export default function VoiceTransactionPage() {
                   : CATEGORIES.pengeluaran
 
                 return (
-                  <div key={index} className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-[var(--border-default)]">
+                  <div key={index} className="brutal-card p-6 bg-[var(--bg-card)]">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                      <h3 className="text-lg font-black text-[var(--text-primary)] flex items-center gap-2">
                         {isExpense ? (
-                          <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
                             <ArrowDownCircle className="w-5 h-5" />
                           </div>
                         ) : isIncome ? (
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
                             <ArrowUpCircle className="w-5 h-5" />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
                             <ArrowLeftRight className="w-5 h-5" />
                           </div>
                         )}
@@ -565,34 +564,32 @@ export default function VoiceTransactionPage() {
                     </div>
 
                     <div className="flex flex-col gap-5">
-                      <div className="bg-[var(--bg-elevated)] p-1.5 rounded-2xl">
-                        <div className="flex relative z-0">
-                          {['pengeluaran', 'pemasukan', 'topup'].map(t => (
-                            <button
-                              key={t}
-                              onClick={() => updateParsed(index, 'type', t)}
-                              className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                                tx.type === t
-                                  ? t === 'pemasukan'
-                                    ? 'bg-emerald-500 text-white shadow-md'
-                                    : t === 'pengeluaran'
-                                    ? 'bg-rose-500 text-white shadow-md'
-                                    : 'bg-blue-500 text-white shadow-md'
-                                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)]'
-                              }`}
-                            >
-                              {t === 'pemasukan' ? 'Masuk' : t === 'pengeluaran' ? 'Keluar' : 'Transfer'}
-                            </button>
-                          ))}
-                        </div>
+                      <div className="flex border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
+                        {['pengeluaran', 'pemasukan', 'topup'].map((t, idx) => (
+                          <button
+                            key={t}
+                            onClick={() => updateParsed(index, 'type', t)}
+                            className={`flex-1 py-2 text-sm font-black transition-colors ${idx !== 2 ? 'border-r-2 border-[var(--neo-ink)]' : ''} ${
+                              tx.type === t
+                                ? t === 'pemasukan'
+                                  ? 'bg-[var(--neo-mint)] text-[var(--text-primary)]'
+                                  : t === 'pengeluaran'
+                                  ? 'bg-[var(--neo-peach)] text-[var(--text-primary)]'
+                                  : 'bg-[var(--neo-sky)] text-[var(--text-primary)]'
+                                : 'bg-white text-[var(--text-muted)] hover:bg-[var(--bg-hover)]'
+                            }`}
+                          >
+                            {t === 'pemasukan' ? 'Masuk' : t === 'pengeluaran' ? 'Keluar' : 'Transfer'}
+                          </button>
+                        ))}
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                        <label className="neo-label">
                           Nominal
                         </label>
-                        <div className="flex items-center gap-2 border-b-2 border-[var(--border-default)] focus-within:border-violet-500 pb-1.5 transition-colors">
-                          <span className="text-[var(--primary)] font-bold text-lg">Rp</span>
+                        <div className="flex items-center gap-2 border-b-[3px] border-[var(--neo-ink)] focus-within:bg-[var(--neo-yellow)] pb-1.5 px-2 transition-colors">
+                          <span className="text-[var(--text-primary)] font-black text-lg">Rp</span>
                           <input
                             type="text"
                             value={formatRupiah(tx.amount)}
@@ -600,44 +597,44 @@ export default function VoiceTransactionPage() {
                               const raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '')
                               updateParsed(index, 'amount', parseInt(raw) || 0)
                             }}
-                            className="w-full text-2xl font-bold text-[var(--text-primary)] bg-transparent outline-none"
+                            className="w-full text-2xl font-black text-[var(--text-primary)] bg-transparent outline-none"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                        <label className="neo-label">
                           Keterangan
                         </label>
                         <input
                           type="text"
                           value={tx.title}
                           onChange={e => updateParsed(index, 'title', e.target.value)}
-                          className="w-full text-base font-semibold text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:border-violet-500 outline-none pb-1.5 transition-colors"
+                          className="w-full text-base font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none pb-1.5 px-2 transition-colors"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                        <label className="neo-label">
                           Tanggal
                         </label>
                         <input
                           type="date"
                           value={tx.date}
                           onChange={e => updateParsed(index, 'date', e.target.value)}
-                          className="text-sm text-[var(--text-primary)] bg-transparent border-b border-[var(--border-default)] focus:border-violet-500 outline-none pb-1.5 transition-colors"
+                          className="w-full text-sm font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none pb-1.5 px-2 transition-colors"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                        <label className="neo-label">
                           Kategori
                         </label>
                         <div className="relative">
                           <select
                             value={tx.category}
                             onChange={e => updateParsed(index, 'category', e.target.value)}
-                            className="w-full appearance-none text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2.5 outline-none focus:border-violet-500 pr-9 transition-colors"
+                            className="w-full appearance-none font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 outline-none transition-colors cursor-pointer"
                           >
                             {currentCategories.map(c => (
                               <option key={c.name} value={c.name}>
@@ -645,7 +642,7 @@ export default function VoiceTransactionPage() {
                               </option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neo-ink)] pointer-events-none" />
                         </div>
                       </div>
                     </div>
@@ -654,20 +651,20 @@ export default function VoiceTransactionPage() {
               })}
             </div>
 
-            <div className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-[var(--border-default)]">
-              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Pengaturan Dompet</h3>
+            <div className="brutal-card p-6 bg-[var(--bg-card)]">
+              <h3 className="text-lg font-black text-[var(--text-primary)] mb-4">Pengaturan Dompet</h3>
               
               {parsed.some(tx => tx.type === 'topup') ? (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                    <label className="neo-label">
                       Dari Dompet
                     </label>
                     <div className="relative">
                       <select
                         value={sourceWalletId}
                         onChange={e => setSourceWalletId(e.target.value)}
-                        className="w-full appearance-none text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-3 py-2.5 outline-none focus:border-violet-500 pr-8 transition-colors"
+                        className="w-full appearance-none text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 outline-none transition-colors cursor-pointer"
                       >
                         {activeWallets.map(w => (
                           <option key={w.id} value={w.id}>
@@ -675,18 +672,18 @@ export default function VoiceTransactionPage() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--neo-ink)] pointer-events-none" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                    <label className="neo-label">
                       Ke Dompet
                     </label>
                     <div className="relative">
                       <select
                         value={selectedWalletId}
                         onChange={e => setSelectedWalletId(e.target.value)}
-                        className="w-full appearance-none text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-3 py-2.5 outline-none focus:border-violet-500 pr-8 transition-colors"
+                        className="w-full appearance-none text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 outline-none transition-colors cursor-pointer"
                       >
                         {activeWallets.map(w => (
                           <option key={w.id} value={w.id}>
@@ -694,20 +691,20 @@ export default function VoiceTransactionPage() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--neo-ink)] pointer-events-none" />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                  <label className="neo-label">
                     Gunakan Dompet
                   </label>
                   <div className="relative">
                     <select
                       value={selectedWalletId}
                       onChange={e => setSelectedWalletId(e.target.value)}
-                      className="w-full appearance-none text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2.5 outline-none focus:border-violet-500 pr-9 transition-colors"
+                      className="w-full appearance-none font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 outline-none transition-colors cursor-pointer"
                     >
                       {wallets.map(w => (
                         <option key={w.id} value={w.id}>
@@ -715,7 +712,7 @@ export default function VoiceTransactionPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neo-ink)] pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -727,7 +724,7 @@ export default function VoiceTransactionPage() {
                 id="voice-confirm-btn"
                 onClick={handleSave}
                 disabled={state === 'saving'}
-                className="w-full py-4 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-wait text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-200 dark:shadow-violet-900/30"
+                className="w-full brutal-btn !py-4 !bg-[var(--neo-mint)] text-[var(--text-primary)] disabled:opacity-60 disabled:cursor-wait flex items-center justify-center gap-2"
               >
                 {state === 'saving' ? (
                   <>
@@ -744,7 +741,7 @@ export default function VoiceTransactionPage() {
               <button
                 onClick={handleReset}
                 disabled={state === 'saving'}
-                className="w-full py-3.5 bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] border border-[var(--border-default)] text-[var(--text-secondary)] font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors"
+                className="w-full brutal-btn !py-4 !bg-white text-[var(--text-primary)] flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 Ulangi Recording

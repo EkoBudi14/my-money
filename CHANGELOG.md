@@ -383,3 +383,19 @@ Perubahan: (1) Mengembalikan style sidebar ke mode "floating" (memiliki padding 
 Dipicu oleh prompt: "ini dibagian kirinya kok nempel gini ya? kan saya maunya floating??"
 Fitur terdampak: UI Desktop Sidebar (High)
 Status: Approved
+
+---
+
+[2026-06-27 | 12:54] Fitur: Redesign Neobrutalism (Halaman Sekunder)
+Perubahan: Mengubah tampilan 6 halaman sekunder (Tabungan Inti, Dompet, Goals, Catatan, Budget, Analytics) menggunakan sistem desain Neobrutalism (utility class `brutal-card`, `neo-label`, `brutal-btn`, dll dari globals.css). Tidak ada logika state, DB, atau kalkulasi finansial yang diubah, murni perombakan visual.
+Dipicu oleh prompt: "coba cek itu di sebelumnya kan ada implementation plan yang ini tau kan? Neobrutalism Redesign — Semua Halaman Sekunder"
+Fitur terdampak: Halaman Tabungan Inti (Low), Dompet (Low), Goals (Low), Catatan (Low), Budget (Low), Analytics (Low)
+Status: Approved
+
+---
+
+[2026-06-27 | 13:20] Fitur: Redesign Neobrutalism (Tahap Lanjutan)
+Perubahan: Mengubah tampilan halaman Formulir Transaksi (Transaction, Scan Receipt, Voice Transaction), Dashboard Utama (Mobile & Desktop Wrappers), serta Halaman Settings menggunakan sistem desain Neobrutalism (utility class `brutal-card`, `neo-label`, `brutal-btn`, dll). Tidak ada logika state, DB, atau kalkulasi finansial yang diubah, murni perombakan visual.
+Dipicu oleh prompt: "apa aja dan redesign semua tampilan jadi neobrutalism INGAT JANGAN UBAH LOGIC APAPUN, DISINI MURNI REDESIGN DOANG"
+Fitur terdampak: Halaman Transaksi (Low), Scan Receipt (Low), Voice Transaction (Low), Dashboard (Low), Settings (Low)
+Status: Approved

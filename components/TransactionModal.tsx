@@ -535,7 +535,7 @@ export default function TransactionModal({
             <button onClick={onClose} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-xl text-slate-600 dark:text-slate-500 transition-colors active:scale-90">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-bold text-[var(--text-primary)]">
+            <h1 className="font-black text-2xl uppercase tracking-tighter text-[var(--text-primary)]">
               {editingTransaction ? 'Edit Transaksi' : type === 'pemasukan' ? 'Pemasukan Baru' : type === 'pengeluaran' ? 'Pengeluaran Baru' : 'Transfer Saldo'}
             </h1>
           </div>
@@ -552,11 +552,9 @@ export default function TransactionModal({
                   key={tab.key}
                   type="button"
                   onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
-                  className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
-                    ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
-                      : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
-                        : 'border-violet-500 text-violet-600'
-                    : 'border-transparent text-slate-400 dark:text-slate-500'
+                  className={`flex-1 py-3 text-sm font-black transition-all border-b-[4px] -mb-[2px] ${type === tab.key
+                    ? 'border-[var(--neo-ink)] text-[var(--neo-ink)]'
+                    : 'border-transparent text-[var(--text-muted)]'
                     }`}
                 >
                   {tab.label}
@@ -570,26 +568,26 @@ export default function TransactionModal({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 mt-10 gap-3">
             <div className="w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-[var(--text-secondary)] font-medium">Menyiapkan form...</p>
+            <p className="neo-label mt-2">Menyiapkan form...</p>
           </div>
         ) : (
         <form onSubmit={handleSaveTransaction} className="px-4 pt-5">
           {/* Topup wallet selectors */}
           {type === 'topup' && (
             <div className="flex items-center gap-2 mb-5">
-              <div className="flex-1 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3 shadow-sm">
-                <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Sumber Dana</p>
-                <select className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
+              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
+                <p className="neo-label mb-1">Sumber Dana</p>
+                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
                   <option value="" disabled>Pilih Sumber</option>
                   {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
                 </select>
               </div>
-              <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
-              <div className="flex-1 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/30 rounded-xl p-3 shadow-sm">
-                <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
-                <select className="w-full bg-transparent outline-none font-semibold text-violet-800 text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
+                <p className="neo-label mb-1">Tujuan Topup</p>
+                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                   <option value="" disabled>Pilih Tujuan</option>
                   {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
                 </select>
@@ -598,33 +596,31 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`rounded-2xl p-6 relative overflow-hidden shadow-lg ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
-            type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-              'bg-gradient-to-br from-violet-600 to-purple-700'
+          <div className={`brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
+            type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
+              'bg-[var(--neo-lav)]'
             }`}>
-            <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full" />
-            <div className="absolute -bottom-10 -left-6 w-40 h-40 bg-white/5 rounded-full" />
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
+            <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
             <div className="relative z-10 mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-white font-extrabold text-4xl shrink-0">Rp</span>
+                <span className="text-[var(--text-primary)] font-black text-4xl shrink-0">Rp</span>
                 <input
                   type="text"
                   inputMode="numeric"
                   placeholder="0"
-                  className="flex-1 bg-transparent border-none outline-none text-white font-extrabold text-4xl placeholder:text-white/30 min-w-0"
+                  className="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] font-black text-4xl placeholder:text-[var(--text-primary)]/30 min-w-0"
                   value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                   onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
                   autoFocus={!editingTransaction}
                 />
               </div>
-              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-3 px-3 py-1.5 bg-white/20 hover:bg-white  text-white font-bold text-sm rounded-lg active:scale-95 transition-all">
+              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-3 px-3 py-1.5 brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all">
                 +000
               </button>
             </div>
             <div className="flex gap-2 flex-wrap mt-4 relative z-10">
               {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
-                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="px-3.5 py-2 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white  active:scale-95 transition-all">
+                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all">
                   +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                 </button>
               ))}
@@ -635,13 +631,13 @@ export default function TransactionModal({
             {/* Date & Wallet */}
             {type !== 'topup' ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3 shadow-sm">
-                  <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                <div className="brutal-card-sm p-3">
+                  <p className="neo-label mb-1">Tanggal</p>
+                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
-                <div className="bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3 shadow-sm">
-                  <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Dompet</p>
-                  <select className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                <div className="brutal-card-sm p-3">
+                  <p className="neo-label mb-1">Dompet</p>
+                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                     <option value="" disabled>Pilih</option>
                     {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
@@ -649,57 +645,57 @@ export default function TransactionModal({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-4 shadow-sm">
+                <div className="brutal-card-sm p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-sm text-[var(--text-primary)]">Biaya Admin</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Optional — Isi jika ada potongan</p>
+                      <p className="neo-label">Biaya Admin</p>
+                      <p className="neo-label mt-1">Optional — Isi jika ada potongan</p>
                     </div>
                     <input
                       type="text" inputMode="numeric" placeholder="0"
-                      className="w-28 text-right bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-lg px-3 py-1.5 font-bold text-base text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400"
+                      className="w-28 text-right bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] px-3 py-1.5 font-black text-base text-[var(--text-primary)] focus:outline-none"
                       value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                       onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
                     />
                   </div>
                 </div>
-                <div className="bg-white dark:bg-[var(--bg-card)] border border-[var(--border-default)] rounded-xl px-4 py-3 space-y-2 shadow-sm">
-                  <div className="flex justify-between items-center text-sm"><span className="text-slate-500 dark:text-slate-400">Nominal topup</span><span className="font-semibold text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
-                  <div className="flex justify-between items-center text-sm"><span className="text-slate-500 dark:text-slate-400">Biaya admin</span><span className="font-semibold text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
-                  <div className="border-t border-[var(--border-default)] pt-2 flex justify-between items-center text-sm"><span className="font-bold text-violet-700">Total keluar</span><span className="font-bold text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
+                <div className="brutal-card-sm px-4 py-3 space-y-2">
+                  <div className="flex justify-between items-center text-sm"><span className="neo-label">Nominal topup</span><span className="font-black text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="flex justify-between items-center text-sm"><span className="neo-label">Biaya admin</span><span className="font-black text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="border-t-2 border-[var(--neo-ink)] pt-2 flex justify-between items-center text-sm"><span className="font-black text-violet-700">Total keluar</span><span className="font-black text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
                 </div>
-                <div className="bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3 shadow-sm">
-                  <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                <div className="brutal-card-sm p-3">
+                  <p className="neo-label mb-1">Tanggal</p>
+                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
               </div>
             )}
 
             {/* Piutang Toggle */}
             {type === 'pemasukan' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
                 <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                   <div className="flex items-center gap-3">
-                    <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500'}`}>💸 Ini adalah Piutang?</span>
-                    <p className={`text-[11px] ${isPiutang ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>Tandai jika uang akan dikembalikan</p>
+                    <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
+                    <p className={`neo-label mt-1 ${isPiutang ? '!text-[var(--neo-ink)]/70' : '!text-[var(--text-muted)]'}`}>Tandai jika uang akan dikembalikan</p>
                   </div>
-                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                    <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
                   </div>
                 </div>
                 {isPiutang && (
-                  <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-base focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                  <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
                 )}
               </div>
             )}
 
             {/* Split Bill */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
                 <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
-                  <span className={`text-sm font-bold ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>Ada yang nitip bayar? (Split Bill)</span>
-                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-[var(--primary)]' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                    <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
                   </div>
                 </div>
                 {isSplitBill && (
@@ -707,13 +703,13 @@ export default function TransactionModal({
                     {splitEntries.map((entry, idx) => (
                       <div key={idx} className="flex gap-2 items-start">
                         <div className="flex-1 grid grid-cols-2 gap-2">
-                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
-                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-sm !p-3" />
+                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
+                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-[14px] !px-[18px] !py-[14px] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] font-[800] text-[var(--neo-ink)] bg-white" />
                         </div>
-                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"><Trash2 className="w-4 h-4" /></button>}
                       </div>
                     ))}
-                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1"><Plus className="w-3 h-3" />Tambah Orang Lain</button>
+                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-black text-[var(--neo-ink)] flex items-center gap-1 mt-2 p-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px]"><Plus className="w-3 h-3" />Tambah Orang</button>
                   </div>
                 )}
               </div>
@@ -721,15 +717,15 @@ export default function TransactionModal({
 
             {/* Talangan Toggle */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 shadow-sm ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
                 <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
-                  <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500'}`}>🤝 Ini Talangan?</span>
-                  <div className={`w-11 h-6 rounded-full transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-purple-400' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                    <div className={`w-5 h-5 bg-white dark:bg-[var(--bg-card)] rounded-full shadow transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>🤝 Ini Talangan?</span>
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
                   </div>
                 </div>
                 {isTalangan && (
-                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-3 w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-base focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
                 )}
               </div>
             )}
@@ -738,46 +734,46 @@ export default function TransactionModal({
             {type !== 'topup' && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Kategori <span className="text-rose-500">*</span></label>
-                  <span className="text-[10px] text-[var(--primary)] font-bold">Wajib dipilih</span>
+                  <label className="neo-label">Kategori <span className="text-rose-500">*</span></label>
+                  <span className="neo-label !text-[var(--primary)]">Wajib dipilih</span>
                 </div>
                 <div className="grid grid-cols-4 gap-2.5">
                   {allCategories.map((cat) => {
                     const isSelected = category === cat.name
                     return (
-                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 shadow-sm ${isSelected ? 'border-[var(--primary)] bg-blue-50 dark:bg-blue-950/30' : 'border-transparent bg-white dark:bg-[var(--bg-card)] hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}>
-                        <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-1.5 ${cat.color}`}><cat.icon className="w-5 h-5" /></div>
-                        <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>{cat.name}</span>
+                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className={`flex flex-col items-center justify-center p-3 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-1.5 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
+                        <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
                       </button>
                     )
                   })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[var(--primary)] transition-all">
-                    <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500"><Plus className="w-5 h-5" /></div>
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Custom</span>
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1.5 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
+                    <span className="neo-label mt-1">Custom</span>
                   </button>
                 </div>
 
                 {showAddCategory && (
-                  <div className="mt-4 p-4 rounded-2xl bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] shadow-sm">
+                  <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
+                      <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
+                      <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
-                        <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                        <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
                         <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
                           {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                             const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                             return (
-                              <div key={idx} className="flex flex-row items-center justify-between bg-slate-50 dark:bg-[var(--bg-elevated)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
+                              <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px]">
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{name}</span>
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] ${isStr ? 'text-[var(--text-secondary)]' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
+                                  <span className="text-sm font-black text-[var(--text-primary)]">{name}</span>
                                 </div>
-                                <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
-                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <div className="flex items-center border-l-2 border-[var(--neo-ink)] pl-2 gap-1">
+                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Pencil className="w-4 h-4" /></button>
+                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                               </div>
                             )
@@ -785,22 +781,22 @@ export default function TransactionModal({
                         </div>
                       </div>
                     )}
-                    <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
-                      <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                    <div className="space-y-4 border-t-2 border-[var(--neo-ink)] pt-4">
+                      <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]" />
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
+                        <label className="neo-label mb-2 block">Pilih Icon</label>
                         <div className="grid grid-cols-7 gap-2">
-                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}><Ico className="w-5 h-5" /></button>) })}
+                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[12px] border-2 transition-all ${isSel ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)]' : 'border-transparent bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--neo-ink)]'}`}><Ico className="w-5 h-5" /></button>) })}
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
+                        <label className="neo-label mb-2 block">Pilih Warna</label>
                         <div className="grid grid-cols-6 gap-2">
-                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
+                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
                         </div>
                       </div>
-                      <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                      <button type="button" onClick={handleSaveCustomCategory} className="w-full brutal-btn !py-3 !text-sm !bg-[var(--neo-sky)]">Simpan Kategori</button>
                     </div>
                   </div>
                 )}
@@ -809,25 +805,25 @@ export default function TransactionModal({
 
             {/* Budget Indicator */}
             {budgetInfo && (
-              <div className={`p-4 rounded-xl border shadow-sm ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-white dark:bg-[var(--bg-card)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`brutal-card-sm p-4 ${budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}`}>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                  <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+                  <span className="neo-label">Budget {budgetInfo.budget.category}</span>
+                  <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
                 </div>
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
-                  <div className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`} style={{ width: `${budgetInfo.percent}%` }} />
+                <div className="w-full h-2 border-2 border-[var(--neo-ink)] rounded-full overflow-hidden mb-2 bg-[var(--bg-elevated)]">
+                  <div className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`} style={{ width: `${budgetInfo.percent}%` }} />
                 </div>
-                <p className="text-xs text-center text-slate-500 dark:text-slate-400">Sisa: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+                <p className="text-xs text-center text-[var(--text-muted)]">Sisa: <strong className="text-[var(--text-primary)] font-black">Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
               </div>
             )}
 
             {/* Notes */}
             <div>
-              <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 dark:text-slate-500 font-normal">(Opsional)</span></label>
+              <label className="neo-label mb-1.5 block">Catatan <span className="font-normal">(Opsional)</span></label>
               <input
                 type="text"
                 placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                className="w-full px-4 py-3.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all font-medium text-base shadow-sm"
+                className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] outline-none transition-all font-[800] text-[14px] text-[var(--text-primary)]"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -837,10 +833,7 @@ export default function TransactionModal({
             <button
               type="submit"
               disabled={saving || isLoading}
-              className={`w-full font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 ${(saving || isLoading) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
-                type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
-                  'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
-                } text-white`}
+              className={`w-full brutal-btn !py-4 !text-base ${(saving || isLoading) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}
             >
               {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
             </button>
@@ -869,7 +862,7 @@ export default function TransactionModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 shrink-0">
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">
+          <h3 className="font-black text-xl uppercase tracking-tighter text-[var(--text-primary)]">
             {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi'}
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
@@ -889,11 +882,9 @@ export default function TransactionModal({
                 key={tab.key}
                 type="button"
                 onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
-                className={`flex-1 py-2.5 text-sm font-bold transition-all border-b-2 -mb-px ${type === tab.key
-                  ? tab.key === 'pemasukan' ? 'border-emerald-500 text-emerald-600'
-                    : tab.key === 'pengeluaran' ? 'border-rose-500 text-rose-600'
-                      : 'border-violet-500 text-violet-600'
-                  : 'border-transparent text-slate-400 dark:text-slate-500'
+                className={`flex-1 py-3 text-sm font-black transition-all border-b-[4px] -mb-[2px] ${type === tab.key
+                  ? 'border-[var(--neo-ink)] text-[var(--neo-ink)]'
+                  : 'border-transparent text-[var(--text-muted)]'
                   }`}
               >
                 {tab.label}
@@ -909,19 +900,19 @@ export default function TransactionModal({
           {/* Topup wallet selectors */}
           {type === 'topup' && (
             <div className="mx-4 mt-4 flex items-center gap-2">
-              <div className="flex-1 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Sumber Dana</p>
-                <select className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
+              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
+                <p className="neo-label mb-1">Sumber Dana</p>
+                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
                   <option value="" disabled>Pilih Sumber</option>
                   {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
                 </select>
               </div>
-              <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
-              <div className="flex-1 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/30 rounded-xl p-3">
-                <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider mb-1">Tujuan Topup</p>
-                <select className="w-full bg-transparent outline-none font-semibold text-violet-800 text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
+                <p className="neo-label mb-1">Tujuan Topup</p>
+                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                   <option value="" disabled>Pilih Tujuan</option>
                   {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
                 </select>
@@ -930,34 +921,32 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`mx-4 mt-4 rounded-2xl p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-gradient-to-br from-[#165DFF] to-[#0E4BD9]' :
-            type === 'pengeluaran' ? 'bg-gradient-to-br from-rose-500 to-rose-700' :
-              'bg-gradient-to-br from-violet-600 to-purple-700'
+          <div className={`mx-4 mt-4 brutal-card-sm p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
+            type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
+              'bg-[var(--neo-lav)]'
             }`}>
-            <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/5 rounded-full" />
-            <div className="absolute -bottom-8 -left-4 w-36 h-36 bg-white/5 rounded-full" />
-            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
+            <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
             <div className="relative z-10 mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-white font-extrabold text-3xl shrink-0">Rp</span>
+                <span className="text-[var(--text-primary)] font-black text-3xl shrink-0">Rp</span>
                 <input
                   id="mobile-amount-input"
                   type="text"
                   inputMode="numeric"
                   placeholder="0"
-                  className="flex-1 bg-transparent border-none outline-none text-white font-extrabold text-3xl placeholder:text-white/30 min-w-0"
+                  className="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] font-black text-3xl placeholder:text-[var(--text-primary)]/30 min-w-0"
                   value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
                   onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
                   autoFocus={!editingTransaction}
                 />
               </div>
-              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-2 px-3 py-1 bg-white/20 hover:bg-white  text-white font-bold text-sm rounded-lg active:scale-95 transition-all">
+              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-2 px-3 py-1 brutal-btn-ghost !py-1 !px-3 !text-[11px] bg-[var(--bg-elevated)] active:scale-95 transition-all">
                 +000
               </button>
             </div>
             <div className="flex gap-2 flex-wrap mt-3 relative z-10">
               {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
-                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold hover:bg-white  active:scale-95 transition-all">
+                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="brutal-btn-ghost !py-1 !px-3 !text-[11px] bg-[var(--bg-elevated)] active:scale-95 transition-all">
                   +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                 </button>
               ))}
@@ -968,49 +957,48 @@ export default function TransactionModal({
             {/* Date & Wallet */}
             {type !== 'topup' ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                  <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                <div className="brutal-card-sm p-3">
+                  <p className="neo-label mb-1">Tanggal</p>
+                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
-                <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                  <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Dompet</p>
-                  <select className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                <div className="brutal-card-sm p-3">
+                  <p className="neo-label mb-1">Dompet</p>
+                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                     <option value="" disabled>Pilih</option>
                     {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Tanggal</p>
-                <input type="date" className="w-full bg-transparent outline-none font-semibold text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              <div className="brutal-card-sm p-3">
+                <p className="neo-label mb-1">Tanggal</p>
+                <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
               </div>
             )}
 
             {/* Admin Fee (Topup only) */}
             {type === 'topup' && (
-              <div className="bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl p-3">
-                <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Biaya Admin (Opsional)</p>
-                <MoneyInput value={adminFee} onChange={setAdminFee} placeholder="0" />
+              <div className="brutal-card-sm p-3">
+                <p className="neo-label mb-1">Biaya Admin (Opsional)</p>
+                <MoneyInput value={adminFee} onChange={setAdminFee} placeholder="0" className="!bg-[var(--bg-elevated)] !border-2 !border-[var(--neo-ink)] !shadow-[2px_2px_0_var(--neo-ink)] !rounded-[12px] !font-black !text-[var(--text-primary)]" />
               </div>
             )}
 
             {/* Piutang Toggle */}
             {type === 'pemasukan' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
                 <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer group select-none">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isPiutang ? 'border-amber-500' : 'border-slate-300'}`}>
-                      {isPiutang && <div className="w-2.5 h-2.5 bg-amber-50 dark:bg-amber-950/300 rounded-full" />}
-                    </div>
-                    <span className={`text-sm font-bold transition-colors ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500'}`}>💸 Ini adalah Piutang?</span>
+                    <span className={`text-sm font-black transition-colors ${isPiutang ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
                   </div>
-                  {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
                 </div>
                 {isPiutang && (
                   <div className="mt-3">
-                    <input type="text" placeholder="Nama peminjam (Opsional)" className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
-                    <p className="text-xs text-amber-600 mt-2 flex items-start gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />Nominal akan masuk ke saldo dompet, tapi <strong>tidak dihitung</strong> sebagai pemasukan di statistik.</p>
+                    <input type="text" placeholder="Nama peminjam (Opsional)" className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                    <p className="text-xs text-[var(--neo-ink)]/70 mt-2 font-bold">Nominal akan masuk ke saldo dompet, tapi tidak dihitung sebagai pemasukan di statistik.</p>
                   </div>
                 )}
               </div>
@@ -1018,28 +1006,27 @@ export default function TransactionModal({
 
             {/* Split Bill */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
                 <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer group select-none mb-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[var(--primary)]' : 'border-slate-300'}`}>
-                      {isSplitBill && <div className="w-2.5 h-2.5 bg-[var(--primary)] rounded-full" />}
-                    </div>
-                    <span className={`text-sm font-bold transition-colors ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                    <span className={`text-sm font-black transition-colors ${isSplitBill ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                   </div>
-                  {isSplitBill && <span className="text-[10px] uppercase font-bold text-[var(--primary)] bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-blue-100 dark:border-blue-800/30">Aktif</span>}
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
                 </div>
                 {isSplitBill && (
                   <div className="space-y-3">
                     {splitEntries.map((entry, idx) => (
                       <div key={idx} className="flex gap-2 items-start">
                         <div className="flex-1 grid grid-cols-2 gap-2">
-                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
-                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-sm !p-3" />
+                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
+                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-[14px] !px-[18px] !py-[14px] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] font-[800] text-[var(--neo-ink)] bg-white" />
                         </div>
-                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"><Trash2 className="w-4 h-4" /></button>}
                       </div>
                     ))}
-                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1 mt-2"><Plus className="w-3 h-3" />Tambah Orang Lain</button>
+                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-black text-[var(--neo-ink)] flex items-center gap-1 mt-2 p-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px]"><Plus className="w-3 h-3" />Tambah Orang</button>
                   </div>
                 )}
               </div>
@@ -1047,20 +1034,19 @@ export default function TransactionModal({
 
             {/* Talangan Toggle */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
                 <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer group select-none">
                   <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isTalangan ? 'border-purple-500' : 'border-slate-300'}`}>
-                      {isTalangan && <div className="w-2.5 h-2.5 bg-purple-50 dark:bg-purple-950/300 rounded-full" />}
-                    </div>
-                    <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500'}`}>🤝 Ini Talangan (bayarin orang lain)?</span>
+                    <span className={`text-sm font-black ${isTalangan ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>🤝 Ini Talangan (bayarin orang lain)?</span>
                   </div>
-                  {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">Aktif</span>}
+                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
                 </div>
                 {isTalangan && (
                   <div className="mt-3">
-                    <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
-                    <p className="text-xs text-purple-600 mt-2 flex items-start gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />Saldo dompet tetap berkurang, tapi <strong>tidak dihitung</strong> sebagai pengeluaran pribadi di statistik.</p>
+                    <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                    <p className="text-xs text-[var(--neo-ink)]/70 font-bold mt-2">Saldo dompet tetap berkurang, tapi tidak dihitung sebagai pengeluaran pribadi di statistik.</p>
                   </div>
                 )}
               </div>
@@ -1069,46 +1055,46 @@ export default function TransactionModal({
             {/* Category Picker */}
             {type !== 'topup' && (
               <div>
-                <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Kategori <span className="text-red-400 font-normal">*Wajib</span></label>
+                <label className="neo-label block mb-2">Kategori <span className="text-rose-500">*Wajib</span></label>
                 <div className="grid grid-cols-4 gap-2">
                   {allCategories.map((cat) => {
                     const isSelected = category === cat.name
                     return (
                       <div key={cat.name} className="relative group">
-                        <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-2.5 rounded-2xl transition-all border-2 ${isSelected ? 'border-[var(--primary)] bg-blue-50 dark:bg-blue-950/30' : 'border-transparent bg-slate-50 dark:bg-[var(--bg-elevated)] hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1.5 ${cat.color}`}><cat.icon className="w-5 h-5" /></div>
-                          <span className={`text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>{cat.name}</span>
+                        <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-2.5 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1.5 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
+                          <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
                         </button>
                       </div>
                     )
                   })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[var(--primary)] transition-all">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500"><Plus className="w-5 h-5" /></div>
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Custom</span>
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
+                    <span className="text-[10px] font-bold text-[var(--text-secondary)]">Custom</span>
                   </button>
                 </div>
 
                 {showAddCategory && (
-                  <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)]">
+                  <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
+                      <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
+                      <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
-                        <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
+                        <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
                         <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
                           {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                             const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                             return (
-                              <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
+                              <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px]">
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{name}</span>
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] ${isStr ? 'text-[var(--text-secondary)]' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
+                                  <span className="text-sm font-black text-[var(--text-primary)]">{name}</span>
                                 </div>
-                                <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
-                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <div className="flex items-center border-l-2 border-[var(--neo-ink)] pl-2 gap-1">
+                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Pencil className="w-4 h-4" /></button>
+                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                               </div>
                             )
@@ -1116,22 +1102,22 @@ export default function TransactionModal({
                         </div>
                       </div>
                     )}
-                    <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
-                      <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-base focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                    <div className="space-y-4 border-t-2 border-[var(--neo-ink)] pt-4">
+                      <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]" />
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
+                        <label className="neo-label mb-2 block">Pilih Icon</label>
                         <div className="grid grid-cols-7 gap-2">
-                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSel ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}><Ico className="w-5 h-5" /></button>) })}
+                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[12px] border-2 transition-all ${isSel ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)]' : 'border-transparent bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--neo-ink)]'}`}><Ico className="w-5 h-5" /></button>) })}
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
+                        <label className="neo-label mb-2 block">Pilih Warna</label>
                         <div className="grid grid-cols-6 gap-2">
-                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
+                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
                         </div>
                       </div>
-                      <button type="button" onClick={handleSaveCustomCategory} className="w-full py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                      <button type="button" onClick={handleSaveCustomCategory} className="w-full brutal-btn !py-3 !text-sm !bg-[var(--neo-sky)]">Simpan Kategori</button>
                     </div>
                   </div>
                 )}
@@ -1140,25 +1126,25 @@ export default function TransactionModal({
 
             {/* Budget Indicator */}
             {budgetInfo && (
-              <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+              <div className={`brutal-card-sm p-4 ${budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}`}>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                  <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+                  <span className="neo-label">Budget {budgetInfo.budget.category}</span>
+                  <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
                 </div>
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
-                  <div className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`} style={{ width: `${budgetInfo.percent}%` }} />
+                <div className="w-full h-2 border-2 border-[var(--neo-ink)] rounded-full overflow-hidden mb-2 bg-[var(--bg-elevated)]">
+                  <div className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`} style={{ width: `${budgetInfo.percent}%` }} />
                 </div>
-                <p className="text-xs text-center text-slate-500 dark:text-slate-400">Sisa: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+                <p className="text-xs text-center text-[var(--text-muted)]">Sisa: <strong className="text-[var(--text-primary)] font-black">Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
               </div>
             )}
 
             {/* Notes */}
             <div>
-              <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Catatan <span className="text-slate-400 dark:text-slate-500 font-normal">(Opsional)</span></label>
+              <label className="neo-label mb-1.5 block">Catatan <span className="font-normal">(Opsional)</span></label>
               <input
                 type="text"
                 placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] outline-none transition-all font-medium text-base"
+                className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] outline-none transition-all font-[800] text-[14px] text-[var(--text-primary)]"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -1168,16 +1154,13 @@ export default function TransactionModal({
         </div>
 
           {/* Sticky Submit Footer — outside scroll area, always above bottom nav */}
-          <div className="shrink-0 px-4 pt-3 pb-24 bg-white dark:bg-[var(--bg-card)] border-t border-slate-100 dark:border-[var(--border-default)]">
+          <div className="shrink-0 px-4 pt-4 pb-24 bg-[var(--bg-card)] border-t-[4px] border-[var(--neo-ink)]">
             <button
               type="submit"
               disabled={saving}
-              className={`w-full py-4 rounded-2xl font-bold text-white text-base transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${type === 'pemasukan' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/30' :
-                type === 'pengeluaran' ? 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-rose-500/30' :
-                  'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/30'
-                } ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full brutal-btn !py-4 !text-base ${(saving) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}
             >
-              {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {saving && <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />}
               {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Topup'}`)}
             </button>
           </div>
@@ -1185,42 +1168,42 @@ export default function TransactionModal({
       </div>
 
       {/* ===== DESKTOP MODAL ===== */}
-      <div className="hidden md:block w-full max-w-2xl rounded-2xl bg-white dark:bg-[var(--bg-card)] shadow-2xl z-50 relative animate-in zoom-in-95 fade-in duration-200 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white dark:bg-[var(--bg-card)] border-b border-slate-100 dark:border-[var(--border-default)] px-6 pt-6 pb-4 z-10">
+      <div className="hidden md:block w-full max-w-2xl brutal-card bg-[var(--bg-card)] z-50 relative animate-in zoom-in-95 fade-in duration-200 max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-[var(--bg-card)] border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] px-6 pt-6 pb-4 z-10 mb-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-[var(--text-primary)]">
+            <h3 className="text-xl font-black text-[var(--text-primary)]">
               {editingTransaction ? '✏️ Edit Transaksi' : '➕ Tambah Transaksi'}
             </h3>
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 transition-colors"><X className="w-5 h-5" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] transition-all"><X className="w-5 h-5" /></button>
           </div>
         </div>
 
-        <form onSubmit={handleSaveTransaction} className="p-6 space-y-5">
+        <form onSubmit={handleSaveTransaction} className="p-6 pt-2 space-y-5">
           {/* Type Tabs */}
-          <div className="flex bg-slate-100 dark:bg-[var(--bg-hover)] p-1.5 rounded-2xl">
-            <button type="button" onClick={() => { setType('pemasukan'); setCategory(''); }} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pemasukan' ? 'bg-white dark:bg-[var(--bg-card)] text-emerald-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}>Pemasukan</button>
-            <button type="button" onClick={() => { setType('pengeluaran'); setCategory(''); }} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'pengeluaran' ? 'bg-white dark:bg-[var(--bg-card)] text-rose-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}>Pengeluaran</button>
-            <button type="button" onClick={() => { setType('topup'); setCategory('Topup'); }} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'topup' ? 'bg-white dark:bg-[var(--bg-card)] text-blue-600 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300'}`}>Topup</button>
+          <div className="flex bg-[var(--bg-elevated)] p-1.5 rounded-[16px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
+            <button type="button" onClick={() => { setType('pemasukan'); setCategory(''); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'pemasukan' ? 'border-[var(--neo-ink)] bg-[var(--neo-mint)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pemasukan</button>
+            <button type="button" onClick={() => { setType('pengeluaran'); setCategory(''); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'pengeluaran' ? 'border-[var(--neo-ink)] bg-[var(--neo-peach)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pengeluaran</button>
+            <button type="button" onClick={() => { setType('topup'); setCategory('Topup'); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'topup' ? 'border-[var(--neo-ink)] bg-[var(--neo-lav)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Topup</button>
           </div>
 
           {/* Date & Wallet Grid */}
           <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
             <div className={type === 'topup' ? 'md:col-span-1' : ''}>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tanggal</label>
-              <input type="date" className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              <label className="neo-label mb-2 block">Tanggal</label>
+              <input type="date" className="w-full p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] outline-none font-black text-[var(--text-primary)]" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
             </div>
             {type === 'topup' ? (
               <>
-                <div className="border border-slate-200 dark:border-[var(--border-default)] p-3 rounded-xl bg-slate-50 dark:bg-[var(--bg-elevated)]">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Sumber Dana</label>
-                  <select className="w-full bg-transparent outline-none font-semibold text-slate-800 dark:text-[var(--text-primary)] text-sm" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
+                <div className="brutal-card-sm p-3 bg-[var(--neo-sky)]">
+                  <label className="neo-label mb-1">Sumber Dana</label>
+                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
                     <option value="" disabled>Pilih Sumber</option>
                     {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
                   </select>
                 </div>
-                <div className="border border-blue-200 dark:border-blue-800/30 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Tujuan Topup</label>
-                  <select className="w-full bg-transparent outline-none font-semibold text-blue-800 text-sm" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                <div className="brutal-card-sm p-3 bg-[var(--neo-lav)]">
+                  <label className="neo-label mb-1">Tujuan Topup</label>
+                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                     <option value="" disabled>Pilih Tujuan</option>
                     {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
                   </select>
@@ -1228,8 +1211,8 @@ export default function TransactionModal({
               </>
             ) : (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Dompet</label>
-                <select className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
+                <label className="neo-label mb-2 block">Dompet</label>
+                <select className="w-full p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] outline-none font-black text-[var(--text-primary)]" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
                   <option value="" disabled>Pilih Dompet</option>
                   {wallets.map(w => <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
                 </select>
@@ -1240,31 +1223,32 @@ export default function TransactionModal({
           {/* Amount Input */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{type === 'topup' ? 'Nominal Topup (Rp)' : 'Jumlah (Rp)'}</label>
-              <MoneyInput value={amount} onChange={setAmount} autoFocus={!editingTransaction} />
+              <label className="neo-label mb-2 block">{type === 'topup' ? 'Nominal Topup (Rp)' : 'Jumlah (Rp)'}</label>
+              <MoneyInput value={amount} onChange={setAmount} autoFocus={!editingTransaction} className="!bg-[var(--bg-input)] !border-2 !border-[var(--neo-ink)] !shadow-[2px_2px_0_var(--neo-ink)] !rounded-[12px] !font-black !text-[var(--text-primary)] !p-3" />
             </div>
             {type === 'topup' && (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Biaya Admin (Opsional)</label>
-                <MoneyInput value={adminFee} onChange={setAdminFee} placeholder="0" />
+                <label className="neo-label mb-2 block">Biaya Admin (Opsional)</label>
+                <MoneyInput value={adminFee} onChange={setAdminFee} placeholder="0" className="!bg-[var(--bg-input)] !border-2 !border-[var(--neo-ink)] !shadow-[2px_2px_0_var(--neo-ink)] !rounded-[12px] !font-black !text-[var(--text-primary)] !p-3" />
               </div>
             )}
           </div>
 
           {/* Piutang */}
           {type === 'pemasukan' && (
-            <div className={`p-4 rounded-2xl border transition-all duration-200 ${isPiutang ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+            <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
               <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isPiutang ? 'border-amber-500' : 'border-slate-300'}`}>{isPiutang && <div className="w-2.5 h-2.5 bg-amber-50 dark:bg-amber-950/300 rounded-full" />}</div>
-                  <span className={`text-sm font-bold ${isPiutang ? 'text-amber-700' : 'text-slate-600 dark:text-slate-500'}`}>💸 Ini adalah Piutang?</span>
+                  <span className={`text-sm font-black transition-colors ${isPiutang ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
                 </div>
-                {isPiutang && <span className="text-[10px] uppercase font-bold text-amber-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-amber-100">Aktif</span>}
+                <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                  <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
               </div>
               {isPiutang && (
                 <div className="mt-3">
-                  <input type="text" placeholder="Nama peminjam (Opsional)" className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-amber-200 dark:border-amber-800/30 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 outline-none font-medium" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
-                  <p className="text-xs text-amber-600 mt-2 flex items-start gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />Nominal akan masuk ke saldo dompet, tapi <strong>tidak dihitung</strong> sebagai pemasukan di statistik.</p>
+                  <input type="text" placeholder="Nama peminjam (Opsional)" className="w-full p-2.5 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-base focus:outline-none font-black text-[var(--neo-ink)]" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                  <p className="text-xs text-[var(--neo-ink)]/70 mt-2 font-bold">Nominal akan masuk ke saldo dompet, tapi tidak dihitung sebagai pemasukan di statistik.</p>
                 </div>
               )}
             </div>
@@ -1272,28 +1256,29 @@ export default function TransactionModal({
 
           {/* Split Bill */}
           {type === 'pengeluaran' && (
-            <div className={`p-4 rounded-2xl border transition-all duration-200 ${isSplitBill ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+            <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
               <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none mb-3">
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isSplitBill ? 'border-[var(--primary)]' : 'border-slate-300'}`}>{isSplitBill && <div className="w-2.5 h-2.5 bg-[var(--primary)] rounded-full" />}</div>
-                  <span className={`text-sm font-bold ${isSplitBill ? 'text-[var(--primary)]' : 'text-slate-600 dark:text-slate-500'}`}>Ada yang nitip bayar? (Split Bill)</span>
+                  <span className={`text-sm font-black transition-colors ${isSplitBill ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                 </div>
-                {isSplitBill && <span className="text-[10px] uppercase font-bold text-[var(--primary)] bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-blue-100 dark:border-blue-800/30">Aktif</span>}
+                <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                  <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
               </div>
               {isSplitBill && (
                 <div className="space-y-3">
                   {splitEntries.map((entry, idx) => (
                     <div key={idx} className="flex gap-2 items-start">
                       <div className="flex-1 grid grid-cols-2 gap-2">
-                        <input type="text" placeholder={`Nama Teman #${idx + 1}`} className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
-                        <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-sm !p-3" />
+                        <input type="text" placeholder={`Nama Teman #${idx + 1}`} className="w-full p-2.5 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-base focus:outline-none font-black text-[var(--neo-ink)]" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
+                        <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-sm !p-3 !border-2 !border-[var(--neo-ink)] !shadow-[2px_2px_0_var(--neo-ink)] !rounded-[12px] font-black text-[var(--neo-ink)] bg-white" />
                       </div>
-                      {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:bg-rose-950/30 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"><Trash2 className="w-4 h-4" /></button>}
                     </div>
                   ))}
-                  <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-bold text-blue-600 flex items-center gap-1 mt-2"><Plus className="w-3 h-3" />Tambah Orang Lain</button>
-                  <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg mt-2">
-                    <p className="text-xs text-blue-700">Total pengeluaran: <strong>Rp {parseInt(amount || '0').toLocaleString('id-ID')}</strong> | Sisa (bagian Anda): <strong>Rp {Math.max(0, parseInt(amount || '0') - splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0)).toLocaleString('id-ID')}</strong></p>
+                  <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-black text-[var(--neo-ink)] flex items-center gap-1 mt-2 p-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px]"><Plus className="w-3 h-3" />Tambah Orang</button>
+                  <div className="bg-[var(--neo-yellow)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] p-3 rounded-[12px] mt-2">
+                    <p className="text-xs text-[var(--neo-ink)] font-bold">Total pengeluaran: <strong>Rp {parseInt(amount || '0').toLocaleString('id-ID')}</strong> | Sisa (bagian Anda): <strong>Rp {Math.max(0, parseInt(amount || '0') - splitEntries.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0)).toLocaleString('id-ID')}</strong></p>
                   </div>
                 </div>
               )}
@@ -1302,18 +1287,19 @@ export default function TransactionModal({
 
           {/* Talangan */}
           {type === 'pengeluaran' && (
-            <div className={`p-4 rounded-2xl border transition-all duration-200 ${isTalangan ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/30' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+            <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
               <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all ${isTalangan ? 'border-purple-500' : 'border-slate-300'}`}>{isTalangan && <div className="w-2.5 h-2.5 bg-purple-50 dark:bg-purple-950/300 rounded-full" />}</div>
-                  <span className={`text-sm font-bold ${isTalangan ? 'text-purple-700' : 'text-slate-600 dark:text-slate-500'}`}>🤝 Ini Talangan (bayarin orang lain)?</span>
+                  <span className={`text-sm font-black ${isTalangan ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>🤝 Ini Talangan (bayarin orang lain)?</span>
                 </div>
-                {isTalangan && <span className="text-[10px] uppercase font-bold text-purple-600 bg-white dark:bg-[var(--bg-card)] px-2 py-1 rounded-lg shadow-sm border border-purple-100 dark:border-purple-800/30">Aktif</span>}
+                <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
+                  <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
               </div>
               {isTalangan && (
                 <div className="mt-3">
-                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="w-full p-2.5 bg-white dark:bg-[var(--bg-card)] border border-purple-200 dark:border-purple-800/30 rounded-xl text-sm focus:ring-2 focus:ring-purple-400 outline-none font-medium" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
-                  <p className="text-xs text-purple-600 mt-2 flex items-start gap-1.5"><Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />Saldo dompet tetap berkurang, tapi <strong>tidak dihitung</strong> sebagai pengeluaran pribadi di statistik.</p>
+                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="w-full p-2.5 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-base focus:outline-none font-black text-[var(--neo-ink)]" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                  <p className="text-xs text-[var(--neo-ink)]/70 font-bold mt-2">Saldo dompet tetap berkurang, tapi tidak dihitung sebagai pengeluaran pribadi di statistik.</p>
                 </div>
               )}
             </div>
@@ -1322,45 +1308,45 @@ export default function TransactionModal({
           {/* Category Picker (desktop) */}
           {type !== 'topup' && (
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Kategori <span className="text-red-500 font-normal text-xs">*Wajib</span></label>
+              <label className="neo-label mb-2 block">Kategori <span className="text-rose-500 font-normal text-xs">*Wajib</span></label>
               <div className="grid grid-cols-4 gap-3">
                 {allCategories.map((cat) => {
                   const isSelected = category === cat.name
                   return (
                     <div key={cat.name} className="relative group">
-                      <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : 'border-transparent hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color}`}><cat.icon className="w-5 h-5" /></div>
-                        <span className={`text-[10px] font-medium text-center leading-tight ${isSelected ? 'text-blue-700' : 'text-slate-600 dark:text-slate-500'}`}>{cat.name}</span>
+                      <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
+                        <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
                       </button>
                     </div>
                   )
                 })}
-                <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-slate-50 dark:bg-[var(--bg-elevated)] text-slate-400 dark:text-slate-500"><Plus className="w-5 h-5" /></div>
-                  <span className="text-[10px] font-bold text-center leading-tight text-slate-500 dark:text-slate-400">Custom</span>
+                <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
+                  <span className="text-[10px] font-bold text-center leading-tight text-[var(--text-secondary)]">Custom</span>
                 </button>
               </div>
               {showAddCategory && (
-                <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)]">
+                <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="font-bold text-slate-700 dark:text-slate-300">Kelola Kategori Custom</span>
-                    <button type="button" onClick={resetCategoryForm} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500"><X className="w-4 h-4" /></button>
+                    <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
+                    <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
                   </div>
                   {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                     <div className="mb-6 space-y-2">
-                      <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Untuk Edit/Hapus</label>
-                      <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                      <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
+                      <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
                         {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
                           const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
                           return (
-                            <div key={idx} className="flex flex-row items-center justify-between bg-white dark:bg-[var(--bg-card)] p-2.5 border border-slate-200 dark:border-[var(--border-default)] rounded-xl">
+                            <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px]">
                               <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 dark:bg-[var(--bg-elevated)] ${isStr ? 'text-slate-500 dark:text-slate-400' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 px-1">{name}</span>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] ${isStr ? 'text-[var(--text-secondary)]' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
+                                <span className="text-sm font-black text-[var(--text-primary)]">{name}</span>
                               </div>
-                              <div className="flex items-center border-l border-slate-100 dark:border-[var(--border-default)] pl-2">
-                                <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-950/30 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                              <div className="flex items-center border-l-2 border-[var(--neo-ink)] pl-2 gap-1">
+                                <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Pencil className="w-4 h-4" /></button>
+                                <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </div>
                           )
@@ -1368,23 +1354,23 @@ export default function TransactionModal({
                       </div>
                     </div>
                   )}
-                  <div className="space-y-4 border-t border-slate-200 dark:border-[var(--border-default)] pt-4">
-                    <span className="font-bold text-sm text-slate-700 dark:text-slate-300 block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                    <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white dark:bg-[var(--bg-card)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none font-bold" />
+                  <div className="space-y-4 border-t-2 border-[var(--neo-ink)] pt-4">
+                    <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
+                    <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full p-3 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-base focus:outline-none font-black text-[var(--text-primary)]" />
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Icon</label>
+                      <label className="neo-label mb-2 block">Pilih Icon</label>
                       <div className="grid grid-cols-7 gap-2">
-                        {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSelected = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-600' : 'border-transparent bg-white dark:bg-[var(--bg-card)] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] dark:bg-[var(--bg-hover)]'}`}><Ico className="w-5 h-5" /></button>) })}
+                        {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSelected = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[12px] border-2 transition-all ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)]' : 'border-transparent bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--neo-ink)]'}`}><Ico className="w-5 h-5" /></button>) })}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pilih Warna</label>
+                      <label className="neo-label mb-2 block">Pilih Warna</label>
                       <div className="grid grid-cols-6 gap-2">
-                        {COLOR_PALETTES.map((colorSet, idx) => { const isSelected = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-slate-800 scale-110 shadow-sm' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSelected && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
+                        {COLOR_PALETTES.map((colorSet, idx) => { const isSelected = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSelected && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-2 border-t border-slate-200 dark:border-[var(--border-default)]">
-                      <button type="button" onClick={handleSaveCustomCategory} className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold shadow-sm hover:bg-blue-600 transition-colors">Simpan Kategori</button>
+                    <div className="flex gap-2 pt-2 border-t-2 border-[var(--neo-ink)]">
+                      <button type="button" onClick={handleSaveCustomCategory} className="flex-1 brutal-btn !py-3 !text-sm !bg-[var(--neo-sky)]">Simpan Kategori</button>
                     </div>
                   </div>
                 </div>
@@ -1394,40 +1380,40 @@ export default function TransactionModal({
 
           {/* Budget Awareness */}
           {budgetInfo && (
-            <div className={`p-4 rounded-xl border ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200' : 'bg-slate-50 dark:bg-[var(--bg-elevated)] border-slate-200 dark:border-[var(--border-default)]'}`}>
+            <div className={`brutal-card-sm p-4 ${budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}`}>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget {budgetInfo.budget.category}</span>
-                <span className={`text-xs font-bold ${budgetInfo.isOver ? 'text-rose-600' : 'text-slate-600 dark:text-slate-500'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+                <span className="neo-label">Budget {budgetInfo.budget.category}</span>
+                <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
               </div>
               <div className="flex justify-between items-end mb-2">
-                <div className="flex flex-col"><span className="text-xs text-slate-400 dark:text-slate-500">Terpakai + Baru</span><span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span></div>
-                <div className="flex flex-col items-end"><span className="text-xs text-slate-400 dark:text-slate-500">Total Budget</span><span className="font-bold text-slate-700 dark:text-slate-300">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span></div>
+                <div className="flex flex-col"><span className="text-xs text-[var(--text-muted)] font-bold">Terpakai + Baru</span><span className="font-black text-[var(--text-primary)]">Rp {budgetInfo.totalProjected.toLocaleString('id-ID')}</span></div>
+                <div className="flex flex-col items-end"><span className="text-xs text-[var(--text-muted)] font-bold">Total Budget</span><span className="font-black text-[var(--text-primary)]">Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span></div>
               </div>
-              <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
-                <div className={`h-full rounded-full transition-all duration-500 ${budgetInfo.isOver ? 'bg-rose-50 dark:bg-rose-950/300' : budgetInfo.percent > 80 ? 'bg-orange-50 dark:bg-orange-950/300' : 'bg-blue-50 dark:bg-blue-950/300'}`} style={{ width: `${budgetInfo.percent}%` }} />
+              <div className="w-full h-2 border-2 border-[var(--neo-ink)] rounded-full overflow-hidden mb-2 bg-[var(--bg-elevated)]">
+                <div className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`} style={{ width: `${budgetInfo.percent}%` }} />
               </div>
               {budgetInfo.isOver ? (
-                <div className="flex items-start gap-2 text-rose-600 text-xs font-medium mt-2 bg-rose-100 dark:bg-rose-950/40 p-2 rounded-lg"><AlertTriangle className="w-4 h-4 shrink-0" /><p>Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.</p></div>
+                <div className="flex items-start gap-2 text-[var(--neo-ink)] text-xs font-bold mt-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] p-2 rounded-[12px]"><AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" /><p>Awas! Transaksi ini akan membuat budget minus <strong>Rp {Math.abs(budgetInfo.remaining).toLocaleString('id-ID')}</strong>.</p></div>
               ) : (
-                <p className="text-xs text-center text-slate-500 dark:text-slate-400">Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+                <p className="text-xs text-center text-[var(--text-muted)] font-bold">Sisa budget setelah transaksi ini: <strong>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
               )}
             </div>
           )}
 
           {/* Title/Notes */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Catatan <span className="text-slate-400 dark:text-slate-500 font-normal text-xs">(Opsional)</span></label>
+            <label className="neo-label mb-2 block">Catatan <span className="text-[var(--text-muted)] font-normal text-xs">(Opsional)</span></label>
             <input
               type="text"
               placeholder={category ? `Contoh: ${category} Enak` : "Catatan Transaksi"}
-              className="w-full p-4 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium"
+              className="w-full p-4 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[16px] outline-none transition-all font-black text-base text-[var(--text-primary)]"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
-          <button type="submit" disabled={saving} className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 !text-white font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}>
-            {saving && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+          <button type="submit" disabled={saving} className={`w-full brutal-btn !py-4 !text-base ${(saving) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}>
+            {saving && <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />}
             {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : 'Simpan Transaksi')}
           </button>
         </form>

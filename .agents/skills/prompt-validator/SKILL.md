@@ -45,6 +45,16 @@ triggers:
   - bisa
   - gas
   - boleh
+  - boleh juga
+  - boleh juga nih
+  - oke
+  - ingat
+  - INGAT
+  - oke gas
+  - lanjut
+  - lanjutin
+  - lanjutin lagi
+  - lanjutkan
 ---
 
 # 14 — SOP Monitoring & Prompt Scope Validator

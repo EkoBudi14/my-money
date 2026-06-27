@@ -41,7 +41,7 @@ export default function CurrencyCard() {
     }, [])
 
     return (
-        <div className="glass shadow-premium-lg p-6 rounded-3xl border border-white/20 relative overflow-hidden flex flex-col justify-between group card-hover h-full backdrop-blur-xl">
+        <div className="brutal-card p-6 bg-[var(--bg-card)] relative overflow-hidden flex flex-col justify-between group h-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
             <div className="flex justify-between items-start z-10 relative mb-4">
