@@ -118,7 +118,7 @@ export default function Sidebar() {
                                     className="flex items-center gap-3 px-4 py-3 rounded-[16px] transition-all duration-150 group"
                                     style={{
                                         background: isActive
-                                            ? (theme === 'dark' ? 'rgba(255,216,77,0.15)' : '#fff5b8')
+                                            ? (theme === 'dark' ? 'rgba(255,216,77,0.25)' : 'var(--neo-yellow)')
                                             : 'transparent',
                                         border: isActive ? '2px solid #141414' : '2px solid transparent',
                                         fontWeight: isActive ? 800 : 500,

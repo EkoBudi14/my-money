@@ -554,3 +554,107 @@ button {
     transform: translateY(0) scale(1);
   }
 }
+
+/* ============================================================
+   CUSTOM SCROLLBAR — Saweria Style (Global)
+   Thin, rounded, minimal with arrow buttons
+   Applied globally so Tailwind cascade layers can't override
+   ============================================================ */
+
+/* Firefox — Global */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #141414 transparent;
+}
+
+.dark html, html.dark {
+  scrollbar-color: rgba(255,255,255,0.45) transparent;
+}
+
+/* Also target class-based scrollable areas for Firefox */
+.custom-scrollbar,
+[class*="overflow-y-auto"],
+[class*="overflow-y-scroll"] {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af transparent;
+  /* GPU acceleration to prevent scroll lag */
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+.dark .custom-scrollbar,
+.dark [class*="overflow-y-auto"],
+.dark [class*="overflow-y-scroll"] {
+  scrollbar-color: rgba(255,255,255,0.45) transparent;
+}
+
+/* ── Webkit (Chrome, Safari, Edge) — Global ─────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 99px;
+  border: 1px solid #e0e0e0;
+  margin: 4px 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 99px;
+  border: 2px solid #f0f0f0;
+  background-clip: padding-box;
+  min-height: 32px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+  border: 2px solid #f0f0f0;
+  background-clip: padding-box;
+}
+
+/* Up / Down arrow buttons */
+::-webkit-scrollbar-button:single-button {
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  display: block;
+  height: 14px;
+  width: 8px;
+}
+
+/* Up arrow ▲ */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 6'%3E%3Cpath d='M4 1L7 5H1L4 1Z' fill='%239ca3af'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 6px 5px;
+}
+
+/* Down arrow ▼ */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 6'%3E%3Cpath d='M4 5L1 1H7L4 5Z' fill='%239ca3af'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 6px 5px;
+}
+
+/* ── Dark mode ───────────────────────────────────────────── */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.45);
+  background-clip: content-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255,255,255,0.75);
+  background-clip: content-box;
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 6'%3E%3Cpath d='M4 1L7 5H1L4 1Z' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+.dark ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 6'%3E%3Cpath d='M4 5L1 1H7L4 5Z' fill='%23ffffff'/%3E%3C/svg%3E");
+}

@@ -77,8 +77,8 @@ export default function NeoSelect({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1 gap-1">
+        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] overflow-hidden">
+          <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1 gap-1" style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
             {options.map((option, idx) => (
               <button
                 key={`${option.value}-${idx}`}

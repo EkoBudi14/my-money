@@ -576,7 +576,7 @@ export default function TransactionModal({
           {/* Topup wallet selectors */}
           {type === 'topup' && (
             <div className="flex items-center gap-2 mb-5">
-              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
+              <div className="flex-1 brutal-card-sm p-3 brutal-card-sky">
                 <p className="neo-label mb-1">Sumber Dana</p>
                 <NeoSelect
                   value={sourceWalletId}
@@ -590,7 +590,7 @@ export default function TransactionModal({
               <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
-              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
+              <div className="flex-1 brutal-card-sm p-3 brutal-card-lav">
                 <p className="neo-label mb-1">Tujuan Topup</p>
                 <NeoSelect
                   value={selectedWalletId}
@@ -605,9 +605,9 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
-            type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
-              'bg-[var(--neo-lav)]'
+          <div className={`brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'brutal-card-mint' :
+            type === 'pengeluaran' ? 'brutal-card-peach' :
+              'brutal-card-lav'
             }`}>
             <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
             <div className="relative z-10 mb-1">
@@ -640,11 +640,11 @@ export default function TransactionModal({
             {/* Date & Wallet */}
             {type !== 'topup' ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="brutal-card-sm p-3">
+                <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
                   <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
-                <div className="brutal-card-sm p-3">
+                <div className="brutal-card-sm p-3 brutal-card-lav">
                   <p className="neo-label mb-1">Dompet</p>
                   <NeoSelect
                     value={selectedWalletId}
@@ -658,7 +658,7 @@ export default function TransactionModal({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="brutal-card-sm p-4">
+                <div className="brutal-card-sm p-4 brutal-card-peach">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="neo-label">Biaya Admin</p>
@@ -672,12 +672,12 @@ export default function TransactionModal({
                     />
                   </div>
                 </div>
-                <div className="brutal-card-sm px-4 py-3 space-y-2">
+                <div className="brutal-card-sm px-4 py-3 space-y-2 brutal-card-yellow">
                   <div className="flex justify-between items-center text-sm"><span className="neo-label">Nominal topup</span><span className="font-black text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
                   <div className="flex justify-between items-center text-sm"><span className="neo-label">Biaya admin</span><span className="font-black text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
                   <div className="border-t-2 border-[var(--neo-ink)] pt-2 flex justify-between items-center text-sm"><span className="font-black text-violet-700">Total keluar</span><span className="font-black text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
                 </div>
-                <div className="brutal-card-sm p-3">
+                <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
                   <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
@@ -686,7 +686,7 @@ export default function TransactionModal({
 
             {/* Piutang Toggle */}
             {type === 'pemasukan' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'brutal-card-yellow' : ''}`}>
                 <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                   <div className="flex items-center gap-3">
                     <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
@@ -704,7 +704,7 @@ export default function TransactionModal({
 
             {/* Split Bill */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'brutal-card-sky' : ''}`}>
                 <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
                   <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                   <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
@@ -730,7 +730,7 @@ export default function TransactionModal({
 
             {/* Talangan Toggle */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'brutal-card-lav' : ''}`}>
                 <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                   <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>🤝 Ini Talangan?</span>
                   <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
@@ -917,7 +917,7 @@ export default function TransactionModal({
           {/* Topup wallet selectors */}
           {type === 'topup' && (
             <div className="mx-4 mt-4 flex items-center gap-2">
-              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
+              <div className="flex-1 brutal-card-sm p-3 brutal-card-sky">
                 <p className="neo-label mb-1">Sumber Dana</p>
                 <NeoSelect
                   value={sourceWalletId}
@@ -931,7 +931,7 @@ export default function TransactionModal({
               <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
-              <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
+              <div className="flex-1 brutal-card-sm p-3 brutal-card-lav">
                 <p className="neo-label mb-1">Tujuan Topup</p>
                 <NeoSelect
                   value={selectedWalletId}
@@ -946,9 +946,9 @@ export default function TransactionModal({
           )}
 
           {/* Amount Display */}
-          <div className={`mx-4 mt-4 brutal-card-sm p-5 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
-            type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
-              'bg-[var(--neo-lav)]'
+          <div className={`mx-4 mt-4 brutal-card-sm p-5 relative overflow-hidden ${type === 'pemasukan' ? 'brutal-card-mint' :
+            type === 'pengeluaran' ? 'brutal-card-peach' :
+              'brutal-card-lav'
             }`}>
             <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-2 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
             <div className="relative z-10 mb-1">
@@ -982,11 +982,11 @@ export default function TransactionModal({
             {/* Date & Wallet */}
             {type !== 'topup' ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="brutal-card-sm p-3">
+                <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
                   <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
-                <div className="brutal-card-sm p-3">
+                <div className="brutal-card-sm p-3 brutal-card-lav">
                   <p className="neo-label mb-1">Dompet</p>
                   <NeoSelect
                     value={selectedWalletId}
@@ -999,7 +999,7 @@ export default function TransactionModal({
                 </div>
               </div>
             ) : (
-              <div className="brutal-card-sm p-3">
+              <div className="brutal-card-sm p-3 brutal-card-yellow">
                 <p className="neo-label mb-1">Tanggal</p>
                 <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
               </div>
@@ -1007,7 +1007,7 @@ export default function TransactionModal({
 
             {/* Admin Fee (Topup only) */}
             {type === 'topup' && (
-              <div className="brutal-card-sm p-3">
+              <div className="brutal-card-sm p-3 brutal-card-peach">
                 <p className="neo-label mb-1">Biaya Admin (Opsional)</p>
                 <MoneyInput value={adminFee} onChange={setAdminFee} placeholder="0" className="!bg-[var(--bg-elevated)] !border-2 !border-[var(--neo-ink)] !shadow-[2px_2px_0_var(--neo-ink)] !rounded-[12px] !font-black !text-[var(--text-primary)]" />
               </div>
@@ -1015,7 +1015,7 @@ export default function TransactionModal({
 
             {/* Piutang Toggle */}
             {type === 'pemasukan' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'brutal-card-yellow' : ''}`}>
                 <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer group select-none">
                   <div className="flex items-center gap-3">
                     <span className={`text-sm font-black transition-colors ${isPiutang ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
@@ -1035,7 +1035,7 @@ export default function TransactionModal({
 
             {/* Split Bill */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'brutal-card-sky' : ''}`}>
                 <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer group select-none mb-3">
                   <div className="flex items-center gap-3">
                     <span className={`text-sm font-black transition-colors ${isSplitBill ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
@@ -1063,7 +1063,7 @@ export default function TransactionModal({
 
             {/* Talangan Toggle */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
+              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'brutal-card-lav' : ''}`}>
                 <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer group select-none">
                   <div className="flex items-center gap-3">
                     <span className={`text-sm font-black ${isTalangan ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>🤝 Ini Talangan (bayarin orang lain)?</span>

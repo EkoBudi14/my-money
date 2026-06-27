@@ -1948,7 +1948,7 @@ export default function MoneyManager() {
 
         {/* Mobile Quick Actions (Bento Box Style) */}
         <div className="px-4 mt-5">
-          <div className="brutal-card p-4 bg-[var(--bg-card)]">
+          <div className="brutal-card p-4 brutal-card-yellow">
             <div className="flex items-center justify-between mb-4 px-1">
               <p className="neo-label">Aksi Cepat</p>
               <div className="h-1 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-full"></div>
@@ -1958,7 +1958,7 @@ export default function MoneyManager() {
               {/* Masuk */}
               <Link
                 href="/transaction?type=pemasukan"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl transition-colors"
               >
                 <div className="relative mb-2">
                   <div className="w-[52px] h-[52px] rounded-[18px] bg-emerald-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
@@ -1971,7 +1971,7 @@ export default function MoneyManager() {
               {/* Keluar */}
               <Link
                 href="/transaction?type=pengeluaran"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl transition-colors"
               >
                 <div className="relative mb-2">
                   <div className="w-[52px] h-[52px] rounded-[18px] bg-rose-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
@@ -1984,7 +1984,7 @@ export default function MoneyManager() {
               {/* Transfer */}
               <Link
                 href="/transaction?type=topup"
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl transition-colors"
               >
                 <div className="relative mb-2">
                   <div className="w-[52px] h-[52px] rounded-[18px] bg-blue-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
@@ -1997,7 +1997,7 @@ export default function MoneyManager() {
               {/* Anggaran */}
               <Link 
                 href="/budgets" 
-                className="qa-btn flex flex-col items-center p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors"
+                className="qa-btn flex flex-col items-center p-2 rounded-2xl transition-colors"
               >
                 <div className="relative mb-2">
                   <div className="w-[52px] h-[52px] rounded-[18px] bg-purple-400 flex items-center justify-center border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-1 transition-transform">
@@ -2013,7 +2013,7 @@ export default function MoneyManager() {
         {/* Mobile Stats Row */}
         <div className="px-4 mt-5 grid grid-cols-2 gap-3">
           {/* Saldo Aktif */}
-          <div className="brutal-card p-4 bg-[var(--bg-card)]">
+          <div className="brutal-card p-4 brutal-card-sky">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
@@ -2033,7 +2033,7 @@ export default function MoneyManager() {
             <p className="text-[10px] text-[var(--text-secondary)] mt-1">Siap digunakan</p>
           </div>
           {/* Pemasukan Bulan Ini */}
-          <div className="brutal-card p-4 bg-[var(--bg-card)]">
+          <div className="brutal-card p-4 brutal-card-mint">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
@@ -2891,9 +2891,9 @@ export default function MoneyManager() {
               )}
 
               {/* Amount Display */}
-              <div className={`mx-4 mt-4 brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'bg-[var(--neo-mint)]' :
-                type === 'pengeluaran' ? 'bg-[var(--neo-peach)]' :
-                  'bg-[var(--neo-lav)]'
+              <div className={`mx-4 mt-4 brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'brutal-card-mint' :
+                type === 'pengeluaran' ? 'brutal-card-peach' :
+                  'brutal-card-lav'
                 }`}>
                 <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
                 {/* Visible amount input — transparent on gradient */}
@@ -2948,7 +2948,7 @@ export default function MoneyManager() {
                 {/* Date & Wallet */}
                 {type !== 'topup' ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <BrutalCard size="sm" tight>
+                    <BrutalCard size="sm" tight colorScheme="yellow">
                       <p className="neo-label mb-1">Tanggal</p>
                       <input
                         type="date"
@@ -2958,7 +2958,7 @@ export default function MoneyManager() {
                         required
                       />
                     </BrutalCard>
-                    <BrutalCard size="sm" tight>
+                    <BrutalCard size="sm" tight colorScheme="lav">
                       <p className="neo-label mb-1">Dompet</p>
                       <NeoSelect
                         value={selectedWalletId}
@@ -2975,7 +2975,7 @@ export default function MoneyManager() {
                 ) : (
                   /* Topup-specific: Biaya Admin + Summary + Date */
                   <div className="space-y-3">
-                    <BrutalCard size="sm" tight>
+                    <BrutalCard size="sm" tight colorScheme="peach">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="neo-label">Biaya Admin</p>
@@ -2992,7 +2992,7 @@ export default function MoneyManager() {
                       </div>
                     </BrutalCard>
 
-                    <BrutalCard size="sm" tight className="space-y-2">
+                    <BrutalCard size="sm" tight className="space-y-2" colorScheme="yellow">
                       <div className="flex justify-between items-center text-sm">
                         <span className="neo-label">Nominal topup</span>
                         <span className="font-black text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span>
@@ -3007,7 +3007,7 @@ export default function MoneyManager() {
                       </div>
                     </BrutalCard>
 
-                    <BrutalCard size="sm" tight>
+                    <BrutalCard size="sm" tight colorScheme="yellow">
                       <p className="neo-label mb-1">Tanggal</p>
                       <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                     </BrutalCard>
@@ -3016,7 +3016,7 @@ export default function MoneyManager() {
 
                 {/* Piutang Toggle */}
                 {type === 'pemasukan' && (
-                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'brutal-card-yellow' : ''}`}>
                     <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                       <div className="flex items-center gap-3">
                         <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
@@ -3035,7 +3035,7 @@ export default function MoneyManager() {
 
                 {/* Split Bill Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'brutal-card-sky' : ''}`}>
                     <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
                       <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
@@ -3061,7 +3061,7 @@ export default function MoneyManager() {
 
                 {/* Talangan Toggle */}
                 {type === 'pengeluaran' && (
-                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
+                  <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'brutal-card-lav' : ''}`}>
                     <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
                       <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>🤝 Ini Talangan?</span>
                       <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
@@ -3246,7 +3246,7 @@ export default function MoneyManager() {
 
               {/* Date & Wallet Grid */}
               <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
-                <BrutalCard size="sm" tight className={type === 'topup' ? 'md:col-span-1' : ''}>
+                <BrutalCard size="sm" tight className={type === 'topup' ? 'md:col-span-1' : ''} colorScheme="yellow">
                   <p className="neo-label mb-1">Tanggal</p>
                   <input
                     type="date"
@@ -3288,7 +3288,7 @@ export default function MoneyManager() {
                     </BrutalCard>
                   </>
                 ) : (
-                  <BrutalCard size="sm" tight>
+                  <BrutalCard size="sm" tight colorScheme="lav">
                     <p className="neo-label mb-1">Dompet</p>
                     <NeoSelect
                       value={selectedWalletId}
@@ -3314,7 +3314,7 @@ export default function MoneyManager() {
                     value={amount}
                     onChange={setAmount}
                     autoFocus={!editingId}
-                    className="!px-[18px] !py-[14px] !bg-[var(--bg-input)] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]"
+                    className={`!px-[18px] !py-[14px] ${type === 'pemasukan' ? 'brutal-card-mint' : type === 'pengeluaran' ? 'brutal-card-peach' : 'brutal-card-lav'} !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]`}
                   />
                 </div>
 
@@ -3325,7 +3325,7 @@ export default function MoneyManager() {
                       value={adminFee}
                       onChange={setAdminFee}
                       placeholder="0"
-                      className="!px-[18px] !py-[14px] !bg-[var(--bg-input)] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]"
+                      className="!px-[18px] !py-[14px] brutal-card-peach !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] !text-[14px] !font-[800] !text-[var(--text-primary)]"
                     />
                   </div>
                 )}
@@ -3333,7 +3333,7 @@ export default function MoneyManager() {
 
               {/* Piutang Toggle - hanya untuk Pemasukan */}
               {type === 'pemasukan' && (
-                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'bg-[var(--neo-yellow-vivid)]' : ''}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'brutal-card-yellow' : ''}`}>
                   <div
                     onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
@@ -3368,7 +3368,7 @@ export default function MoneyManager() {
 
               {/* Split Bill Toggle */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'bg-[var(--neo-sky)]' : ''}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'brutal-card-sky' : ''}`}>
                   <div
                     onClick={() => setIsSplitBill(!isSplitBill)}
                     className="flex items-center justify-between cursor-pointer group select-none mb-3"
@@ -3457,7 +3457,7 @@ export default function MoneyManager() {
 
               {/* Talangan Toggle - hanya untuk Pengeluaran */}
               {type === 'pengeluaran' && (
-                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'bg-[var(--neo-lav)]' : ''}`}>
+                <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'brutal-card-lav' : ''}`}>
                   <div
                     onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }}
                     className="flex items-center justify-between cursor-pointer group select-none"
