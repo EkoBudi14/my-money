@@ -17,6 +17,7 @@ interface NeoSelectProps {
   placeholder?: string
   className?: string
   required?: boolean
+  style?: React.CSSProperties;
 }
 
 export default function NeoSelect({
