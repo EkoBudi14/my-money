@@ -77,20 +77,20 @@ export default function GoldPriceCard() {
 
             <div className="flex justify-between items-start z-10 relative mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-yellow-50 dark:bg-yellow-950/30 p-2.5 rounded-xl text-yellow-600 ring-4 ring-yellow-50/50">
-                        <TrendingUp className="w-5 h-5" />
+                    <div className="bg-[var(--neo-yellow-vivid)] border-[2.5px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] p-2.5 rounded-[10px] text-[var(--neo-ink)]">
+                        <TrendingUp className="w-5 h-5 stroke-[2.5px]" />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Investasi</p>
-                        <p className="text-slate-800 dark:text-[var(--text-primary)] font-bold">Harga Emas</p>
+                        <p className="text-[10px] font-black text-[var(--text-primary)] uppercase tracking-widest opacity-80">Investasi</p>
+                        <p className="text-[var(--text-primary)] font-black text-lg leading-tight mt-0.5">Harga Emas</p>
                     </div>
                 </div>
                 <button
                     onClick={() => fetchGoldPrice(true)}
                     disabled={loading}
-                    className="p-2 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-xl text-slate-400 dark:text-slate-500 hover:text-blue-600 transition-colors disabled:opacity-50"
+                    className="p-2 brutal-btn bg-white text-[var(--neo-ink)] disabled:opacity-50"
                 >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 stroke-[3px] ${loading ? 'animate-spin' : ''}`} />
                 </button>
             </div>
 
@@ -110,10 +110,10 @@ export default function GoldPriceCard() {
                         {/* Harga Beli */}
                         <div className="flex justify-between items-end border-b border-slate-50 pb-3">
                             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
-                                <span className="p-1 bg-green-50 dark:bg-green-950/30 rounded text-green-600"><ArrowDownLeft className="w-3 h-3" /></span>
-                                <span className="text-xs font-medium">Beli</span>
+                                <span className="p-1 bg-emerald-300 border-2 border-[var(--neo-ink)] rounded-[6px] text-[var(--neo-ink)]"><ArrowDownLeft className="w-3 h-3 stroke-[3px]" /></span>
+                                <span className="text-xs font-black text-[var(--text-primary)]">Beli</span>
                             </div>
-                            <p className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)] tracking-tight">
+                            <p className="text-xl font-black text-[var(--text-primary)] tracking-tight">
                                 Rp {buyPrice && buyPrice > 0 ? buyPrice.toLocaleString('id-ID') : '-'}
                             </p>
                         </div>
@@ -121,10 +121,10 @@ export default function GoldPriceCard() {
                         {/* Harga Jual */}
                         <div className="flex justify-between items-end">
                             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
-                                <span className="p-1 bg-red-50 dark:bg-red-950/30 rounded text-red-600"><ArrowUpRight className="w-3 h-3" /></span>
-                                <span className="text-xs font-medium">Jual</span>
+                                <span className="p-1 bg-rose-300 border-2 border-[var(--neo-ink)] rounded-[6px] text-[var(--neo-ink)]"><ArrowUpRight className="w-3 h-3 stroke-[3px]" /></span>
+                                <span className="text-xs font-black text-[var(--text-primary)]">Jual</span>
                             </div>
-                            <p className="text-lg font-bold text-slate-600 dark:text-slate-500 tracking-tight">
+                            <p className="text-lg font-black text-[var(--text-primary)] tracking-tight opacity-70">
                                 Rp {sellPrice && sellPrice > 0 ? sellPrice.toLocaleString('id-ID') : '-'}
                             </p>
                         </div>
@@ -133,8 +133,8 @@ export default function GoldPriceCard() {
             </div>
 
             <div className="mt-4 pt-3 flex justify-between items-center z-10 relative">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-[var(--bg-elevated)] px-2 py-1 rounded-full">Update: {lastUpdate}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Antam</span>
+                <span className="text-[10px] text-[var(--text-primary)] font-black uppercase tracking-wider border-2 border-dashed border-[var(--neo-ink)] px-2 py-1 rounded-[6px]">Update: {lastUpdate}</span>
+                <span className="text-[10px] text-[var(--text-primary)] font-black uppercase tracking-wider">Antam</span>
             </div>
         </div>
     )

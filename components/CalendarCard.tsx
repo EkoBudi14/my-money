@@ -390,11 +390,11 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
              {/* Live Clock */}
              <div className="mb-6 border-b border-slate-100 dark:border-[var(--border-default)] pb-4 text-center">
                 {isMounted ? (
-                    <div className="text-3xl font-bold text-slate-800 dark:text-[var(--text-primary)] tabular-nums tracking-tight">
+                    <div className="text-3xl font-black text-[var(--text-primary)] tabular-nums tracking-tight">
                         {String(currentTime.getHours()).padStart(2, '0')}:{String(currentTime.getMinutes()).padStart(2, '0')}:{String(currentTime.getSeconds()).padStart(2, '0')}
                     </div>
                 ) : (
-                    <div className="text-3xl font-bold text-slate-800 dark:text-[var(--text-primary)]">--:--:--</div>
+                    <div className="text-3xl font-black text-[var(--text-primary)] tabular-nums tracking-tight">--:--:--</div>
                 )}
                 <div className="text-sm text-slate-500 dark:text-slate-400 mt-1 capitalize">
                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -404,18 +404,18 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)] flex items-center gap-2">
-                        <CalendarIcon className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-xl font-black text-[var(--text-primary)] flex items-center gap-2">
+                        <CalendarIcon className="w-6 h-6 text-blue-600 stroke-[2.5px]" />
                         Kalender
                     </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{monthName} {year}</p>
+                    <p className="text-sm font-bold opacity-70 mt-1">{monthName} {year}</p>
                 </div>
-                <div className="flex bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-xl p-1 gap-1">
-                    <button onClick={prevMonth} className="p-1.5 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg transition-all text-slate-600 dark:text-slate-500">
-                        <ChevronLeft className="w-5 h-5" />
+                <div className="flex gap-2">
+                    <button onClick={prevMonth} className="p-1.5 brutal-btn bg-white">
+                        <ChevronLeft className="w-5 h-5 stroke-[3px]" />
                     </button>
-                    <button onClick={nextMonth} className="p-1.5 hover:bg-white dark:bg-[var(--bg-card)] hover:shadow-sm rounded-lg transition-all text-slate-600 dark:text-slate-500">
-                        <ChevronRight className="w-5 h-5" />
+                    <button onClick={nextMonth} className="p-1.5 brutal-btn bg-white">
+                        <ChevronRight className="w-5 h-5 stroke-[3px]" />
                     </button>
                 </div>
             </div>
@@ -423,7 +423,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1 mb-8 text-center">
                 {DAYS.map(day => (
-                    <div key={day} className="text-xs font-bold text-slate-400 dark:text-slate-500 py-2 uppercase tracking-wide">
+                    <div key={day} className="text-xs font-black py-2 uppercase tracking-wide opacity-70">
                         {day}
                     </div>
                 ))}
@@ -456,21 +456,22 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             key={day}
                             onClick={() => handleDateClick(day)}
                             className={`
-                                aspect-square flex flex-col items-center justify-center relative rounded-2xl cursor-pointer transition-all duration-200
-                                ${selected ? 'bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-blue-900/40 scale-105 z-10' : ''}
-                                ${!selected && today ? 'bg-blue-50 dark:bg-blue-950/30 ring-1 ring-blue-200 dark:ring-blue-800' : ''}
-                                ${!selected && !today && isNationalHoliday ? 'bg-rose-50 dark:bg-rose-950/30' : ''}
-                                ${!selected && !today ? 'hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]' : ''}
+                                aspect-square flex flex-col items-center justify-center relative rounded-[10px] cursor-pointer transition-all duration-200 border-2
+                                ${selected ? 'bg-[var(--neo-yellow-vivid)] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px] z-10' : 
+                                    (today ? 'bg-blue-100 border-[var(--neo-ink)]' : 
+                                        (isNationalHoliday ? 'bg-rose-100 border-transparent hover:border-[var(--neo-ink)]' : 'border-transparent hover:border-[var(--neo-ink)]')
+                                    )
+                                }
                             `}
                         >
                             <span 
-                                className={`text-sm font-bold ${
-                                    selected ? '!text-white' : 
+                                className={`text-sm font-black ${
+                                    selected ? '!text-[var(--neo-ink)]' : 
                                     isNationalHoliday ? 'text-rose-600' : 
-                                    (today && dayOfWeek !== 0 && dayOfWeek !== 6) ? 'text-blue-600' :
-                                    'text-slate-700 dark:text-slate-300'
+                                    (today && dayOfWeek !== 0 && dayOfWeek !== 6) ? 'text-blue-700' :
+                                    'text-[var(--text-primary)]'
                                 }`}
-                                style={textColor ? { color: textColor } : undefined}
+                                style={textColor && !selected ? { color: textColor } : undefined}
                             >
                                 {day}
                             </span>
@@ -479,15 +480,15 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             <div className="flex gap-1 mt-1 justify-center h-1.5">
                                 {/* Blue dot for bills */}
                                 {hasBills && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-blue-500'}`}></span>
+                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-blue-500'}`}></span>
                                 )}
                                 {/* Red dot for holidays (National holiday or Observance/Cuti Bersama) */}
                                 {isHoliday && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-rose-500'}`}></span>
+                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-rose-500'}`}></span>
                                 )}
                                 {/* Green dot for events */}
                                 {hasEvents && (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-white' : 'bg-emerald-500'}`}></span>
+                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-emerald-500'}`}></span>
                                 )}
                             </div>
                         </div>
@@ -504,7 +505,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                         </p>
                         <button 
                             onClick={handleAddClick}
-                            className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:bg-blue-950/30 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+                            className="brutal-btn bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] text-xs px-3 py-2"
                         >
                             + Catatan
                         </button>
@@ -513,13 +514,13 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                     <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                         {/* Holiday Info */}
                         {displayData?.holiday && (
-                            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/30 border border-rose-100 dark:border-rose-800/30">
-                                <div className="p-2 bg-rose-100 dark:bg-rose-950/40 rounded-lg text-rose-600">
-                                    <CalendarIcon size={16} />
+                            <div className="flex items-start gap-3 p-3 rounded-[12px] bg-rose-200 border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
+                                <div className="p-2 bg-rose-300 border-2 border-[var(--neo-ink)] rounded-[8px] text-[var(--neo-ink)]">
+                                    <CalendarIcon size={16} className="stroke-[3px]" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">{displayData.holiday.name}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{displayData.holiday.type}</p>
+                                    <p className="text-sm font-black text-[var(--neo-ink)]">{displayData.holiday.name}</p>
+                                    <p className="text-xs font-bold text-[var(--neo-ink)] opacity-80 mt-1">{displayData.holiday.type}</p>
                                 </div>
                             </div>
                         )}
@@ -527,41 +528,41 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                         {/* Events Info */}
                         {displayData?.dayEvents && displayData.dayEvents.length > 0 && (
                             displayData.dayEvents.map(event => (
-                                <div key={event.id} className={`flex items-start gap-3 p-3 rounded-xl border group relative
-                                    ${event.color === 'blue' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30' : 
-                                      event.color === 'green' ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30' :
-                                      event.color === 'yellow' ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-800/30' :
-                                      event.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-100 dark:border-purple-800/30' :
-                                      'bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-800/30'
+                                <div key={event.id} className={`flex items-start gap-3 p-3 rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] group relative
+                                    ${event.color === 'blue' ? 'bg-blue-200' : 
+                                      event.color === 'green' ? 'bg-emerald-200' :
+                                      event.color === 'yellow' ? 'bg-amber-200' :
+                                      event.color === 'purple' ? 'bg-purple-200' :
+                                      'bg-rose-200'
                                     }
                                 `}>
-                                    <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0
-                                        ${event.color === 'blue' ? 'bg-blue-50 dark:bg-blue-950/300' : 
-                                          event.color === 'green' ? 'bg-emerald-50 dark:bg-emerald-950/300' :
-                                          event.color === 'yellow' ? 'bg-amber-50 dark:bg-amber-950/300' :
-                                          event.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950/300' :
-                                          'bg-rose-50 dark:bg-rose-950/300'
+                                    <div className={`mt-0.5 w-3 h-3 rounded-none border-[2px] border-[var(--neo-ink)] shrink-0
+                                        ${event.color === 'blue' ? 'bg-blue-400' : 
+                                          event.color === 'green' ? 'bg-emerald-400' :
+                                          event.color === 'yellow' ? 'bg-amber-400' :
+                                          event.color === 'purple' ? 'bg-purple-400' :
+                                          'bg-rose-400'
                                         }
                                     `}></div>
                                     <div className="flex-1 pr-16 min-h-[40px]">
-                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 break-words">{event.title}</p>
-                                        <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-0.5">{event.type === 'reminder' ? 'Pengingat' : 'Catatan'}</p>
+                                        <p className="text-sm font-black text-[var(--neo-ink)] break-words leading-tight">{event.title}</p>
+                                        <p className="text-[10px] font-bold text-[var(--neo-ink)] opacity-70 uppercase tracking-wide mt-1">{event.type === 'reminder' ? 'Pengingat' : 'Catatan'}</p>
                                     </div>
                                     
-                                    <div className="flex gap-2 absolute top-2 right-2">
+                                    <div className="flex gap-1 absolute top-2 right-2">
                                         <button 
                                             onClick={() => handleEditEvent(event)}
-                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-500 hover:bg-blue-100 rounded-xl transition-all"
+                                            className="p-1.5 brutal-btn bg-white"
                                             aria-label="Edit catatan"
                                         >
-                                            <Pencil size={18} />
+                                            <Pencil size={14} className="stroke-[3px]" />
                                         </button>
                                         <button 
                                             onClick={() => handleDeleteEvent(event.id)}
-                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-100 dark:bg-rose-950/40 rounded-xl transition-all"
+                                            className="p-1.5 brutal-btn bg-rose-300"
                                             aria-label="Hapus catatan"
                                         >
-                                            <Trash2 size={18} />
+                                            <Trash2 size={14} className="stroke-[3px]" />
                                         </button>
                                     </div>
                                 </div>
@@ -573,26 +574,24 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             displayData.bills.map(bill => {
                                 const isPaid = billPayments[bill.id]
                                 return (
-                                    <div key={bill.id} className={`flex items-center justify-between p-3 rounded-xl border ${
+                                    <div key={bill.id} className={`flex items-center justify-between p-3 rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] ${
                                         isPaid
-                                            ? 'bg-green-50 dark:bg-green-950/30 border-green-100'
-                                            : isPemasukan(bill)
-                                                ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30'
-                                                : 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
+                                            ? 'bg-slate-100 opacity-60 border-dashed shadow-none'
+                                            : 'bg-[var(--bg-card)] hover:translate-y-[-2px] hover:shadow-[4px_4px_0_var(--neo-ink)] transition-all'
                                     } group`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+                                            <div className={`w-8 h-8 rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center font-black text-xs ${
                                                 isPaid
-                                                    ? 'bg-green-100 text-green-600'
+                                                    ? 'bg-green-300 text-[var(--neo-ink)]'
                                                     : isPemasukan(bill)
-                                                        ? 'bg-emerald-100 text-emerald-600'
-                                                        : 'bg-blue-100 text-blue-600'
+                                                        ? 'bg-emerald-300 text-[var(--neo-ink)]'
+                                                        : 'bg-blue-300 text-[var(--neo-ink)]'
                                             }`}>
-                                                {isPaid ? <CheckCircle2 size={16} /> : bill.name.charAt(0)}
+                                                {isPaid ? <CheckCircle2 size={16} className="stroke-[3px]" /> : bill.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">{bill.name}</p>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                <p className="text-sm font-black text-[var(--text-primary)]">{bill.name}</p>
+                                                <p className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
                                                     {isPaid
                                                         ? (isPemasukan(bill) ? 'Sudah diterima' : 'Sudah dibayar')
                                                         : (isPemasukan(bill) ? 'Pemasukan Rutin' : 'Tagihan Rutin')
@@ -601,8 +600,8 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <p className={`text-sm font-bold ${
-                                                isPaid ? 'text-green-600' : isPemasukan(bill) ? 'text-emerald-600' : 'text-blue-600'
+                                            <p className={`text-sm font-black ${
+                                                isPaid ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'
                                             }`}>
                                                 {isPemasukan(bill) ? '+' : ''}Rp {bill.amount.toLocaleString('id-ID')}
                                             </p>
@@ -610,18 +609,18 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                             {isPaid ? (
                                                 <button
                                                     onClick={() => handleDeleteBillPayment(bill.id)}
-                                                    className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:bg-rose-950/30 rounded-lg transition-all"
+                                                    className="p-1.5 brutal-btn bg-white"
                                                     title="Batalkan"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={16} className="stroke-[2.5px]" />
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={() => handleCalendarPayBill(bill)}
-                                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold text-white transition-all ${
+                                                    className={`px-3 py-1.5 brutal-btn text-xs font-black text-[var(--neo-ink)] transition-all ${
                                                         isPemasukan(bill)
-                                                            ? 'bg-emerald-500 hover:bg-emerald-600'
-                                                            : 'bg-blue-600 hover:bg-blue-700'
+                                                            ? 'bg-emerald-300'
+                                                            : 'bg-[var(--neo-yellow-vivid)]'
                                                     }`}
                                                 >
                                                     {isPemasukan(bill) ? 'Terima' : 'Bayar'}

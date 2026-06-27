@@ -15,11 +15,11 @@ interface AddEventModalProps {
 }
 
 const COLORS = [
-    { name: 'blue', class: 'bg-blue-100 text-blue-600 ring-blue-500' },
-    { name: 'green', class: 'bg-emerald-100 text-emerald-600 ring-emerald-500' },
-    { name: 'yellow', class: 'bg-amber-100 text-amber-600 ring-amber-500' },
-    { name: 'red', class: 'bg-rose-100 dark:bg-rose-950/40 text-rose-600 ring-rose-500' },
-    { name: 'purple', class: 'bg-purple-100 text-purple-600 ring-purple-500' },
+    { name: 'blue', class: 'bg-blue-300' },
+    { name: 'green', class: 'bg-emerald-300' },
+    { name: 'yellow', class: 'bg-amber-300' },
+    { name: 'red', class: 'bg-rose-300' },
+    { name: 'purple', class: 'bg-purple-300' },
 ]
 
 export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate, initialData }: AddEventModalProps) {
@@ -104,14 +104,14 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[var(--bg-card)] rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] rounded-[16px] w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b-[3px] border-[var(--neo-ink)] bg-[var(--neo-yellow-vivid)] flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-xl font-black text-[var(--neo-ink)]">
                             {initialData ? 'Edit Catatan' : 'Tambah Catatan'}
                         </h3>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm font-bold text-[var(--neo-ink)] opacity-80 mt-1">
                             {selectedDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
                     </div>
@@ -120,62 +120,62 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Input Title */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Isi Catatan</label>
+                        <label className="text-sm font-black text-[var(--text-primary)]">Isi Catatan</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Contoh: Meeting jam 2, Bayar listrik..."
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
+                            className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all placeholder:text-[var(--text-primary)] placeholder:opacity-50"
                             autoFocus
                         />
                     </div>
 
                     {/* Type Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Tipe</label>
+                        <label className="text-sm font-black text-[var(--text-primary)]">Tipe</label>
                         <div className="flex gap-3">
                             <button
                                 type="button"
                                 onClick={() => setType('note')}
-                                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                                className={`flex-1 flex items-center justify-center gap-2 p-3 brutal-btn transition-all ${
                                     type === 'note' 
-                                        ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30 text-blue-700 ring-2 ring-blue-500/20' 
-                                        : 'bg-white dark:bg-[var(--bg-card)] border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-blue-300 text-[var(--neo-ink)]' 
+                                        : 'bg-white text-[var(--neo-ink)] opacity-80 hover:opacity-100'
                                 }`}
                             >
-                                <StickyNote size={18} />
-                                <span className="font-medium">Catatan</span>
+                                <StickyNote size={18} className="stroke-[3px]" />
+                                <span className="font-black">Catatan</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setType('reminder')}
-                                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                                className={`flex-1 flex items-center justify-center gap-2 p-3 brutal-btn transition-all ${
                                     type === 'reminder' 
-                                        ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30 text-amber-700 ring-2 ring-amber-500/20' 
-                                        : 'bg-white dark:bg-[var(--bg-card)] border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-amber-300 text-[var(--neo-ink)]' 
+                                        : 'bg-white text-[var(--neo-ink)] opacity-80 hover:opacity-100'
                                 }`}
                             >
-                                <Bell size={18} />
-                                <span className="font-medium">Pengingat</span>
+                                <Bell size={18} className="stroke-[3px]" />
+                                <span className="font-black">Pengingat</span>
                             </button>
                         </div>
                     </div>
 
                     {/* Color Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Warna Label</label>
+                        <label className="text-sm font-black text-[var(--text-primary)]">Warna Label</label>
                         <div className="flex gap-3">
                             {COLORS.map((c) => (
                                 <button
                                     key={c.name}
                                     type="button"
                                     onClick={() => setColor(c.name)}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${c.class} ${
-                                        color === c.name ? 'ring-2 ring-offset-2' : ''
+                                    className={`w-10 h-10 rounded-[10px] border-[3px] border-[var(--neo-ink)] flex items-center justify-center transition-all ${c.class} ${
+                                        color === c.name ? 'shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px]' : 'hover:shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px]'
                                     }`}
                                 >
-                                    {color === c.name && <Check size={16} />}
+                                    {color === c.name && <Check size={20} className="stroke-[4px] text-[var(--neo-ink)]" />}
                                 </button>
                             ))}
                         </div>
@@ -186,20 +186,20 @@ export default function AddEventModal({ isOpen, onClose, onSuccess, selectedDate
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 py-3 px-4 rounded-xl font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                            className="flex-1 py-3 px-4 brutal-btn bg-white text-[var(--neo-ink)] opacity-80 hover:opacity-100"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
                             disabled={loading || !title.trim()}
-                            className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="flex-1 py-3 px-4 brutal-btn bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {loading ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <div className="w-5 h-5 border-4 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
                             ) : (
                                 <>
-                                    <span>Simpan</span>
+                                    <span className="font-black">Simpan</span>
                                 </>
                             )}
                         </button>

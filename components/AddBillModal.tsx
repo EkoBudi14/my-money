@@ -94,47 +94,47 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
     const isPemasukan = billType === 'pemasukan'
 
     return (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-4 pb-6">
-            <div className="bg-white dark:bg-[var(--bg-card)] rounded-[2rem] w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 max-h-[85dvh] overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
-                            {initialData
-                                ? (isPemasukan ? 'Edit Pemasukan Rutin' : 'Edit Tagihan Rutin')
-                                : (isPemasukan ? 'Tambah Pemasukan Rutin' : 'Tambah Tagihan Rutin')
-                            }
-                        </h3>
-                        <button
-                            onClick={onClose}
-                            className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-4 pb-6">
+            <div className="bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] rounded-[16px] w-full max-w-md animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 max-h-[85dvh] overflow-y-auto custom-scrollbar">
+                <div className="p-6 border-b-[3px] border-[var(--neo-ink)] bg-[var(--neo-yellow-vivid)] flex justify-between items-center sticky top-0 z-10">
+                    <h3 className="text-xl font-black text-[var(--neo-ink)]">
+                        {initialData
+                            ? (isPemasukan ? 'Edit Pemasukan Rutin' : 'Edit Tagihan Rutin')
+                            : (isPemasukan ? 'Tambah Pemasukan Rutin' : 'Tambah Tagihan Rutin')
+                        }
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        className="p-1.5 brutal-btn bg-white"
+                    >
+                        <X size={20} className="stroke-[3px]" />
+                    </button>
+                </div>
+                <div className="p-6 pt-6">
 
                     {/* Type Toggle — only show for new entries */}
                     {!initialData && (
-                        <div className="flex gap-2 mb-6 p-1 bg-slate-100 dark:bg-[var(--bg-elevated)] rounded-2xl">
+                        <div className="flex gap-3 mb-6">
                             <button
                                 type="button"
                                 onClick={() => handleTypeChange('pengeluaran')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${billType === 'pengeluaran'
-                                    ? 'bg-white dark:bg-[var(--bg-card)] text-rose-600 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-[10px] text-sm font-black transition-all border-[3px] border-[var(--neo-ink)] ${billType === 'pengeluaran'
+                                    ? 'bg-rose-300 text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px]'
+                                    : 'bg-white text-[var(--neo-ink)] opacity-70 hover:opacity-100 hover:shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px]'
                                     }`}
                             >
-                                <TrendingDown size={16} />
+                                <TrendingDown size={18} className="stroke-[3px]" />
                                 Tagihan Rutin
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleTypeChange('pemasukan')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all ${billType === 'pemasukan'
-                                    ? 'bg-white dark:bg-[var(--bg-card)] text-emerald-600 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-[10px] text-sm font-black transition-all border-[3px] border-[var(--neo-ink)] ${billType === 'pemasukan'
+                                    ? 'bg-emerald-300 text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px]'
+                                    : 'bg-white text-[var(--neo-ink)] opacity-70 hover:opacity-100 hover:shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px]'
                                     }`}
                             >
-                                <TrendingUp size={16} />
+                                <TrendingUp size={18} className="stroke-[3px]" />
                                 Pemasukan Rutin
                             </button>
                         </div>
@@ -142,21 +142,21 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            <label className="block text-sm font-black text-[var(--text-primary)]">
                                 {isPemasukan ? 'Nama Pemasukan' : 'Nama Tagihan'}
                             </label>
                             <input
                                 required
                                 type="text"
                                 placeholder={isPemasukan ? 'Contoh: Gaji Bulanan, Tunjangan' : 'Contoh: Netflix, WiFi, Listrik'}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-[var(--text-primary)] placeholder:text-slate-400 dark:text-slate-500"
+                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all placeholder:text-[var(--text-primary)] placeholder:opacity-50"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            <label className="block text-sm font-black text-[var(--text-primary)]">
                                 {isPemasukan ? 'Jumlah Pemasukan (Rp)' : 'Jumlah Tagihan (Rp)'}
                             </label>
                             <MoneyInput
@@ -168,9 +168,9 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
 
                         {/* Category */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Kategori</label>
+                            <label className="block text-sm font-black text-[var(--text-primary)]">Kategori</label>
                             <select
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-[var(--text-primary)]"
+                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all"
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
                             >
@@ -181,14 +181,14 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            <label className="block text-sm font-black text-[var(--text-primary)]">
                                 {isPemasukan ? 'Mulai Tanggal Terima' : 'Mulai Tanggal Pembayaran'}
                             </label>
                             <div className="relative">
                                 <input
                                     required
                                     type="date"
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all font-medium text-slate-800 dark:text-[var(--text-primary)] placeholder:text-slate-400 dark:text-slate-500 [color-scheme:light] cursor-pointer"
+                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all cursor-pointer [color-scheme:light]"
                                     onClick={(e) => e.currentTarget.showPicker()}
                                     onChange={(e) => {
                                         const date = new Date(e.target.value)
@@ -201,12 +201,12 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                                     }}
                                 />
                                 {formData.due_date && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400 font-medium bg-slate-50 dark:bg-[var(--bg-elevated)] pl-2">
-                                        Setiap tgl <span className={`font-bold ${isPemasukan ? 'text-emerald-600' : 'text-blue-600'}`}>{formData.due_date}</span>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[var(--neo-ink)] font-black uppercase tracking-wider bg-[var(--neo-yellow-vivid)] px-2 py-1 rounded-[6px] border-2 border-[var(--neo-ink)]">
+                                        Setiap tgl {formData.due_date}
                                     </div>
                                 )}
                             </div>
-                            <p className="text-xs text-slate-400 dark:text-slate-500 px-1">
+                            <p className="text-[10px] font-bold opacity-70 px-1 uppercase tracking-wide mt-1">
                                 {isPemasukan
                                     ? 'Pilih tanggal pertama kali pemasukan diterima. Akan berulang setiap bulan di tanggal yang sama.'
                                     : 'Pilih tanggal pembayaran pertama. Tagihan akan otomatis berulang setiap bulannya pada tanggal yang sama.'
@@ -218,13 +218,14 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, initialData }
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full text-white font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed ${isPemasukan
-                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/30'
-                                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-500/30'
+                                className={`w-full py-4 brutal-btn flex items-center justify-center gap-2 disabled:opacity-50 text-lg font-black text-[var(--neo-ink)] ${
+                                    isPemasukan
+                                        ? 'bg-emerald-300'
+                                        : 'bg-[var(--neo-yellow-vivid)]'
                                     }`}
                             >
                                 {loading ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <div className="w-6 h-6 border-[4px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
                                 ) : (initialData ? 'Simpan Perubahan' : 'Simpan')}
                             </button>
                         </div>

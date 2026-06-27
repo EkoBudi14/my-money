@@ -249,7 +249,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
     const pendingIncomeCount = pemasukan.filter(b => !billPayments[b.id]).length
 
     return (
-        <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[var(--border-default)]">
+        <div className="brutal-card p-6 bg-[var(--bg-card)]">
             <div className="flex justify-between items-center mb-5">
                 <div>
                     <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-[var(--text-primary)]">
@@ -265,20 +265,20 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="p-2 bg-blue-50 dark:bg-blue-950/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                    className="p-2 brutal-btn bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]"
                 >
-                    <Plus size={20} />
+                    <Plus size={20} className="stroke-[3px]" />
                 </button>
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex gap-2 mb-5 p-1 bg-slate-100 dark:bg-[var(--bg-elevated)] rounded-2xl">
+            <div className="flex gap-2 mb-5">
                 <button
                     onClick={() => setActiveTab('pengeluaran')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-sm font-bold transition-all ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-[12px] text-sm font-black transition-all border-[3px] ${
                         activeTab === 'pengeluaran'
-                            ? 'bg-white dark:bg-[var(--bg-card)] text-rose-600 shadow-sm'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                            ? 'bg-[var(--neo-yellow-vivid)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]'
+                            : 'bg-[var(--bg-elevated)] border-transparent text-[var(--text-primary)] hover:border-[var(--neo-ink)]'
                     }`}
                 >
                     <TrendingDown size={15} />
@@ -293,10 +293,10 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 </button>
                 <button
                     onClick={() => setActiveTab('pemasukan')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-sm font-bold transition-all ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-[12px] text-sm font-black transition-all border-[3px] ${
                         activeTab === 'pemasukan'
-                            ? 'bg-white dark:bg-[var(--bg-card)] text-emerald-600 shadow-sm'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                            ? 'bg-[var(--neo-yellow-vivid)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]'
+                            : 'bg-[var(--bg-elevated)] border-transparent text-[var(--text-primary)] hover:border-[var(--neo-ink)]'
                     }`}
                 >
                     <TrendingUp size={15} />
@@ -348,14 +348,14 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                             const { color, text, status } = getStatus(bill.due_date)
                             const isIncome = isPemasukan(bill)
                             return (
-                                <div key={bill.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:border-[var(--border-default)] gap-3 sm:gap-4 overflow-hidden">
+                                <div key={bill.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[var(--bg-card)] rounded-[14px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] mb-3 hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)] transition-all gap-3 sm:gap-4 overflow-hidden">
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                                        <div className={`w-12 h-12 rounded-[10px] border-[2px] border-[var(--neo-ink)] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                                             isIncome
-                                                ? (status === 'soon' ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500')
-                                                : (status === 'soon' ? 'bg-rose-100 dark:bg-rose-950/40 text-rose-600' : 'bg-blue-50 dark:bg-blue-950/30 text-blue-600')
+                                                ? (status === 'soon' ? 'bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : 'bg-emerald-100 text-[var(--neo-ink)]')
+                                                : (status === 'soon' ? 'bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : 'bg-blue-100 text-[var(--neo-ink)]')
                                         }`}>
-                                            {isIncome ? <TrendingUp size={20} /> : <Calendar size={20} />}
+                                            {isIncome ? <TrendingUp size={20} className="stroke-[2.5px]" /> : <Calendar size={20} className="stroke-[2.5px]" />}
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <h4 className="font-bold text-slate-800 dark:text-[var(--text-primary)] text-base">{bill.name}</h4>
@@ -365,23 +365,23 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pl-[3.25rem] sm:pl-0">
-                                        <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${color}`}>
+                                        <span className={`px-3 py-1 rounded-[8px] text-xs font-black whitespace-nowrap border-2 border-[var(--neo-ink)] ${color}`}>
                                             {text}
                                         </span>
                                         
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation()
                                                     handlePayBill(bill)
                                                 }}
                                                 disabled={payingBillId === bill.id}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm text-white ${
+                                                className={`px-4 py-2 brutal-btn text-xs font-black text-[var(--neo-ink)] ${
                                                     payingBillId === bill.id 
                                                         ? 'bg-slate-200 cursor-wait' 
                                                         : isIncome
-                                                            ? 'bg-emerald-500 hover:bg-emerald-600 active:scale-95'
-                                                            : 'bg-[var(--primary)] hover:bg-blue-700 active:scale-95'
+                                                            ? 'bg-emerald-300'
+                                                            : 'bg-[var(--neo-yellow-vivid)]'
                                                 }`}
                                             >
                                                 {payingBillId === bill.id ? (
@@ -393,19 +393,19 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                             
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(bill) }}
-                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-all active:scale-95"
+                                                className="p-2 brutal-btn bg-white"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                                             </button>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); handleDelete(bill.id) }}
                                                 disabled={deletingId === bill.id}
-                                                className={`p-2 rounded-xl transition-all active:scale-95 ${deletingId === bill.id ? 'bg-rose-50 dark:bg-rose-950/30 cursor-wait' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30'}`}
+                                                className={`p-2 brutal-btn ${deletingId === bill.id ? 'bg-slate-200 cursor-wait' : 'bg-rose-300'}`}
                                             >
                                                 {deletingId === bill.id ? (
-                                                    <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <div className="w-4 h-4 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
                                                 ) : (
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={18} className="stroke-[2.5px]" />
                                                 )}
                                             </button>
                                         </div>
@@ -421,12 +421,12 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                     {activeTab === 'pemasukan' ? '✅ Sudah diterima bulan ini' : '✅ Sudah dibayar bulan ini'}
                                 </p>
                                 {activeBills.filter(b => billPayments[b.id]).map(bill => (
-                                    <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl opacity-60">
+                                    <div key={bill.id} className="flex items-center justify-between p-3 rounded-[12px] border-2 border-[var(--neo-ink)] border-dashed opacity-60 mb-2">
                                         <div className="flex items-center gap-3">
-                                            <CheckCircle2 size={16} className={isPemasukan(bill) ? 'text-emerald-500' : 'text-emerald-500'} />
-                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{bill.name}</span>
+                                            <CheckCircle2 size={16} className={isPemasukan(bill) ? 'text-[var(--neo-ink)]' : 'text-[var(--neo-ink)]'} />
+                                            <span className="text-sm font-bold text-[var(--text-primary)]">{bill.name}</span>
                                         </div>
-                                        <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                                        <span className="text-sm font-bold text-[var(--text-primary)]">
                                             Rp {bill.amount.toLocaleString('id-ID')}
                                         </span>
                                     </div>
@@ -448,28 +448,28 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             {showPaymentModal && selectedPaymentBill && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative animate-in zoom-in-95 duration-200">
+                    <div className="brutal-card w-full max-w-md z-50 p-6 relative animate-in zoom-in-95 duration-200 bg-[var(--bg-card)]">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
                                 {isPemasukan(selectedPaymentBill) ? 'Terima Pemasukan' : 'Bayar Tagihan'}
                             </h3>
                             <button 
                                 onClick={() => setShowPaymentModal(false)}
-                                className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
+                                className="p-2 brutal-btn bg-white"
                             >
-                                <X size={20} />
+                                <X size={20} className="stroke-[3px]" />
                             </button>
                         </div>
                         
-                        <div className={`border rounded-xl p-3 mb-5 ${
+                        <div className={`border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] p-3 mb-5 ${
                             isPemasukan(selectedPaymentBill)
-                                ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800/30'
-                                : 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-800/30'
+                                ? 'bg-emerald-100 text-[var(--neo-ink)]'
+                                : 'bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]'
                         }`}>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-sm font-bold opacity-80">
                                 {isPemasukan(selectedPaymentBill) ? 'Pemasukan' : 'Tagihan'}
                             </p>
-                            <p className="text-lg font-bold text-slate-800 dark:text-[var(--text-primary)]">{selectedPaymentBill.name}</p>
+                            <p className="text-lg font-black">{selectedPaymentBill.name}</p>
                         </div>
                         
                         <div className="space-y-4">
@@ -488,23 +488,23 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                <label className="neo-label mb-2 block">
                                     Tanggal
                                 </label>
                                 <input
                                     type="date"
-                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
+                                    className="w-full p-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all outline-none font-bold"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                <label className="neo-label mb-2 block">
                                     {isPemasukan(selectedPaymentBill) ? 'Masuk ke Dompet' : 'Bayar dari Dompet'}
                                 </label>
                                 <select
-                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
+                                    className="w-full p-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all outline-none font-bold"
                                     value={selectedWalletId || ''}
                                     onChange={(e) => setSelectedWalletId(Number(e.target.value))}
                                 >
@@ -521,17 +521,17 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowPaymentModal(false)}
-                                className="flex-1 py-3 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                className="flex-1 py-3 brutal-btn bg-white"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleConfirmPayment}
                                 disabled={!selectedWalletId || !paymentAmount || payingBillId !== null}
-                                className={`flex-1 py-3 text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                                className={`flex-1 py-3 brutal-btn font-black text-[var(--neo-ink)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
                                     isPemasukan(selectedPaymentBill)
-                                        ? 'bg-emerald-500 hover:bg-emerald-600'
-                                        : 'bg-blue-600 hover:bg-blue-700'
+                                        ? 'bg-emerald-300'
+                                        : 'bg-[var(--neo-yellow-vivid)]'
                                 }`}
                             >
                                 {payingBillId ? (

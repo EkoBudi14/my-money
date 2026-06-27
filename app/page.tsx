@@ -2128,7 +2128,7 @@ export default function MoneyManager() {
                     onClick={() => handleEditClick(t)}
                     className={`flex items-center gap-3 px-4 py-4 active:bg-slate-50 dark:active:bg-[var(--bg-hover)] dark:bg-[var(--bg-page)] cursor-pointer transition-colors ${idx < filteredTransactions.length - 1 ? 'border-b border-[var(--border-default)]' : ''}`}
                   >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                    <div className={`w-11 h-11 rounded-[12px] border-[3px] border-[var(--neo-ink)] flex items-center justify-center shrink-0 bg-white ${color}`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -2139,13 +2139,13 @@ export default function MoneyManager() {
                             : t.title}
                         </p>
                         {t.is_piutang && (
-                          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full shrink-0">💸 Piutang</span>
+                          <span className="text-[9px] font-black bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] px-1.5 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] shrink-0 tracking-wider">💸 Piutang</span>
                         )}
                         {t.is_talangan && (
-                          <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full shrink-0">🤝 Talangan</span>
+                          <span className="text-[9px] font-black bg-[var(--neo-pink)] text-[var(--neo-ink)] px-1.5 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] shrink-0 tracking-wider">🤝 Talangan</span>
                         )}
                         {debts.some(d => d.original_transaction_id === t.id) && (
-                          <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full shrink-0">🧑‍🤝‍🧑 Split Bill</span>
+                          <span className="text-[9px] font-black bg-blue-300 text-[var(--neo-ink)] px-1.5 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] shrink-0 tracking-wider">🧑‍🤝‍🧑 Split Bill</span>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-[#8C9AAA] mb-1">
@@ -2153,25 +2153,26 @@ export default function MoneyManager() {
                         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
                         <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <span className="text-[9px] font-black px-2 py-0.5 rounded-[6px] bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)] uppercase tracking-wider inline-block mt-0.5">
                         {t.category}
                       </span>
                     </div>
-                    <div className="text-right shrink-0 ml-2">
-                      <p className={`font-bold text-sm mb-1 ${t.type === 'topup' ? 'text-blue-600' :
+                    <div className="text-right flex flex-col items-end shrink-0 ml-2">
+                      <p className={`font-black tracking-tight text-sm mb-1.5 mt-1 ${t.type === 'topup' ? 'text-blue-600' :
                         t.type === 'pemasukan' ? (t.is_piutang ? 'text-amber-500' : 'text-emerald-600') :
-                          (t.is_talangan ? 'text-purple-500' : 'text-[var(--text-primary)]')
+                          (t.is_talangan ? 'text-purple-500' : 'text-rose-600')
                         }`}>
                         {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                       </p>
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
                         disabled={deletingId === t.id}
-                        className={`text-xs font-medium transition-all ${deletingId === t.id ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed' : 'text-[#ED6B60]'}`}
+                        className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] transition-all ${deletingId === t.id ? 'bg-slate-200 text-slate-500 cursor-not-allowed translate-y-[2px] shadow-none' : 'bg-rose-300 text-[var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none'}`}
                       >
                         {deletingId === t.id ? (
                           <span className="flex items-center gap-1">
-                            <div className="w-3 h-3 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
+                            <div className="w-2.5 h-2.5 border-[2px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
+                            Menghapus
                           </span>
                         ) : 'Hapus'}
                       </button>
@@ -2674,27 +2675,27 @@ export default function MoneyManager() {
         {/* Transactions & Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Transactions List (Top Routes style) */}
-          <div className="flex flex-col brutal-card bg-[var(--bg-card)] overflow-hidden">
+          <div className="flex flex-col brutal-card bg-[var(--bg-card)] overflow-hidden lg:self-start w-full">
             <div className="flex items-center justify-between p-6 border-b border-[var(--border-default)]">
               <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Riwayat Transaksi</h3>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleExportExcel}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all font-semibold text-xs border border-emerald-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-300 text-[var(--neo-ink)] rounded-[6px] transition-all font-black text-[10px] uppercase tracking-wider border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none"
                   title="Export ke Excel"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                   <span className="hidden sm:inline">Export</span>
                 </button>
                 <button
                   onClick={fetchTransactions}
                   disabled={loading}
-                  className={`p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-500 transition-all ${loading ? 'animate-spin' : ''}`}
+                  className={`p-1.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-white text-[var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none transition-all ${loading ? 'animate-spin shadow-none translate-y-[2px]' : ''}`}
                   title="Refresh Data"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
                 </button>
-                <Link href="/analytics" className="text-sm text-[var(--primary)] font-semibold cursor-pointer hover:underline">Lihat Semua</Link>
+                <Link href="/analytics" className="text-[10px] text-[var(--neo-ink)] font-black uppercase tracking-wider cursor-pointer bg-[var(--neo-yellow-vivid)] px-3 py-1.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none transition-all">Lihat Semua</Link>
               </div>
             </div>
             <div className="max-h-[500px] lg:max-h-[700px] overflow-y-auto custom-scrollbar">
@@ -2716,17 +2717,17 @@ export default function MoneyManager() {
                               : t.title}
                           </span>
                           {t.is_piutang && (
-                            <span className="shrink-0 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/30">
+                            <span className="shrink-0 text-[10px] font-black bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] px-2 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] tracking-wider">
                               💸 Piutang{t.piutang_person ? ` • ${t.piutang_person}` : ''}
                             </span>
                           )}
                           {t.is_talangan && (
-                            <span className="shrink-0 text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/30">
+                            <span className="shrink-0 text-[10px] font-black bg-[var(--neo-pink)] text-[var(--neo-ink)] px-2 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] tracking-wider">
                               🤝 Talangan{t.talangan_person ? ` • ${t.talangan_person}` : ''}
                             </span>
                           )}
                           {debts.some(d => d.original_transaction_id === t.id) && (
-                            <span className="shrink-0 text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/30">
+                            <span className="shrink-0 text-[10px] font-black bg-blue-300 text-[var(--neo-ink)] px-2 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] tracking-wider">
                               🧑‍🤝‍🧑 Split Bill
                             </span>
                           )}
@@ -2738,29 +2739,29 @@ export default function MoneyManager() {
                             <span>{new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                           <div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-[6px] bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)] inline-block uppercase tracking-wider">
                               {t.category}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end gap-1.5">
                         <p className={`text-base font-black tracking-tight ${t.type === 'topup' ? 'text-blue-600' :
                           t.type === 'pemasukan'
-                            ? (t.is_piutang ? 'text-amber-500' : 'text-[#0f7b3b]')
-                            : (t.is_talangan ? 'text-purple-500' : 'text-[#b42318]')
+                            ? (t.is_piutang ? 'text-amber-500' : 'text-emerald-600')
+                            : (t.is_talangan ? 'text-purple-500' : 'text-rose-600')
                           }`}>
                           {t.type === 'pengeluaran' ? '-' : '+'} Rp {t.amount.toLocaleString('id-ID')}
                         </p>
                         <button
                           onClick={(e) => { e.stopPropagation(); deleteTransaction(t.id); }}
                           disabled={deletingId === t.id}
-                          className={`text-xs font-medium hover:underline transition-all ${deletingId === t.id ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed no-underline' : 'text-[#ED6B60]'}`}
+                          className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] transition-all ${deletingId === t.id ? 'bg-slate-200 text-slate-500 cursor-not-allowed translate-y-[2px] shadow-none' : 'bg-rose-300 text-[var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none'}`}
                         >
                           {deletingId === t.id ? (
                             <span className="flex items-center gap-1">
-                              <div className="w-3 h-3 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
-                              Hapus...
+                              <div className="w-2.5 h-2.5 border-[2px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
+                              Menghapus
                             </span>
                           ) : 'Hapus'}
                         </button>
