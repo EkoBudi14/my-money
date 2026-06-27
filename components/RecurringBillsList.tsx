@@ -7,8 +7,9 @@ import { getRecurringBills, deleteRecurringBill } from '@/lib/recurring-bills'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/lib/supabase'
-import AddBillModal from './AddBillModal'
+import { useRouter } from 'next/navigation'
 import MoneyInput from './MoneyInput'
+import NeoSelect from './NeoSelect'
 
 interface RecurringBillsListProps {
     onUpdate?: () => void
@@ -22,6 +23,8 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
     const { showConfirm } = useConfirm()
     const { showToast } = useToast()
     const [activeTab, setActiveTab] = useState<'pengeluaran' | 'pemasukan'>('pengeluaran')
+    
+    const router = useRouter()
 
     const [selectedBill, setSelectedBill] = useState<RecurringBill | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -78,13 +81,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
     }
 
     const handleEdit = (bill: RecurringBill) => {
-        setSelectedBill(bill)
-        setIsModalOpen(true)
-    }
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false)
-        setSelectedBill(null)
+        router.push(`/recurring?edit=${bill.id}`)
     }
 
     const fetchWallets = async () => {
@@ -264,7 +261,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                     <p className="text-sm text-gray-500 dark:text-slate-400">Tagihan & pemasukan berulang</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => router.push('/recurring')}
                     className="p-2 brutal-btn bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]"
                 >
                     <Plus size={20} className="stroke-[3px]" />
@@ -437,13 +434,6 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 )}
             </div>
 
-            <AddBillModal 
-                isOpen={isModalOpen} 
-                onClose={handleCloseModal} 
-                onSuccess={handleSuccess}
-                initialData={selectedBill}
-            />
-
             {/* Payment / Receive Modal */}
             {showPaymentModal && selectedPaymentBill && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -455,9 +445,9 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                             </h3>
                             <button 
                                 onClick={() => setShowPaymentModal(false)}
-                                className="p-2 brutal-btn bg-white"
+                                className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             >
-                                <X size={20} className="stroke-[3px]" />
+                                <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                             </button>
                         </div>
                         
@@ -503,18 +493,16 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                 <label className="neo-label mb-2 block">
                                     {isPemasukan(selectedPaymentBill) ? 'Masuk ke Dompet' : 'Bayar dari Dompet'}
                                 </label>
-                                <select
-                                    className="w-full p-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all outline-none font-bold"
-                                    value={selectedWalletId || ''}
-                                    onChange={(e) => setSelectedWalletId(Number(e.target.value))}
-                                >
-                                    <option value="">Pilih Dompet</option>
-                                    {wallets.map(w => (
-                                        <option key={w.id} value={w.id}>
-                                            {w.name} - Rp {w.balance.toLocaleString('id-ID')}
-                                        </option>
-                                    ))}
-                                </select>
+                                <NeoSelect
+                                    className="w-full p-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                                    value={selectedWalletId ? selectedWalletId.toString() : ''}
+                                    onChange={(val) => setSelectedWalletId(Number(val))}
+                                    placeholder="Pilih Dompet"
+                                    options={wallets.map(w => ({
+                                        label: `${w.name} - Rp ${w.balance.toLocaleString('id-ID')}`,
+                                        value: w.id.toString()
+                                    }))}
+                                />
                             </div>
                         </div>
                         

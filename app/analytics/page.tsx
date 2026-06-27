@@ -221,14 +221,28 @@ export default function AnalyticsPage() {
         const grouped: Record<string, { walletName: string; transactions: Transaction[]; totalIncome: number; totalExpense: number }> = {}
 
         filteredTxs.forEach(t => {
-            const wName = (t.wallet_id != null ? walletMap.get(t.wallet_id) : undefined) || 'Tidak Diketahui'
-            if (!grouped[wName]) {
-                grouped[wName] = { walletName: wName, transactions: [], totalIncome: 0, totalExpense: 0 }
+            if (t.type === 'topup' && t.source_wallet_id != null) {
+                const destName = (t.wallet_id != null ? walletMap.get(t.wallet_id) : undefined) || 'Tidak Diketahui'
+                const srcName = walletMap.get(t.source_wallet_id) || 'Tidak Diketahui'
+                
+                if (!grouped[destName]) grouped[destName] = { walletName: destName, transactions: [], totalIncome: 0, totalExpense: 0 }
+                if (!grouped[srcName]) grouped[srcName] = { walletName: srcName, transactions: [], totalIncome: 0, totalExpense: 0 }
+                
+                // Add to destination
+                grouped[destName].transactions.push(t)
+                // Add to source (avoid duplicates if dest == src, though theoretically shouldn't happen)
+                if (destName !== srcName) {
+                    grouped[srcName].transactions.push(t)
+                }
+            } else {
+                const wName = (t.wallet_id != null ? walletMap.get(t.wallet_id) : undefined) || 'Tidak Diketahui'
+                if (!grouped[wName]) {
+                    grouped[wName] = { walletName: wName, transactions: [], totalIncome: 0, totalExpense: 0 }
+                }
+                grouped[wName].transactions.push(t)
+                if (t.type === 'pemasukan') grouped[wName].totalIncome += t.amount
+                else if (t.type === 'pengeluaran') grouped[wName].totalExpense += t.amount
             }
-            grouped[wName].transactions.push(t)
-            if (t.type === 'pemasukan') grouped[wName].totalIncome += t.amount
-            // Fix BUG #6: Topup tidak dihitung sebagai pengeluaran di breakdown per dompet
-            else if (t.type === 'pengeluaran') grouped[wName].totalExpense += t.amount
         })
 
         // Sort transactions within each wallet by date descending
@@ -731,9 +745,8 @@ export default function AnalyticsPage() {
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-black text-[var(--text-primary)] tracking-tight">Pengaturan Filter</h3>
                                 <button onClick={() => setShowSettings(false)}
-                                    className="p-1.5 rounded-[10px] transition-colors"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                    <X className="w-4 h-4" />
+                                    className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+                                    <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
                                 </button>
                             </div>
 
@@ -1361,7 +1374,14 @@ export default function AnalyticsPage() {
                                                             const txDate = new Date(tx.date || tx.created_at)
                                                             const txTime = new Date(tx.created_at)
                                                             const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-                                                            const isIncome = tx.type === 'pemasukan'
+                                                            
+                                                            const isTopup = tx.type === 'topup'
+                                                            // Calculate if it's income for THIS wallet group
+                                                            // A transaction is incoming if it's 'pemasukan', OR if it's 'topup' and this wallet is the destination
+                                                            const walletMap = new Map(wallets.map(w => [w.id, w.name]))
+                                                            const isDestination = tx.wallet_id != null && walletMap.get(tx.wallet_id) === walletGroup.walletName
+                                                            const isIncoming = tx.type === 'pemasukan' || (isTopup && isDestination)
+
                                                             return (
                                                                 <div
                                                                     key={tx.id}
@@ -1371,17 +1391,23 @@ export default function AnalyticsPage() {
                                                                         } hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors`}
                                                                 >
                                                                     {/* Type indicator */}
-                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
+                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncoming ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
                                                                         }`}>
-                                                                        {isIncome
-                                                                            ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                                                                            : <ArrowDownRight className="w-4 h-4 text-rose-500" />
+                                                                        {isTopup
+                                                                            ? <Zap className="w-4 h-4 text-blue-500" />
+                                                                            : isIncoming
+                                                                                ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                                                                                : <ArrowDownRight className="w-4 h-4 text-rose-500" />
                                                                         }
                                                                     </div>
 
                                                                     {/* Info */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{tx.title}</p>
+                                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                                                                            {isTopup && tx.source_wallet_id
+                                                                                ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletMap.get(tx.wallet_id!) || '?'})`
+                                                                                : tx.title}
+                                                                        </p>
                                                                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                                                             <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
                                                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
@@ -1397,9 +1423,9 @@ export default function AnalyticsPage() {
                                                                     </div>
 
                                                                     {/* Amount */}
-                                                                    <p className={`text-base font-black tracking-tight shrink-0 ${isIncome ? 'text-[#0f7b3b]' : 'text-[#b42318]'
+                                                                    <p className={`text-base font-black tracking-tight shrink-0 ${isTopup ? 'text-blue-600' : isIncoming ? 'text-[#0f7b3b]' : 'text-[#b42318]'
                                                                         }`}>
-                                                                        {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                                                                        {isIncoming ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
                                                                     </p>
                                                                 </div>
                                                             )

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-space-mono",
   display: "swap",
 });
 
@@ -64,7 +65,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} antialiased bg-[var(--bg-page)]`}
+        className={`${spaceMono.variable} antialiased bg-[var(--bg-page)] font-sans`}
       >
         <ThemeProvider>
           <SidebarProvider>

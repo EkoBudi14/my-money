@@ -20,31 +20,26 @@ const typeConfig: Record<SuccessModalType, {
     icon: React.ReactNode
     iconBg: string
     titleDefault: string
-    accentColor: string
 }> = {
     create: {
-        icon: <Plus className="w-8 h-8 text-white" />,
-        iconBg: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+        icon: <Plus className="w-10 h-10 text-[var(--neo-ink)]" strokeWidth={4} />,
+        iconBg: 'bg-[var(--neo-mint)]',
         titleDefault: 'Berhasil Ditambahkan!',
-        accentColor: 'from-emerald-500 to-emerald-600',
     },
     edit: {
-        icon: <Pencil className="w-8 h-8 text-white" />,
-        iconBg: 'bg-gradient-to-br from-blue-400 to-blue-600',
+        icon: <Pencil className="w-10 h-10 text-[var(--neo-ink)]" strokeWidth={3} />,
+        iconBg: 'bg-[var(--neo-sky)]',
         titleDefault: 'Berhasil Diperbarui!',
-        accentColor: 'from-blue-500 to-blue-600',
     },
     delete: {
-        icon: <Trash2 className="w-8 h-8 text-white" />,
-        iconBg: 'bg-gradient-to-br from-rose-400 to-rose-600',
+        icon: <Trash2 className="w-10 h-10 text-[var(--neo-ink)]" strokeWidth={3} />,
+        iconBg: 'bg-[var(--neo-peach)]',
         titleDefault: 'Berhasil Dihapus!',
-        accentColor: 'from-rose-500 to-rose-600',
     },
     general: {
-        icon: <CheckCircle className="w-8 h-8 text-white" />,
-        iconBg: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+        icon: <CheckCircle className="w-10 h-10 text-[var(--neo-ink)]" strokeWidth={3} />,
+        iconBg: 'bg-[var(--neo-yellow-vivid)]',
         titleDefault: 'Berhasil!',
-        accentColor: 'from-emerald-500 to-emerald-600',
     },
 }
 
@@ -65,52 +60,42 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                 onClick={onClose}
                 style={{ animation: 'fadeIn 0.2s ease-out' }}
             />
 
             {/* Modal Card */}
             <div
-                className="relative w-full max-w-sm bg-white dark:bg-[var(--bg-card)] rounded-3xl shadow-2xl border border-slate-100 dark:border-[var(--border-default)] overflow-hidden"
+                className="relative w-full max-w-sm bg-[var(--bg-card)] rounded-[24px] border-[4px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] overflow-hidden"
                 style={{ animation: 'successModalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
             >
-                {/* Top accent bar */}
-                <div className={`h-1.5 w-full bg-gradient-to-r ${config.accentColor}`} />
-
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    className="absolute top-4 right-4 flex items-center justify-center p-1.5 rounded-[12px] bg-[var(--neo-yellow-vivid)] border-[3px] border-[var(--neo-ink)] shadow-[3px_3px_0_var(--neo-ink)] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all z-10"
                 >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={4} />
                 </button>
 
                 {/* Content */}
-                <div className="flex flex-col items-center text-center px-8 pt-8 pb-8">
+                <div className="flex flex-col items-center text-center px-8 pt-10 pb-8">
                     {/* Animated Icon */}
-                    <div className="relative mb-5">
-                        {/* Ripple rings */}
-                        <div className={`absolute inset-0 rounded-full ${config.iconBg} opacity-20`}
-                            style={{ animation: 'ripple 1.2s ease-out infinite', transform: 'scale(1.6)' }} />
-                        <div className={`absolute inset-0 rounded-full ${config.iconBg} opacity-10`}
-                            style={{ animation: 'ripple 1.2s ease-out 0.3s infinite', transform: 'scale(2.2)' }} />
-
-                        {/* Icon circle */}
-                        <div className={`relative w-20 h-20 rounded-full ${config.iconBg} flex items-center justify-center shadow-lg`}
+                    <div className="relative mb-6">
+                        <div className={`relative w-24 h-24 rounded-full ${config.iconBg} border-[4px] border-[var(--neo-ink)] shadow-[6px_6px_0_var(--neo-ink)] flex items-center justify-center`}
                             style={{ animation: 'iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both' }}>
                             {config.icon}
                         </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)] mb-2"
+                    <h3 className="text-xl font-black uppercase tracking-tight text-[var(--text-primary)] mb-2"
                         style={{ animation: 'slideUp 0.3s ease-out 0.2s both' }}>
                         {title || config.titleDefault}
                     </h3>
 
                     {/* Message */}
-                    <p className="text-slate-500 dark:text-[var(--text-secondary)] text-sm leading-relaxed mb-6"
+                    <p className="text-[var(--text-secondary)] text-sm font-bold leading-relaxed mb-8"
                         style={{ animation: 'slideUp 0.3s ease-out 0.25s both' }}>
                         {message}
                     </p>
@@ -118,23 +103,23 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                     {/* OK Button */}
                     <button
                         onClick={onClose}
-                        className={`w-full py-3 px-6 bg-gradient-to-r ${config.accentColor} text-white font-semibold rounded-xl shadow-md hover:opacity-90 active:scale-[0.98] transition-all`}
+                        className={`w-full py-4 px-6 ${config.iconBg} text-[var(--neo-ink)] font-black uppercase tracking-widest border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] hover:-translate-y-[2px] hover:shadow-[6px_6px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none rounded-[16px] transition-all`}
                         style={{ animation: 'slideUp 0.3s ease-out 0.3s both' }}
                     >
                         Oke, Mengerti!
                     </button>
 
                     {/* Auto-close progress bar */}
-                    <div className="w-full mt-4 h-1 bg-slate-100 dark:bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                    <div className="w-full mt-6 h-3 bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[inset_0_2px_0_rgba(0,0,0,0.1)] rounded-full overflow-hidden">
                         <div
-                            className={`h-full bg-gradient-to-r ${config.accentColor} rounded-full`}
+                            className={`h-full ${config.iconBg} border-r-2 border-[var(--neo-ink)]`}
                             style={{
                                 animation: `progressBar ${duration}ms linear forwards`,
                                 transformOrigin: 'left'
                             }}
                         />
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">Menutup otomatis...</p>
+                    <p className="text-xs font-black uppercase text-[var(--text-secondary)] mt-2 tracking-widest">Menutup otomatis...</p>
                 </div>
             </div>
 
@@ -144,20 +129,16 @@ export default function SuccessModal({ isOpen, onClose, type, title, message, du
                     to { opacity: 1; }
                 }
                 @keyframes successModalIn {
-                    from { opacity: 0; transform: scale(0.7) translateY(20px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
+                    from { opacity: 0; transform: scale(0.8) translateY(30px) rotate(-2deg); }
+                    to { opacity: 1; transform: scale(1) translateY(0) rotate(0deg); }
                 }
                 @keyframes iconPop {
-                    from { opacity: 0; transform: scale(0.4); }
-                    to { opacity: 1; transform: scale(1); }
+                    from { opacity: 0; transform: scale(0.2) rotate(-15deg); }
+                    to { opacity: 1; transform: scale(1) rotate(0deg); }
                 }
                 @keyframes slideUp {
                     from { opacity: 0; transform: translateY(12px); }
                     to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes ripple {
-                    0% { opacity: 0.3; transform: scale(1.2); }
-                    100% { opacity: 0; transform: scale(2.5); }
                 }
                 @keyframes progressBar {
                     from { transform: scaleX(1); }

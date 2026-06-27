@@ -6,6 +6,7 @@ import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizonta
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { Wallet, CATEGORIES } from '@/types'
+import NeoSelect from '@/components/NeoSelect'
 
 export default function ScanReceiptPage() {
     const router = useRouter()
@@ -981,29 +982,32 @@ export default function ScanReceiptPage() {
                                     <div className="space-y-4 pt-6 border-t-[3px] border-dashed border-[var(--neo-ink)]">
                                         <div>
                                             <label className="neo-label">Kategori Pengeluaran</label>
-                                            <select
+                                            <NeoSelect
                                                 value={scanResult.category}
-                                                onChange={(e) => handleResultChange('category', e.target.value)}
-                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value={scanResult.category}>{scanResult.category}</option>
-                                                {CATEGORIES.pengeluaran.filter(c => c.name !== scanResult.category).map((cat, idx) => (
-                                                    <option key={idx} value={cat.name}>{cat.name}</option>
-                                                ))}
-                                            </select>
+                                                onChange={(val) => handleResultChange('category', val)}
+                                                options={
+                                                    [{label: scanResult.category, value: scanResult.category}].concat(
+                                                        CATEGORIES.pengeluaran.filter(c => c.name !== scanResult.category).map(cat => ({
+                                                            label: cat.name,
+                                                            value: cat.name
+                                                        }))
+                                                    )
+                                                }
+                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                                            />
                                         </div>
                                         <div>
                                             <label className="neo-label">Pilih Dompet Pengeluaran</label>
-                                            <select
+                                            <NeoSelect
                                                 value={selectedWalletId}
-                                                onChange={(e) => setSelectedWalletId(e.target.value)}
-                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="" disabled>Pilih dompet...</option>
-                                                {wallets.map(w => (
-                                                    <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                                                ))}
-                                            </select>
+                                                onChange={(val) => setSelectedWalletId(val)}
+                                                options={wallets.map(w => ({
+                                                    label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
+                                                    value: w.id.toString()
+                                                }))}
+                                                placeholder="Pilih dompet..."
+                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                                            />
                                         </div>
                                     </div>
                                 </div>

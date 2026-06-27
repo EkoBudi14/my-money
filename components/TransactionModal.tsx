@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import MoneyInput from '@/components/MoneyInput'
+import NeoSelect from '@/components/NeoSelect'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
 import {
   Plus, Trash2, X, Package, Pencil, Info, AlertTriangle,
@@ -577,20 +578,28 @@ export default function TransactionModal({
             <div className="flex items-center gap-2 mb-5">
               <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
                 <p className="neo-label mb-1">Sumber Dana</p>
-                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
-                  <option value="" disabled>Pilih Sumber</option>
-                  {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
-                </select>
+                <NeoSelect
+                  value={sourceWalletId}
+                  onChange={setSourceWalletId}
+                  options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: selectedWalletId === w.id.toString() }))}
+                  placeholder="Pilih Sumber"
+                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  required
+                />
               </div>
               <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
               <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
                 <p className="neo-label mb-1">Tujuan Topup</p>
-                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                  <option value="" disabled>Pilih Tujuan</option>
-                  {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
-                </select>
+                <NeoSelect
+                  value={selectedWalletId}
+                  onChange={setSelectedWalletId}
+                  options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: sourceWalletId === w.id.toString() }))}
+                  placeholder="Pilih Tujuan"
+                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  required
+                />
               </div>
             </div>
           )}
@@ -637,10 +646,14 @@ export default function TransactionModal({
                 </div>
                 <div className="brutal-card-sm p-3">
                   <p className="neo-label mb-1">Dompet</p>
-                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                    <option value="" disabled>Pilih</option>
-                    {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                  </select>
+                  <NeoSelect
+                    value={selectedWalletId}
+                    onChange={setSelectedWalletId}
+                    options={wallets.map(w => ({ label: w.name, value: w.id.toString() }))}
+                    placeholder="Pilih"
+                    className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                    required
+                  />
                 </div>
               </div>
             ) : (
@@ -741,15 +754,19 @@ export default function TransactionModal({
                   {allCategories.map((cat) => {
                     const isSelected = category === cat.name
                     return (
-                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className={`flex flex-col items-center justify-center p-3 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
-                        <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-1.5 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
-                        <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
+                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className="flex flex-col items-center justify-center group">
+                        <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
+                          <cat.icon className="w-6 h-6 stroke-[2.5px]" />
+                        </div>
+                        <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>{cat.name}</span>
                       </button>
                     )
                   })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
-                    <div className="w-11 h-11 rounded-full flex items-center justify-center mb-1.5 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
-                    <span className="neo-label mt-1">Custom</span>
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group">
+                    <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
+                      <Plus className="w-6 h-6 stroke-[3px]" />
+                    </div>
+                    <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
                   </button>
                 </div>
 
@@ -757,7 +774,7 @@ export default function TransactionModal({
                   <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
+                      <button type="button" onClick={resetCategoryForm} className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"><X className="w-4 h-4 text-[#141414]" strokeWidth={3} /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
@@ -865,8 +882,8 @@ export default function TransactionModal({
           <h3 className="font-black text-xl uppercase tracking-tighter text-[var(--text-primary)]">
             {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi'}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-full text-slate-400 dark:text-slate-500 transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+            <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
           </button>
         </div>
 
@@ -902,20 +919,28 @@ export default function TransactionModal({
             <div className="mx-4 mt-4 flex items-center gap-2">
               <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-sky)' }}>
                 <p className="neo-label mb-1">Sumber Dana</p>
-                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
-                  <option value="" disabled>Pilih Sumber</option>
-                  {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name}</option>)}
-                </select>
+                <NeoSelect
+                  value={sourceWalletId}
+                  onChange={setSourceWalletId}
+                  options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: selectedWalletId === w.id.toString() }))}
+                  placeholder="Pilih Sumber"
+                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  required
+                />
               </div>
               <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </div>
               <div className="flex-1 brutal-card-sm p-3" style={{ background: 'var(--neo-lav)' }}>
                 <p className="neo-label mb-1">Tujuan Topup</p>
-                <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                  <option value="" disabled>Pilih Tujuan</option>
-                  {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name}</option>)}
-                </select>
+                <NeoSelect
+                  value={selectedWalletId}
+                  onChange={setSelectedWalletId}
+                  options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: sourceWalletId === w.id.toString() }))}
+                  placeholder="Pilih Tujuan"
+                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  required
+                />
               </div>
             </div>
           )}
@@ -963,10 +988,14 @@ export default function TransactionModal({
                 </div>
                 <div className="brutal-card-sm p-3">
                   <p className="neo-label mb-1">Dompet</p>
-                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm appearance-none" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                    <option value="" disabled>Pilih</option>
-                    {wallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                  </select>
+                  <NeoSelect
+                    value={selectedWalletId}
+                    onChange={setSelectedWalletId}
+                    options={wallets.map(w => ({ label: w.name, value: w.id.toString() }))}
+                    placeholder="Pilih"
+                    className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                    required
+                  />
                 </div>
               </div>
             ) : (
@@ -1060,17 +1089,19 @@ export default function TransactionModal({
                   {allCategories.map((cat) => {
                     const isSelected = category === cat.name
                     return (
-                      <div key={cat.name} className="relative group">
-                        <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-2.5 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-1.5 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
-                          <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
-                        </button>
-                      </div>
+                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className="flex flex-col items-center justify-center group">
+                        <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
+                          <cat.icon className="w-6 h-6 stroke-[2.5px]" />
+                        </div>
+                        <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>{cat.name}</span>
+                      </button>
                     )
                   })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-2.5 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
-                    <span className="text-[10px] font-bold text-[var(--text-secondary)]">Custom</span>
+                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group">
+                    <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
+                      <Plus className="w-6 h-6 stroke-[3px]" />
+                    </div>
+                    <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
                   </button>
                 </div>
 
@@ -1078,7 +1109,7 @@ export default function TransactionModal({
                   <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                     <div className="flex justify-between items-center mb-4">
                       <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
+                      <button type="button" onClick={resetCategoryForm} className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"><X className="w-4 h-4 text-[#141414]" strokeWidth={3} /></button>
                     </div>
                     {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                       <div className="mb-6 space-y-2">
@@ -1104,7 +1135,7 @@ export default function TransactionModal({
                     )}
                     <div className="space-y-4 border-t-2 border-[var(--neo-ink)] pt-4">
                       <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]" />
+                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" />
                       <div>
                         <label className="neo-label mb-2 block">Pilih Icon</label>
                         <div className="grid grid-cols-7 gap-2">
@@ -1174,16 +1205,16 @@ export default function TransactionModal({
             <h3 className="text-xl font-black text-[var(--text-primary)]">
               {editingTransaction ? '✏️ Edit Transaksi' : '➕ Tambah Transaksi'}
             </h3>
-            <button onClick={onClose} className="p-2 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] transition-all"><X className="w-5 h-5" /></button>
+            <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"><X className="w-5 h-5 text-[#141414]" strokeWidth={3} /></button>
           </div>
         </div>
 
         <form onSubmit={handleSaveTransaction} className="p-6 pt-2 space-y-5">
           {/* Type Tabs */}
-          <div className="flex bg-[var(--bg-elevated)] p-1.5 rounded-[16px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
-            <button type="button" onClick={() => { setType('pemasukan'); setCategory(''); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'pemasukan' ? 'border-[var(--neo-ink)] bg-[var(--neo-mint)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pemasukan</button>
-            <button type="button" onClick={() => { setType('pengeluaran'); setCategory(''); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'pengeluaran' ? 'border-[var(--neo-ink)] bg-[var(--neo-peach)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pengeluaran</button>
-            <button type="button" onClick={() => { setType('topup'); setCategory('Topup'); }} className={`flex-1 py-3 rounded-[12px] text-sm font-black transition-all border-2 ${type === 'topup' ? 'border-[var(--neo-ink)] bg-[var(--neo-lav)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Topup</button>
+          <div className="flex bg-[var(--bg-elevated)] p-1.5 rounded-[16px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] gap-1">
+            <button type="button" onClick={() => { setType('pemasukan'); setCategory(''); }} className={`flex-1 py-3 px-1 rounded-[12px] text-xs font-black transition-all border-2 ${type === 'pemasukan' ? 'border-[var(--neo-ink)] bg-[var(--neo-mint)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pemasukan</button>
+            <button type="button" onClick={() => { setType('pengeluaran'); setCategory(''); }} className={`flex-1 py-3 px-1 rounded-[12px] text-xs font-black transition-all border-2 ${type === 'pengeluaran' ? 'border-[var(--neo-ink)] bg-[var(--neo-peach)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Pengeluaran</button>
+            <button type="button" onClick={() => { setType('topup'); setCategory('Topup'); }} className={`flex-1 py-3 px-1 rounded-[12px] text-xs font-black transition-all border-2 ${type === 'topup' ? 'border-[var(--neo-ink)] bg-[var(--neo-lav)] shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}>Topup</button>
           </div>
 
           {/* Date & Wallet Grid */}
@@ -1196,26 +1227,38 @@ export default function TransactionModal({
               <>
                 <div className="brutal-card-sm p-3 bg-[var(--neo-sky)]">
                   <label className="neo-label mb-1">Sumber Dana</label>
-                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={sourceWalletId} onChange={(e) => setSourceWalletId(e.target.value)} required>
-                    <option value="" disabled>Pilih Sumber</option>
-                    {wallets.map(w => <option key={w.id} value={w.id} disabled={selectedWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
-                  </select>
+                  <NeoSelect
+                    value={sourceWalletId}
+                    onChange={setSourceWalletId}
+                    options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: selectedWalletId === w.id.toString() }))}
+                    placeholder="Pilih Sumber"
+                    className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                    required
+                  />
                 </div>
                 <div className="brutal-card-sm p-3 bg-[var(--neo-lav)]">
                   <label className="neo-label mb-1">Tujuan Topup</label>
-                  <select className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                    <option value="" disabled>Pilih Tujuan</option>
-                    {wallets.map(w => <option key={w.id} value={w.id} disabled={sourceWalletId === w.id.toString()}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
-                  </select>
+                  <NeoSelect
+                    value={selectedWalletId}
+                    onChange={setSelectedWalletId}
+                    options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: sourceWalletId === w.id.toString() }))}
+                    placeholder="Pilih Tujuan"
+                    className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                    required
+                  />
                 </div>
               </>
             ) : (
               <div>
                 <label className="neo-label mb-2 block">Dompet</label>
-                <select className="w-full p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] outline-none font-black text-[var(--text-primary)]" value={selectedWalletId} onChange={(e) => setSelectedWalletId(e.target.value)} required>
-                  <option value="" disabled>Pilih Dompet</option>
-                  {wallets.map(w => <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>)}
-                </select>
+                <NeoSelect
+                  value={selectedWalletId}
+                  onChange={setSelectedWalletId}
+                  options={wallets.map(w => ({ label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`, value: w.id.toString() }))}
+                  placeholder="Pilih Dompet"
+                  className="p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] font-black text-[var(--text-primary)]"
+                  required
+                />
               </div>
             )}
           </div>
@@ -1313,24 +1356,26 @@ export default function TransactionModal({
                 {allCategories.map((cat) => {
                   const isSelected = category === cat.name
                   return (
-                    <div key={cat.name} className="relative group">
-                      <button type="button" onClick={() => setCategory(cat.name)} className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-[20px] transition-all border-2 ${isSelected ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] scale-105' : 'border-transparent hover:border-[var(--neo-ink)]/30 hover:scale-105'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${cat.color} ${isSelected ? 'border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]' : ''}`}><cat.icon className="w-5 h-5" /></div>
-                        <span className={`text-[10px] font-black text-center leading-tight ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-muted)]'}`}>{cat.name}</span>
-                      </button>
-                    </div>
+                    <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className="flex flex-col items-center justify-center group">
+                      <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
+                        <cat.icon className="w-6 h-6 stroke-[2.5px]" />
+                      </div>
+                      <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>{cat.name}</span>
+                    </button>
                   )
                 })}
-                <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center p-3 rounded-[20px] border-2 border-dashed border-[var(--neo-ink)]/50 hover:border-[var(--neo-ink)] hover:bg-[var(--bg-hover)] transition-all">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-[var(--bg-elevated)] text-[var(--text-secondary)]"><Plus className="w-5 h-5" /></div>
-                  <span className="text-[10px] font-bold text-center leading-tight text-[var(--text-secondary)]">Custom</span>
+                <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group relative">
+                  <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
+                    <Plus className="w-6 h-6 stroke-[3px]" />
+                  </div>
+                  <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
                 </button>
               </div>
               {showAddCategory && (
                 <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
-                    <button type="button" onClick={resetCategoryForm} className="p-1 hover:bg-[var(--neo-peach)] border-2 border-transparent hover:border-[var(--neo-ink)] hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] text-[var(--text-primary)] transition-all"><X className="w-4 h-4" /></button>
+                    <button type="button" onClick={resetCategoryForm} className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"><X className="w-4 h-4 text-[#141414]" strokeWidth={3} /></button>
                   </div>
                   {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
                     <div className="mb-6 space-y-2">

@@ -32,9 +32,9 @@ export default function ConfirmDialog({
             <div className="bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] w-full max-w-md rounded-[16px] z-50 p-6 relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 <button
                     onClick={onCancel}
-                    className="absolute top-4 right-4 p-1.5 brutal-btn bg-white"
+                    className="absolute top-4 right-4 flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                 >
-                    <X className="w-5 h-5 stroke-[3px]" />
+                    <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                 </button>
 
                 <div className="flex flex-col items-center text-center mt-2">

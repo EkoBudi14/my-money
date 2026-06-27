@@ -29,27 +29,27 @@ const ToastItem = ({ toast, onClose }: ToastItemProps) => {
         switch (toast.type) {
             case 'success':
                 return {
-                    bg: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/30',
-                    icon: <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
-                    text: 'text-emerald-800 dark:text-emerald-300'
+                    bg: 'bg-[var(--neo-mint,#86efac)]',
+                    icon: <CheckCircle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
+                    text: 'text-[var(--neo-ink,#141414)]'
                 }
             case 'error':
                 return {
-                    bg: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/30',
-                    icon: <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
-                    text: 'text-rose-800 dark:text-rose-300'
+                    bg: 'bg-[var(--neo-peach,#fca5a5)]',
+                    icon: <XCircle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
+                    text: 'text-[var(--neo-ink,#141414)]'
                 }
             case 'warning':
                 return {
-                    bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/30',
-                    icon: <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
-                    text: 'text-amber-800 dark:text-amber-300'
+                    bg: 'bg-[var(--neo-yellow-vivid,#ffd84d)]',
+                    icon: <AlertTriangle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
+                    text: 'text-[var(--neo-ink,#141414)]'
                 }
             case 'info':
                 return {
-                    bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/30',
-                    icon: <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-                    text: 'text-blue-800 dark:text-blue-300'
+                    bg: 'bg-[var(--neo-sky,#7dd3fc)]',
+                    icon: <Info className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
+                    text: 'text-[var(--neo-ink,#141414)]'
                 }
         }
     }
@@ -58,15 +58,15 @@ const ToastItem = ({ toast, onClose }: ToastItemProps) => {
 
     return (
         <div
-            className={`${styles.bg} border rounded-xl shadow-lg p-4 mb-3 flex items-start gap-3 min-w-[320px] max-w-md animate-in slide-in-from-right-5 fade-in duration-300`}
+            className={`${styles.bg} border-[3px] border-[var(--neo-ink,#141414)] shadow-[4px_4px_0_var(--neo-ink,#141414)] rounded-[16px] p-4 mb-3 flex items-center gap-3 min-w-[320px] max-w-md animate-in slide-in-from-right-5 fade-in duration-300`}
         >
             <div className="flex-shrink-0">{styles.icon}</div>
             <p className={`flex-1 text-sm font-medium ${styles.text}`}>{toast.message}</p>
             <button
                 onClick={() => onClose(toast.id)}
-                className={`flex-shrink-0 ${styles.text} opacity-50 hover:opacity-100 transition-opacity`}
+                className="flex-shrink-0 flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all ml-2"
             >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
             </button>
         </div>
     )

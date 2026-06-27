@@ -19,7 +19,7 @@ export function BrutalChip({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-2 border-[3px] rounded-full px-4 py-2 text-sm font-bold shadow-[var(--neo-shadow-xs)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 ${activeClass} ${className}`}
+      className={`inline-flex items-center gap-2 border-[3px] rounded-full px-3 py-1.5 text-xs font-bold shadow-[var(--neo-shadow-xs)] transition-all hover:-translate-y-0.5 active:translate-y-0.5 ${activeClass} ${className}`}
       {...props}
     >
       {children}

@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { Wallet } from '@/types'
 import { X, Save } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import NeoSelect from '@/components/NeoSelect'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 
@@ -331,35 +332,28 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
 
                         return (
                             <>
-                                <select
-                                    className={`w-full px-[18px] py-[14px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] font-[800] outline-none appearance-none ${isDisabled
+                                <NeoSelect
+                                    className={`w-full px-[18px] py-[14px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] font-[800] transition-all ${isDisabled
                                         ? 'bg-[var(--bg-hover)] cursor-not-allowed opacity-70 text-[var(--text-muted)]'
-                                        : 'bg-white text-[var(--text-primary)]'
+                                        : 'bg-white text-[var(--text-primary)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]'
                                         }`}
                                     value={sourceWalletId}
-                                    onChange={(e) => setSourceWalletId(e.target.value)}
-                                    disabled={isDisabled}
-                                >
-                                    <option value="">Manual (Tidak terhubung)</option>
-                                    <optgroup label="Saldo Aktif">
-                                        {activeWallets
-                                            .filter(w => w.id !== editId)
-                                            .map(w => (
-                                                <option key={w.id} value={w.id}>
-                                                    {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                                                </option>
-                                            ))}
-                                    </optgroup>
-                                    <optgroup label="Tabungan Inti">
-                                        {savingsWallets
-                                            .filter(w => w.id !== editId)
-                                            .map(w => (
-                                                <option key={w.id} value={w.id}>
-                                                    {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                                                </option>
-                                            ))}
-                                    </optgroup>
-                                </select>
+                                    onChange={(val) => setSourceWalletId(val)}
+                                    placeholder="Manual (Tidak terhubung)"
+                                    options={[
+                                        { label: "Manual (Tidak terhubung)", value: "" },
+                                        ...activeWallets.filter(w => w.id !== editId).map(w => ({
+                                            label: `[Aktif] ${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
+                                            value: w.id.toString(),
+                                            disabled: isDisabled
+                                        })),
+                                        ...savingsWallets.filter(w => w.id !== editId).map(w => ({
+                                            label: `[Tabungan] ${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
+                                            value: w.id.toString(),
+                                            disabled: isDisabled
+                                        }))
+                                    ]}
+                                />
                                 {isRefundScenario && (
                                     <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-lg flex items-start gap-2">
                                         <div className="text-xs">
@@ -453,8 +447,8 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
             <div className="fixed inset-0 z-[59] bg-[#F9FAFB] dark:bg-[var(--bg-page)] md:relative md:min-h-screen flex flex-col animate-in slide-in-from-bottom-full md:slide-in-from-bottom-0 duration-300">
                 <div className="flex items-center justify-between p-5 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border-default)] shrink-0 sticky top-0 z-20">
                     <div className="flex items-center gap-3">
-                        <button onClick={onClose} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] transition-colors active:scale-95">
-                            <X className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+                        <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+                            <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                         </button>
                         <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
                     </div>
@@ -472,8 +466,8 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
             <div className="bg-[var(--bg-card)] w-full max-w-md rounded-[24px] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 <div className="flex justify-between items-center mb-6 shrink-0">
                     <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">{title}</h3>
-                    <button onClick={onClose} className="p-2 bg-[var(--bg-elevated)] hover:bg-[var(--bg-hover)] border-[2px] border-transparent hover:border-[var(--neo-ink)] shadow-none hover:shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] transition-all">
-                        <X className="w-5 h-5" />
+                    <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+                        <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                     </button>
                 </div>
                 {FormContent}

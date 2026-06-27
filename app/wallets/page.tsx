@@ -283,7 +283,19 @@ export default function WalletsPage() {
                 </div>
 
                 {/* ===== DESKTOP VIEW ===== */}
-                <div className="hidden md:block p-8">
+                <div className="hidden md:block p-8 space-y-6">
+                    {/* Total Banner */}
+                    <div className="brutal-card-md brutal-card-sky px-6 py-6 flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-[16px] flex items-center justify-center text-blue-600"
+                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
+                            <WalletIcon className="w-7 h-7" />
+                        </div>
+                        <div>
+                            <p className="neo-label">Total Semua Dompet</p>
+                            <p className="neo-amount mt-1">Rp {activeWallets.reduce((acc, w) => acc + w.balance, 0).toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+
                     {loading ? (
                         <div className="text-center py-12 text-[var(--text-muted)] font-semibold animate-pulse">Memuat dompet...</div>
                     ) : (

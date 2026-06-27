@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
+import NeoSelect from '@/components/NeoSelect'
 import { Wallet, CATEGORIES } from '@/types'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -630,20 +631,12 @@ export default function VoiceTransactionPage() {
                         <label className="neo-label">
                           Kategori
                         </label>
-                        <div className="relative">
-                          <select
+                          <NeoSelect
                             value={tx.category}
-                            onChange={e => updateParsed(index, 'category', e.target.value)}
-                            className="w-full appearance-none font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 outline-none transition-colors cursor-pointer"
-                          >
-                            {currentCategories.map(c => (
-                              <option key={c.name} value={c.name}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neo-ink)] pointer-events-none" />
-                        </div>
+                            onChange={val => updateParsed(index, 'category', val)}
+                            options={currentCategories.map(c => ({ label: c.name, value: c.name }))}
+                            className="w-full font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                          />
                       </div>
                     </div>
                   </div>
@@ -660,39 +653,25 @@ export default function VoiceTransactionPage() {
                     <label className="neo-label">
                       Dari Dompet
                     </label>
-                    <div className="relative">
-                      <select
-                        value={sourceWalletId}
-                        onChange={e => setSourceWalletId(e.target.value)}
-                        className="w-full appearance-none text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 outline-none transition-colors cursor-pointer"
-                      >
-                        {activeWallets.map(w => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--neo-ink)] pointer-events-none" />
-                    </div>
+                    <NeoSelect
+                      value={sourceWalletId}
+                      onChange={val => setSourceWalletId(val)}
+                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))}
+                      placeholder="Pilih"
+                      className="w-full text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                    />
                   </div>
                   <div>
                     <label className="neo-label">
                       Ke Dompet
                     </label>
-                    <div className="relative">
-                      <select
-                        value={selectedWalletId}
-                        onChange={e => setSelectedWalletId(e.target.value)}
-                        className="w-full appearance-none text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 outline-none transition-colors cursor-pointer"
-                      >
-                        {activeWallets.map(w => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--neo-ink)] pointer-events-none" />
-                    </div>
+                    <NeoSelect
+                      value={selectedWalletId}
+                      onChange={val => setSelectedWalletId(val)}
+                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))}
+                      placeholder="Pilih"
+                      className="w-full text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                    />
                   </div>
                 </div>
               ) : (
@@ -700,20 +679,13 @@ export default function VoiceTransactionPage() {
                   <label className="neo-label">
                     Gunakan Dompet
                   </label>
-                  <div className="relative">
-                    <select
-                      value={selectedWalletId}
-                      onChange={e => setSelectedWalletId(e.target.value)}
-                      className="w-full appearance-none font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 outline-none transition-colors cursor-pointer"
-                    >
-                      {wallets.map(w => (
-                        <option key={w.id} value={w.id}>
-                          {w.name} — Rp {formatRupiah(w.balance)}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neo-ink)] pointer-events-none" />
-                  </div>
+                  <NeoSelect
+                    value={selectedWalletId}
+                    onChange={val => setSelectedWalletId(val)}
+                    options={wallets.map(w => ({ label: `${w.name} — Rp ${formatRupiah(w.balance)}`, value: w.id.toString() }))}
+                    placeholder="Pilih"
+                    className="w-full font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                  />
                 </div>
               )}
             </div>

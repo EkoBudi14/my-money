@@ -4,6 +4,18 @@
 
 ---
 
+[2026-06-27 | 23:28] Perbaikan UI: Stat Card Desktop Warna Putih (Specificity Bug)
+Perubahan: Mengganti class `bg-[var(--neo-mint)]` dan lainnya di kartu stat desktop menjadi `brutal-card-mint` (variant class dengan `!important` dari globals.css). Hal ini memperbaiki bug di mana warna neo-brutalism tertimpa oleh class `.brutal-card` bawaan yang memiliki background putih (bg-card).
+Status: Approved
+
+---
+
+[2026-06-27 | 23:25] Fitur: Tampilan Neobrutalism
+Perubahan: Mengubah warna swatch neobrutalism di globals.css menjadi lebih vibrant dan bold (ngejreng) untuk kartu stat di Dashboard, agar gaya desainnya terasa lebih kental mirip Saweria.
+Status: Approved
+
+---
+
 [2026-05-27 | 22:32] Fitur: Recurring Income (Pemasukan Rutin)
 Perubahan: Extend fitur Tagihan Rutin menjadi "Rutin Bulanan" yang mendukung dua tipe: Tagihan (pengeluaran) dan Pemasukan Rutin (gaji, tunjangan, dll). Tambah field `type` di interface RecurringBill dan kolom DB. Update AddBillModal dengan toggle tipe + kategori dinamis. Update RecurringBillsList dengan tab Tagihan/Pemasukan, logika "Bayar" vs "Terima", saldo wallet bertambah untuk pemasukan & berkurang untuk tagihan.
 Dipicu oleh prompt: "gas fitur ini ya — Recurring Income"
@@ -398,4 +410,114 @@ Status: Approved
 Perubahan: Mengubah tampilan halaman Formulir Transaksi (Transaction, Scan Receipt, Voice Transaction), Dashboard Utama (Mobile & Desktop Wrappers), serta Halaman Settings menggunakan sistem desain Neobrutalism (utility class `brutal-card`, `neo-label`, `brutal-btn`, dll). Tidak ada logika state, DB, atau kalkulasi finansial yang diubah, murni perombakan visual.
 Dipicu oleh prompt: "apa aja dan redesign semua tampilan jadi neobrutalism INGAT JANGAN UBAH LOGIC APAPUN, DISINI MURNI REDESIGN DOANG"
 Fitur terdampak: Halaman Transaksi (Low), Scan Receipt (Low), Voice Transaction (Low), Dashboard (Low), Settings (Low)
+Status: Approved
+
+---
+
+[2026-06-27 | 22:19] Fitur: Sidebar (Mobile Menu Lainnya)
+Perubahan: Mengubah styling Mobile Bottom Sheet "Menu Lainnya" di komponen Sidebar menjadi gaya Neobrutalism (border solid tebal, shadow tegas, active state dengan translate, hover scale di ikon).
+Status: Approved
+
+---
+
+[2026-06-27 | 22:23] Fitur: Dashboard (Visibility Toggle)
+Perubahan: Menyeragamkan styling tombol icon mata (visibility toggle) di seluruh card pada dashboard utama (baik versi mobile maupun desktop) agar menggunakan gaya neobrutalism (border solid, shadow, dan bentuk rounded-xl) agar konsisten.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:27] Fitur: Global UI (Close Buttons)
+Perubahan: Menyeragamkan seluruh tombol close (icon X) di semua modal, dialog, toast, dan sidebar (mobile & desktop) ke dalam gaya neobrutalism kuning (squircle, border tebal, shadow solid) untuk konsistensi desain di seluruh aplikasi.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:30] Fitur: Global UI (Toast Notifications)
+Perubahan: Mengubah seluruh komponen Toast/Notifikasi pop-up (success, error, warning, info) menjadi gaya desain neobrutalism (border tebal solid, warna tegas, shadow tebal, icon bold) menggantikan desain soft-shadow sebelumnya.
+Status: Approved
+
+---
+
+[2026-06-27 | 23:18] Desain: Tema Warna Solid Neo-Brutalism pada Kartu Ringkasan (Dashboard)
+Perubahan: Mengganti warna latar belakang putih (`bg-white/bg-card`) yang terkesan kaku/hitam-putih pada 4 kartu ringkasan utama (Total Uang, Saldo Aktif, Pemasukan, Pengeluaran) di Dashboard dengan warna-warna pastel/vivid solid khas Saweria.
+- **Total Uang**: Menggunakan warna hijau mint (`neo-mint`).
+- **Saldo Aktif**: Menggunakan warna biru langit (`neo-sky`).
+- **Pemasukan**: Menggunakan warna kuning terang (`neo-yellow`).
+- **Pengeluaran**: Menggunakan warna merah muda/peach (`neo-peach`).
+Semua ikon dan teks di dalamnya disesuaikan menjadi warna `neo-ink` (hitam pekat) agar kontras maksimal. Hal ini juga diterapkan pada ringkasan versi mobile.
+Status: Approved
+
+---
+
+[2026-06-27 | 23:15] Desain: Neobrutalism pada Success Modal (Pop-up Berhasil)
+Perubahan: Merombak desain dari komponen `SuccessModal` yang sebelumnya masih memiliki gaya generik pipih dan gradient (sisa desain lama) menjadi desain `Neo-Brutalism` murni:
+- Border luar hitam `4px` dengan shadow balok tebal.
+- Latar belakang tombol utama dan progress bar menjadi warna solid (neo-mint, neo-sky, dll).
+- Ikon besar yang dikelilingi border tebal khas neobrutalism, tanpa efek riak air (ripple) tipis.
+- Mengubah warna font, huruf kapital ganda (*uppercase*), dan bobot teks yang diselaraskan dengan font `Space Mono`.
+Status: Approved
+
+---
+
+[2026-06-27 | 23:13] Desain: Konsistensi Desain Pemilih Kategori (Transaction Modal)
+Perubahan: Menyeragamkan tampilan komponen *Category Picker* (pemilih kategori) pada modal transaksi desktop agar sama dengan desain mobile. Desain yang sebelumnya masih menggunakan gaya lama (lingkaran tipis) sekarang sudah diubah menjadi gaya Neo-Brutalism (kotak melengkung `rounded-[14px]`, border tebal, efek hover timbul membal) yang sesuai dengan *guidelines* desain.
+Status: Approved
+
+---
+
+[2026-06-27 | 23:10] Bugfix & UI: Penyesuaian Ruang Font Space Mono & Hapus Teks Ekstra
+Perubahan: 
+- Menyesuaikan ukuran font (menjadi lebih kecil) dan padding pada *tabs* "Pemasukan/Pengeluaran/Topup" agar teks tidak menabrak batas tombol, mengingat `Space Mono` memiliki rasio huruf yang lebih lebar.
+- Menghapus teks kecil di bawah input jumlah uang (`MoneyInput`) yang sering disalahartikan sebagai bug.
+- Menambah *padding* pada input uang agar angka yang diketik tidak menabrak tombol "+000".
+Status: Approved
+
+---
+
+[2026-06-27 | 23:07] Desain: Neobrutalism Tombol X (Tutup) di Tambah Transaksi
+Perubahan: Menyamakan desain tombol silang (X) pada pop-up / bottom sheet "Tambah Transaksi" di halaman Dashboard (baik mobile maupun desktop) agar menggunakan gaya desain Neobrutalism kuning tebal yang persis sama dengan komponen lain.
+Status: Approved
+
+---
+
+[2026-06-27 | 23:05] Desain: Neobrutalism Date Filter di Dashboard
+Perubahan: Mengubah styling dari komponen filter periode (tanggal) pada halaman utama (Dashboard versi desktop) yang sebelumnya masih menggunakan desain lama (pill oval tipis) menjadi gaya *Neo-Brutalism* (border tebal, shadow tebal, efek hover/active interaktif).
+Status: Approved
+
+---
+
+[2026-06-27 | 23:02] Desain: Update Font Utama ke Space Mono
+Perubahan: Mengganti font utama aplikasi dari "Inter" menjadi "Space Mono" untuk memperkuat gaya desain *Neo-Brutalism* sehingga terasa lebih berkarakter, retro-digital, dan seirama dengan *vibe* Saweria.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:56] Fitur: Navigasi Halaman Tagihan Rutin (Mobile)
+Perubahan: Mengubah aksi tombol tambah (+) dan edit pada komponen "Tagihan Rutin" (tampilan mobile/dashboard) agar melakukan navigasi ke halaman baru (`/recurring`), alih-alih membuka popup dialog/modal. Ini dilakukan untuk menjaga konsistensi alur pengguna (UX) dengan fitur penambahan dompet dan transaksi.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:54] Fitur: Total Saldo Dompet (Desktop)
+Perubahan: Menambahkan banner "Total Semua Dompet" di bagian atas halaman Dompet Saya pada tampilan desktop agar desainnya konsisten dengan halaman Tabungan Inti.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:50] Bugfix: Konsistensi Warna & Tampilan Topup di Analitik (Transaksi Per Dompet)
+Perubahan: 
+- Memperbaiki warna transaksi "Topup" yang sebelumnya tampil sebagai pengeluaran (merah) di rincian per dompet, sekarang menggunakan gaya biru dengan icon Zap.
+- Memperbaiki bug di mana transaksi topup hanya muncul di dompet tujuan. Sekarang topup tampil di dompet asal (sebagai minus biru) dan di dompet tujuan (sebagai plus biru).
+Status: Approved
+
+---
+
+[2026-06-27 | 22:50] Fitur: Dashboard Mobile (Riwayat Transaksi)
+Perubahan: Menerapkan gaya desain neobrutalism pada tombol aksi (Export, Refresh, dan Lihat Semua) di bagian Riwayat Transaksi khusus untuk tampilan mobile agar selaras dengan tampilan desktop.
+Status: Approved
+
+---
+
+[2026-06-27 | 22:45] Fitur: Styling Icon X
+Perubahan: Menyamakan styling tombol close di form kelola kategori custom dengan desain neobrutalism (border tebal & kuning).
 Status: Approved

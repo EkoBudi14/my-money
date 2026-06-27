@@ -100,14 +100,10 @@ export default function Sidebar() {
                         {/* Close button */}
                         <button
                             onClick={() => setIsSidebarOpen(false)}
-                            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-                            style={{
-                                background: theme === 'dark' ? 'rgba(242,242,238,0.08)' : 'rgba(20,20,20,0.06)',
-                                border: theme === 'dark' ? '1px solid rgba(242,242,238,0.12)' : '1px solid rgba(20,20,20,0.10)',
-                            }}
+                            className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             title="Sembunyikan sidebar"
                         >
-                            <X className="w-4 h-4 text-[var(--text-secondary)]" />
+                            <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
                         </button>
                     </div>
 
@@ -476,38 +472,39 @@ export default function Sidebar() {
                     {/* Backdrop */}
                     <div
                         onClick={() => setShowMore(false)}
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
                     />
 
                     {/* Sheet */}
-                    <div className="relative w-full rounded-t-3xl shadow-2xl z-10 pb-safe animate-in slide-in-from-bottom duration-300"
+                    <div className="relative w-full rounded-t-3xl z-10 pb-safe animate-in slide-in-from-bottom duration-300"
                         style={{
                             background: theme === 'dark' ? '#252118' : '#fffdf8',
-                            borderTop: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
-                            borderLeft: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
-                            borderRight: theme === 'dark' ? '3px solid rgba(242,242,238,0.22)' : '3px solid #141414',
+                            borderTop: theme === 'dark' ? '4px solid rgba(242,242,238,0.25)' : '4px solid #141414',
+                            borderLeft: theme === 'dark' ? '4px solid rgba(242,242,238,0.25)' : '4px solid #141414',
+                            borderRight: theme === 'dark' ? '4px solid rgba(242,242,238,0.25)' : '4px solid #141414',
+                            boxShadow: theme === 'dark' ? '0 -4px 0 rgba(242,242,238,0.1)' : '0 -6px 0 rgba(20,20,20,0.1)',
                         }}
                     >
                         {/* Handle Bar */}
-                        <div className="flex justify-center pt-3 pb-1">
-                            <div className="w-10 h-1 bg-[var(--border-strong)] rounded-full" />
+                        <div className="flex justify-center pt-4 pb-2">
+                            <div className="w-12 h-1.5 rounded-full" style={{ background: theme === 'dark' ? 'rgba(242,242,238,0.25)' : '#141414' }} />
                         </div>
 
                         {/* Header */}
-                        <div className="flex items-center justify-between px-5 py-3 border-b"
-                            style={{ borderColor: theme === 'dark' ? 'rgba(242,242,238,0.12)' : '#e8e2d6' }}
+                        <div className="flex items-center justify-between px-6 py-4 border-b-4"
+                            style={{ borderColor: theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#141414' }}
                         >
-                            <span className="font-black text-[var(--text-primary)] text-base tracking-tight">Menu Lainnya</span>
+                            <span className="font-black text-[var(--text-primary)] text-xl tracking-tight">Menu Lainnya</span>
                             <button
                                 onClick={() => setShowMore(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F9FAFB] dark:bg-[var(--bg-page)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
+                                className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                             </button>
                         </div>
 
                         {/* Menu Items */}
-                        <div className="px-4 py-3 pb-8 flex flex-col gap-1">
+                        <div className="px-5 py-5 pb-8 flex flex-col gap-3">
                             {mobileMoreItems.map((item) => {
                                 const isActive = pathname === item.href
                                 return (
@@ -515,21 +512,43 @@ export default function Sidebar() {
                                         key={item.href}
                                         href={item.href}
                                         onClick={() => setShowMore(false)}
-                                        className={`flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-150 ${isActive ? 'bg-[var(--bg-elevated)]' : 'active:bg-[var(--bg-hover)]'}`}
+                                        className="flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-150 active:translate-y-1 active:shadow-none group"
+                                        style={{
+                                            background: isActive 
+                                                ? (theme === 'dark' ? '#ffd84d' : 'var(--neo-yellow, #ffd84d)') 
+                                                : (theme === 'dark' ? '#2e2a20' : '#ffffff'),
+                                            border: theme === 'dark' ? '3px solid rgba(242,242,238,0.2)' : '3px solid #141414',
+                                            boxShadow: theme === 'dark' 
+                                                ? (isActive ? 'none' : '3px 3px 0 rgba(242,242,238,0.15)') 
+                                                : (isActive ? 'none' : '4px 4px 0 #141414'),
+                                            transform: isActive ? 'translate(4px, 4px)' : 'none',
+                                        }}
                                     >
                                         <div
-                                            className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                                            className="w-11 h-11 rounded-[14px] flex items-center justify-center transition-transform group-hover:scale-105"
                                             style={{
-                                                background: isActive ? '#141414' : (theme === 'dark' ? '#2e2a20' : '#f5f0e8'),
-                                                border: isActive ? 'none' : '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#e8e2d6'),
+                                                background: isActive ? '#141414' : (theme === 'dark' ? 'rgba(242,242,238,0.05)' : '#f5f0e8'),
+                                                border: isActive ? 'none' : '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#141414'),
                                             }}
                                         >
-                                            <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                                            <item.icon 
+                                                className={`w-5 h-5 ${isActive ? 'text-white' : (theme === 'dark' ? 'text-[var(--text-primary)]' : 'text-[#141414]')}`} 
+                                                strokeWidth={isActive ? 2.5 : 2} 
+                                            />
                                         </div>
-                                        <span className={`font-medium text-sm flex-1 ${isActive ? 'text-[var(--text-primary)] font-black tracking-tight' : 'text-[var(--text-secondary)]'}`}>
+                                        <span 
+                                            className="font-black text-[15px] flex-1 tracking-tight"
+                                            style={{
+                                                color: isActive ? (theme === 'dark' ? '#141414' : '#141414') : 'var(--text-primary)'
+                                            }}
+                                        >
                                             {item.name}
                                         </span>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`} />
+                                        <ChevronRight 
+                                            className="w-5 h-5 opacity-70" 
+                                            style={{ color: isActive ? (theme === 'dark' ? '#141414' : '#141414') : 'var(--text-primary)' }} 
+                                            strokeWidth={2.5} 
+                                        />
                                     </Link>
                                 )
                             })}
@@ -537,22 +556,27 @@ export default function Sidebar() {
                             {/* Dark Mode Toggle in Mobile More Menu */}
                             <button
                                 onClick={toggleTheme}
-                                className="flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-150 active:bg-[var(--bg-hover)]"
+                                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-150 active:translate-y-1 active:shadow-none mt-1 group"
+                                style={{
+                                    background: theme === 'dark' ? '#2e2a20' : '#ffffff',
+                                    border: theme === 'dark' ? '3px solid rgba(242,242,238,0.2)' : '3px solid #141414',
+                                    boxShadow: theme === 'dark' ? '3px 3px 0 rgba(242,242,238,0.15)' : '4px 4px 0 #141414',
+                                }}
                             >
                                 <div
-                                    className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                                    className="w-11 h-11 rounded-[14px] flex items-center justify-center transition-transform group-hover:scale-105"
                                     style={{
-                                        background: theme === 'dark' ? '#2e2a20' : '#f5f0e8',
-                                        border: '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#e8e2d6'),
+                                        background: theme === 'dark' ? 'rgba(242,242,238,0.05)' : '#f5f0e8',
+                                        border: '2px solid ' + (theme === 'dark' ? 'rgba(242,242,238,0.15)' : '#141414'),
                                     }}
                                 >
                                     {theme === 'dark' ? (
-                                        <Sun className="w-5 h-5 text-amber-400" />
+                                        <Sun className="w-5 h-5 text-amber-400" strokeWidth={2.5} />
                                     ) : (
-                                        <Moon className="w-5 h-5 text-[var(--text-secondary)]" />
+                                        <Moon className="w-5 h-5 text-[#141414]" strokeWidth={2.5} />
                                     )}
                                 </div>
-                                <span className="font-medium text-sm flex-1 text-[var(--text-secondary)] text-left">
+                                <span className="font-black text-[15px] flex-1 text-[var(--text-primary)] tracking-tight text-left">
                                     {theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
                                 </span>
                             </button>

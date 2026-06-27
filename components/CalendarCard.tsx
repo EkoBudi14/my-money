@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import AddEventModal from './AddEventModal'
 import MoneyInput from './MoneyInput'
+import NeoSelect from './NeoSelect'
 
 interface Holiday {
     date: string
@@ -664,9 +665,9 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                             </h3>
                             <button 
                                 onClick={() => setShowPaymentModal(false)}
-                                className="p-2 bg-slate-100 dark:bg-[var(--bg-hover)] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
+                                className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
                             >
-                                <X size={20} />
+                                <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
                             </button>
                         </div>
                         
@@ -706,18 +707,16 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     {selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Masuk ke Dompet' : 'Bayar dari Dompet'}
                                 </label>
-                                <select
-                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
-                                    value={selectedWalletId || ''}
-                                    onChange={(e) => setSelectedWalletId(Number(e.target.value))}
-                                >
-                                    <option value="">Pilih Dompet</option>
-                                    {wallets.map(w => (
-                                        <option key={w.id} value={w.id}>
-                                            {w.name} - Rp {w.balance.toLocaleString('id-ID')}
-                                        </option>
-                                    ))}
-                                </select>
+                                <NeoSelect
+                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)] text-slate-800 dark:text-slate-200"
+                                    value={selectedWalletId ? selectedWalletId.toString() : ''}
+                                    onChange={(val) => setSelectedWalletId(Number(val))}
+                                    placeholder="Pilih Dompet"
+                                    options={wallets.map(w => ({
+                                        label: `${w.name} - Rp ${w.balance.toLocaleString('id-ID')}`,
+                                        value: w.id.toString()
+                                    }))}
+                                />
                             </div>
                         </div>
                         

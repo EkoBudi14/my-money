@@ -8,6 +8,7 @@ import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import NeoSelect from '@/components/NeoSelect'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -385,9 +386,8 @@ export default function BudgetsPage() {
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-black uppercase tracking-tighter text-xl text-[var(--text-primary)]">Pengaturan Filter</h3>
                                 <button onClick={() => setShowSettings(false)}
-                                    className="p-1.5 rounded-[10px] transition-colors"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                    <X className="w-4 h-4" />
+                                    className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+                                    <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
                                 </button>
                             </div>
 
@@ -803,18 +803,17 @@ export default function BudgetsPage() {
                             </div>
                             <div>
                                 <label className="neo-label block mb-2">Ambil dari Dompet</label>
-                                <select
-                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] outline-none"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
+                                <NeoSelect
                                     value={quickExpWalletId}
-                                    onChange={(e) => setQuickExpWalletId(e.target.value)}
-                                    required
-                                >
-                                    <option value="" disabled>Pilih Dompet</option>
-                                    {wallets.map(w => (
-                                        <option key={w.id} value={w.id}>{w.name} (Rp {w.balance.toLocaleString('id-ID')})</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setQuickExpWalletId(val)}
+                                    options={wallets.map(w => ({
+                                        label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
+                                        value: w.id.toString()
+                                    }))}
+                                    placeholder="Pilih Dompet"
+                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
+                                />
                             </div>
                             <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
                                 Simpan Pengeluaran

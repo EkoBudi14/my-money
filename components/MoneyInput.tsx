@@ -72,7 +72,7 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    className={`w-full px-[18px] py-[14px] pr-[80px] bg-white dark:bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] rounded-[18px] shadow-[4px_4px_0_var(--neo-ink)] focus:outline-none transition-all font-[800] text-2xl tracking-wide ${className}`}
+                    className={`w-full px-[16px] py-[14px] pr-[96px] bg-white dark:bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] rounded-[18px] shadow-[4px_4px_0_var(--neo-ink)] focus:outline-none transition-all font-[800] text-xl tracking-wide ${className}`}
                     value={formatDisplay(value)}
                     onChange={handleChange}
                     autoFocus={autoFocus}
@@ -88,12 +88,6 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
                     </button>
                 </div>
             </div>
-            {/* Helper label */}
-            {value && parseInt(value) >= 1000000 && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 text-right">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseInt(value))}
-                </p>
-            )}
         </div>
     )
 }
