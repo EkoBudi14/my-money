@@ -26,7 +26,8 @@ export default function NeoSelect({
   onChange,
   placeholder = 'Pilih...',
   className = '',
-  required
+  required,
+  style
 }: NeoSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -46,7 +47,7 @@ export default function NeoSelect({
   }, [])
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef} style={style}>
       {/* Trigger Button */}
       <button
         type="button"
