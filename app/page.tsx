@@ -6,8 +6,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import FinancialChart from '@/components/FinancialChart'
-import GoldPriceCard from '@/components/GoldPriceCard'
-import CurrencyCard from '@/components/CurrencyCard'
+
 import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
 import RecurringBillsList from '@/components/RecurringBillsList'
@@ -2240,11 +2239,6 @@ export default function MoneyManager() {
           <CalendarCard refreshTrigger={billsUpdateTrigger} onUpdate={handleBillsUpdate} />
         </div>
 
-        {/* Mobile Gold Price & Currency */}
-        <div className="mx-4 mt-4 grid grid-cols-1 gap-4">
-          <GoldPriceCard />
-          <CurrencyCard />
-        </div>
 
       </div>{/* end mobile dashboard */}
 
@@ -2598,11 +2592,6 @@ export default function MoneyManager() {
           </Link>
         )}
 
-        {/* Gold & Currency Cards (Desktop Only - Above Chart) */}
-        <div className="hidden lg:grid grid-cols-2 gap-6">
-          <GoldPriceCard />
-          <CurrencyCard />
-        </div>
 
         {/* Charts & Bills */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2784,11 +2773,6 @@ export default function MoneyManager() {
           </div>
         </div>
 
-        {/* Extras Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden">
-          <GoldPriceCard />
-          <CurrencyCard />
-        </div>
 
       </div>{/* end desktop content div */}
 

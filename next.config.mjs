@@ -1,7 +1,6 @@
 import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig = {
-  turbopack: {},
 };
 
 export default withPWA({

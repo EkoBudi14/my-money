@@ -1,13 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Mono } from "next/font/google";
 import "./globals.css";
-
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-space-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "CatatDuit - Money Manager",
@@ -65,7 +57,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${spaceMono.variable} antialiased bg-[var(--bg-page)] font-sans`}
+        className={`antialiased bg-[var(--bg-page)] font-sans`}
       >
         <ThemeProvider>
           <SidebarProvider>
