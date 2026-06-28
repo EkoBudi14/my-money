@@ -954,10 +954,10 @@ export default function AnalyticsPage() {
                                                     <div className="min-w-0">
                                                         <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
                                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                            <span className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
-                                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-0.5 rounded-md text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                            <span className="text-[10px] font-bold bg-[var(--bg-card)] px-2 py-0.5 rounded-md text-[var(--text-primary)] opacity-80 inline-block uppercase tracking-wider">{tx.category}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -989,10 +989,10 @@ export default function AnalyticsPage() {
                                                     <div className="min-w-0 pr-4">
                                                         <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
                                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                            <span className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
                                                                 {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
-                                                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-[var(--bg-hover)] px-2 py-0.5 rounded-md text-slate-500 dark:text-slate-400 inline-block uppercase tracking-wider">{tx.category}</span>
+                                                            <span className="text-[10px] font-bold bg-[var(--bg-card)] px-2 py-0.5 rounded-md text-[var(--text-primary)] opacity-80 inline-block uppercase tracking-wider">{tx.category}</span>
                                                         </div>
                                                     </div>
                                                     <p className={`font-bold text-sm shrink-0 ${isIncome ? 'text-emerald-600' : 'text-rose-600'
