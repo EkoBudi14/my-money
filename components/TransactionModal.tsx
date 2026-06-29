@@ -856,7 +856,7 @@ export default function TransactionModal({
             </button>
 
             {/* Bottom padding for safe area */}
-            <div className="h-15" />
+            <div className="h-32 shrink-0" />
           </div>
         </form>
         )}
@@ -1461,6 +1461,7 @@ export default function TransactionModal({
             {saving && <div className="w-5 h-5 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />}
             {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : 'Simpan Transaksi')}
           </button>
+          <div className="h-32 shrink-0" />
         </form>
       </div>
     </div>
