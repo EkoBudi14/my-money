@@ -11,6 +11,7 @@ import CalendarCard from '@/components/CalendarCard'
 import MoneyInput from '@/components/MoneyInput'
 import RecurringBillsList from '@/components/RecurringBillsList'
 import NeoSelect from '@/components/NeoSelect'
+import DatePickerNeo from '@/components/DatePickerNeo'
 import { BrutalCard } from '@/components/ui/brutal-card'
 import { BrutalButton } from '@/components/ui/brutal-button'
 import { BrutalInput } from '@/components/ui/brutal-input'
@@ -1879,8 +1880,8 @@ export default function MoneyManager() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="date" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
-                  <input type="date" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
+                  <DatePickerNeo value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
+                  <DatePickerNeo value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none" />
                 </div>
               )}
               <button onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false); }} className="w-full mt-4 brutal-btn !py-3 !bg-white">Reset ke Bulan Ini</button>
@@ -2350,8 +2351,7 @@ export default function MoneyManager() {
                   <div className="space-y-3">
                     <div>
                       <label className="neo-label mb-1.5 block">Dari Tanggal</label>
-                      <input
-                        type="date"
+                      <DatePickerNeo
                         value={customRange.start}
                         onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
                         className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none"
@@ -2359,8 +2359,7 @@ export default function MoneyManager() {
                     </div>
                     <div>
                       <label className="neo-label mb-1.5 block">Sampai Tanggal</label>
-                      <input
-                        type="date"
+                      <DatePickerNeo
                         value={customRange.end}
                         onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
                         className="w-full px-[14px] py-[10px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[14px] text-xs font-black text-[var(--text-primary)] outline-none"
@@ -2934,8 +2933,7 @@ export default function MoneyManager() {
                   <div className="grid grid-cols-2 gap-3">
                     <BrutalCard size="sm" tight colorScheme="yellow">
                       <p className="neo-label mb-1">Tanggal</p>
-                      <input
-                        type="date"
+                      <DatePickerNeo
                         className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm"
                         value={customDate}
                         onChange={(e) => setCustomDate(e.target.value)}
@@ -2993,7 +2991,7 @@ export default function MoneyManager() {
 
                     <BrutalCard size="sm" tight colorScheme="yellow">
                       <p className="neo-label mb-1">Tanggal</p>
-                      <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                      <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                     </BrutalCard>
                   </div>
                 )}
@@ -3232,8 +3230,7 @@ export default function MoneyManager() {
               <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
                 <BrutalCard size="sm" tight className={type === 'topup' ? 'md:col-span-1' : ''} colorScheme="yellow">
                   <p className="neo-label mb-1">Tanggal</p>
-                  <input
-                    type="date"
+                  <DatePickerNeo
                     className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm"
                     value={customDate}
                     onChange={(e) => setCustomDate(e.target.value)}

@@ -6,6 +6,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import MoneyInput from '@/components/MoneyInput'
 import NeoSelect from '@/components/NeoSelect'
+import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
 import {
   Plus, Trash2, X, Package, Pencil, Info, AlertTriangle,
@@ -642,7 +643,7 @@ export default function TransactionModal({
               <div className="grid grid-cols-2 gap-3">
                 <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                  <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
                 <div className="brutal-card-sm p-3 brutal-card-lav">
                   <p className="neo-label mb-1">Dompet</p>
@@ -679,7 +680,7 @@ export default function TransactionModal({
                 </div>
                 <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                  <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
               </div>
             )}
@@ -984,7 +985,7 @@ export default function TransactionModal({
               <div className="grid grid-cols-2 gap-3">
                 <div className="brutal-card-sm p-3 brutal-card-yellow">
                   <p className="neo-label mb-1">Tanggal</p>
-                  <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                  <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
                 <div className="brutal-card-sm p-3 brutal-card-lav">
                   <p className="neo-label mb-1">Dompet</p>
@@ -1001,7 +1002,7 @@ export default function TransactionModal({
             ) : (
               <div className="brutal-card-sm p-3 brutal-card-yellow">
                 <p className="neo-label mb-1">Tanggal</p>
-                <input type="date" className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
               </div>
             )}
 
@@ -1221,7 +1222,7 @@ export default function TransactionModal({
           <div className={`grid gap-4 ${type === 'topup' ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
             <div className={type === 'topup' ? 'md:col-span-1' : ''}>
               <label className="neo-label mb-2 block">Tanggal</label>
-              <input type="date" className="w-full p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] outline-none font-black text-[var(--text-primary)]" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              <DatePickerNeo className="w-full p-3 bg-[var(--bg-input)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] outline-none font-black text-[var(--text-primary)]" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
             </div>
             {type === 'topup' ? (
               <>

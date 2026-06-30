@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import NeoSelect from '@/components/NeoSelect'
+import DatePickerNeo from '@/components/DatePickerNeo'
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -422,8 +423,7 @@ export default function BudgetsPage() {
                                     <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
                                         <div className="space-y-2">
                                             <label className="neo-label">Dari Tanggal</label>
-                                            <input
-                                                type="date"
+                                            <DatePickerNeo
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
                                                 className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
@@ -432,8 +432,7 @@ export default function BudgetsPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="neo-label">Sampai Tanggal</label>
-                                            <input
-                                                type="date"
+                                            <DatePickerNeo
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
                                                 className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
@@ -715,8 +714,7 @@ export default function BudgetsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="neo-label block mb-2">Tanggal Mulai</label>
-                                    <input
-                                        type="date"
+                                    <DatePickerNeo
                                         className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
                                         style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
                                         value={budgetStartDate}
@@ -726,8 +724,7 @@ export default function BudgetsPage() {
                                 </div>
                                 <div>
                                     <label className="neo-label block mb-2">Tanggal Selesai</label>
-                                    <input
-                                        type="date"
+                                    <DatePickerNeo
                                         className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
                                         style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
                                         value={budgetEndDate}

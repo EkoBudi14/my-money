@@ -6,6 +6,7 @@ import { addRecurringBill, updateRecurringBill } from '@/lib/recurring-bills'
 import { RecurringBill, CATEGORIES } from '@/types'
 import MoneyInput from './MoneyInput'
 import NeoSelect from './NeoSelect'
+import DatePickerNeo from './DatePickerNeo'
 import { supabase } from '@/lib/supabase'
 
 interface AddBillModalProps {
@@ -26,6 +27,7 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
         due_date: '',
         category: 'Tagihan'
     })
+    const [fullDate, setFullDate] = useState('')
 
     // Reset or Populate form when modal opens
     useEffect(() => {
@@ -63,6 +65,7 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
                     due_date: '',
                     category: 'Tagihan'
                 })
+                setFullDate('')
             }
         }
     }, [isOpen, initialData, editId])
@@ -209,12 +212,12 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
                                 {isPemasukan ? 'Mulai Tanggal Terima' : 'Mulai Tanggal Pembayaran'}
                             </label>
                             <div className="relative">
-                                <input
+                                <DatePickerNeo
                                     required
-                                    type="date"
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all cursor-pointer [color-scheme:light]"
-                                    onClick={(e) => e.currentTarget.showPicker()}
+                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                                    value={fullDate}
                                     onChange={(e) => {
+                                        setFullDate(e.target.value)
                                         const date = new Date(e.target.value)
                                         if (!isNaN(date.getDate())) {
                                             setFormData({

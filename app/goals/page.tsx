@@ -12,6 +12,7 @@ import {
     X
 } from 'lucide-react'
 import MoneyInput from '@/components/MoneyInput'
+import DatePickerNeo from '@/components/DatePickerNeo'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
@@ -450,8 +451,7 @@ export default function GoalsPage() {
                             </div>
                             <div>
                                 <label className="neo-label block mb-2">Batas Waktu</label>
-                                <input
-                                    type="date"
+                                <DatePickerNeo
                                     className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] outline-none"
                                     style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
                                     value={deadline}

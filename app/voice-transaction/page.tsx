@@ -17,6 +17,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import NeoSelect from '@/components/NeoSelect'
+import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, CATEGORIES } from '@/types'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -619,8 +620,7 @@ export default function VoiceTransactionPage() {
                         <label className="neo-label">
                           Tanggal
                         </label>
-                        <input
-                          type="date"
+                        <DatePickerNeo
                           value={tx.date}
                           onChange={e => updateParsed(index, 'date', e.target.value)}
                           className="w-full text-sm font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none pb-1.5 px-2 transition-colors"

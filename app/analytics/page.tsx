@@ -17,6 +17,7 @@ import {
     LabelList
 } from 'recharts'
 import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info, ChevronDown, Search } from 'lucide-react'
+import DatePickerNeo from '@/components/DatePickerNeo'
 
 export default function AnalyticsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -781,8 +782,7 @@ export default function AnalyticsPage() {
                                     <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
                                         <div className="space-y-2">
                                             <label className="neo-label">Dari Tanggal</label>
-                                            <input
-                                                type="date"
+                                            <DatePickerNeo
                                                 value={customRange.start}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
                                                 className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
@@ -791,8 +791,7 @@ export default function AnalyticsPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="neo-label">Sampai Tanggal</label>
-                                            <input
-                                                type="date"
+                                            <DatePickerNeo
                                                 value={customRange.end}
                                                 onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
                                                 className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"

@@ -9,6 +9,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import AddEventModal from './AddEventModal'
 import MoneyInput from './MoneyInput'
 import NeoSelect from './NeoSelect'
+import DatePickerNeo from './DatePickerNeo'
 
 interface Holiday {
     date: string
@@ -695,8 +696,7 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                     Tanggal Pembayaran
                                 </label>
-                                <input
-                                    type="date"
+                                <DatePickerNeo
                                     className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}

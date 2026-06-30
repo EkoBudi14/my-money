@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import MoneyInput from './MoneyInput'
 import NeoSelect from './NeoSelect'
+import DatePickerNeo from './DatePickerNeo'
 
 interface RecurringBillsListProps {
     onUpdate?: () => void
@@ -481,8 +482,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                                 <label className="neo-label mb-2 block">
                                     Tanggal
                                 </label>
-                                <input
-                                    type="date"
+                                <DatePickerNeo
                                     className="w-full p-3 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all outline-none font-bold"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}

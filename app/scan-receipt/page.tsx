@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { Wallet, CATEGORIES } from '@/types'
 import NeoSelect from '@/components/NeoSelect'
+import DatePickerNeo from '@/components/DatePickerNeo'
 
 export default function ScanReceiptPage() {
     const router = useRouter()
@@ -857,8 +858,7 @@ export default function ScanReceiptPage() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="neo-label">Tanggal</label>
-                                                <input 
-                                                    type="date"
+                                                <DatePickerNeo
                                                     value={scanResult.date}
                                                     onChange={(e) => handleResultChange('date', e.target.value)}
                                                     className="w-full font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none py-1 px-2 transition-colors"
