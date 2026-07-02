@@ -2225,7 +2225,7 @@ export default function MoneyManager() {
 
         {/* Mobile Tagihan Rutin */}
         <div className="mx-4 mt-4">
-          <div className="brutal-card bg-[var(--bg-card)] overflow-hidden">
+          <div className="brutal-card bg-[var(--bg-card)]">
             <div className="px-4 py-3 border-b border-[var(--border-default)]">
               <h3 className="font-bold text-[var(--text-primary)]">Tagihan Rutin</h3>
             </div>
@@ -2609,7 +2609,7 @@ export default function MoneyManager() {
 
           <div className="flex flex-col gap-6">
             {/* Reuse RecurringBillsList as 'Shipment Status' equivalent */}
-            <div className="brutal-card bg-[var(--bg-card)] overflow-hidden">
+            <div className="brutal-card bg-[var(--bg-card)]">
               <div className="p-5 border-b border-[var(--border-default)]">
                 <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Tagihan Rutin</h3>
               </div>
