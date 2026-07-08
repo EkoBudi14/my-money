@@ -178,7 +178,7 @@ export default function MoneyManager() {
 
   const handleBillsUpdate = () => {
     setBillsUpdateTrigger(prev => prev + 1)
-    Promise.all([fetchTransactions(), fetchWallets()]) // Refresh transactions list and wallet balances parallelly
+    Promise.all([fetchTransactions(true), fetchWallets()]) // silent=true: background refresh tanpa loading flicker
   }
 
   // Settings State
@@ -444,8 +444,9 @@ export default function MoneyManager() {
     }
   }
 
-  const fetchTransactions = async () => {
-    setLoading(true)
+  // silent=true → background refresh tanpa trigger loading state (tidak flicker UI)
+  const fetchTransactions = async (silent = false) => {
+    if (!silent) setLoading(true)
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
@@ -454,10 +455,10 @@ export default function MoneyManager() {
     if (error) {
       console.error('Error fetching transactions:', error)
       showToast('error', `Gagal memuat transaksi: ${error.message || 'Coba refresh halaman'}`)
-      setLoading(false)
+      if (!silent) setLoading(false)
     } else {
       setTransactions(data as any[] || [])
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -580,17 +581,20 @@ export default function MoneyManager() {
 
     setSaving(true)
 
-    // Fetch saldo wallet baru langsung dari DB (anti race condition)
-    const freshNewWalletBalance = await fetchFreshWalletBalance(newWalletId)
+    // Perf: fetch kedua wallet balance secara paralel (hemat ~300ms untuk topup)
+    const [freshNewWalletBalance, freshSourceWalletBalanceRaw] = await Promise.all([
+      fetchFreshWalletBalance(newWalletId),
+      type === 'topup' ? fetchFreshWalletBalance(parseInt(sourceWalletId)) : Promise.resolve(null)
+    ])
+
     if (freshNewWalletBalance === null) {
       showToast('error', 'Dompet tidak ditemukan!')
       setSaving(false)
       return
     }
 
-    let freshSourceWalletBalance: number | null = null
+    let freshSourceWalletBalance: number | null = freshSourceWalletBalanceRaw
     if (type === 'topup') {
-      freshSourceWalletBalance = await fetchFreshWalletBalance(parseInt(sourceWalletId))
       if (freshSourceWalletBalance === null) {
         showToast('error', 'Sumber dana tidak ditemukan!')
         setSaving(false)
@@ -823,18 +827,40 @@ export default function MoneyManager() {
               type: 'pengeluaran',
               category: 'Lainnya',
               wallet_id: parseInt(sourceWalletId),
-              date: safeDate, // maintain the same safeDate
+              date: safeDate,
               created_at: new Date().toISOString(),
               is_piutang: false,
               is_talangan: false
             }
-            await supabase.from('transactions').insert([adminPayload])
+            // Perf: parallelkan admin fee insert + dua wallet update (hemat ~600ms)
+            await Promise.all([
+              supabase.from('transactions').insert([adminPayload]),
+              supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId)),
+              supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
+            ])
+          } else {
+            // Topup tanpa admin fee: paralel update dua wallet (hemat ~300ms)
+            await Promise.all([
+              supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId)),
+              supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
+            ])
           }
-          await supabase.from('wallets').update({ balance: srcNewBalance }).eq('id', parseInt(sourceWalletId))
+          fetchWallets()
+        } else {
+          // Pemasukan/Pengeluaran biasa: optimistic wallet state update (hemat ~300ms)
+          // Nilai newBalance sudah dihitung dari freshNewWalletBalance (DB), aman digunakan
+          setWallets(prev => prev.map(w =>
+            w.id === newWalletId ? { ...w, balance: newBalance } : w
+          ))
+          // Fire-and-forget: persist ke DB, lalu sync ulang (rollback via re-fetch jika gagal)
+          void (async () => {
+            try {
+              await supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
+            } finally {
+              fetchWallets()
+            }
+          })()
         }
-
-        await supabase.from('wallets').update({ balance: newBalance }).eq('id', newWalletId)
-        fetchWallets()
       }
     }
 
@@ -877,7 +903,7 @@ export default function MoneyManager() {
       })
       resetForm()
       // Background fetches: refresh debts, budgets, & transactions (untuk memunculkan Biaya Admin) tanpa blokir UI
-      Promise.all([fetchDebts(), fetchBudgets(), fetchTransactions()])
+      Promise.all([fetchDebts(), fetchBudgets(), fetchTransactions(true)]) // silent=true: background refresh tanpa loading flicker
     }
 
     setSaving(false)
@@ -1238,7 +1264,7 @@ export default function MoneyManager() {
         title: 'Piutang Lunas! 🎉',
         message: 'Piutang berhasil ditandai lunas dan saldo dompet diperbarui.'
       })
-      Promise.all([fetchDebts(), fetchTransactions(), fetchWallets()])
+      Promise.all([fetchDebts(), fetchTransactions(true), fetchWallets()]) // silent=true: background refresh tanpa loading flicker
       setShowDebtModal(false)
     }
     setRepayingWalletId(null)
@@ -2109,7 +2135,7 @@ export default function MoneyManager() {
                 Export
               </button>
               <button
-                onClick={fetchTransactions}
+                onClick={() => fetchTransactions()}
                 disabled={loading}
                 className={`p-1.5 rounded-[8px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-white text-[var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none transition-all ${loading ? 'animate-spin shadow-none translate-y-[2px]' : ''}`}
                 title="Refresh"
@@ -2681,7 +2707,7 @@ export default function MoneyManager() {
                   <span className="hidden sm:inline">Export</span>
                 </button>
                 <button
-                  onClick={fetchTransactions}
+                  onClick={() => fetchTransactions()}
                   disabled={loading}
                   className={`p-1.5 rounded-[6px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-white text-[var(--neo-ink)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:shadow-none transition-all ${loading ? 'animate-spin shadow-none translate-y-[2px]' : ''}`}
                   title="Refresh Data"

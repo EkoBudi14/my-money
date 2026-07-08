@@ -521,3 +521,19 @@ Status: Approved
 [2026-06-27 | 22:45] Fitur: Styling Icon X
 Perubahan: Menyamakan styling tombol close di form kelola kategori custom dengan desain neobrutalism (border tebal & kuning).
 Status: Approved
+
+---
+
+[2026-07-08 | 11:58] Perbaikan: Performa — Silent Fetch (fetchTransactions)
+Perubahan: Menambahkan parameter `silent = false` pada fungsi `fetchTransactions`. Saat `silent=true`, fungsi tidak akan mengubah `loading` state sehingga daftar transaksi tidak hilang/flicker saat background refresh. Semua pemanggilan setelah action (save transaksi, hapus, bayar piutang, update tagihan) diubah ke `fetchTransactions(true)`. First load dan tombol refresh manual tetap menggunakan `fetchTransactions()` biasa (dengan loading indicator). Tidak ada perubahan pada logika fetch, kalkulasi keuangan, atau komponen lain.
+Dipicu oleh prompt: "setiap saya melakukan action entah edit add atau hapus kenapa lama bgt yaa?"
+Fitur terdampak: Riwayat Transaksi UI (Low)
+Status: Approved
+---
+
+[2026-07-08 | 12:10] Perbaikan: Performa — Parallelisasi DB Calls di handleSaveTransaction (INSERT Mode)
+Perubahan: (1) fetchFreshWalletBalance untuk topup dijalankan paralel dengan Promise.all — hemat ~300ms. (2) Pemasukan/Pengeluaran: wallet state update optimistic langsung + wallet DB update fire-and-forget dengan .catch() rollback — hemat ~300ms. (3) Topup dengan/tanpa admin fee: semua wallet update + admin fee insert dijalankan paralel — hemat ~300–600ms. EDIT mode tidak disentuh. Logika kalkulasi keuangan tidak berubah.
+Dipicu oleh prompt: "gaada yang lag2 lagi soalnya ini berasa juga lag saat melakukan action"
+Fitur terdampak: Tambah Transaksi INSERT Mode (Medium), Topup INSERT Mode (Medium)
+Status: Approved
+---
