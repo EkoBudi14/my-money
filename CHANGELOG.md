@@ -537,3 +537,8 @@ Dipicu oleh prompt: "gaada yang lag2 lagi soalnya ini berasa juga lag saat melak
 Fitur terdampak: Tambah Transaksi INSERT Mode (Medium), Topup INSERT Mode (Medium)
 Status: Approved
 ---
+
+[2026-07-11 | 12:51] Perbaikan UI: Mencegah Auto-Zoom di iOS Mobile
+Perubahan: Menambahkan pengaturan viewport `maximumScale: 1` dan `userScalable: false` pada export metadata di file `app/layout.tsx` untuk mencegah browser iOS (Safari) melakukan zoom-in otomatis setiap kali user menekan form input (mengetik).
+Status: Approved
+---
