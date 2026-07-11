@@ -542,3 +542,8 @@ Status: Approved
 Perubahan: Menambahkan pengaturan viewport `maximumScale: 1` dan `userScalable: false` pada export metadata di file `app/layout.tsx` untuk mencegah browser iOS (Safari) melakukan zoom-in otomatis setiap kali user menekan form input (mengetik).
 Status: Approved
 ---
+
+[2026-07-11 | 13:16] Fitur: Loading Progress Bar Global (Nextjs-Toploader)
+Perubahan: Menambahkan komponen indikator visual (`nextjs-toploader`) pada `app/layout.tsx`. Hal ini memperbaiki masalah di mana transisi perpindahan halaman via menu navigasi terasa sangat *delay* atau ngelag di Next.js, karena kini progress bar berwarna kuning seketika langsung muncul di bagian atas layar untuk memberi tahu *user* bahwa proses pemuatan halaman tujuan sedang berjalan di latar belakang (client-side routing Next.js).
+Status: Approved
+---

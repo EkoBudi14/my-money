@@ -39,6 +39,7 @@ import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { SidebarProvider } from "@/hooks/useSidebar";
+import NextTopLoader from "nextjs-toploader";
 
 export default function RootLayout({
   children,
@@ -67,6 +68,18 @@ export default function RootLayout({
       <body
         className={`antialiased bg-[var(--bg-page)] font-sans`}
       >
+        <NextTopLoader
+          color="#ffd84d"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={5}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 2px 4px rgba(0,0,0,0.2)"
+          zIndex={99999}
+        />
         <ThemeProvider>
           <SidebarProvider>
             <ToastProvider>
