@@ -547,3 +547,15 @@ Status: Approved
 Perubahan: Menambahkan komponen indikator visual (`nextjs-toploader`) pada `app/layout.tsx`. Hal ini memperbaiki masalah di mana transisi perpindahan halaman via menu navigasi terasa sangat *delay* atau ngelag di Next.js, karena kini progress bar berwarna kuning seketika langsung muncul di bagian atas layar untuk memberi tahu *user* bahwa proses pemuatan halaman tujuan sedang berjalan di latar belakang (client-side routing Next.js).
 Status: Approved
 ---
+
+[2026-07-16 | 19:09] Fitur: Kotak Ringkasan Arus Kas (Dashboard)
+Perubahan: Menambahkan kotak informasi baru "Ringkasan Arus Kas" di dashboard (desktop & mobile). Kotak ini menampilkan: (1) Total Pemasukan periode aktif (exclude piutang), (2) Total Uang Digunakan = semua outflow: pengeluaran (termasuk talangan) + topup/transfer, (3) Sisa Belum Terpakai = Pemasukan - Uang Digunakan, (4) Progress bar visual dengan threshold warna: hijau (<50%), kuning (50-80%), merah (>80%), ditambah label status dinamis. Kalkulasi baru `totalUsed` ditambahkan sebagai useMemo read-only, tidak menyentuh DB atau logic CRUD apapun. Desktop: tampil sebagai card 3-kolom setelah Stats Grid. Mobile: tampil sebagai card list setelah Stats Row.
+Dipicu oleh prompt: "saya mau nambah 1 container/kotak informasi baru — perbandingan uang masuk vs uang yang sudah digunakan dari pemasukan"
+Fitur terdampak: Dashboard UI (Low)
+Status: Approved
+---
+
+[2026-07-16 | 19:22] Perbaikan: Pisah State Hide/Show Card Ringkasan Arus Kas
+Perubahan: Menambahkan state baru `showCashFlow` (terpisah dari `showIncome`) beserta tombol Eye toggle di header card Ringkasan Arus Kas (mobile & desktop). Sebelumnya semua nilai di card Ringkasan Arus Kas mengikuti state `showIncome` milik card Pemasukan. Kini keduanya independen — menyembunyikan angka di card Pemasukan tidak lagi mempengaruhi card Ringkasan Arus Kas.
+Status: Approved
+---

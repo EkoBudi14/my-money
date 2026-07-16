@@ -163,6 +163,7 @@ export default function MoneyManager() {
   const [showBalance, setShowBalance] = useState(false)
   const [showActiveBalance, setShowActiveBalance] = useState(false)
   const [showIncome, setShowIncome] = useState(false)
+  const [showCashFlow, setShowCashFlow] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
@@ -1348,6 +1349,14 @@ export default function MoneyManager() {
     return { currentIncome: income, currentExpense: expense }
   }, [filteredTransactions, debts])
 
+  // 2b. Total Uang Digunakan — semua outflow: pengeluaran (incl. talangan) + topup (transfer/tabungan)
+  // Digunakan di kotak "Ringkasan Arus Kas" untuk menjawab: "dari pemasukan, sudah berapa yang digunakan?"
+  const totalUsed = useMemo(() => {
+    return filteredTransactions
+      .filter(t => t.type === 'pengeluaran' || t.type === 'topup')
+      .reduce((acc, curr) => acc + curr.amount, 0)
+  }, [filteredTransactions])
+
   // 3. Previous Period Stats (Monthly Only)
   const { prevIncome, prevExpense } = useMemo(() => {
     // Only calculate for monthly mode for now
@@ -2085,7 +2094,118 @@ export default function MoneyManager() {
           </div>
         </div>
 
+        {/* ============= RINGKASAN ARUS KAS (MOBILE) ============= */}
+        <div className="mx-4 mt-4 brutal-card bg-[var(--bg-card)] p-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="neo-label">Ringkasan Arus Kas</p>
+              <p className="text-[10px] text-[var(--text-secondary)]">Dari pemasukan, sudah berapa yang digunakan?</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowCashFlow(!showCashFlow)} className="p-1.5 bg-[var(--bg-card)] rounded-[10px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--text-primary)] hover:-translate-y-px hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+                {showCashFlow ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+              <span className={`text-[9px] font-black px-2 py-1 rounded-[8px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] ${(currentIncome - totalUsed) >= 0 ? 'bg-[var(--neo-mint)] text-[var(--neo-ink)]' : 'bg-[var(--neo-peach)] text-[var(--neo-ink)]'}`}>
+                {(currentIncome - totalUsed) >= 0 ? '✅ Ada Sisa' : '⚠️ Melebihi'}
+              </span>
+            </div>
+          </div>
+
+          {/* 3 rows */}
+          <div className="flex flex-col gap-2.5 mb-3">
+            {/* Pemasukan row */}
+            <div className="flex items-center justify-between p-3 bg-[var(--neo-mint)] rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[3px_3px_0_var(--neo-ink)]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-white rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--neo-ink)]">Pemasukan</p>
+                  <p className="text-[9px] text-[var(--neo-ink)]/60">Tidak incl. piutang</p>
+                </div>
+              </div>
+              <p className="font-black text-base text-[var(--neo-ink)] tracking-tight">
+                {showCashFlow ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••'}
+              </p>
+            </div>
+
+            {/* Uang Digunakan row */}
+            <div className="flex items-center justify-between p-3 bg-[var(--neo-peach)] rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[3px_3px_0_var(--neo-ink)]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-white rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center shrink-0">
+                  <TrendingDown className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--neo-ink)]">Uang Digunakan</p>
+                  <p className="text-[9px] text-[var(--neo-ink)]/60">Pengeluaran + Transfer</p>
+                </div>
+              </div>
+              <p className="font-black text-base text-[var(--neo-ink)] tracking-tight">
+                {showCashFlow ? `Rp ${totalUsed.toLocaleString('id-ID')}` : 'Rp ••••••'}
+              </p>
+            </div>
+
+            {/* Sisa row */}
+            <div className={`flex items-center justify-between p-3 rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[3px_3px_0_var(--neo-ink)] ${
+              (currentIncome - totalUsed) >= 0 ? 'bg-[var(--neo-sky)]' : 'bg-[var(--neo-yellow)]'
+            }`}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-white rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center shrink-0">
+                  <WalletIcon className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[var(--neo-ink)]">
+                    {(currentIncome - totalUsed) >= 0 ? 'Sisa Belum Terpakai' : 'Kekurangan'}
+                  </p>
+                  <p className="text-[9px] text-[var(--neo-ink)]/60">
+                    {(currentIncome - totalUsed) >= 0 ? 'Pemasukan − Digunakan' : 'Outflow > Pemasukan'}
+                  </p>
+                </div>
+              </div>
+              <p className="font-black text-base text-[var(--neo-ink)] tracking-tight">
+                {showCashFlow ? `Rp ${Math.abs(currentIncome - totalUsed).toLocaleString('id-ID')}` : 'Rp ••••••'}
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div>
+            <div className="flex justify-between text-[10px] font-bold text-[var(--text-secondary)] mb-1.5">
+              <span>Uang Digunakan dari Pemasukan</span>
+              <span className="text-[var(--text-primary)] font-black">
+                {currentIncome > 0 ? `${Math.min((totalUsed / currentIncome) * 100, 100).toFixed(1)}%` : '0%'}
+              </span>
+            </div>
+            <div className="h-3.5 bg-[var(--bg-elevated)] rounded-[6px] border-[3px] border-[var(--neo-ink)] overflow-hidden">
+              <div
+                className={`h-full transition-all duration-700 ease-out ${
+                  currentIncome === 0 ? 'bg-slate-300'
+                  : (totalUsed / currentIncome) > 1 ? 'bg-rose-500'
+                  : (totalUsed / currentIncome) > 0.8 ? 'bg-rose-400'
+                  : (totalUsed / currentIncome) > 0.5 ? 'bg-amber-400'
+                  : 'bg-emerald-400'
+                }`}
+                style={{ width: currentIncome > 0 ? `${Math.min((totalUsed / currentIncome) * 100, 100)}%` : '0%' }}
+              />
+            </div>
+            <p className={`text-[9px] font-black mt-1.5 text-center uppercase tracking-wide ${
+              currentIncome === 0 ? 'text-slate-400'
+              : (totalUsed / currentIncome) > 0.8 ? 'text-rose-600'
+              : (totalUsed / currentIncome) > 0.5 ? 'text-amber-600'
+              : 'text-emerald-600'
+            }`}>
+              {currentIncome === 0 ? '— Belum ada pemasukan'
+                : (totalUsed / currentIncome) > 1 ? '🔴 Outflow melebihi pemasukan!'
+                : (totalUsed / currentIncome) > 0.8 ? '⚠️ Hampir habis — perhatikan!'
+                : (totalUsed / currentIncome) > 0.5 ? '👀 Lebih dari 50% sudah digunakan'
+                : '✅ Masih terkendali'}
+            </p>
+          </div>
+        </div>
+
         {/* Mobile Debt Quick View */}
+
         {debts.some(d => d.status === 'pending') && (
           <div className="mx-4 mt-4 brutal-card bg-amber-50 dark:bg-amber-950/30 p-4 transition-all">
             <div className="flex items-center justify-between">
@@ -2617,8 +2737,118 @@ export default function MoneyManager() {
           </Link>
         )}
 
+        {/* ============= RINGKASAN ARUS KAS (DESKTOP) ============= */}
+        <div className="brutal-card bg-[var(--bg-card)] p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="font-black uppercase tracking-tight text-[var(--text-primary)]">Ringkasan Arus Kas</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">Dari pemasukan, sudah berapa yang digunakan? — {getPeriodLabel()}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setShowCashFlow(!showCashFlow)} className="p-2 bg-[var(--bg-elevated)] rounded-[10px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--text-primary)] hover:-translate-y-px hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" title={showCashFlow ? 'Sembunyikan angka' : 'Tampilkan angka'}>
+                {showCashFlow ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+              <span className={`text-xs font-black px-3 py-1.5 rounded-[10px] border-2 border-[var(--neo-ink)] shadow-[3px_3px_0_var(--neo-ink)] ${
+                (currentIncome - totalUsed) >= 0 ? 'bg-[var(--neo-mint)] text-[var(--neo-ink)]' : 'bg-[var(--neo-peach)] text-[var(--neo-ink)]'
+              }`}>
+                {(currentIncome - totalUsed) >= 0 ? '✅ Ada Sisa' : '⚠️ Melebihi Pemasukan'}
+              </span>
+            </div>
+          </div>
+
+          {/* 3 Info Boxes — neobrutalism style */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Pemasukan */}
+            <div className="flex flex-col p-5 bg-[var(--neo-mint)] rounded-[16px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] gap-3">
+              <div className="flex items-center gap-2">
+                <div className="size-9 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px] flex items-center justify-center shrink-0">
+                  <TrendingUp className="size-5 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <p className="neo-label !text-[var(--neo-ink)]">Total Pemasukan</p>
+              </div>
+              <p className="neo-amount !text-[var(--neo-ink)] !text-[22px]">
+                {showCashFlow ? `Rp ${currentIncome.toLocaleString('id-ID')}` : 'Rp ••••••••'}
+              </p>
+              <p className="text-[10px] font-bold text-[var(--neo-ink)]/60">Tidak termasuk piutang</p>
+            </div>
+
+            {/* Uang Digunakan */}
+            <div className="flex flex-col p-5 bg-[var(--neo-peach)] rounded-[16px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] gap-3">
+              <div className="flex items-center gap-2">
+                <div className="size-9 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px] flex items-center justify-center shrink-0">
+                  <TrendingDown className="size-5 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <p className="neo-label !text-[var(--neo-ink)]">Uang Digunakan</p>
+              </div>
+              <p className="neo-amount !text-[var(--neo-ink)] !text-[22px]">
+                {showCashFlow ? `Rp ${totalUsed.toLocaleString('id-ID')}` : 'Rp ••••••••'}
+              </p>
+              <p className="text-[10px] font-bold text-[var(--neo-ink)]/60">Pengeluaran + Transfer/Tabungan</p>
+            </div>
+
+            {/* Sisa Belum Terpakai */}
+            <div className={`flex flex-col p-5 rounded-[16px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] gap-3 ${
+              (currentIncome - totalUsed) >= 0 ? 'bg-[var(--neo-sky)]' : 'bg-[var(--neo-yellow)]'
+            }`}>
+              <div className="flex items-center gap-2">
+                <div className="size-9 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px] flex items-center justify-center shrink-0">
+                  <WalletIcon className="size-5 text-[var(--neo-ink)]" strokeWidth={3} />
+                </div>
+                <p className="neo-label !text-[var(--neo-ink)]">
+                  {(currentIncome - totalUsed) >= 0 ? 'Sisa Belum Terpakai' : 'Kekurangan'}
+                </p>
+              </div>
+              <p className="neo-amount !text-[var(--neo-ink)] !text-[22px]">
+                {showCashFlow ? `Rp ${Math.abs(currentIncome - totalUsed).toLocaleString('id-ID')}` : 'Rp ••••••••'}
+              </p>
+              <p className="text-[10px] font-bold text-[var(--neo-ink)]/60">
+                {(currentIncome - totalUsed) >= 0 ? 'Pemasukan − Uang Digunakan' : 'Outflow melebihi pemasukan'}
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div>
+            <div className="flex justify-between text-xs font-bold text-[var(--text-secondary)] mb-2">
+              <span>Persentase Uang Digunakan dari Pemasukan</span>
+              <span className="font-black text-[var(--text-primary)]">
+                {currentIncome > 0 ? `${Math.min((totalUsed / currentIncome) * 100, 100).toFixed(1)}%` : '0%'}
+              </span>
+            </div>
+            <div className="h-5 bg-[var(--bg-elevated)] rounded-[8px] border-[3px] border-[var(--neo-ink)] overflow-hidden">
+              <div
+                className={`h-full transition-all duration-700 ease-out ${
+                  currentIncome === 0 ? 'bg-slate-300'
+                  : (totalUsed / currentIncome) > 1 ? 'bg-rose-500'
+                  : (totalUsed / currentIncome) > 0.8 ? 'bg-rose-400'
+                  : (totalUsed / currentIncome) > 0.5 ? 'bg-amber-400'
+                  : 'bg-emerald-400'
+                }`}
+                style={{ width: currentIncome > 0 ? `${Math.min((totalUsed / currentIncome) * 100, 100)}%` : '0%' }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] mt-2">
+              <span className="text-[var(--text-secondary)]">0%</span>
+              <span className={`font-black uppercase tracking-wide ${
+                currentIncome === 0 ? 'text-slate-400'
+                : (totalUsed / currentIncome) > 0.8 ? 'text-rose-600'
+                : (totalUsed / currentIncome) > 0.5 ? 'text-amber-600'
+                : 'text-emerald-600'
+              }`}>
+                {currentIncome === 0 ? '— Belum ada pemasukan'
+                  : (totalUsed / currentIncome) > 1 ? '🔴 Outflow melebihi pemasukan!'
+                  : (totalUsed / currentIncome) > 0.8 ? '⚠️ Hampir habis — perhatikan!'
+                  : (totalUsed / currentIncome) > 0.5 ? '👀 Lebih dari 50% sudah digunakan'
+                  : '✅ Masih terkendali'}
+              </span>
+              <span className="text-[var(--text-secondary)]">100%</span>
+            </div>
+          </div>
+        </div>
 
         {/* Charts & Bills */}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 flex flex-col brutal-card p-6 bg-[var(--bg-card)]">
             <div className="flex items-center justify-between mb-6">
