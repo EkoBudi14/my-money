@@ -470,9 +470,9 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
 
             {/* Payment / Receive Modal */}
             {showPaymentModal && selectedPaymentBill && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="brutal-card w-full max-w-md z-50 p-6 relative animate-in zoom-in-95 duration-200 bg-[var(--bg-card)]">
+                    <div className="brutal-card w-full max-w-md z-50 p-6 relative animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 bg-[var(--bg-card)] max-h-[92vh] overflow-y-auto rounded-t-[24px] sm:rounded-[var(--radius-xl)]">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
                                 {isPemasukan(selectedPaymentBill) ? 'Terima Pemasukan' : 'Bayar Tagihan'}

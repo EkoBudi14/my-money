@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 export interface NeoSelectOption {
@@ -30,10 +30,20 @@ export default function NeoSelect({
   style
 }: NeoSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [dropUp, setDropUp] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const DROPDOWN_HEIGHT = 260 // approx max-h-60 + padding
 
   // Find selected option
   const selectedOption = options.find(opt => opt.value === value)
+
+  // Detect if dropdown should open upward (dropup)
+  const checkDropDirection = useCallback(() => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    setDropUp(spaceBelow < DROPDOWN_HEIGHT)
+  }, [])
 
   // Handle click outside
   useEffect(() => {
@@ -51,7 +61,10 @@ export default function NeoSelect({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          checkDropDirection()
+          setIsOpen(!isOpen)
+        }}
         className={`flex items-center justify-between w-full text-left outline-none transition-all ${className}`}
       >
         <div className="flex items-center gap-2 truncate">
@@ -79,7 +92,11 @@ export default function NeoSelect({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] overflow-hidden">
+        <div className={`absolute z-50 left-0 right-0 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] rounded-[12px] overflow-hidden ${
+          dropUp
+            ? 'bottom-full mb-2 shadow-[4px_-4px_0_var(--neo-ink)]'
+            : 'top-full mt-2 shadow-[4px_4px_0_var(--neo-ink)]'
+        }`}>
           <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1 gap-1" style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
             {options.map((option, idx) => (
               <button

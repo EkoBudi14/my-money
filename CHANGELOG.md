@@ -559,3 +559,8 @@ Status: Approved
 Perubahan: Menambahkan state baru `showCashFlow` (terpisah dari `showIncome`) beserta tombol Eye toggle di header card Ringkasan Arus Kas (mobile & desktop). Sebelumnya semua nilai di card Ringkasan Arus Kas mengikuti state `showIncome` milik card Pemasukan. Kini keduanya independen — menyembunyikan angka di card Pemasukan tidak lagi mempengaruhi card Ringkasan Arus Kas.
 Status: Approved
 ---
+
+[2026-07-19 | 12:18] Perbaikan: Dropdown Dompet Tertutup di Modal Bayar/Terima Tagihan (Mobile)
+Perubahan: (1) NeoSelect.tsx — Tambah logika smart dropup: saat user tap trigger dropdown, komponen mengukur ruang kosong di bawah elemen (window.innerHeight - rect.bottom). Jika ruang < 260px (tidak cukup untuk max-h-60), dropdown otomatis terbuka ke atas (bottom-full, shadow ke atas) alih-alih ke bawah (top-full). (2) RecurringBillsList.tsx — Modal Bayar/Terima Tagihan diubah dari items-center (tengah) menjadi items-end sm:items-center (muncul dari bawah di mobile), ditambah max-h-[92vh] + overflow-y-auto agar konten modal bisa di-scroll pada layar kecil, dan animasi diubah ke slide-in-from-bottom-4 yang lebih natural di mobile.
+Status: Approved
+---
