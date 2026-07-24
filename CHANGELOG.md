@@ -564,3 +564,8 @@ Status: Approved
 Perubahan: (1) NeoSelect.tsx — Tambah logika smart dropup: saat user tap trigger dropdown, komponen mengukur ruang kosong di bawah elemen (window.innerHeight - rect.bottom). Jika ruang < 260px (tidak cukup untuk max-h-60), dropdown otomatis terbuka ke atas (bottom-full, shadow ke atas) alih-alih ke bawah (top-full). (2) RecurringBillsList.tsx — Modal Bayar/Terima Tagihan diubah dari items-center (tengah) menjadi items-end sm:items-center (muncul dari bawah di mobile), ditambah max-h-[92vh] + overflow-y-auto agar konten modal bisa di-scroll pada layar kecil, dan animasi diubah ke slide-in-from-bottom-4 yang lebih natural di mobile.
 Status: Approved
 ---
+
+[2026-07-24 | 20:34] Perbaikan: DatePickerNeo — Dropdown Kalender Kepotong di Sisi Kanan
+Perubahan: Menambahkan logika auto-detect posisi dropdown di DatePickerNeo.tsx. Saat user membuka kalender, komponen mengukur sisa ruang di sisi kanan (window.innerWidth - rect.left). Jika ruang < 300px, dropdown otomatis terbuka ke kiri (right-0) alih-alih ke kanan (left-0). Tidak menyentuh logic kalkulasi, state filter, atau DB.
+Status: Approved
+---

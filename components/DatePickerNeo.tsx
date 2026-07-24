@@ -26,6 +26,7 @@ export default function DatePickerNeo({
   style
 }: DatePickerNeoProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [dropdownAlign, setDropdownAlign] = useState<'left' | 'right'>('left')
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Parse initial value (expected YYYY-MM-DD)
@@ -138,7 +139,14 @@ export default function DatePickerNeo({
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect()
+            const spaceRight = window.innerWidth - rect.left
+            setDropdownAlign(spaceRight < 300 ? 'right' : 'left')
+          }
+          setIsOpen(!isOpen)
+        }}
         className={`flex items-center justify-between w-full text-left outline-none transition-all ${className}`}
       >
         <div className="flex items-center gap-2 truncate">
@@ -163,7 +171,7 @@ export default function DatePickerNeo({
 
       {/* Dropdown Calendar */}
       {isOpen && (
-        <div className="absolute z-[100] top-full left-0 mt-2 w-[280px] bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] overflow-hidden">
+        <div className={`absolute z-[100] top-full mt-2 w-[280px] bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] overflow-hidden ${dropdownAlign === 'right' ? 'right-0' : 'left-0'}`}>
           
           {/* Header */}
           <div className="flex items-center justify-between p-3 bg-[var(--neo-yellow)] border-b-[3px] border-[var(--neo-ink)]">
