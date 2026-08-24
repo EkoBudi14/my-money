@@ -26,7 +26,9 @@ export default function DatePickerNeo({
   style
 }: DatePickerNeoProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [dropdownAlign, setDropdownAlign] = useState<'left' | 'right'>('left')
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; minWidth: number; flipUp: boolean }>({
+    top: 0, left: 0, minWidth: 280, flipUp: false
+  })
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Parse initial value (expected YYYY-MM-DD)
@@ -142,8 +144,18 @@ export default function DatePickerNeo({
         onClick={() => {
           if (!isOpen && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect()
+            const calendarWidth = 280
+            const calendarHeight = 360 // perkiraan tinggi kalender
+            const spaceBelow = window.innerHeight - rect.bottom
             const spaceRight = window.innerWidth - rect.left
-            setDropdownAlign(spaceRight < 300 ? 'right' : 'left')
+            const flipUp = spaceBelow < calendarHeight && rect.top > calendarHeight
+            const left = spaceRight < calendarWidth ? Math.max(8, rect.right - calendarWidth) : rect.left
+            setDropdownPos({
+              top: flipUp ? rect.top - calendarHeight - 8 : rect.bottom + 8,
+              left,
+              minWidth: rect.width,
+              flipUp
+            })
           }
           setIsOpen(!isOpen)
         }}
@@ -169,9 +181,12 @@ export default function DatePickerNeo({
         />
       )}
 
-      {/* Dropdown Calendar */}
+      {/* Dropdown Calendar — rendered with fixed position to escape parent overflow */}
       {isOpen && (
-        <div className={`absolute z-[100] top-full mt-2 w-[280px] bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] overflow-hidden ${dropdownAlign === 'right' ? 'right-0' : 'left-0'}`}>
+        <div
+          className="fixed z-[9999] w-[280px] bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] overflow-hidden"
+          style={{ top: dropdownPos.top, left: dropdownPos.left }}
+        >
           
           {/* Header */}
           <div className="flex items-center justify-between p-3 bg-[var(--neo-yellow)] border-b-[3px] border-[var(--neo-ink)]">
