@@ -569,3 +569,19 @@ Status: Approved
 Perubahan: Menambahkan logika auto-detect posisi dropdown di DatePickerNeo.tsx. Saat user membuka kalender, komponen mengukur sisa ruang di sisi kanan (window.innerWidth - rect.left). Jika ruang < 300px, dropdown otomatis terbuka ke kiri (right-0) alih-alih ke kanan (left-0). Tidak menyentuh logic kalkulasi, state filter, atau DB.
 Status: Approved
 ---
+
+[2026-08-24 | 21:05] Perbaikan: Export Excel — Double-Counting Pemasukan di Rekap per Rentang
+Perubahan: Fix dua bug sekaligus pada sheet "Rekap per Rentang" di handleExportExcel (app/page.tsx):
+(1) EXCLUSIVE END DATE — Ubah logika filter transaksi dari inclusive end (d <= end 23:59:59) menjadi exclusive end (d < end 00:00:00). Ini mencegah transaksi di boundary date (misal gajian 25 Agu) terhitung di KEDUA periode (24 Jul–25 Agu dan 25 Agu–25 Sep) sekaligus. Kini tanggal akhir = awal periode berikutnya, transaksi di hari itu hanya masuk ke periode yang baru.
+(2) HAPUS STALE OVERLAPPING RANGE — Tambah filter "fully-contained" setelah dedup exact: jika rentang A sepenuhnya berada di dalam rentang B, entri A dihapus dari display. Ini membersihkan sisa range lama (stale) di filter_history yang terbentuk saat user masih menentukan batas periode gajiannya.
+Dipicu oleh prompt: "saya nemu bug nih di tab rekap per rentang — pemasukan jadi double (18 juta padahal harusnya 9 juta)"
+Fitur terdampak: Export Excel Sheet Rekap per Rentang (Medium)
+Status: Approved
+---
+
+[2026-08-25 | 10:54] Perbaikan: Export Excel � Fix Algoritma Dedup Range Stale (Revisi)
+Perubahan: Algoritma isContainedByOther kemarin TERBALIK � menghapus range KECIL yang benar dan mempertahankan range BESAR yang stale. Diganti Smart Stale Range Detection 2 tahap: (1) SPLIT pattern: hapus range BESAR jika ada lanjutan setelah versi kecilnya (misal '24Jul-25Sep' dihapus karena ada '24Jul-22Agu' + '24Agu-25Sep'). (2) EXTEND pattern: hapus range KECIL jika tidak ada lanjutan (misal '24Agu-24Sep' dihapus karena ada '24Agu-25Sep'). Juga tambah normalisasi date string untuk fix exact dedup yang gagal karena variasi format DB.
+Dipicu oleh prompt: "no 9 sama 10 double, no 3-7 masih 18 juta"
+Fitur terdampak: Export Excel Sheet Rekap per Rentang (Medium)
+Status: Approved
+---

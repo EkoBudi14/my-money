@@ -1684,19 +1684,71 @@ export default function MoneyManager() {
       addTitleRow(wsSummary, 'Rekap per Rentang Tanggal — Semua Riwayat', 7, 'FF059669')
       addColHeaderRow(wsSummary, ['Rentang Tanggal', 'Pemasukan', 'Pengeluaran', 'Piutang', 'Talangan', 'Tabungan', 'Selisih'], 7)
 
-      // Filter out trivial/ambiguous entries before rendering:
-      // 1. Skip rentang < 3 hari — hasil debounce saat user masih mengedit custom range
-      // 2. Dedup berdasarkan key start_date|end_date (safety net, seharusnya sudah unique di DB)
-      const MIN_DURATION_MS = 2 * 24 * 60 * 60 * 1000 // 3 hari minimum (selisih start→end >= 2 hari)
+      // Helper: normalisasi date string ke YYYY-MM-DD
+      // (handle variasi format DB: "2026-07-24" vs "2026-07-24T00:00:00+07:00")
+      const normDate = (d: string) => d.split('T')[0]
+      const getMs = (d: string) => new Date(normDate(d)).getTime()
+
+      // Step 1: Skip rentang < 3 hari + exact dedup dengan date normalization
+      const MIN_DURATION_MS = 2 * 24 * 60 * 60 * 1000
       const seenKeys = new Set<string>()
-      const cleanHistory = filterHistory.filter(entry => {
-        const durationMs = new Date(entry.end_date).getTime() - new Date(entry.start_date).getTime()
-        if (durationMs < MIN_DURATION_MS) return false // skip rentang < 3 hari (kemungkinan sampah debounce)
-        const key = `${entry.start_date}|${entry.end_date}`
+      const deduped = filterHistory.filter(entry => {
+        const nStart = normDate(entry.start_date)
+        const nEnd = normDate(entry.end_date)
+        const durationMs = new Date(nEnd).getTime() - new Date(nStart).getTime()
+        if (durationMs < MIN_DURATION_MS) return false
+        const key = `${nStart}|${nEnd}`
         if (seenKeys.has(key)) return false
         seenKeys.add(key)
         return true
       })
+
+      deduped.sort((a, b) => getMs(a.start_date) - getMs(b.start_date))
+
+      // Step 2: Smart Stale Range Detection
+      // Ketika dua entri punya start_date sama tapi end_date berbeda, ada dua skenario:
+      //
+      // SPLIT pattern: user dulu punya "24Jul–25Sep", lalu split jadi "24Jul–22Agu" + "24Agu–25Sep".
+      //   Range BESAR = stale → HAPUS range besar.
+      //   Deteksi: range ini BESAR (ada versi kecil dengan start sama), DAN ada entri lain
+      //   yang start-nya >= end versi kecil tersebut (bukti split).
+      //
+      // EXTEND pattern: user dulu punya "24Agu–24Sep", lalu extend jadi "24Agu–25Sep".
+      //   Range KECIL = stale → HAPUS range kecil.
+      //   Deteksi: range ini KECIL (ada versi besar dengan start sama), DAN tidak ada
+      //   entri lanjutan setelah end range kecil ini.
+      const cleanHistory = deduped.filter((entry) => {
+        const eStart = getMs(entry.start_date)
+        const eEnd = getMs(entry.end_date)
+
+        // Entri lain dengan start_date yang sama
+        const sameStartOthers = deduped.filter(o => o !== entry && getMs(o.start_date) === eStart)
+        if (sameStartOthers.length === 0) return true // start unik, pasti keep
+
+        // Apakah entry ini yang LEBIH BESAR (ada same-start dengan end lebih pendek)?
+        const hasShorterSameStart = sameStartOthers.some(o => getMs(o.end_date) < eEnd)
+        if (hasShorterSameStart) {
+          // Cek SPLIT pattern: ada entri lanjutan setelah versi kecilnya?
+          const shorterVersions = sameStartOthers.filter(o => getMs(o.end_date) < eEnd)
+          const isSplit = shorterVersions.some(small =>
+            deduped.some(c => c !== entry && c !== small && getMs(c.start_date) >= getMs(small.end_date))
+          )
+          if (isSplit) return false // SPLIT pattern: hapus range besar stale
+        }
+
+        // Apakah entry ini yang LEBIH KECIL (ada same-start dengan end lebih panjang)?
+        const hasLongerSameStart = sameStartOthers.some(o => getMs(o.end_date) > eEnd)
+        if (hasLongerSameStart) {
+          // Cek EXTEND pattern: tidak ada lanjutan setelah end entry ini?
+          const hasContinuation = deduped.some(c => c !== entry && getMs(c.start_date) >= eEnd)
+          if (!hasContinuation) return false // EXTEND pattern: hapus range kecil stale
+          // Ada lanjutan = SPLIT pattern → pertahankan range kecil ini
+        }
+
+        return true
+      })
+
+      cleanHistory.sort((a, b) => getMs(a.start_date) - getMs(b.start_date))
 
       if (cleanHistory.length === 0) {
         // Fallback: no valid history yet, show a note
@@ -1709,14 +1761,33 @@ export default function MoneyManager() {
         const savingsWalletIds = wallets.filter(w => w.category === 'savings').map(w => w.id)
 
         cleanHistory.forEach((entry, idx) => {
-          const start = new Date(entry.start_date)
-          const end = new Date(entry.end_date)
-          // Set end-of-day for end date to include all transactions on that day
-          end.setHours(23, 59, 59, 999)
+          const start = new Date(normDate(entry.start_date))
+          start.setHours(0, 0, 0, 0)
+
+          // FIX: Gunakan EXCLUSIVE end date untuk mencegah double-counting pada periode gajian berurutan.
+          // Solusi: end_date dianggap sebagai START dari periode berikutnya (exclusive).
+          let end = new Date(normDate(entry.end_date))
+          end.setHours(0, 0, 0, 0)
+
+          // FIX LANJUTAN: Jika periode BERIKUTNYA mulai SEBELUM end periode ini
+          // (terjadi saat user berganti siklus gajian, misal dari tanggal 25 ke 24),
+          // clamp end ke nextEntry.start agar tanggal yang overlap tidak dihitung dua kali.
+          // Contoh: "25Jun–25Jul" (exclusive end=Jul25→s.d.Jul24) & "24Jul–22Agu" start=Jul24
+          // → Jul24 masuk di KEDUA periode → clamp end "25Jun–25Jul" ke Jul24
+          // → Periode "25Jun–25Jul" jadi Jun25 s.d. Jul23, Jul24 sepenuhnya milik periode berikutnya.
+          const nextEntry = cleanHistory[idx + 1]
+          if (nextEntry) {
+            const nextStart = new Date(normDate(nextEntry.start_date))
+            nextStart.setHours(0, 0, 0, 0)
+            if (nextStart < end) {
+              end = nextStart // clamp: gunakan nextEntry.start sebagai batas akhir efektif
+            }
+          }
 
           const rangeTransactions = transactions.filter(t => {
             const d = new Date(t.date || t.created_at)
-            return d >= start && d <= end
+            d.setHours(0, 0, 0, 0)
+            return d >= start && d < end // exclusive end
           })
 
           const income = rangeTransactions.filter(t => t.type === 'pemasukan' && !t.is_piutang).reduce((s, t) => s + t.amount, 0)
