@@ -17,7 +17,19 @@ import { BrutalButton } from '@/components/ui/brutal-button'
 import { BrutalInput } from '@/components/ui/brutal-input'
 import { BrutalChip } from '@/components/ui/brutal-chip'
 import { AppShell } from '@/components/layout/app-shell'
-import { Wallet, Transaction, Goal, Budget, Debt, CustomCategoryDef } from '@/types'
+import { Wallet, Transaction, Goal, Budget, Debt, CustomCategoryDef, Note } from '@/types'
+import { AVAILABLE_ICONS, COLOR_PALETTES, CATEGORIES, getCategoryIcon as resolveCategoryIcon } from '@/lib/categories'
+import { getPercentageChange, formatPeriodLabel } from '@/lib/format'
+import {
+  getTransactions,
+  getWallets,
+  getGoals,
+  getBudgets,
+  getDebts,
+  getLatestNote,
+  getNotesCount,
+  getFreshWalletBalance,
+} from '@/lib/queries'
 import {
   Plus,
   Trash2,
@@ -63,59 +75,8 @@ import {
   GraduationCap
 } from 'lucide-react'
 
-// --- Definitions ---
-const AVAILABLE_ICONS: Record<string, any> = {
-  Home, ShoppingBag, Utensils, Car, Zap, Package, HeartPulse, CreditCard, Film, Gift,
-  Briefcase, TrendingUp, Landmark, Coffee, Plane, Gamepad2, Tv, Smartphone, Book,
-  Scissors, Music, Shirt, Smile, Globe, Dumbbell, GraduationCap
-}
-
-const COLOR_PALETTES = [
-  'bg-emerald-100 text-emerald-600',
-  'bg-rose-100 dark:bg-rose-950/40 text-rose-600',
-  'bg-blue-100 text-blue-600',
-  'bg-teal-100 text-teal-600',
-  'bg-yellow-100 text-yellow-600',
-  'bg-purple-100 text-purple-600',
-  'bg-red-100 text-red-600',
-  'bg-stone-100 text-stone-600',
-  'bg-pink-100 text-pink-600',
-  'bg-indigo-100 text-indigo-600',
-  'bg-amber-100 text-amber-600',
-  'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-]
-
-interface Note {
-  id: number
-  title: string
-  content: string
-  created_at: string
-  updated_at: string
-}
-
-// --- Constants ---
-const CATEGORIES = {
-  pengeluaran: [
-    { name: 'Kebutuhan Dapur', icon: ShoppingBag, color: 'bg-orange-100 text-orange-600' },
-    { name: 'Makan di Luar', icon: Utensils, color: 'bg-rose-100 dark:bg-rose-950/40 text-rose-600' },
-    { name: 'Transportasi', icon: Car, color: 'bg-blue-100 text-blue-600' },
-    { name: 'Tempat Tinggal', icon: Home, color: 'bg-teal-100 text-teal-600' },
-    { name: 'Tagihan', icon: Zap, color: 'bg-yellow-100 text-yellow-600' },
-    { name: 'Belanja', icon: Package, color: 'bg-purple-100 text-purple-600' },
-    { name: 'Kesehatan', icon: HeartPulse, color: 'bg-red-100 text-red-600' },
-    { name: 'Cicilan & Utang', icon: CreditCard, color: 'bg-stone-100 text-stone-600' },
-    { name: 'Pribadi & Hiburan', icon: Film, color: 'bg-pink-100 text-pink-600' },
-    { name: 'Edukasi & Donasi', icon: Gift, color: 'bg-indigo-100 text-indigo-600' },
-    { name: 'Lainnya', icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' },
-  ],
-  pemasukan: [
-    { name: 'Gaji', icon: Briefcase, color: 'bg-emerald-100 text-emerald-600' },
-    { name: 'Bonus & Hadiah', icon: Gift, color: 'bg-pink-100 text-pink-600' },
-    { name: 'Investasi', icon: TrendingUp, color: 'bg-indigo-100 text-indigo-600' },
-    { name: 'Penjualan', icon: TrendingUp, color: 'bg-amber-100 text-amber-600' },
-    { name: 'Lainnya', icon: Landmark, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' },
-  ]
-}
+// Constants (AVAILABLE_ICONS, COLOR_PALETTES, CATEGORIES) now live in '@/lib/categories'.
+// The Note type lives in '@/types'.
 
 export default function MoneyManager() {
   const { showToast } = useToast()
@@ -397,15 +358,7 @@ export default function MoneyManager() {
 
 
   // Helper: Get Period Date Range String
-  const getPeriodLabel = () => {
-    if (filterMode === 'monthly') {
-      return currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
-    } else {
-      const s = new Date(customRange.start)
-      const e = new Date(customRange.end)
-      return `${s.getDate()} ${s.toLocaleString('id-ID', { month: 'short' })} - ${e.getDate()} ${e.toLocaleString('id-ID', { month: 'short' })} ${e.getFullYear()}`
-    }
-  }
+  const getPeriodLabel = () => formatPeriodLabel(filterMode, currentDate, customRange)
 
   // 1. Ambil data saat aplikasi dibuka
   useEffect(() => {
@@ -419,13 +372,7 @@ export default function MoneyManager() {
   }, [])
 
   const fetchLatestNote = async () => {
-    // 1. Get Latest Note
-    const { data, error } = await supabase
-      .from('notes')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single()
+    const { data, error } = await getLatestNote()
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = no rows found, not a real error
@@ -435,12 +382,7 @@ export default function MoneyManager() {
 
     if (data) {
       setLatestNote(data)
-
-      // 2. Get Total Count
-      const { count, error: countError } = await supabase
-        .from('notes')
-        .select('*', { count: 'exact', head: true })
-
+      const { count, error: countError } = await getNotesCount()
       if (!countError && count !== null) setNoteCount(count)
     }
   }
@@ -448,10 +390,7 @@ export default function MoneyManager() {
   // silent=true → background refresh tanpa trigger loading state (tidak flicker UI)
   const fetchTransactions = async (silent = false) => {
     if (!silent) setLoading(true)
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .order('created_at', { ascending: false }) // Order by actual creation time
+    const { data, error } = await getTransactions()
 
     if (error) {
       console.error('Error fetching transactions:', error)
@@ -464,28 +403,22 @@ export default function MoneyManager() {
   }
 
   const fetchWallets = async () => {
-    const { data } = await supabase.from('wallets').select('*')
+    const { data } = await getWallets()
     setWallets(data || [])
   }
 
   const fetchGoals = async () => {
-    const { data } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
+    const { data } = await getGoals()
     setGoals(data || [])
   }
 
   const fetchBudgets = async () => {
-    const { data } = await supabase
-      .from('budgets')
-      .select('*')
+    const { data } = await getBudgets()
     setBudgets(data || [])
   }
 
   const fetchDebts = async () => {
-    const { data } = await supabase
-      .from('debts')
-      .select('*')
-      .order('created_at', { ascending: false })
-
+    const { data } = await getDebts()
     setDebts(data || [])
   }
 
@@ -495,9 +428,7 @@ export default function MoneyManager() {
     if (hasCheckedWallets.current) return
     hasCheckedWallets.current = true
 
-    const { data: existingWallets } = await supabase
-      .from('wallets')
-      .select('*')
+    const { data: existingWallets } = await getWallets()
 
     if (!existingWallets || existingWallets.length === 0) {
       const defaultWallets = [
@@ -549,15 +480,7 @@ export default function MoneyManager() {
   }
 
   // Helper: Fetch saldo wallet terbaru langsung dari DB (anti race condition)
-  const fetchFreshWalletBalance = async (walletId: number): Promise<number | null> => {
-    const { data, error } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('id', walletId)
-      .single()
-    if (error || !data) return null
-    return data.balance
-  }
+  const fetchFreshWalletBalance = (walletId: number) => getFreshWalletBalance(walletId)
 
   // 2. Fungsi Simpan (Tambah/Edit) Transaksi
   const handleSaveTransaction = async (e: React.FormEvent) => {
@@ -1293,24 +1216,8 @@ export default function MoneyManager() {
   }
 
   // Helper: Get Icon Component based on category name
-  const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran' | 'topup') => {
-    if (type === 'topup') return { Icon: WalletIcon, color: 'bg-blue-100 text-blue-600' }
-
-    // 1. Check Custom Categories
-    const customList = customCategories[type] || []
-    const foundCustom = customList.find(c => (typeof c === 'string' ? c : c.name) === catName)
-    if (foundCustom) {
-      if (typeof foundCustom === 'object') {
-        return { Icon: AVAILABLE_ICONS[foundCustom.iconName] || Package, color: foundCustom.color }
-      }
-      return { Icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' }
-    }
-
-    // 2. Check Standard Categories
-    const allCats = [...CATEGORIES.pemasukan, ...CATEGORIES.pengeluaran]
-    const found = allCats.find(c => c.name === catName)
-    return found ? { Icon: found.icon, color: found.color } : { Icon: Package, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' }
-  }
+  const getCategoryIcon = (catName: string, type: 'pemasukan' | 'pengeluaran' | 'topup') =>
+    resolveCategoryIcon(catName, type, customCategories)
 
   // --- Derived Data with Performance Memoization ---
 
@@ -1357,15 +1264,32 @@ export default function MoneyManager() {
       .reduce((acc, curr) => acc + curr.amount, 0)
   }, [filteredTransactions])
 
-  // 3. Previous Period Stats (Monthly Only)
+  // 3. Previous Period Stats
+  // Monthly mode: the previous calendar month.
+  // Custom mode: an equal-length window ending the day before the current range starts,
+  // so the % change badge compares like-for-like periods.
   const { prevIncome, prevExpense } = useMemo(() => {
-    // Only calculate for monthly mode for now
-    const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    let prevTx: Transaction[]
 
-    const prevTx = transactions.filter(t => {
-      const tDate = new Date(t.date || t.created_at)
-      return tDate.getMonth() === prevDate.getMonth() && tDate.getFullYear() === prevDate.getFullYear()
-    })
+    if (filterMode === 'custom') {
+      const DAY_MS = 24 * 60 * 60 * 1000
+      const start = new Date(customRange.start); start.setHours(0, 0, 0, 0)
+      const end = new Date(customRange.end); end.setHours(0, 0, 0, 0)
+      const durationMs = end.getTime() - start.getTime()
+      const prevEnd = new Date(start.getTime() - DAY_MS); prevEnd.setHours(0, 0, 0, 0)
+      const prevStart = new Date(prevEnd.getTime() - durationMs); prevStart.setHours(0, 0, 0, 0)
+
+      prevTx = transactions.filter(t => {
+        const tDate = new Date(t.date || t.created_at); tDate.setHours(0, 0, 0, 0)
+        return tDate >= prevStart && tDate <= prevEnd
+      })
+    } else {
+      const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+      prevTx = transactions.filter(t => {
+        const tDate = new Date(t.date || t.created_at)
+        return tDate.getMonth() === prevDate.getMonth() && tDate.getFullYear() === prevDate.getFullYear()
+      })
+    }
 
     const income = prevTx
       .filter(t => t.type === 'pemasukan' && !t.is_piutang)
@@ -1380,12 +1304,7 @@ export default function MoneyManager() {
       }, 0)
 
     return { prevIncome: income, prevExpense: expense }
-  }, [transactions, currentDate, debts])
-
-  const getPercentageChange = (current: number, prev: number) => {
-    if (prev === 0) return current > 0 ? 100 : 0
-    return ((current - prev) / prev) * 100
-  }
+  }, [transactions, currentDate, debts, filterMode, customRange])
 
   const incomeChange = getPercentageChange(currentIncome, prevIncome)
   const expenseChange = getPercentageChange(currentExpense, prevExpense)
