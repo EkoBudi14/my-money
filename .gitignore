@@ -51,3 +51,5 @@ next-env.d.ts
 .playwright-mcp/
 /dashboard-*-full.png
 /after-txrow.png
+/__*.mjs
+/*.png

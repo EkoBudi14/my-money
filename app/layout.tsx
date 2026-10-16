@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./catatduit.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  // Also add interactive-widget: 'resizes-visual' if needed, but the basic ones are above.
+  // Zoom intentionally left unlocked for accessibility (DESIGN.md section 3).
 };
 
 export const metadata: Metadata = {
