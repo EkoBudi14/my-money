@@ -128,6 +128,36 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .swc{width:36px;height:36px;border-radius:18px;border:3px solid var(--surface);box-shadow:0 0 0 1.5px var(--border);padding:0}
 .cd .swc.on{box-shadow:0 0 0 2.5px var(--text)}
 
+/* Hero extras */
+.cd .hero-pill{background:rgba(255,255,255,.12);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center}
+.cd .hero .icon-btn{background:rgba(255,255,255,.14);border-color:transparent;color:var(--on-accent)}
+.cd .hero .bar{background:rgba(255,255,255,.2)}
+.cd .hero .bar>div{background:#fff}
+.cd .bar.thick{height:10px}
+.cd .num-xl .mask,.cd .amt .mask{letter-spacing:1px}
+
+/* Daily date header (grouped lists) */
+.cd .date-h{font-size:12px;font-weight:700;color:var(--text-2);padding:14px 0 4px}
+
+/* Bottom sheet (mobile) */
+.cd .scrim{position:fixed;inset:0;background:rgba(8,20,18,.55);z-index:60}
+.cd .sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom));box-sizing:border-box;display:flex;flex-direction:column;gap:16px;max-height:92vh;overflow-y:auto;max-width:560px;margin:0 auto}
+.cd .grabber{width:40px;height:5px;border-radius:3px;background:var(--border-strong);align-self:center;flex:none}
+
+/* Data table (web) */
+.cd .tbl-box{overflow-x:auto}
+.cd .tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+.cd .tbl th{text-align:left;font-size:12px;font-weight:700;color:var(--text-2);padding:10px 12px;border-bottom:1px solid var(--border)}
+.cd .tbl td{padding:12px;border-bottom:1px solid var(--divider);vertical-align:middle}
+.cd .tbl tr:last-child td{border-bottom:0}
+.cd .tbl .r{text-align:right}
+
+/* Web page shell helpers (optional, used by redesigned desktop layouts) */
+.cd .ptop{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.cd .ptitle{margin:0;font-size:26px;font-weight:700;letter-spacing:-.3px}
+.cd .wrap{display:flex;flex-wrap:wrap;gap:16px}
+.cd .wrap>*{box-sizing:border-box}
+
 /* Web modal + panel */
 .cd.modal-scrim,.cd .modal-scrim{position:fixed;inset:0;background:rgba(8,20,18,.55);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}
 .cd .modal{background:var(--surface);border-radius:24px;border:1px solid var(--border);width:100%;max-width:760px;box-sizing:border-box;max-height:90vh;overflow-y:auto}
