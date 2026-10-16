@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -13,8 +14,18 @@ import {
   ShoppingBag, Utensils, Car, Zap, Home, Film, HeartPulse,
   CreditCard, Gift, Briefcase, TrendingUp, Landmark, Coffee,
   Plane, Gamepad2, Tv, Smartphone, Book, Scissors, Music,
-  Shirt, Smile, Globe, Dumbbell, GraduationCap, ArrowLeft
+  Shirt, Smile, Globe, Dumbbell, GraduationCap, ArrowLeft,
+  ScanLine, Mic, ArrowLeftRight, Settings2
 } from 'lucide-react'
+
+// Built-in category name -> catatduit color class (DESIGN.md section 6).
+const CAT_CLASS: Record<string, string> = {
+  'Kebutuhan Dapur': 'c-dapur', 'Makan di Luar': 'c-makan', 'Transportasi': 'c-transport',
+  'Tempat Tinggal': 'c-rumah', 'Tagihan': 'c-tagihan', 'Belanja': 'c-belanja',
+  'Kesehatan': 'c-kesehatan', 'Cicilan & Utang': 'c-cicilan', 'Pribadi & Hiburan': 'c-hiburan',
+  'Edukasi & Donasi': 'c-edukasi', 'Gaji': 'c-gaji', 'Bonus & Hadiah': 'c-bonus',
+  'Investasi': 'c-investasi', 'Penjualan': 'c-belanja', 'Lainnya': 'c-lain',
+}
 
 // ── Constants (duplicated from page.tsx to keep component self-contained) ──────
 const AVAILABLE_ICONS: Record<string, any> = {
@@ -530,200 +541,189 @@ export default function TransactionModal({
   // ── Page Mode (full screen, no overlay) ────────────────────────────────────
   if (mode === 'page') {
     return (
-      <div className="min-h-screen bg-[#F9FAFB] dark:bg-[var(--bg-page)] pb-8">
+      <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 140 }}>
         {/* Header */}
-        <div className="sticky top-0 z-20 bg-white dark:bg-[var(--bg-card)] border-b border-slate-100 dark:border-[var(--border-default)] shadow-sm">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <button onClick={onClose} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-[var(--bg-hover)] rounded-xl text-slate-600 dark:text-slate-500 transition-colors active:scale-90">
-              <ArrowLeft className="w-5 h-5" />
+        <div className="top">
+          <div className="top-l">
+            <button type="button" onClick={onClose} className="icon-btn ghost" aria-label="Tutup">
+              <X className="i" />
             </button>
-            <h1 className="font-black text-2xl uppercase tracking-tighter text-[var(--text-primary)]">
-              {editingTransaction ? 'Edit Transaksi' : type === 'pemasukan' ? 'Pemasukan Baru' : type === 'pengeluaran' ? 'Pengeluaran Baru' : 'Transfer Saldo'}
+            <h1 className="h2">
+              {editingTransaction ? 'Ubah transaksi' : type === 'pemasukan' ? 'Pemasukan baru' : type === 'pengeluaran' ? 'Pengeluaran baru' : 'Transfer saldo'}
             </h1>
           </div>
-
-          {/* Type Tabs */}
-          <div className="px-4 pb-0">
-            <div className="flex border-b border-[var(--border-default)]">
-              {[
-                { key: 'pemasukan', label: 'Pemasukan' },
-                { key: 'pengeluaran', label: 'Pengeluaran' },
-                { key: 'topup', label: 'Transfer' },
-              ].map(tab => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
-                  className={`flex-1 py-3 text-sm font-black transition-all border-b-[4px] -mb-[2px] ${type === tab.key
-                    ? 'border-[var(--neo-ink)] text-[var(--neo-ink)]'
-                    : 'border-transparent text-[var(--text-muted)]'
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          <div className="hstack" style={{ gap: 6 }}>
+            <Link href="/scan-receipt" className="icon-btn" aria-label="Scan struk"><ScanLine className="i" /></Link>
+            <Link href="/voice-transaction" className="icon-btn" aria-label="Input suara"><Mic className="i" /></Link>
           </div>
+        </div>
+
+        {/* Type Tabs */}
+        <div className="seg" role="tablist">
+          {[
+            { key: 'pengeluaran', label: 'Pengeluaran' },
+            { key: 'pemasukan', label: 'Pemasukan' },
+            { key: 'topup', label: 'Transfer' },
+          ].map(tab => (
+            <button
+              key={tab.key}
+              type="button"
+              className={type === tab.key ? 'on' : ''}
+              onClick={() => { setType(tab.key as any); setCategory(tab.key === 'topup' ? 'Topup' : '') }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Form Content */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 mt-10 gap-3">
-            <div className="w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-            <p className="neo-label mt-2">Menyiapkan form...</p>
+          <div className="stack" style={{ alignItems: 'center', padding: '48px 0' }}>
+            <div className="w-8 h-8 border-[3px] border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+            <p className="lbl">Menyiapkan form…</p>
           </div>
         ) : (
-        <form onSubmit={handleSaveTransaction} className="px-4 pt-5">
-          {/* Topup wallet selectors */}
+        <form onSubmit={handleSaveTransaction} className="stack-12">
+          {/* Transfer wallet selectors */}
           {type === 'topup' && (
-            <div className="flex items-center gap-2 mb-5">
-              <div className="flex-1 brutal-card-sm p-3 brutal-card-sky">
-                <p className="neo-label mb-1">Sumber Dana</p>
+            <div className="stack-12">
+              <div className="field">Dari dompet
                 <NeoSelect
                   value={sourceWalletId}
                   onChange={setSourceWalletId}
                   options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: selectedWalletId === w.id.toString() }))}
-                  placeholder="Pilih Sumber"
-                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  placeholder="Pilih sumber"
                   required
                 />
               </div>
-              <div className="w-8 h-8 rounded-full bg-[var(--neo-ink)] flex items-center justify-center shrink-0 shadow-[2px_2px_0_#141414]">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-              </div>
-              <div className="flex-1 brutal-card-sm p-3 brutal-card-lav">
-                <p className="neo-label mb-1">Tujuan Topup</p>
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Tukar dompet asal dan tujuan"
+                style={{ alignSelf: 'center' }}
+                onClick={() => { const s = sourceWalletId; setSourceWalletId(selectedWalletId); setSelectedWalletId(s) }}
+              >
+                <ArrowLeftRight className="i" />
+              </button>
+              <div className="field">Ke dompet
                 <NeoSelect
                   value={selectedWalletId}
                   onChange={setSelectedWalletId}
                   options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: sourceWalletId === w.id.toString() }))}
-                  placeholder="Pilih Tujuan"
-                  className="bg-transparent font-black text-[var(--text-primary)] text-sm"
+                  placeholder="Pilih tujuan"
                   required
                 />
               </div>
             </div>
           )}
 
-          {/* Amount Display */}
-          <div className={`brutal-card-md p-6 relative overflow-hidden ${type === 'pemasukan' ? 'brutal-card-mint' :
-            type === 'pengeluaran' ? 'brutal-card-peach' :
-              'brutal-card-lav'
-            }`}>
-            <p className="text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest mb-3 relative z-10">{type === 'topup' ? 'Nominal Topup (RP)' : 'Jumlah (RP)'}</p>
-            <div className="relative z-10 mb-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[var(--text-primary)] font-black text-4xl shrink-0">Rp</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0"
-                  className="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] font-black text-4xl placeholder:text-[var(--text-primary)]/30 min-w-0"
-                  value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
-                  onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
-                  autoFocus={!editingTransaction}
-                />
-              </div>
-              <button type="button" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }} className="mt-3 px-3 py-1.5 brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all">
-                +000
-              </button>
+          {/* Amount */}
+          <div className="stack">
+            <div className="lbl" style={{ fontWeight: 600 }}>{type === 'topup' ? 'Nominal transfer' : 'Jumlah'}</div>
+            <div className="amount-box">
+              <span className="cur">Rp</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                className="val"
+                style={{ color: type === 'pemasukan' ? 'var(--income)' : 'var(--text)' }}
+                value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
+                onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
+                autoFocus={!editingTransaction}
+              />
             </div>
-            <div className="flex gap-2 flex-wrap mt-4 relative z-10">
+            <div className="chips">
+              <button type="button" className="chip" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }}>+000</button>
               {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
-                <button key={val} type="button" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))} className="brutal-btn-ghost !py-1.5 !px-4 !text-xs bg-white dark:bg-[var(--bg-elevated)] active:scale-95 transition-all">
+                <button key={val} type="button" className="chip" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))}>
                   +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
                 </button>
               ))}
+              <button type="button" className="chip" style={{ color: 'var(--text-2)' }} onClick={() => setAmount('')}>Reset</button>
             </div>
           </div>
 
-          <div className="mt-5 space-y-4">
+          <div className="stack-12">
             {/* Date & Wallet */}
             {type !== 'topup' ? (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="brutal-card-sm p-3 brutal-card-yellow">
-                  <p className="neo-label mb-1">Tanggal</p>
-                  <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              <>
+                <div className="field">Tanggal
+                  <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
                 </div>
-                <div className="brutal-card-sm p-3 brutal-card-lav">
-                  <p className="neo-label mb-1">Dompet</p>
-                  <NeoSelect
-                    value={selectedWalletId}
-                    onChange={setSelectedWalletId}
-                    options={wallets.map(w => ({ label: w.name, value: w.id.toString() }))}
-                    placeholder="Pilih"
-                    className="bg-transparent font-black text-[var(--text-primary)] text-sm"
-                    required
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="brutal-card-sm p-4 brutal-card-peach">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="neo-label">Biaya Admin</p>
-                      <p className="neo-label mt-1">Optional — Isi jika ada potongan</p>
-                    </div>
-                    <input
-                      type="text" inputMode="numeric" placeholder="0"
-                      className="w-28 text-right bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] px-3 py-1.5 font-black text-base text-[var(--text-primary)] focus:outline-none"
-                      value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
-                      onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
-                    />
+                <div className="field">Dompet
+                  <div className="chips scrollx">
+                    {wallets.map(w => (
+                      <button
+                        key={w.id}
+                        type="button"
+                        className={`chip ${selectedWalletId === w.id.toString() ? 'on' : ''}`}
+                        onClick={() => setSelectedWalletId(w.id.toString())}
+                      >
+                        {w.name}<span className="lbl" style={{ fontWeight: 500 }}>Rp {w.balance.toLocaleString('id-ID')}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div className="brutal-card-sm px-4 py-3 space-y-2 brutal-card-yellow">
-                  <div className="flex justify-between items-center text-sm"><span className="neo-label">Nominal topup</span><span className="font-black text-[var(--text-primary)]">Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
-                  <div className="flex justify-between items-center text-sm"><span className="neo-label">Biaya admin</span><span className="font-black text-[var(--text-primary)]">Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
-                  <div className="border-t-2 border-[var(--neo-ink)] pt-2 flex justify-between items-center text-sm"><span className="font-black text-violet-700">Total keluar</span><span className="font-black text-violet-700">Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
+              </>
+            ) : (
+              <>
+                <div className="field">Biaya admin (opsional)
+                  <input
+                    type="text" inputMode="numeric" placeholder="0" className="input"
+                    value={adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
+                    onChange={(e) => setAdminFee(e.target.value.replace(/\D/g, ''))}
+                  />
                 </div>
-                <div className="brutal-card-sm p-3 brutal-card-yellow">
-                  <p className="neo-label mb-1">Tanggal</p>
-                  <DatePickerNeo className="w-full bg-transparent outline-none font-black text-[var(--text-primary)] text-sm" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                <div className="card stack" style={{ background: 'var(--surface-2)' }}>
+                  <div className="between" style={{ fontSize: 13 }}><span className="lbl">Nominal transfer</span><span style={{ fontWeight: 600 }}>Rp {amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="between" style={{ fontSize: 13 }}><span className="lbl">Biaya admin</span><span style={{ fontWeight: 600 }}>Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
+                  <div className="between" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}><span style={{ fontWeight: 700, fontSize: 14 }}>Total keluar</span><span style={{ fontWeight: 700, fontSize: 15 }}>Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
                 </div>
-              </div>
+                <div className="field">Tanggal
+                  <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+                </div>
+              </>
             )}
 
             {/* Piutang Toggle */}
             {type === 'pemasukan' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isPiutang ? 'brutal-card-yellow' : ''}`}>
-                <div onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
-                  <div className="flex items-center gap-3">
-                    <span className={`neo-label !text-sm ${isPiutang ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>💸 Ini adalah Piutang?</span>
-                    <p className={`neo-label mt-1 ${isPiutang ? '!text-[var(--neo-ink)]/70' : '!text-[var(--text-muted)]'}`}>Tandai jika uang akan dikembalikan</p>
+              <div className="stack">
+                <div className="toggle-row">
+                  <div className="grow">
+                    <div className="t">Ini pengembalian piutang?</div>
+                    <div className="meta" style={{ whiteSpace: 'normal' }}>Uang balik dari teman, tidak dihitung pemasukan.</div>
                   </div>
-                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isPiutang ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
-                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isPiutang ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </div>
+                  <button type="button" className={`switch ${isPiutang ? 'on' : ''}`} aria-label="Pengembalian piutang" aria-pressed={isPiutang} onClick={() => { setIsPiutang(!isPiutang); if (isPiutang) setPiutangPerson('') }} />
                 </div>
                 {isPiutang && (
-                  <input type="text" placeholder="Nama peminjam (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                  <label className="field">Nama peminjam (opsional)
+                    <input type="text" className="input" placeholder="Sigit" value={piutangPerson} onChange={(e) => setPiutangPerson(e.target.value)} />
+                  </label>
                 )}
               </div>
             )}
 
             {/* Split Bill */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isSplitBill ? 'brutal-card-sky' : ''}`}>
-                <div onClick={() => setIsSplitBill(!isSplitBill)} className="flex items-center justify-between cursor-pointer select-none">
-                  <span className={`neo-label !text-sm ${isSplitBill ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>Ada yang nitip bayar? (Split Bill)</span>
-                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isSplitBill ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
-                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isSplitBill ? 'translate-x-5' : 'translate-x-0'}`} />
+              <div className="stack">
+                <div className="toggle-row">
+                  <div className="grow">
+                    <div className="t">Ada yang nitip bayar?</div>
+                    <div className="meta" style={{ whiteSpace: 'normal' }}>Split bill. Bagian teman dicatat jadi piutang.</div>
                   </div>
+                  <button type="button" className={`switch ${isSplitBill ? 'on' : ''}`} aria-label="Split bill" aria-pressed={isSplitBill} onClick={() => setIsSplitBill(!isSplitBill)} />
                 </div>
                 {isSplitBill && (
-                  <div className="space-y-3 mt-3">
+                  <div className="card stack" style={{ background: 'var(--surface-2)' }}>
                     {splitEntries.map((entry, idx) => (
-                      <div key={idx} className="flex gap-2 items-start">
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <input type="text" placeholder={`Nama #${idx + 1}`} className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
-                          <MoneyInput placeholder="0" value={entry.amount} onChange={(val) => { const n = [...splitEntries]; n[idx].amount = val; setSplitEntries(n) }} className="!text-[14px] !px-[18px] !py-[14px] !border-[3px] !border-[var(--neo-ink)] !shadow-[4px_4px_0_var(--neo-ink)] !rounded-[18px] font-[800] text-[var(--neo-ink)] bg-white" />
-                        </div>
-                        {splitEntries.length > 1 && <button type="button" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))} className="p-2.5 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      <div key={idx} className="hstack" style={{ gap: 8 }}>
+                        <input type="text" placeholder={`Nama #${idx + 1}`} className="input" value={entry.name} onChange={(e) => { const n = [...splitEntries]; n[idx].name = e.target.value; setSplitEntries(n) }} />
+                        <input type="text" inputMode="numeric" placeholder="0" className="input" style={{ maxWidth: 130 }} value={entry.amount ? parseInt(entry.amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { const n = [...splitEntries]; n[idx].amount = e.target.value.replace(/\D/g, ''); setSplitEntries(n) }} />
+                        {splitEntries.length > 1 && <button type="button" className="icon-btn" style={{ color: 'var(--danger)' }} aria-label="Hapus orang" onClick={() => setSplitEntries(splitEntries.filter((_, i) => i !== idx))}><Trash2 className="i i-s" /></button>}
                       </div>
                     ))}
-                    <button type="button" onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])} className="text-xs font-black text-[var(--neo-ink)] flex items-center gap-1 mt-2 p-2 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[10px]"><Plus className="w-3 h-3" />Tambah Orang</button>
+                    <button type="button" className="link" style={{ alignSelf: 'flex-start' }} onClick={() => setSplitEntries([...splitEntries, { name: '', amount: '' }])}>+ Tambah orang</button>
                   </div>
                 )}
               </div>
@@ -731,133 +731,73 @@ export default function TransactionModal({
 
             {/* Talangan Toggle */}
             {type === 'pengeluaran' && (
-              <div className={`p-4 brutal-card-sm transition-all duration-200 ${isTalangan ? 'brutal-card-lav' : ''}`}>
-                <div onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} className="flex items-center justify-between cursor-pointer select-none">
-                  <span className={`neo-label !text-sm ${isTalangan ? '!text-[var(--neo-ink)]' : '!text-[var(--text-primary)]'}`}>🤝 Ini Talangan?</span>
-                  <div className={`w-12 h-7 rounded-full border-2 border-[var(--neo-ink)] transition-colors duration-200 flex items-center px-0.5 shrink-0 ${isTalangan ? 'bg-white' : 'bg-[var(--bg-elevated)]'}`}>
-                    <div className={`w-5 h-5 bg-[var(--neo-ink)] rounded-full transition-transform duration-200 ${isTalangan ? 'translate-x-5' : 'translate-x-0'}`} />
+              <div className="stack">
+                <div className="toggle-row">
+                  <div className="grow">
+                    <div className="t">Ini talangan?</div>
+                    <div className="meta" style={{ whiteSpace: 'normal' }}>Uang ditalangi dulu, tidak dihitung pengeluaran.</div>
                   </div>
+                  <button type="button" className={`switch ${isTalangan ? 'on' : ''}`} aria-label="Talangan" aria-pressed={isTalangan} onClick={() => { setIsTalangan(!isTalangan); if (isTalangan) setTalanganPerson('') }} />
                 </div>
                 {isTalangan && (
-                  <input type="text" placeholder="Nama orang yang ditalangin (Opsional)" className="mt-4 w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--neo-ink)]" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                  <label className="field">Nama orang yang ditalangi (opsional)
+                    <input type="text" className="input" placeholder="Rudi" value={talanganPerson} onChange={(e) => setTalanganPerson(e.target.value)} />
+                  </label>
                 )}
               </div>
             )}
 
             {/* Category Picker */}
             {type !== 'topup' && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="neo-label">Kategori <span className="text-rose-500">*</span></label>
-                  <span className="neo-label !text-[var(--primary)]">Wajib dipilih</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2.5">
+              <div className="field">
+                <div className="between"><span>Kategori</span><span className="lbl" style={{ fontWeight: 500 }}>Wajib dipilih</span></div>
+                <div className="g4">
                   {allCategories.map((cat) => {
                     const isSelected = category === cat.name
+                    const cls = CAT_CLASS[cat.name] || (cat.isCustom ? cat.color : 'c-lain')
                     return (
-                      <button key={cat.name} type="button" onClick={() => setCategory(cat.name)} className="flex flex-col items-center justify-center group">
-                        <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-[var(--neo-ink)] transition-all ${isSelected ? 'shadow-[4px_4px_0_var(--neo-ink)] scale-110 translate-y-[-2px] bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)]' : `shadow-[2px_2px_0_var(--neo-ink)] group-hover:scale-105 group-hover:translate-y-[-1px] ${cat.color} [&>svg]:!text-[var(--neo-ink)]`}`}>
-                          <cat.icon className="w-6 h-6 stroke-[2.5px]" />
-                        </div>
-                        <span className={`text-[10px] font-black text-center leading-tight mt-1 ${isSelected ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'}`}>{cat.name}</span>
+                      <button key={cat.name} type="button" className={`catb ${isSelected ? 'on' : ''}`} onClick={() => setCategory(cat.name)}>
+                        <span className={`ic-s ${cls}`}><cat.icon className="i i-s" /></span>
+                        {cat.name}
                       </button>
                     )
                   })}
-                  <button type="button" onClick={() => { resetCategoryForm(); setShowAddCategory(true); }} className="flex flex-col items-center justify-center group">
-                    <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-2 border-[3px] border-dashed border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-[var(--bg-elevated)] text-[var(--text-primary)] group-hover:scale-105 group-hover:translate-y-[-1px] transition-all">
-                      <Plus className="w-6 h-6 stroke-[3px]" />
-                    </div>
-                    <span className="text-[10px] font-black text-center leading-tight mt-1 uppercase tracking-widest text-[var(--text-primary)]">Custom</span>
-                  </button>
+                  <Link href="/kategori" className="catb add" style={{ textDecoration: 'none' }}>
+                    <span className="ic-s" style={{ border: '1.5px dashed var(--border-strong)' }}><Settings2 className="i i-s" /></span>
+                    Kelola kategori
+                  </Link>
                 </div>
-
-                {showAddCategory && (
-                  <div className="mt-4 p-4 rounded-[16px] bg-[var(--bg-card)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="font-black text-[var(--text-primary)]">Kelola Kategori Custom</span>
-                      <button type="button" onClick={resetCategoryForm} className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"><X className="w-4 h-4 text-[#141414]" strokeWidth={3} /></button>
-                    </div>
-                    {(customCategories[type as 'pemasukan' | 'pengeluaran'] || []).length > 0 && (
-                      <div className="mb-6 space-y-2">
-                        <label className="neo-label mb-2 block">Pilih Untuk Edit/Hapus</label>
-                        <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
-                          {customCategories[type as 'pemasukan' | 'pengeluaran'].map((c, idx) => {
-                            const isStr = typeof c === 'string'; const name = isStr ? c : c.name; const Ico = isStr ? Package : (AVAILABLE_ICONS[c.iconName] || Package)
-                            return (
-                              <div key={idx} className="flex flex-row items-center justify-between bg-white p-2.5 border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px]">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] ${isStr ? 'text-[var(--text-secondary)]' : c.color.split(' ')[1]}`}><Ico className="w-4 h-4" /></div>
-                                  <span className="text-sm font-black text-[var(--text-primary)]">{name}</span>
-                                </div>
-                                <div className="flex items-center border-l-2 border-[var(--neo-ink)] pl-2 gap-1">
-                                  <button type="button" onClick={(e) => openEditCategory(c, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Pencil className="w-4 h-4" /></button>
-                                  <button type="button" onClick={(e) => handleDeleteCustomCategory(name, e)} className="p-2 text-[var(--neo-ink)] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-                    <div className="space-y-4 border-t-2 border-[var(--neo-ink)] pt-4">
-                      <span className="font-black text-sm text-[var(--text-primary)] block mb-2">{editingCategoryName ? 'Edit Kategori Terpilih' : 'Buat Kategori Baru'}</span>
-                      <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nama kategori..." className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]" />
-                      <div>
-                        <label className="neo-label mb-2 block">Pilih Icon</label>
-                        <div className="grid grid-cols-7 gap-2">
-                          {Object.keys(AVAILABLE_ICONS).map(iconKey => { const Ico = AVAILABLE_ICONS[iconKey]; const isSel = newCategoryIcon === iconKey; return (<button type="button" key={iconKey} onClick={() => setNewCategoryIcon(iconKey)} className={`flex items-center justify-center aspect-square rounded-[12px] border-2 transition-all ${isSel ? 'border-[var(--neo-ink)] bg-[var(--neo-yellow)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)]' : 'border-transparent bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--neo-ink)]'}`}><Ico className="w-5 h-5" /></button>) })}
-                        </div>
-                      </div>
-                      <div>
-                        <label className="neo-label mb-2 block">Pilih Warna</label>
-                        <div className="grid grid-cols-6 gap-2">
-                          {COLOR_PALETTES.map((colorSet, idx) => { const isSel = newCategoryColor === colorSet; return (<button type="button" key={idx} onClick={() => setNewCategoryColor(colorSet)} className={`w-full aspect-square rounded-full flex items-center justify-center transition-all border-2 ${isSel ? 'border-[var(--neo-ink)] scale-110 shadow-[2px_2px_0_var(--neo-ink)]' : 'border-transparent hover:scale-110'} ${colorSet}`}>{isSel && <div className="w-3 h-3 bg-current rounded-full" />}</button>) })}
-                        </div>
-                      </div>
-                      <button type="button" onClick={handleSaveCustomCategory} className="w-full brutal-btn !py-3 !text-sm !bg-[var(--neo-sky)]">Simpan Kategori</button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
             {/* Budget Indicator */}
             {budgetInfo && (
-              <div className={`brutal-card-sm p-4 ${budgetInfo.isOver ? 'bg-[var(--neo-peach)]' : ''}`}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="neo-label">Budget {budgetInfo.budget.category}</span>
-                  <span className={`text-xs font-black ${budgetInfo.isOver ? 'text-rose-600' : 'text-[var(--text-primary)]'}`}>{budgetInfo.isOver ? 'Limit Terlampaui!' : 'Dalam Batas'}</span>
+              <div className="card stack">
+                <div className="between">
+                  <span className="lbl">Budget {budgetInfo.budget.category}</span>
+                  <span className="badge" style={{ background: budgetInfo.isOver ? 'var(--danger-tint)' : 'var(--accent-tint)', color: budgetInfo.isOver ? 'var(--danger-text)' : 'var(--accent-hover)' }}>{budgetInfo.isOver ? 'Limit terlampaui' : 'Dalam batas'}</span>
                 </div>
-                <div className="w-full h-2 border-2 border-[var(--neo-ink)] rounded-full overflow-hidden mb-2 bg-[var(--bg-elevated)]">
-                  <div className={`h-full border-r-2 border-[var(--neo-ink)] transition-all duration-500 ${budgetInfo.isOver ? 'bg-[var(--neo-pink)]' : budgetInfo.percent > 80 ? 'bg-[var(--neo-yellow-vivid)]' : 'bg-[var(--neo-sky)]'}`} style={{ width: `${budgetInfo.percent}%` }} />
+                <div className={`bar ${budgetInfo.isOver ? 'over' : ''}`}>
+                  <div style={{ width: `${budgetInfo.percent}%` }} />
                 </div>
-                <p className="text-xs text-center text-[var(--text-muted)]">Sisa: <strong className="text-[var(--text-primary)] font-black">Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+                <p className="lbl">Sisa: <strong style={{ color: 'var(--text)', fontWeight: 700 }}>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
               </div>
             )}
 
             {/* Notes */}
-            <div>
-              <label className="neo-label mb-1.5 block">Catatan <span className="font-normal">(Opsional)</span></label>
-              <input
-                type="text"
-                placeholder={category ? `Contoh: ${category} Enak` : "Catatan transaksi..."}
-                className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] outline-none transition-all font-[800] text-[14px] text-[var(--text-primary)]"
+            <label className="field">Catatan (opsional)
+              <textarea
+                className="input"
+                placeholder={category ? `Contoh: ${category}` : 'Catatan transaksi…'}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-            </div>
+            </label>
 
             {/* Submit */}
-            <button
-              type="submit"
-              disabled={saving || isLoading}
-              className={`w-full brutal-btn !py-4 !text-base ${(saving || isLoading) ? 'opacity-70 cursor-not-allowed' : ''} ${type === 'pemasukan' ? '!bg-[var(--neo-mint)]' : type === 'pengeluaran' ? '!bg-[var(--neo-peach)]' : '!bg-[var(--neo-lav)]'}`}
-            >
-              {saving ? 'Menyimpan...' : (editingTransaction ? 'Update Transaksi' : `Simpan ${type === 'pemasukan' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : 'Transfer'}`)}
+            <button type="submit" disabled={saving || isLoading} className="btn btn-block">
+              {saving ? 'Menyimpan…' : (editingTransaction ? 'Simpan perubahan' : type === 'pemasukan' ? 'Simpan pemasukan' : type === 'pengeluaran' ? 'Simpan pengeluaran' : 'Simpan transfer')}
             </button>
-
-            {/* Bottom padding for safe area */}
-            <div className="h-32 shrink-0" />
           </div>
         </form>
         )}
