@@ -2,14 +2,29 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
-import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon, ChevronLeft, ChevronRight, Settings, Calendar, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import { getCategoryIcon } from '@/lib/categories'
+
+// Built-in category -> catatduit color class (DESIGN.md section 6).
+const CAT_CLASS: Record<string, string> = {
+  'Kebutuhan Dapur': 'c-dapur', 'Makan di Luar': 'c-makan', 'Transportasi': 'c-transport',
+  'Tempat Tinggal': 'c-rumah', 'Tagihan': 'c-tagihan', 'Belanja': 'c-belanja',
+  'Kesehatan': 'c-kesehatan', 'Cicilan & Utang': 'c-cicilan', 'Pribadi & Hiburan': 'c-hiburan',
+  'Edukasi & Donasi': 'c-edukasi', 'Lainnya': 'c-lain',
+}
+const getName = (c: string | CustomCategoryDef) => (typeof c === 'string' ? c : c.name)
+const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+const shortRp = (n: number) => {
+  if (n >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}jt`
+  if (n >= 1_000) return `Rp ${Math.round(n / 1_000)}rb`
+  return `Rp ${n}`
+}
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -312,513 +327,193 @@ export default function BudgetsPage() {
         }
     }
 
+    // ── Derived values for the redesigned view ──────────────────────────────
+    const budgeted = budgets.map(b => b.category)
+    const totalBudget = budgets.reduce((a, b) => a + b.amount, 0)
+    const totalSpent = budgets.reduce((a, b) => a + getSpentAmount(b.category), 0)
+    const totalSisa = Math.max(totalBudget - totalSpent, 0)
+    const totalPct = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0
+    const periodEnd = filterMode === 'monthly'
+        ? new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+        : new Date(customRange.end)
+    periodEnd.setHours(23, 59, 59, 999)
+    const daysLeft = Math.max(0, Math.ceil((periodEnd.getTime() - Date.now()) / 86400000))
+    const perDay = daysLeft > 0 ? Math.floor(totalSisa / daysLeft) : totalSisa
+
+    const ranked = [...budgets].map(b => {
+        const spent = getSpentAmount(b.category)
+        const pct = b.amount > 0 ? (spent / b.amount) * 100 : 0
+        return { b, spent, pct, over: spent > b.amount, near: spent <= b.amount && pct >= 80 }
+    }).sort((a, z) => (z.over ? 1 : 0) - (a.over ? 1 : 0) || z.pct - a.pct)
+    const overCount = ranked.filter(r => r.over).length
+    const nearCount = ranked.filter(r => r.near).length
+    const warnParts = [overCount ? `${overCount} budget lewat batas` : '', nearCount ? `${nearCount} hampir habis` : ''].filter(Boolean)
+
+    // Categories without a budget this period (DESIGN.md 7.6), keeping the one being edited.
+    const catOptions = [
+        ...CATEGORIES.pengeluaran.map(c => c.name),
+        ...((customCategories.pengeluaran || []).map(getName)),
+    ].filter(name => name === category || !budgeted.includes(name))
+
     return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            {/* Top Header */}
-            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="md:hidden p-2 -ml-2 rounded-[12px] transition-colors" style={{ color: 'var(--text-muted)' }}>
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Manajemen Budget</h2>
-                </div>
-                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                    <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                        EB
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Budget</h1>
                     </div>
-                </div>
-            </div>
-
-            <div className="relative min-h-[calc(100vh-90px)]">
-
-                {/* Control Bar - Filter UI */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mx-4 md:mx-8 mt-6 brutal-card-sm p-4">
-                    <div className="flex w-full md:w-auto items-center gap-2 rounded-[14px] p-1" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={prevMonth}
-                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                        )}
-                        <div className="flex-1 flex items-center justify-center gap-2 px-4 py-1.5 min-w-[140px]">
-                            <Calendar className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
-                            <span className="font-black text-[var(--text-primary)] whitespace-nowrap text-center text-sm">
-                                {getPeriodLabel()}
-                            </span>
-                        </div>
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={nextMonth}
-                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="flex w-full md:w-auto items-center gap-2">
-                        <button
-                            onClick={() => setShowSettings(!showSettings)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-[14px] font-black transition-all active:scale-95"
-                            style={showSettings
-                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
-                                : { background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }
-                            }
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Filter</span>
-                        </button>
-                    </div>
+                    <button className="icon-btn" aria-label="Buat budget" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
                 </div>
 
-                {/* Settings Panel */}
-                {showSettings && (
-                    <>
-                        <div className="fixed inset-0 z-10" onClick={() => setShowSettings(false)} />
-                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] brutal-card p-5 animate-in fade-in zoom-in-95 duration-200"
-                            style={{ background: 'var(--bg-card)' }}>
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-black uppercase tracking-tighter text-xl text-[var(--text-primary)]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)}
-                                    className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
-                                    <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
-                                </button>
-                            </div>
+                {/* Period selector */}
+                <div className="hstack" style={{ gap: 4 }}>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                    <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSettings(s => !s)}>
+                        <Calendar className="i i-s" />{getPeriodLabel()}
+                    </button>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                </div>
 
-                            <div className="space-y-5">
-                                <div className="space-y-3">
-                                    <label className="neo-label">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 rounded-[14px] p-1.5" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                                        <button
-                                            onClick={() => setFilterMode('monthly')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'monthly'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Bulanan
-                                        </button>
-                                        <button
-                                            onClick={() => setFilterMode('custom')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'custom'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Custom
-                                        </button>
-                                    </div>
-                                </div>
+                {/* Total card */}
+                <div className="card stack-12">
+                    <div className="between"><span className="lbl">Terpakai dari total budget</span><span className="lbl">{daysLeft} hari lagi</span></div>
+                    <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
+                    <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
+                    <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">Aman dipakai ± {shortRp(perDay)} per hari</span></div>
+                </div>
 
-                                {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Dari Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.start}
-                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Sampai Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.end}
-                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </>
+                {warnParts.length > 0 && (
+                    <div className="banner warn"><AlertTriangle className="i" />{warnParts.join(', ')}</div>
                 )}
 
-                {/* ===== MOBILE VIEW ===== */}
-                <div className="md:hidden pb-[80px]">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : (() => {
-                        const totalBudget = budgets.reduce((acc, b) => acc + b.amount, 0)
-                        const totalSpent = budgets.reduce((acc, b) => acc + getSpentAmount(b.category), 0)
-                        const totalRemaining = Math.max(totalBudget - totalSpent, 0)
-                        const overallPct = totalBudget > 0 ? Math.min(Math.round((totalSpent / totalBudget) * 100), 100) : 0
-                        const isOverall = totalSpent > totalBudget
-
+                {/* Budget list */}
+                {loading ? (
+                    <div className="stack-12">
+                        {[0, 1, 2].map(i => (
+                            <div key={i} className="card stack"><div className="hstack" style={{ gap: 12 }}><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div><div className="bar"><div style={{ width: '40%' }} /></div></div>
+                        ))}
+                    </div>
+                ) : ranked.length === 0 ? (
+                    <div className="card" style={{ textAlign: 'center' }}>
+                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada budget periode ini</p>
+                        <p className="lbl" style={{ marginTop: 4 }}>Batasi kategori yang paling boros dulu.</p>
+                        <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Buat budget</button>
+                    </div>
+                ) : (
+                    ranked.map(({ b, spent, pct, over, near }) => {
+                        const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                        const cls = CAT_CLASS[b.category] || 'c-lain'
+                        const sisa = Math.max(b.amount - spent, 0)
                         return (
-                            <>
-                                {/* Summary Card — Neobrutalism */}
-                                <div className={`mx-4 mt-4 brutal-card-md p-5 ${isOverall ? 'brutal-card-peach' : 'brutal-card-yellow'}`}>
-                                    <p className="neo-label mb-1">{getPeriodLabel()}</p>
-                                    <div className="flex items-end justify-between mt-1 mb-3">
-                                        <div>
-                                            <p className="neo-label mb-0.5">Total Terpakai</p>
-                                            <p className="neo-amount">Rp {totalSpent.toLocaleString('id-ID')}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="neo-label mb-0.5">Total Budget</p>
-                                            <p className="font-black text-base text-[var(--text-primary)]">Rp {totalBudget.toLocaleString('id-ID')}</p>
-                                        </div>
+                            <div className="card stack" key={b.id}>
+                                <div className="hstack" style={{ gap: 12 }}>
+                                    <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                    <div className="grow">
+                                        <div className="t">{b.category}</div>
+                                        <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
                                     </div>
-                                    {/* Overall progress */}
-                                    <div className="w-full h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                        <div className="h-full rounded-full transition-all duration-500"
-                                            style={{ width: `${overallPct}%`, background: isOverall ? 'var(--error)' : 'var(--neo-ink)' }} />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="neo-label">Sisa: <span className="font-black text-[var(--text-primary)]">Rp {totalRemaining.toLocaleString('id-ID')}</span></p>
-                                        <span className="neo-pill text-[10px]">{overallPct}% terpakai</span>
-                                    </div>
+                                    {over ? <span className="badge b-bad">Lewat {shortRp(spent - b.amount)}</span>
+                                        : near ? <span className="badge b-warn">Sisa {shortRp(sisa)}</span>
+                                            : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
                                 </div>
-
-                                {/* Info Bar */}
-                                <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="font-black uppercase tracking-tight text-[var(--text-primary)]">{budgets.length} kategori budget</p>
-                                    <p className="neo-label mt-1">Tap untuk edit / hapus / catat</p>
+                                <div className={`bar ${over ? 'over' : ''}`}>
+                                    <div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} />
                                 </div>
-
-                                {/* Budget List */}
-                                {budgets.length === 0 ? (
-                                    <div className="mx-4 brutal-card-sm p-10 text-center">
-                                        <p className="text-sm font-semibold text-[var(--text-muted)]">Belum ada budget bulan ini.</p>
-                                    </div>
-                                ) : (
-                                    <div className="mx-4 space-y-2">
-                                        {budgets.map((budget, idx) => {
-                                            const spent = getSpentAmount(budget.category)
-                                            const percent = Math.min((spent / budget.amount) * 100, 100)
-                                            const isOver = spent > budget.amount
-                                            const allCats = [
-                                                ...CATEGORIES.pengeluaran,
-                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                            ]
-                                            const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-
-                                            return (
-                                                <div key={budget.id} className="brutal-card-sm p-4"
-                                                    style={{ background: isOver ? 'var(--neo-peach)' : 'var(--bg-card)' }}>
-                                                    {/* Top Row: Category badge + amounts */}
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <span className="neo-pill text-[10px]">{budget.category}</span>
-                                                        <div className="text-right ml-2">
-                                                            <p className="font-black text-sm text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
-                                                            <p className="text-[11px] font-semibold text-[var(--text-muted)]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Progress bar */}
-                                                    <div className="w-full h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-500"
-                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
-                                                        />
-                                                    </div>
-
-                                                    {/* Sisa / % */}
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        {isOver ? (
-                                                            <span className="text-[10px] font-black flex items-center gap-1" style={{ color: 'var(--error)' }}>
-                                                                <AlertCircle className="w-3 h-3" /> Over Budget!
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-[10px] font-semibold text-[var(--text-muted)]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
-                                                        )}
-                                                        <span className="text-[10px] font-black text-[var(--text-primary)]">{Math.round(percent)}%</span>
-                                                    </div>
-
-                                                    {/* Action Buttons — 3 columns */}
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        <button
-                                                            onClick={() => handleEdit(budget)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                        >
-                                                            <Pencil className="w-3.5 h-3.5" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openQuickExp(budget.category)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-black rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }}
-                                                        >
-                                                            <Plus className="w-3.5 h-3.5" />
-                                                            Catat
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(budget.id)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                            Hapus
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-
-                                {/* Tambah Budget Button */}
-                                <button
-                                    onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] rounded-[20px] p-4 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
-                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                                >
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)' }}>
-                                        <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <span className="font-black">Buat Budget Baru</span>
-                                </button>
-                            </>
-                        )
-                    })()}
-                </div>
-
-                {/* ===== DESKTOP VIEW ===== */}
-                <div className="hidden md:block p-8">
-                    {loading ? (
-                        <div className="text-center py-12 text-[var(--text-muted)] font-semibold animate-pulse">Memuat budget...</div>
-                    ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {budgets.map((budget, idx) => {
-                                    const spent = getSpentAmount(budget.category)
-                                    const percent = Math.min((spent / budget.amount) * 100, 100)
-                                    const isOver = spent > budget.amount
-                                    const allCats = [
-                                        ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                    ]
-                                    const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-                                    // Cycle card colors for variety
-                                    const BUDGET_COLORS = ['var(--neo-yellow)', 'var(--neo-sky)', 'var(--neo-mint)', 'var(--neo-lav)']
-
-                                    return (
-                                        <div key={budget.id}
-                                            className="brutal-card card-hover flex flex-col justify-between min-h-[320px] p-6 pb-8"
-                                            style={{ background: isOver ? 'var(--neo-peach)' : BUDGET_COLORS[idx % BUDGET_COLORS.length] }}>
-                                            <div>
-                                                <div className="flex justify-between items-start mb-5">
-                                                    <span className="neo-pill text-xs">{budget.category}</span>
-                                                    <button onClick={() => handleDelete(budget.id)}
-                                                        className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                                        style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="mb-5">
-                                                    <p className="neo-label">Total Terpakai</p>
-                                                    <p className="text-3xl font-black text-[var(--text-primary)] mt-1 tracking-tight">Rp {spent.toLocaleString('id-ID')}</p>
-                                                    <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">
-                                                        Limit: Rp {budget.amount.toLocaleString('id-ID')}
-                                                    </p>
-
-                                                    {isOver && (
-                                                        <div className="flex items-center gap-1.5 text-xs font-black mt-2 mb-1 p-2 rounded-[10px]"
-                                                            style={{ background: 'rgba(20,20,20,0.08)', color: 'var(--error)' }}>
-                                                            <AlertCircle className="w-3.5 h-3.5" />
-                                                            <span>Over Budget!</span>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="w-full h-2.5 rounded-full overflow-hidden mt-3"
-                                                        style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-500"
-                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
-                                                        />
-                                                    </div>
-                                                    <p className="text-xs font-semibold text-[var(--text-muted)] mt-2">
-                                                        Sisa: <span className="font-black text-[var(--text-primary)]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-3 pt-4" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                                <button
-                                                    onClick={() => handleEdit(budget)}
-                                                    className="py-3 font-bold rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                >
-                                                    <Pencil className="w-4 h-4" /> Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => openQuickExp(budget.category)}
-                                                    className="py-3 font-black rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                                    style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)', color: 'var(--neo-ink)' }}
-                                                >
-                                                    <Plus className="w-4 h-4" /> Catat
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-
-                                {/* Add New Card */}
-                                <button
-                                    onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 font-bold text-sm transition-all min-h-[320px] group active:scale-[0.98]"
-                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                                >
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
-                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                        <Plus className="w-6 h-6 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <span className="font-black">Buat Budget Baru</span>
-                                </button>
+                                <div className="hstack" style={{ gap: 8 }}>
+                                    <button className="btn-2" style={{ flex: 1 }} onClick={() => handleEdit(b)}><Pencil className="i i-s" />Ubah</button>
+                                    <button className="btn-2" style={{ flex: 1 }} onClick={() => openQuickExp(b.category)}><Plus className="i i-s" />Catat</button>
+                                    <button className="icon-btn ghost" aria-label={`Hapus budget ${b.category}`} style={{ color: 'var(--danger)' }} onClick={() => handleDelete(b.id)}><Trash2 className="i i-s" /></button>
+                                </div>
                             </div>
+                        )
+                    })
+                )}
 
-                            {budgets.length === 0 && (
-                                <div className="brutal-card-sm text-center py-12">
-                                    <p className="font-semibold text-[var(--text-muted)]">Belum ada budget untuk bulan ini.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
+                {!loading && ranked.length > 0 && (
+                    <button className="btn-2 btn-block" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
+                )}
             </div>
 
-            {/* Main Modal (Add/Edit Budget) */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetForm} />
-                    <div className="w-full max-w-md z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                            <button onClick={resetForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
+            {/* Filter & period sheet */}
+            {showSettings && (
+                <>
+                    <div className="scrim" onClick={() => setShowSettings(false)} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><h2 className="h2">Filter & periode</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowSettings(false)}><X className="i" /></button></div>
+                        <div className="seg">
+                            <button className={filterMode === 'monthly' ? 'on' : ''} onClick={() => setFilterMode('monthly')}>Bulanan</button>
+                            <button className={filterMode === 'custom' ? 'on' : ''} onClick={() => setFilterMode('custom')}>Custom</button>
                         </div>
-                        <form onSubmit={handleSave} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="neo-label block mb-2">Tanggal Mulai</label>
-                                    <DatePickerNeo
-                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
-                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
-                                        value={budgetStartDate}
-                                        onChange={(e) => setBudgetStartDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="neo-label block mb-2">Tanggal Selesai</label>
-                                    <DatePickerNeo
-                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
-                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
-                                        value={budgetEndDate}
-                                        onChange={(e) => setBudgetEndDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                        {filterMode === 'custom' && (
+                            <div className="stack-12">
+                                <label className="field">Dari tanggal<DatePickerNeo className="input" value={customRange.start} onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))} /></label>
+                                <label className="field">Sampai tanggal<DatePickerNeo className="input" value={customRange.end} onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))} /></label>
                             </div>
-                            <div>
-                                <label className="neo-label block mb-3">Pilih Kategori</label>
-                                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-                                    {[
-                                        ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                    ].map(cat => (
-                                        <button
-                                            key={cat.name}
-                                            type="button"
-                                            onClick={() => setCategory(cat.name)}
-                                            className="p-3 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all text-left flex items-center gap-2 active:scale-95"
-                                            style={category === cat.name
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
-                                                : { background: 'var(--bg-elevated)', border: '2px solid rgba(20,20,20,0.15)', color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
-                                            {cat.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Batasan (Rp)</label>
-                                <MoneyInput
-                                    value={amount}
-                                    onChange={setAmount}
-                                />
-                            </div>
-                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
-                                Simpan Budget
-                            </button>
-                        </form>
+                        )}
+                        <button className="btn-2 btn-block" onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false) }}>Reset ke periode ini</button>
+                        <button className="btn btn-block" onClick={() => setShowSettings(false)}>Terapkan</button>
                     </div>
-                </div>
+                </>
             )}
 
-            {/* Quick Expense Modal */}
-            {isQuickExpModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm} />
-                    <div className="w-full max-w-sm z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">Catat Pengeluaran</h3>
-                                <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">Kategori: <span className="neo-pill text-xs font-black">{quickExpCategory}</span></p>
+            {/* Create / edit budget sheet */}
+            {isModalOpen && (
+                <>
+                    <div className="scrim" onClick={resetForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><h2 className="h2">{editingId ? 'Ubah budget' : 'Buat budget'}</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button></div>
+                        <form onSubmit={handleSave} className="stack-12">
+                            <div className="field">Kategori
+                                <div className="g2">
+                                    {catOptions.map(name => {
+                                        const { Icon } = getCategoryIcon(name, 'pengeluaran', customCategories)
+                                        const cls = CAT_CLASS[name] || 'c-lain'
+                                        return (
+                                            <button key={name} type="button" className={`catb ${category === name ? 'on' : ''}`} style={{ minHeight: 56, flexDirection: 'row', justifyContent: 'flex-start', gap: 8, padding: '0 10px' }} onClick={() => setCategory(name)}>
+                                                <span className={`ic-s ${cls}`}><Icon className="i i-s" /></span>
+                                                <span style={{ textAlign: 'left' }}>{name}</span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                             </div>
-                            <button onClick={resetQuickExpForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleQuickExpenseSave} className="space-y-5">
-                            <div>
-                                <label className="neo-label block mb-2">Jumlah (Rp)</label>
-                                <MoneyInput
-                                    value={quickExpAmount}
-                                    onChange={setQuickExpAmount}
-                                    autoFocus
-                                    className="focus:ring-[var(--primary)]"
-                                />
+                            <label className="field">Batas (Rp)
+                                <input className="input" inputMode="numeric" placeholder="0" value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} />
+                            </label>
+                            <div className="g2">
+                                <label className="field">Tanggal mulai<DatePickerNeo className="input" value={budgetStartDate} onChange={(e) => setBudgetStartDate(e.target.value)} required /></label>
+                                <label className="field">Tanggal selesai<DatePickerNeo className="input" value={budgetEndDate} onChange={(e) => setBudgetEndDate(e.target.value)} required /></label>
                             </div>
-                            <div>
-                                <label className="neo-label block mb-2">Ambil dari Dompet</label>
-                                <NeoSelect
-                                    value={quickExpWalletId}
-                                    onChange={(val) => setQuickExpWalletId(val)}
-                                    options={wallets.map(w => ({
-                                        label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
-                                        value: w.id.toString()
-                                    }))}
-                                    placeholder="Pilih Dompet"
-                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                />
-                            </div>
-                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
-                                Simpan Pengeluaran
-                            </button>
+                            <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan budget'}</button>
                         </form>
                     </div>
-                </div>
+                </>
             )}
-        </main>
+
+            {/* Quick expense sheet */}
+            {isQuickExpModalOpen && (
+                <>
+                    <div className="scrim" onClick={resetQuickExpForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><div><h2 className="h2">Catat pengeluaran</h2><div className="lbl">Kategori: {quickExpCategory}</div></div><button className="icon-btn ghost" aria-label="Tutup" onClick={resetQuickExpForm}><X className="i" /></button></div>
+                        <form onSubmit={handleQuickExpenseSave} className="stack-12">
+                            <label className="field">Jumlah (Rp)
+                                <input className="input" inputMode="numeric" autoFocus placeholder="0" value={quickExpAmount ? parseInt(quickExpAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setQuickExpAmount(e.target.value.replace(/\D/g, ''))} />
+                            </label>
+                            <div className="field">Ambil dari dompet
+                                <NeoSelect value={quickExpWalletId} onChange={setQuickExpWalletId} options={wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))} placeholder="Pilih dompet" />
+                            </div>
+                            <button type="submit" className="btn btn-block">Simpan pengeluaran</button>
+                        </form>
+                    </div>
+                </>
+            )}
+        </div>
     )
 }
+
