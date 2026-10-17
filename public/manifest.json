@@ -1,7 +1,7 @@
 {
-  "name": "SwiftLog - Money Manager",
-  "short_name": "SwiftLog",
-  "description": "Modern Logistics-style Money Management",
+  "name": "CatatDuit - Money Manager",
+  "short_name": "CatatDuit",
+  "description": "Kelola keuangan pribadi: catat transaksi, budget, goals, dan laporan.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

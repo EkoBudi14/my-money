@@ -18,10 +18,11 @@
   font-family:var(--font);font-variant-numeric:tabular-nums;color:var(--text);
 }
 html.dark .cd,.cd[data-theme="dark"]{
-  --bg:#081412;--surface:#0F1E1B;--surface-2:#132522;--border:#1E302C;--border-strong:#2A403B;--divider:#172925;
-  --text:#E6EEEC;--text-2:#9FB0AC;--text-3:#B7C5C2;
-  --accent:#2DD4BF;--accent-hover:#5EEAD4;--accent-tint:#0F2E2A;--on-accent:#04201C;--on-accent-2:#134E48;
-  --income:#A3E635;--income-tint:#1A2E05;--income-chart:#A3E635;
+  /* Neutral black dark mode — no green cast. Accent/income/danger stay semantic. */
+  --bg:#0A0A0B;--surface:#151518;--surface-2:#1D1D20;--border:#2A2A2E;--border-strong:#3B3B40;--divider:#212125;
+  --text:#ECECEE;--text-2:#A0A0A6;--text-3:#C0C0C6;
+  --accent:#2DD4BF;--accent-hover:#5EEAD4;--accent-tint:#123634;--on-accent:#04201C;--on-accent-2:#134E48;
+  --income:#A3E635;--income-tint:#1F2A0A;--income-chart:#A3E635;
   --danger:#F87171;--danger-tint:#3B1212;--danger-text:#FCA5A5;--warn:#FCD34D;--warn-tint:#3A2A06;
 }
 .cd a{color:var(--accent)}.cd a:hover{color:var(--accent-hover)}

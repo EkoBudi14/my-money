@@ -9,8 +9,8 @@ import { supabase } from '@/lib/supabase'
 export async function restoreRow(table: 'notes' | 'budgets' | 'goals', row: Record<string, unknown>) {
   const first = await supabase.from(table).insert(row)
   if (!first.error) return true
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, ...rest } = row
+  const rest = { ...row }
+  delete rest.id
   const second = await supabase.from(table).insert(rest)
   return !second.error
 }
