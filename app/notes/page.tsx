@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import CalendarCard from '@/components/CalendarCard'
 
 interface Note {
   id: number
@@ -97,6 +98,9 @@ export default function NotesPage() {
           </div>
           <button className="icon-btn" aria-label="Tambah catatan" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
         </div>
+
+        {/* Calendar (KalenderTanggal) */}
+        <CalendarCard />
 
         {/* Search */}
         <label className="input search" style={{ cursor: 'text' }}>

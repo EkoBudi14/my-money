@@ -392,267 +392,137 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
         setIsAddEventModalOpen(true)
     }
 
+    const dotColor = (c: CalendarEvent['color']) =>
+        c === 'blue' ? '#3B82F6' : c === 'green' ? 'var(--income)' : c === 'yellow' ? '#F59E0B' : c === 'purple' ? '#8B5CF6' : 'var(--danger)'
+
     return (
-        <div className="brutal-card p-6 bg-[var(--bg-card)] relative overflow-hidden flex flex-col h-full">
-             {/* Live Clock */}
-             <div className="mb-6 border-b border-slate-100 dark:border-[var(--border-default)] pb-4 text-center">
-                {isMounted ? (
-                    <div className="text-3xl font-black text-[var(--text-primary)] tabular-nums tracking-tight">
-                        {String(currentTime.getHours()).padStart(2, '0')}:{String(currentTime.getMinutes()).padStart(2, '0')}:{String(currentTime.getSeconds()).padStart(2, '0')}
-                    </div>
-                ) : (
-                    <div className="text-3xl font-black text-[var(--text-primary)] tabular-nums tracking-tight">--:--:--</div>
-                )}
-                <div className="text-sm text-slate-500 dark:text-slate-400 mt-1 capitalize">
+        <div className="card stack-12">
+            {/* Live clock */}
+            <div className="stack" style={{ textAlign: 'center', gap: 2, borderBottom: '1px solid var(--divider)', paddingBottom: 12 }}>
+                <div className="num-l" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {isMounted
+                        ? `${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}:${String(currentTime.getSeconds()).padStart(2, '0')}`
+                        : '--:--:--'}
+                </div>
+                <div className="sub" style={{ textTransform: 'capitalize' }}>
                     {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </div>
             </div>
 
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h3 className="text-xl font-black text-[var(--text-primary)] flex items-center gap-2">
-                        <CalendarIcon className="w-6 h-6 text-blue-600 stroke-[2.5px]" />
-                        Kalender
-                    </h3>
-                    <p className="text-sm font-bold opacity-70 mt-1">{monthName} {year}</p>
+            <div className="between">
+                <div className="hstack" style={{ gap: 8 }}>
+                    <div className="ic-s c-transfer"><CalendarIcon className="i i-s" /></div>
+                    <div><h2 className="h2">Kalender</h2><div className="sub">{monthName} {year}</div></div>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={prevMonth} className="p-1.5 brutal-btn bg-white">
-                        <ChevronLeft className="w-5 h-5 stroke-[3px]" />
-                    </button>
-                    <button onClick={nextMonth} className="p-1.5 brutal-btn bg-white">
-                        <ChevronRight className="w-5 h-5 stroke-[3px]" />
-                    </button>
+                <div className="hstack" style={{ gap: 6 }}>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Bulan sebelumnya" onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Bulan berikutnya" onClick={nextMonth}><ChevronRight className="i i-s" /></button>
                 </div>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 mb-8 text-center">
-                {DAYS.map(day => (
-                    <div key={day} className="text-xs font-black py-2 uppercase tracking-wide opacity-70">
-                        {day}
-                    </div>
-                ))}
-
-                {grid.map((day, idx) => {
-                    if (day === null) return <div key={`empty-${idx}`} />
-
-                    const { holiday, bills, dayEvents } = getDayData(day)
-                    const today = isToday(day)
-                    const selected = selectedDate?.getDate() === day && selectedDate?.getMonth() === currentDate.getMonth()
-                    
-                    // Detect day of week for weekend coloring
-                    const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-                    const dayOfWeek = dateObj.getDay() // 0 = Sunday, 6 = Saturday
-                    
-                    const hasBills = bills.length > 0
-                    const isHoliday = !!holiday
-                    const isNationalHoliday = holiday?.type === 'National holiday'
-                    const hasEvents = dayEvents.length > 0
-
-                    // Determine text color with priority: selected > national holiday > weekend > today > default
-                    let textColor: string | undefined = undefined
-                    if (!selected && !isNationalHoliday) {
-                        if (dayOfWeek === 0) textColor = '#dc2626'      // Sunday: red
-                        else if (dayOfWeek === 6) textColor = '#9ca3af' // Saturday: gray
-                    }
-
-                    return (
-                        <div
-                            key={day}
-                            onClick={() => handleDateClick(day)}
-                            className={`
-                                aspect-square flex flex-col items-center justify-center relative rounded-[10px] cursor-pointer transition-all duration-200 border-2
-                                ${selected ? 'bg-[var(--neo-yellow-vivid)] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px] z-10' : 
-                                    (today ? 'bg-blue-100 border-[var(--neo-ink)]' : 
-                                        (isNationalHoliday ? 'bg-rose-100 border-transparent hover:border-[var(--neo-ink)]' : 'border-transparent hover:border-[var(--neo-ink)]')
-                                    )
-                                }
-                            `}
-                        >
-                            <span 
-                                className={`text-sm font-black ${
-                                    selected ? '!text-[var(--neo-ink)]' : 
-                                    isNationalHoliday ? 'text-rose-600' : 
-                                    (today && dayOfWeek !== 0 && dayOfWeek !== 6) ? 'text-blue-700' :
-                                    'text-[var(--text-primary)]'
-                                }`}
-                                style={textColor && !selected ? { color: textColor } : undefined}
+            {/* Grid */}
+            <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', textAlign: 'center' }}>
+                    {DAYS.map(d => <div key={d} className="lbl" style={{ padding: '4px 0', fontWeight: 700 }}>{d}</div>)}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2 }}>
+                    {grid.map((day, idx) => {
+                        if (day === null) return <div key={`e-${idx}`} />
+                        const { holiday, bills, dayEvents } = getDayData(day)
+                        const today = isToday(day)
+                        const selected = selectedDate?.getDate() === day && selectedDate?.getMonth() === currentDate.getMonth()
+                        const dow = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay()
+                        const isNat = holiday?.type === 'National holiday'
+                        let color: string | undefined
+                        if (!selected) {
+                            if (isNat || dow === 0) color = 'var(--danger)'
+                            else if (today) color = 'var(--accent)'
+                        }
+                        return (
+                            <button
+                                key={day}
+                                onClick={() => handleDateClick(day)}
+                                style={{
+                                    aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                    gap: 3, border: today && !selected ? '1px solid var(--accent)' : '1px solid transparent',
+                                    borderRadius: 10, background: selected ? 'var(--accent)' : 'transparent',
+                                    color: selected ? 'var(--on-accent)' : color || 'var(--text)', fontSize: 13, fontWeight: 700, padding: 0,
+                                }}
                             >
                                 {day}
-                            </span>
-                            
-                            {/* Indicators */}
-                            <div className="flex gap-1 mt-1 justify-center h-1.5">
-                                {/* Blue dot for bills */}
-                                {hasBills && (
-                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-blue-500'}`}></span>
-                                )}
-                                {/* Red dot for holidays (National holiday or Observance/Cuti Bersama) */}
-                                {isHoliday && (
-                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-rose-500'}`}></span>
-                                )}
-                                {/* Green dot for events */}
-                                {hasEvents && (
-                                    <span className={`w-1.5 h-1.5 border border-[var(--neo-ink)] rounded-none ${selected ? 'bg-white' : 'bg-emerald-500'}`}></span>
-                                )}
-                            </div>
-                        </div>
-                    )
-                })}
+                                <span style={{ display: 'flex', gap: 2, height: 5 }}>
+                                    {bills.length > 0 && <span style={{ width: 5, height: 5, borderRadius: 3, background: selected ? 'var(--on-accent)' : '#3B82F6' }} />}
+                                    {holiday && <span style={{ width: 5, height: 5, borderRadius: 3, background: selected ? 'var(--on-accent)' : 'var(--danger)' }} />}
+                                    {dayEvents.length > 0 && <span style={{ width: 5, height: 5, borderRadius: 3, background: selected ? 'var(--on-accent)' : 'var(--income)' }} />}
+                                </span>
+                            </button>
+                        )
+                    })}
+                </div>
             </div>
 
-            {/* Selected Date Info Panel */}
+            {/* Detail panel */}
             {displayDate ? (
-                 <div className="mt-auto border-t border-slate-100 dark:border-[var(--border-default)] pt-4 animate-in slide-in-from-bottom-2">
-                    <div className="flex justify-between items-center mb-3">
-                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                            {displayDate.getDate()} {MONTHS[displayDate.getMonth()]}
-                        </p>
-                        <button 
-                            onClick={handleAddClick}
-                            className="brutal-btn bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] text-xs px-3 py-2"
-                        >
-                            + Catatan
-                        </button>
+                <div className="stack-12" style={{ borderTop: '1px solid var(--divider)', paddingTop: 12 }}>
+                    <div className="between">
+                        <div className="date-h" style={{ padding: 0 }}>{displayDate.getDate()} {MONTHS[displayDate.getMonth()]}</div>
+                        <button className="btn-2" style={{ height: 36, fontSize: 13 }} onClick={handleAddClick}><Pencil className="i i-s" />Agenda</button>
                     </div>
-                    
-                    <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                        {/* Holiday Info */}
-                        {displayData?.holiday && (
-                            <div className="flex items-start gap-3 p-3 rounded-[12px] bg-rose-200 border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
-                                <div className="p-2 bg-rose-300 border-2 border-[var(--neo-ink)] rounded-[8px] text-[var(--neo-ink)]">
-                                    <CalendarIcon size={16} className="stroke-[3px]" />
+
+                    {displayData?.holiday && (
+                        <div className="hstack" style={{ gap: 10, alignItems: 'flex-start', background: 'var(--danger-tint)', borderRadius: 12, padding: 12 }}>
+                            <div className="ic-s" style={{ background: 'transparent', color: 'var(--danger-text)' }}><CalendarIcon className="i i-s" /></div>
+                            <div><div className="t" style={{ color: 'var(--danger-text)' }}>{displayData.holiday.name}</div><div className="meta" style={{ color: 'var(--danger-text)' }}>{displayData.holiday.type}</div></div>
+                        </div>
+                    )}
+
+                    {displayData?.dayEvents?.map(event => (
+                        <div className="card hstack" key={event.id} style={{ gap: 10, alignItems: 'flex-start', padding: 12 }}>
+                            <span style={{ marginTop: 4, width: 10, height: 10, borderRadius: 3, background: dotColor(event.color), flex: 'none' }} />
+                            <div className="grow">
+                                <div className="t" style={{ whiteSpace: 'normal' }}>{event.title}</div>
+                                <div className="lbl">{event.type === 'reminder' ? 'Pengingat' : 'Catatan'}</div>
+                            </div>
+                            <button className="icon-btn ghost" style={{ width: 34, height: 34 }} aria-label="Ubah agenda" onClick={() => handleEditEvent(event)}><Pencil className="i i-s" /></button>
+                            <button className="icon-btn ghost" style={{ width: 34, height: 34, color: 'var(--danger)' }} aria-label="Hapus agenda" onClick={() => handleDeleteEvent(event.id)}><Trash2 className="i i-s" /></button>
+                        </div>
+                    ))}
+
+                    {displayData?.bills?.map(bill => {
+                        const isPaid = billPayments[bill.id]
+                        const income = isPemasukan(bill)
+                        return (
+                            <div className="card between" key={bill.id} style={{ padding: 12, opacity: isPaid ? 0.75 : 1 }}>
+                                <div className="hstack" style={{ gap: 10 }}>
+                                    <div className={`ic-s ${income ? 'c-gaji' : 'c-tagihan'}`}>{isPaid ? <CheckCircle2 className="i i-s" /> : <span style={{ fontWeight: 700 }}>{bill.name.charAt(0)}</span>}</div>
+                                    <div><div className="t">{bill.name}</div><div className="lbl">{isPaid ? (income ? 'Sudah diterima' : 'Sudah dibayar') : (income ? 'Pemasukan rutin' : 'Tagihan rutin')}</div></div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-black text-[var(--neo-ink)]">{displayData.holiday.name}</p>
-                                    <p className="text-xs font-bold text-[var(--neo-ink)] opacity-80 mt-1">{displayData.holiday.type}</p>
+                                <div className="hstack" style={{ gap: 8 }}>
+                                    <span className={`num-m ${income ? 'pos' : ''}`} style={{ fontSize: 14 }}>{income ? '+' : ''}Rp {bill.amount.toLocaleString('id-ID')}</span>
+                                    {isPaid ? (
+                                        <button className="icon-btn ghost" aria-label="Batalkan" style={{ width: 34, height: 34, color: 'var(--danger)' }} onClick={() => handleDeleteBillPayment(bill.id)}><Trash2 className="i i-s" /></button>
+                                    ) : (
+                                        <button className="btn" style={{ height: 34, fontSize: 13, padding: '0 12px' }} onClick={() => handleCalendarPayBill(bill)}>{income ? 'Terima' : 'Bayar'}</button>
+                                    )}
                                 </div>
                             </div>
-                        )}
+                        )
+                    })}
 
-                        {/* Events Info */}
-                        {displayData?.dayEvents && displayData.dayEvents.length > 0 && (
-                            displayData.dayEvents.map(event => (
-                                <div key={event.id} className={`flex items-start gap-3 p-3 rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] group relative
-                                    ${event.color === 'blue' ? 'bg-blue-200' : 
-                                      event.color === 'green' ? 'bg-emerald-200' :
-                                      event.color === 'yellow' ? 'bg-amber-200' :
-                                      event.color === 'purple' ? 'bg-purple-200' :
-                                      'bg-rose-200'
-                                    }
-                                `}>
-                                    <div className={`mt-0.5 w-3 h-3 rounded-none border-[2px] border-[var(--neo-ink)] shrink-0
-                                        ${event.color === 'blue' ? 'bg-blue-400' : 
-                                          event.color === 'green' ? 'bg-emerald-400' :
-                                          event.color === 'yellow' ? 'bg-amber-400' :
-                                          event.color === 'purple' ? 'bg-purple-400' :
-                                          'bg-rose-400'
-                                        }
-                                    `}></div>
-                                    <div className="flex-1 pr-16 min-h-[40px]">
-                                        <p className="text-sm font-black text-[var(--neo-ink)] break-words leading-tight">{event.title}</p>
-                                        <p className="text-[10px] font-bold text-[var(--neo-ink)] opacity-70 uppercase tracking-wide mt-1">{event.type === 'reminder' ? 'Pengingat' : 'Catatan'}</p>
-                                    </div>
-                                    
-                                    <div className="flex gap-1 absolute top-2 right-2">
-                                        <button 
-                                            onClick={() => handleEditEvent(event)}
-                                            className="p-1.5 brutal-btn bg-white"
-                                            aria-label="Edit catatan"
-                                        >
-                                            <Pencil size={14} className="stroke-[3px]" />
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteEvent(event.id)}
-                                            className="p-1.5 brutal-btn bg-rose-300"
-                                            aria-label="Hapus catatan"
-                                        >
-                                            <Trash2 size={14} className="stroke-[3px]" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-
-                        {/* Bills Info */}
-                        {displayData?.bills && displayData.bills.length > 0 && (
-                            displayData.bills.map(bill => {
-                                const isPaid = billPayments[bill.id]
-                                return (
-                                    <div key={bill.id} className={`flex items-center justify-between p-3 rounded-[12px] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] ${
-                                        isPaid
-                                            ? 'bg-slate-100 opacity-60 border-dashed shadow-none'
-                                            : 'bg-[var(--bg-card)] hover:translate-y-[-2px] hover:shadow-[4px_4px_0_var(--neo-ink)] transition-all'
-                                    } group`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center font-black text-xs ${
-                                                isPaid
-                                                    ? 'bg-green-300 text-[var(--neo-ink)]'
-                                                    : isPemasukan(bill)
-                                                        ? 'bg-emerald-300 text-[var(--neo-ink)]'
-                                                        : 'bg-blue-300 text-[var(--neo-ink)]'
-                                            }`}>
-                                                {isPaid ? <CheckCircle2 size={16} className="stroke-[3px]" /> : bill.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-black text-[var(--text-primary)]">{bill.name}</p>
-                                                <p className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
-                                                    {isPaid
-                                                        ? (isPemasukan(bill) ? 'Sudah diterima' : 'Sudah dibayar')
-                                                        : (isPemasukan(bill) ? 'Pemasukan Rutin' : 'Tagihan Rutin')
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <p className={`text-sm font-black ${
-                                                isPaid ? 'text-[var(--neo-ink)]' : 'text-[var(--text-primary)]'
-                                            }`}>
-                                                {isPemasukan(bill) ? '+' : ''}Rp {bill.amount.toLocaleString('id-ID')}
-                                            </p>
-                                            
-                                            {isPaid ? (
-                                                <button
-                                                    onClick={() => handleDeleteBillPayment(bill.id)}
-                                                    className="p-1.5 brutal-btn bg-white"
-                                                    title="Batalkan"
-                                                >
-                                                    <Trash2 size={16} className="stroke-[2.5px]" />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleCalendarPayBill(bill)}
-                                                    className={`px-3 py-1.5 brutal-btn text-xs font-black text-[var(--neo-ink)] transition-all ${
-                                                        isPemasukan(bill)
-                                                            ? 'bg-emerald-300'
-                                                            : 'bg-[var(--neo-yellow-vivid)]'
-                                                    }`}
-                                                >
-                                                    {isPemasukan(bill) ? 'Terima' : 'Bayar'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            })
-                        )}
-
-                        {!displayData?.holiday && (!displayData?.bills || displayData.bills.length === 0) && (!displayData?.dayEvents || displayData.dayEvents.length === 0) && (
-                            <div className="text-center py-4 text-slate-400 dark:text-slate-500 text-sm">
-                                Tidak ada agenda tanggal ini
-                            </div>
-                        )}
-                    </div>
-                 </div>
-            ) : (
-                <div className="mt-auto border-t border-slate-100 dark:border-[var(--border-default)] pt-4 text-center text-slate-400 dark:text-slate-500 text-sm">
-                    Pilih tanggal untuk melihat detail
+                    {!displayData?.holiday && !displayData?.bills?.length && !displayData?.dayEvents?.length && (
+                        <div className="es" style={{ border: 0, padding: '8px 0' }}>
+                            <span className="t2">Tidak ada agenda {displayDate.getDate()} {MONTHS[displayDate.getMonth()].slice(0, 3)}</span>
+                            <p>Tambah pengingat untuk tanggal ini.</p>
+                            <button className="btn-2" style={{ height: 40, fontSize: 13 }} onClick={handleAddClick}>Tambah agenda</button>
+                        </div>
+                    )}
                 </div>
+            ) : (
+                <div className="sub" style={{ textAlign: 'center', borderTop: '1px solid var(--divider)', paddingTop: 12 }}>Pilih tanggal untuk melihat detail</div>
             )}
 
-            <AddEventModal 
+            <AddEventModal
                 isOpen={isAddEventModalOpen}
                 onClose={() => setIsAddEventModalOpen(false)}
                 onSuccess={fetchEvents}
@@ -660,92 +530,31 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                 initialData={selectedEvent}
             />
 
-            {/* Payment Modal */}
+            {/* Pay / receive sheet */}
             {showPaymentModal && selectedPaymentBill && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="bg-white dark:bg-[var(--bg-card)] rounded-2xl w-full max-w-md shadow-2xl z-50 p-6 relative">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-[var(--text-primary)]">
-                                {selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Terima Pemasukan' : 'Bayar Tagihan'}
-                            </h3>
-                            <button 
-                                onClick={() => setShowPaymentModal(false)}
-                                className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-                            >
-                                <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
-                            </button>
+                <>
+                    <div className="scrim" onClick={() => setShowPaymentModal(false)} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between">
+                            <div><h2 className="h2">{isPemasukan(selectedPaymentBill) ? 'Terima pemasukan' : 'Bayar tagihan'}</h2><div className="lbl">{selectedPaymentBill.name}</div></div>
+                            <button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowPaymentModal(false)}><X className="i" /></button>
                         </div>
-                        
-                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-800/30 rounded-xl p-3 mb-5">
-                            <p className="text-sm text-slate-600 dark:text-slate-500">Tagihan</p>
-                            <p className="text-lg font-bold text-slate-800 dark:text-[var(--text-primary)]">{selectedPaymentBill.name}</p>
+                        <label className="field">{isPemasukan(selectedPaymentBill) ? 'Jumlah diterima (Rp)' : 'Jumlah pembayaran (Rp)'}
+                            <input className="input" inputMode="numeric" placeholder="0" value={paymentAmount ? parseInt(paymentAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={e => setPaymentAmount(e.target.value.replace(/\D/g, ''))} />
+                        </label>
+                        <label className="field">Tanggal
+                            <DatePickerNeo className="input" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
+                        </label>
+                        <div className="field">{isPemasukan(selectedPaymentBill) ? 'Masuk ke dompet' : 'Bayar dari dompet'}
+                            <NeoSelect value={selectedWalletId ? selectedWalletId.toString() : ''} onChange={(val) => setSelectedWalletId(Number(val))} placeholder="Pilih dompet"
+                                options={wallets.map(w => ({ label: `${w.name} — Rp ${w.balance.toLocaleString('id-ID')}`, value: w.id.toString() }))} />
                         </div>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                    Jumlah Pembayaran (Rp)
-                                </label>
-                                <MoneyInput
-                                    value={paymentAmount}
-                                    onChange={setPaymentAmount}
-                                    placeholder={selectedPaymentBill.amount.toString()}
-                                />
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                                    Default: Rp {selectedPaymentBill.amount.toLocaleString('id-ID')}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                    Tanggal Pembayaran
-                                </label>
-                                <DatePickerNeo
-                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none"
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                />
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                    {selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Masuk ke Dompet' : 'Bayar dari Dompet'}
-                                </label>
-                                <NeoSelect
-                                    className="w-full p-3 bg-slate-50 dark:bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)] text-slate-800 dark:text-slate-200"
-                                    value={selectedWalletId ? selectedWalletId.toString() : ''}
-                                    onChange={(val) => setSelectedWalletId(Number(val))}
-                                    placeholder="Pilih Dompet"
-                                    options={wallets.map(w => ({
-                                        label: `${w.name} - Rp ${w.balance.toLocaleString('id-ID')}`,
-                                        value: w.id.toString()
-                                    }))}
-                                />
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                onClick={() => setShowPaymentModal(false)}
-                                className="flex-1 py-3 bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                onClick={handleConfirmCalendarPayment}
-                                disabled={!selectedWalletId || !paymentAmount || payingBillId !== null}
-                                className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {payingBillId ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                ) : (
-                                    selectedPaymentBill && isPemasukan(selectedPaymentBill) ? 'Terima' : 'Bayar'
-                                )}
-                            </button>
-                        </div>
+                        <button className="btn btn-block" disabled={!selectedWalletId || !paymentAmount || payingBillId !== null} onClick={handleConfirmCalendarPayment}>
+                            {payingBillId ? 'Menyimpan…' : isPemasukan(selectedPaymentBill) ? 'Terima' : 'Bayar'}
+                        </button>
                     </div>
-                </div>
+                </>
             )}
         </div>
     )
