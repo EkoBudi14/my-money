@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Search, Trash2 } from 'lucide-react'
+import { ChevronLeft, Search, Trash2, Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTransactions, getWallets, getDebts } from '@/lib/queries'
 import { getCategoryIcon } from '@/lib/categories'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
+import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
@@ -63,22 +64,25 @@ export default function TransactionsPage() {
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [debts, setDebts] = useState<Debt[]>([])
   const [customCategories, setCustomCategories] = useState<CustomMap>({ pengeluaran: [], pemasukan: [] })
+  const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterKey>('semua')
   const [visible, setVisible] = useState(PAGE_SIZE)
 
   const loadAll = async () => {
-    const [txRes, wRes, dRes, csRes] = await Promise.all([
+    const [txRes, wRes, dRes, csRes, fhRes] = await Promise.all([
       getTransactions(),
       getWallets(),
       getDebts(),
       supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
+      supabase.from('filter_history').select('*'),
     ])
     if (txRes.data) setTransactions(txRes.data as Transaction[])
     if (wRes.data) setWallets(wRes.data as Wallet[])
     if (dRes.data) setDebts(dRes.data as Debt[])
     if (csRes.data?.custom_categories) setCustomCategories(csRes.data.custom_categories as CustomMap)
+    if (fhRes.data) setFilterHistory(fhRes.data as FilterHistoryEntry[])
     setLoading(false)
   }
 
@@ -131,6 +135,22 @@ export default function TransactionsPage() {
     })
   }, [filtered, visible])
 
+  const handleExport = () => {
+    const labelMap: Record<FilterKey, string> = {
+      semua: 'Semua transaksi', pengeluaran: 'Pengeluaran', pemasukan: 'Pemasukan',
+      transfer: 'Transfer', piutang: 'Piutang', talangan: 'Talangan',
+    }
+    exportTransactionsExcel({
+      periodLabel: labelMap[filter],
+      fileNamePeriod: filter === 'semua' ? 'semua' : filter,
+      filteredTransactions: filtered,
+      transactions,
+      wallets,
+      filterHistory,
+      showToast,
+    })
+  }
+
   const handleDelete = async (id: number) => {
     const res = await deleteTransactionWithRollback(id, {
       confirm: showConfirm,
@@ -157,6 +177,7 @@ export default function TransactionsPage() {
             </button>
             <h1 className="h1">Riwayat</h1>
           </div>
+          <button className="icon-btn" aria-label="Export ke Excel" onClick={handleExport}><Download className="i" /></button>
         </div>
 
         {/* Search */}
