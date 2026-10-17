@@ -1,30 +1,35 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
+import { useGoals, useWallets, useInvalidate, qk } from '@/hooks/useAppData'
+import { restoreRow } from '@/lib/undo'
+import Link from 'next/link'
 import { Goal } from '@/types'
-import {
-    Plus,
-    Target,
-    Trash2,
-    Pencil,
-    TrendingUp,
-    CheckCircle2,
-    X
-} from 'lucide-react'
-import MoneyInput from '@/components/MoneyInput'
+import { Plus, Target, Trash2, Pencil, X, ChevronLeft } from 'lucide-react'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import NeoSelect from '@/components/NeoSelect'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import { SkeletonCards } from '@/components/Skeleton'
+import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import FieldError from '@/components/FieldError'
 
 export default function GoalsPage() {
-    const [goals, setGoals] = useState<Goal[]>([])
-    const [loading, setLoading] = useState(true)
+    const goalsQuery = useGoals()
+    const walletsQuery = useWallets()
+    const invalidate = useInvalidate()
+    const qc = useQueryClient()
+    const goals = useMemo(() => goalsQuery.data ?? [], [goalsQuery.data])
+    const loading = goalsQuery.isLoading
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
     const { showSuccess } = useSuccessModal()
+    const isWeb = useIsWeb()
 
     // Form State
     const [name, setName] = useState('')
@@ -38,17 +43,25 @@ export default function GoalsPage() {
     const [quickAddAmountValue, setQuickAddAmountValue] = useState('')
     const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false)
 
+    // Inline validation (DESIGN-TAMBAHAN.md §5)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const [qaError, setQaError] = useState('')
+    // Nabung from a wallet (optional, DESIGN.md 0.5) + archive support (needs goals.archived_at)
+    const wallets = useMemo(() => (walletsQuery.data ?? []).filter(w => w.category === 'active'), [walletsQuery.data])
+    const [qaWalletId, setQaWalletId] = useState('')
+    const [canArchive, setCanArchive] = useState(false)
+    const [showArchived, setShowArchived] = useState(false)
     useEffect(() => {
-        fetchGoals()
+        supabase.from('goals').select('archived_at').limit(1).then(({ error }) => setCanArchive(!error))
     }, [])
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
-    const fetchGoals = async () => {
-        setLoading(true)
-        const { data, error } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
-        if (data) setGoals(data)
-        if (error) showToast('error', 'Gagal memuat goals')
-        setLoading(false)
-    }
+    useEffect(() => {
+        if (goalsQuery.error) showToast('error', 'Gagal memuat goals')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [goalsQuery.error])
+
+    const fetchGoals = () => invalidate([qk.goals, qk.wallets, qk.transactions])
 
     const resetForm = () => {
         setName('')
@@ -56,18 +69,25 @@ export default function GoalsPage() {
         setCurrentAmount('')
         setDeadline('')
         setEditingId(null)
+        setErrors({})
         setIsModalOpen(false)
     }
 
     const resetQuickAddForm = () => {
         setQuickAddId(null)
         setQuickAddAmountValue('')
+        setQaError('')
+        setQaWalletId('')
         setIsQuickAddModalOpen(false)
     }
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name || !targetAmount) return showToast('error', "Mohon lengkapi nama dan target!")
+        const err: Record<string, string> = {}
+        if (!name.trim()) err.name = 'Isi nama goal.'
+        if (!targetAmount || parseFloat(targetAmount) <= 0) err.target = 'Isi target lebih dari Rp 0.'
+        setErrors(err)
+        if (Object.keys(err).length > 0) return
 
         const payload = {
             name,
@@ -89,23 +109,36 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetForm()
-            showSuccess({
-                type: editingId ? 'edit' : 'create',
-                message: editingId ? 'Target tabungan berhasil diperbarui!' : 'Target tabungan baru berhasil ditambahkan!'
-            })
+            showToast('success', editingId ? 'Perubahan tersimpan' : 'Goal ditambahkan')
         } else {
-            showToast('error', "Gagal menyimpan target")
+            showToast('error', 'Goal gagal disimpan. Coba lagi.')
         }
     }
 
     const handleQuickAddSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickAddId || !quickAddAmountValue) return showToast('error', "Mohon masukkan jumlah!")
+        if (!quickAddAmountValue || parseFloat(quickAddAmountValue) <= 0) { setQaError('Isi jumlah lebih dari Rp 0.'); return }
+        if (!quickAddId) return
 
         const goalToUpdate = goals.find(g => g.id === quickAddId)
         if (!goalToUpdate) return
 
         const newAmount = goalToUpdate.current_amount + parseFloat(quickAddAmountValue)
+        const addAmount = parseFloat(quickAddAmountValue)
+
+        // Optional: take the money from a wallet (recorded as an expense so the balance stays consistent).
+        if (qaWalletId) {
+            const { data: w } = await supabase.from('wallets').select('balance, name').eq('id', parseInt(qaWalletId)).single()
+            if (!w) { setQaError('Dompet tidak ditemukan.'); return }
+            if (w.balance < addAmount) { setQaError(`Saldo ${w.name} kurang Rp ${(addAmount - w.balance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.`); return }
+            const now = new Date().toISOString()
+            const { error: txErr } = await supabase.from('transactions').insert({
+                title: `Nabung ke ${goalToUpdate.name}`, amount: addAmount, type: 'pengeluaran', category: 'Lainnya',
+                wallet_id: parseInt(qaWalletId), date: now, created_at: now, is_piutang: false, is_talangan: false,
+            })
+            if (txErr) { showToast('error', 'Tabungan gagal disimpan. Coba lagi.'); return }
+            await supabase.from('wallets').update({ balance: w.balance - addAmount }).eq('id', parseInt(qaWalletId))
+        }
 
         const { error } = await supabase
             .from('goals')
@@ -115,28 +148,27 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetQuickAddForm()
-            showSuccess({
-                type: 'edit',
-                title: 'Tabungan Bertambah!',
-                message: `Dana berhasil ditambahkan ke tabungan kamu 🎉`
-            })
+            showToast('success', `Rp ${parseFloat(quickAddAmountValue).toLocaleString('id-ID')} masuk ke ${goalToUpdate.name}`)
         } else {
-            showToast('error', "Gagal mengupdate saldo")
+            showToast('error', 'Saldo goal gagal diperbarui. Coba lagi.')
         }
     }
 
     const handleDelete = async (id: number) => {
+        const goal = goals.find(g => g.id === id)
         const confirm = await showConfirm({
-            title: 'Hapus Target?',
-            message: 'Yakin ingin menghapus target ini?'
+            title: `Hapus goal “${goal?.name ?? ''}”?`,
+            message: `Catatan terkumpul Rp ${(goal?.current_amount ?? 0).toLocaleString('id-ID')} ikut hilang. Saldo dompet tidak berubah.`,
+            confirmText: 'Hapus goal',
+            cancelText: 'Batal',
         })
         if (!confirm) return
 
         // 1. Simpan state sebelumnya untuk rollback
-        const previousGoals = [...goals]
+        const previousGoals = goals
 
-        // 2. Optimistic update: langsung hapus dari state lokal
-        setGoals(prev => prev.filter(g => g.id !== id))
+        // 2. Optimistic update: langsung hapus dari cache
+        qc.setQueryData(qk.goals, previousGoals.filter(g => g.id !== id))
 
         // 3. Request ke database
         const { error } = await supabase.from('goals').delete().eq('id', id)
@@ -144,14 +176,19 @@ export default function GoalsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchGoals()
-            showSuccess({
-                type: 'delete',
-                message: 'Target tabungan berhasil dihapus.'
+            showToast('success', 'Goal dihapus', 6000, {
+                action: {
+                    label: 'Urungkan',
+                    onClick: async () => {
+                        if (goal && await restoreRow('goals', { ...goal })) { showToast('success', 'Goal dikembalikan'); fetchGoals() }
+                        else showToast('error', 'Goal gagal dikembalikan.')
+                    },
+                },
             })
         } else {
             // 4. Rollback jika gagal
-            setGoals(previousGoals)
-            showToast('error', 'Gagal menghapus target')
+            qc.setQueryData(qk.goals, previousGoals)
+            showToast('error', 'Goal gagal dihapus. Coba lagi.')
         }
     }
 
@@ -164,342 +201,281 @@ export default function GoalsPage() {
         setIsModalOpen(true)
     }
 
+    const archiveGoal = async (g: Goal) => {
+        const { error } = await supabase.from('goals').update({ archived_at: new Date().toISOString() }).eq('id', g.id)
+        if (error) { showToast('error', 'Goal gagal diarsipkan. Coba lagi.'); return }
+        showToast('success', `${g.name} selesai dan diarsipkan`, 6000, {
+            action: { label: 'Urungkan', onClick: async () => { await supabase.from('goals').update({ archived_at: null }).eq('id', g.id); fetchGoals() } },
+        })
+        fetchGoals()
+    }
+
+    // Saving suggestion (DESIGN.md 7.7): per month until the deadline, or what is still missing.
+    const goalHint = (g: Goal) => {
+        const left = g.target_amount - g.current_amount
+        if (left <= 0) return null
+        if (g.deadline) {
+            const d = new Date(g.deadline)
+            const now = new Date()
+            if (d > now) {
+                const months = Math.max(1, (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth()))
+                const per = Math.ceil(left / months)
+                const short = per >= 1_000_000 ? `${(per / 1_000_000).toFixed(1).replace('.0', '').replace('.', ',')}jt` : per >= 1000 ? `${Math.round(per / 1000)}rb` : String(per)
+                return `Nabung ± Rp ${short} per bulan supaya tepat waktu.`
+            }
+        }
+        return `Kurang Rp ${left.toLocaleString('id-ID')} lagi.`
+    }
+
+    const unarchiveGoal = async (g: Goal) => {
+        const { error } = await supabase.from('goals').update({ archived_at: null }).eq('id', g.id)
+        if (error) { showToast('error', 'Goal gagal dikembalikan. Coba lagi.'); return }
+        showToast('success', `${g.name} aktif lagi`)
+        fetchGoals()
+    }
+
+    // Archived (finished) goals, collapsed by default.
+    const renderArchived = () => archivedGoals.length > 0 ? (
+        <section className="stack-12">
+            <button type="button" className="link" style={{ alignSelf: 'flex-start' }} aria-expanded={showArchived} onClick={() => setShowArchived(v => !v)}>
+                {showArchived ? 'Sembunyikan' : 'Lihat'} goal selesai ({archivedGoals.length})
+            </button>
+            {showArchived && (
+                <div className="card-flush">
+                    {archivedGoals.map(g => (
+                        <div className="row" key={g.id}>
+                            <div className="ic c-gaji"><Target className="i" /></div>
+                            <div className="grow"><div className="t">{g.name}</div><div className="meta">{rp(g.current_amount)} / {rp(g.target_amount)}</div></div>
+                            <button className="btn-2" style={{ height: 36, fontSize: 13 }} onClick={() => unarchiveGoal(g)}>Kembalikan</button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </section>
+    ) : null
+
     const openQuickAdd = (g: Goal) => {
         setQuickAddId(g.id)
         setQuickAddAmountValue('')
         setIsQuickAddModalOpen(true)
     }
 
-    // Neobrutalism card colors — cycling per goal
-    const CARD_COLORS = [
-        'var(--neo-lav)',
-        'var(--neo-sky)',
-        'var(--neo-mint)',
-        'var(--neo-yellow)',
-        'var(--neo-peach)',
-    ]
+    // Cycling category color classes per goal card.
+    const GOAL_CLASSES = ['c-bonus', 'c-kesehatan', 'c-gaji', 'c-investasi', 'c-piutang']
+    const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+
+    const deadlineLabel = (d: string | null | undefined) => {
+        if (!d) return 'Tanpa tenggat'
+        const date = new Date(d)
+        const now = new Date()
+        const mLabel = date.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+        if (date < now) return `Target ${mLabel}`
+        const months = (date.getFullYear() - now.getFullYear()) * 12 + (date.getMonth() - now.getMonth())
+        if (months >= 1) return `Target ${mLabel} · ${months} bulan lagi`
+        const days = Math.max(0, Math.ceil((date.getTime() - now.getTime()) / 86400000))
+        return `Target ${mLabel} · ${days} hari lagi`
+    }
+
+    const archivedGoals = goals.filter(g => (g as Goal & { archived_at?: string | null }).archived_at)
+    const activeGoals = goals.filter(g => !(g as Goal & { archived_at?: string | null }).archived_at)
+    const totalTarget = activeGoals.reduce((a, g) => a + g.target_amount, 0)
+    const totalTerkumpul = activeGoals.reduce((a, g) => a + g.current_amount, 0)
+    const overallPct = totalTarget > 0 ? Math.min(100, (totalTerkumpul / totalTarget) * 100) : 0
+    const quickGoal = goals.find(g => g.id === quickAddId)
+    const quickAddNum = parseInt((quickAddAmountValue || '0').replace(/\D/g, '')) || 0
+
+    // Sheets / dialogs shared by the mobile and web layouts.
+    const overlays = (
+        <>
+            {/* Create / edit goal sheet */}
+            {isModalOpen && (
+                <>
+                    <div className="scrim" onClick={resetForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><h2 className="h2">{editingId ? 'Ubah goal' : 'Tambah goal'}</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button></div>
+                        <form onSubmit={handleSave} className="stack-12">
+                            <label className="field">Nama goal
+                                <input className={`input ${errors.name ? 'bad' : ''}`} type="text" placeholder="Dana darurat" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} />
+                                <FieldError>{errors.name}</FieldError>
+                            </label>
+                            <label className="field">Target dana (Rp)
+                                <input className={`input ${errors.target ? 'bad' : ''}`} inputMode="numeric" placeholder="0" value={targetAmount ? parseInt(targetAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setTargetAmount(e.target.value.replace(/\D/g, '')); clearErr('target') }} />
+                                <FieldError>{errors.target}</FieldError>
+                            </label>
+                            <label className="field">Sudah terkumpul (Rp)
+                                <input className="input" inputMode="numeric" placeholder="0" value={currentAmount ? parseInt(currentAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setCurrentAmount(e.target.value.replace(/\D/g, ''))} />
+                            </label>
+                            <label className="field">Batas waktu (opsional)
+                                <DatePickerNeo className="input" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+                            </label>
+                            {editingId && (
+                                <button type="button" className="btn-danger btn-block" onClick={() => { const id = editingId; resetForm(); handleDelete(id) }}><Trash2 className="i i-s" />Hapus goal</button>
+                            )}
+                            <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan goal'}</button>
+                        </form>
+                    </div>
+                </>
+            )}
+
+            {/* Nabung sheet */}
+            {isQuickAddModalOpen && quickGoal && (
+                <>
+                    <div className="scrim" onClick={resetQuickAddForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><div><h2 className="h2">Nabung</h2><div className="lbl">{quickGoal.name}</div></div><button className="icon-btn ghost" aria-label="Tutup" onClick={resetQuickAddForm}><X className="i" /></button></div>
+                        <form onSubmit={handleQuickAddSave} className="stack-12">
+                            <label className="field">Jumlah (Rp)
+                                <input className={`input ${qaError ? 'bad' : ''}`} inputMode="numeric" autoFocus placeholder="0" value={quickAddAmountValue ? parseInt(quickAddAmountValue.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setQuickAddAmountValue(e.target.value.replace(/\D/g, '')); setQaError('') }} />
+                                <FieldError>{qaError}</FieldError>
+                            </label>
+                            <div className="chips">
+                                {[50000, 100000, 250000, 500000].map(v => (
+                                    <button key={v} type="button" className="chip" onClick={() => setQuickAddAmountValue(String((parseInt(quickAddAmountValue.replace(/\D/g, '') || '0')) + v))}>+{v >= 1000000 ? `${v / 1000000}jt` : `${v / 1000}rb`}</button>
+                                ))}
+                                <button type="button" className="chip" style={{ color: 'var(--text-2)' }} onClick={() => setQuickAddAmountValue('')}>Reset</button>
+                            </div>
+                            <div className="field">Ambil dari dompet (opsional)
+                                <NeoSelect
+                                    value={qaWalletId}
+                                    onChange={(v) => { setQaWalletId(v); setQaError('') }}
+                                    placeholder="Tidak memotong saldo"
+                                    options={[{ label: 'Tidak memotong saldo', value: '' }, ...wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))]}
+                                />
+                                <span className="lbl" style={{ fontWeight: 500 }}>Kalau dipilih, saldo dompet berkurang dan tercatat sebagai pengeluaran.</span>
+                            </div>
+                            <div className="tile">
+                                <div className="lbl">Setelah nabung</div>
+                                <div className="t">{rp(quickGoal.current_amount + quickAddNum)} · {quickGoal.target_amount > 0 ? Math.min(100, Math.round(((quickGoal.current_amount + quickAddNum) / quickGoal.target_amount) * 100)) : 0}%</div>
+                            </div>
+                            <button type="submit" className="btn btn-block">Simpan</button>
+                        </form>
+                    </div>
+                </>
+            )}
+        </>
+    )
+
+    // ── Web (>=768px): GoalsWeb — hero strip + card grid; forms open as modals ──
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <h1 className="ptitle">Goals</h1>
+                        <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Tambah goal</button>
+                    </div>
+
+                    <div className="hero wrap" style={{ alignItems: 'center', gap: 24 }}>
+                        <div className="stack" style={{ flex: '1 1 260px', gap: 4 }}>
+                            <span className="lbl">Total terkumpul · {activeGoals.length} goal</span>
+                            <span className="num-xl" style={{ fontSize: 34 }}>{rp(totalTerkumpul)}</span>
+                        </div>
+                        <div className="stack" style={{ flex: '2 1 320px' }}>
+                            <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
+                            <span className="lbl">{overallPct.toFixed(0)}% dari total target {rp(totalTarget)}</span>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <SkeletonCards count={2} />
+                    ) : activeGoals.length === 0 && archivedGoals.length === 0 ? (
+                        <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+                    ) : (
+                        <div className="gg">
+                            {activeGoals.map((g, idx) => {
+                                const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
+                                const done = g.current_amount >= g.target_amount && g.target_amount > 0
+                                const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
+                                return (
+                                    <div className="card stack-12" key={g.id} style={{ padding: 20 }}>
+                                        <div className="hstack" style={{ gap: 12 }}>
+                                            <div className={`ic ${cls}`}><Target className="i" /></div>
+                                            <div className="grow" style={{ minWidth: 0 }}><div className="t">{g.name}</div><div className="meta">{deadlineLabel(g.deadline)}</div></div>
+                                            {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
+                                        </div>
+                                        <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
+                                        <div style={{ fontSize: 13 }}><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></div>
+                                        {goalHint(g) && <div className="banner info" style={{ padding: '10px 12px', fontSize: 12 }}>{goalHint(g)}</div>}
+                                        {done && canArchive && <button className="btn-2 btn-block" onClick={() => archiveGoal(g)}>Tandai selesai dan arsipkan</button>}
+                                        <div className="g2" style={{ marginTop: 'auto' }}>
+                                            <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
+                                            <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                            <button type="button" className="card" onClick={() => { resetForm(); setIsModalOpen(true) }} style={{ borderStyle: 'dashed', minHeight: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                                <Plus className="i" />Tambah goal
+                            </button>
+                        </div>
+                    )}
+                    {renderArchived()}
+                </main>
+                {overlays}
+            </div>
+        )
+    }
+
 
     return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            {/* ── Header ── */}
-            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Target Tabungan</h2>
-                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                    <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                        EB
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Goals</h1>
                     </div>
+                    <button className="icon-btn" aria-label="Tambah goal" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
                 </div>
-            </header>
 
-            {/* ===== MOBILE VIEW ===== */}
-            <div className="md:hidden pb-[80px]">
+                {/* Hero total */}
+                <div className="hero stack">
+                    <span className="lbl">Total terkumpul · {activeGoals.length} goal</span>
+                    <span className="num-xl">{rp(totalTerkumpul)}</span>
+                    <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
+                    <span className="lbl">dari total target {rp(totalTarget)}</span>
+                </div>
+
+                {/* Goal list */}
                 {loading ? (
-                    <div className="flex items-center justify-center py-16">
-                        <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-                    </div>
-                ) : (() => {
-                    const totalTarget = goals.reduce((acc, g) => acc + g.target_amount, 0)
-                    const totalTerkumpul = goals.reduce((acc, g) => acc + g.current_amount, 0)
-                    const totalSisa = Math.max(totalTarget - totalTerkumpul, 0)
-                    const overallProgress = totalTarget > 0 ? Math.min((totalTerkumpul / totalTarget) * 100, 100) : 0
-
-                    return (
-                        <div className="px-4 pt-4 space-y-3">
-                            {/* Summary Card — Neobrutalism lav */}
-                            <div className="brutal-card-md brutal-card-lav p-5">
-                                <p className="neo-label mb-1">Target Tabungan</p>
-                                <p className="neo-amount mt-1">Rp {totalTerkumpul.toLocaleString('id-ID')}</p>
-                                <p className="text-xs font-semibold text-[var(--text-muted)] mt-0.5">dari Rp {totalTarget.toLocaleString('id-ID')}</p>
-                                <div className="flex items-end justify-between mt-3">
-                                    <div>
-                                        <p className="text-[11px] font-bold text-[var(--text-muted)]">Kurang</p>
-                                        <p className="font-black text-base text-[var(--text-primary)]">Rp {totalSisa.toLocaleString('id-ID')}</p>
-                                    </div>
-                                    <span className="text-xs font-black text-[var(--text-primary)]">{overallProgress.toFixed(0)}%</span>
-                                </div>
-                                {/* Progress bar */}
-                                <div className="w-full rounded-full h-2 mt-2 overflow-hidden" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                    <div
-                                        className="h-full rounded-full transition-all duration-500"
-                                        style={{ width: `${overallProgress}%`, background: 'var(--neo-ink)' }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Goal List */}
-                            {goals.length === 0 ? (
-                                <div className="brutal-card-sm p-10 text-center">
-                                    <Target className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
-                                    <p className="text-sm font-semibold text-[var(--text-muted)]">Belum ada target tabungan</p>
-                                </div>
-                            ) : (
-                                goals.map((goal, idx) => {
-                                    const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
-                                    const isCompleted = progress >= 100
-                                    return (
-                                        <div key={goal.id} className="brutal-card-sm p-4"
-                                            style={{ background: CARD_COLORS[idx % CARD_COLORS.length] }}>
-                                            {/* Top Row */}
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
-                                                        style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                                                        {isCompleted
-                                                            ? <CheckCircle2 className="w-5 h-5 text-[var(--success)]" />
-                                                            : <Target className="w-5 h-5 text-[var(--text-primary)]" />
-                                                        }
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-black text-[var(--text-primary)] text-sm truncate">{goal.name}</p>
-                                                        {goal.deadline && (
-                                                            <p className="text-[10px] font-semibold text-[var(--text-muted)] mt-0.5">
-                                                                🗓 {new Date(goal.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <span className="text-xs font-black shrink-0 ml-2 text-[var(--text-primary)]">
-                                                    {progress.toFixed(0)}%
-                                                </span>
-                                            </div>
-
-                                            {/* Progress Bar */}
-                                            <div className="w-full rounded-full h-1.5 mb-3 overflow-hidden" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                <div
-                                                    className="h-full rounded-full transition-all duration-500"
-                                                    style={{ width: `${progress}%`, background: isCompleted ? 'var(--success)' : 'var(--neo-ink)' }}
-                                                />
-                                            </div>
-
-                                            {/* Amount Row */}
-                                            <div className="flex justify-between items-center mb-3">
-                                                <span className="text-xs font-black text-[var(--text-primary)]">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
-                                                <span className="text-xs font-semibold text-[var(--text-muted)]">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <button
-                                                    onClick={() => handleEdit(goal)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                >
-                                                    <Pencil className="w-3.5 h-3.5" />
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => openQuickAdd(goal)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 font-black rounded-[12px] text-xs active:scale-95 transition-all"
-                                                    style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }}
-                                                >
-                                                    <TrendingUp className="w-3.5 h-3.5" />
-                                                    Nabung
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(goal.id)}
-                                                    className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                    style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                    Hapus
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )
-                                })
-                            )}
-
-                            {/* Add New */}
-                            <button
-                                onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                className="w-full rounded-[20px] p-5 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
-                                style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                            >
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                                    style={{ background: 'var(--neo-lav)', border: '2px solid var(--neo-ink)' }}>
-                                    <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
-                                </div>
-                                <span className="font-black">Tambah Target Baru</span>
-                            </button>
-                        </div>
-                    )
-                })()}
-            </div>
-
-            {/* ===== DESKTOP VIEW ===== */}
-            <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
-                {loading ? (
-                    <div className="text-center py-20 text-[var(--text-muted)] font-semibold animate-pulse">Memuat target...</div>
+                    <SkeletonCards count={2} />
+                ) : activeGoals.length === 0 && archivedGoals.length === 0 ? (
+                    <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {goals.map((goal, idx) => {
-                            const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100)
-                            const isCompleted = progress >= 100
-                            return (
-                                <div key={goal.id}
-                                    className="brutal-card card-hover flex flex-col justify-between min-h-[320px] p-6 pb-8"
-                                    style={{ background: CARD_COLORS[idx % CARD_COLORS.length] }}>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-5">
-                                            <div className="w-12 h-12 rounded-[14px] flex items-center justify-center"
-                                                style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                                {isCompleted
-                                                    ? <CheckCircle2 className="w-6 h-6 text-[var(--success)]" />
-                                                    : <Target className="w-6 h-6 text-[var(--text-primary)]" />
-                                                }
-                                            </div>
-                                            <button onClick={() => handleDelete(goal.id)}
-                                                className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                                style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <h3 className="font-black text-lg text-[var(--text-primary)] mb-1 tracking-tight">{goal.name}</h3>
-
-                                        {goal.deadline && (
-                                            <span className="neo-pill text-[10px] mb-4 inline-flex">
-                                                🗓 Target: {new Date(goal.deadline).toLocaleDateString('id-ID')}
-                                            </span>
-                                        )}
-
-                                        <div className="mt-4 mb-2 flex justify-between items-center">
-                                            <span className="neo-label">Tercapai</span>
-                                            <span className="text-lg font-black text-[var(--text-primary)]">{progress.toFixed(0)}%</span>
-                                        </div>
-                                        <div className="w-full rounded-full h-2.5 mb-4 overflow-hidden" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                            <div className="h-full rounded-full transition-all duration-500"
-                                                style={{ width: `${progress}%`, background: isCompleted ? 'var(--success)' : 'var(--neo-ink)' }} />
-                                        </div>
-                                        <div className="flex justify-between p-3 rounded-[14px]"
-                                            style={{ background: 'rgba(20,20,20,0.06)', border: '1.5px solid rgba(20,20,20,0.12)' }}>
-                                            <span className="font-black text-sm text-[var(--text-primary)]">Rp {goal.current_amount.toLocaleString('id-ID')}</span>
-                                            <span className="font-semibold text-sm text-[var(--text-muted)]">/ Rp {goal.target_amount.toLocaleString('id-ID')}</span>
-                                        </div>
+                    activeGoals.map((g, idx) => {
+                        const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
+                        const done = g.current_amount >= g.target_amount && g.target_amount > 0
+                        const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
+                        return (
+                            <div className="card stack-12" key={g.id}>
+                                <div className="hstack" style={{ gap: 12 }}>
+                                    <div className={`ic ${cls}`}><Target className="i" /></div>
+                                    <div className="grow">
+                                        <div className="t">{g.name}</div>
+                                        <div className="meta">{deadlineLabel(g.deadline)}</div>
                                     </div>
-                                    <div className="mt-5 grid grid-cols-2 gap-3 pt-4" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                        <button
-                                            onClick={() => handleEdit(goal)}
-                                            className="py-3 font-bold rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                        >
-                                            <Pencil className="w-4 h-4" /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => openQuickAdd(goal)}
-                                            className="py-3 font-black rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                            style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)', color: 'var(--neo-ink)' }}
-                                        >
-                                            <TrendingUp className="w-4 h-4" /> Nabung
-                                        </button>
-                                    </div>
+                                    {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
                                 </div>
-                            )
-                        })}
-
-                        {/* Add New Card */}
-                        <button
-                            onClick={() => { resetForm(); setIsModalOpen(true); }}
-                            className="rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 font-bold text-sm transition-all min-h-[300px] group active:scale-[0.98]"
-                            style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                        >
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
-                                style={{ background: 'var(--neo-lav)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                <Plus className="w-6 h-6 text-[var(--neo-ink)]" />
+                                <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
+                                <div className="between" style={{ fontSize: 13 }}><span><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></span></div>
+                                {goalHint(g) && <div className="banner info" style={{ padding: '10px 12px', fontSize: 12 }}>{goalHint(g)}</div>}
+                                {done && canArchive && <button className="btn-2 btn-block" onClick={() => archiveGoal(g)}>Tandai selesai dan arsipkan</button>}
+                                <div className="g2">
+                                    <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
+                                    <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
+                                </div>
                             </div>
-                            <span className="font-black">Tambah Target Baru</span>
-                        </button>
-                    </div>
+                        )
+                    })
                 )}
+                {renderArchived()}
             </div>
 
-            {/* Main Modal (Add/Edit Goal) */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetForm} />
-                    <div className="w-full max-w-md z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">{editingId ? 'Edit Target' : 'Target Baru'}</h3>
-                            <button onClick={resetForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSave} className="space-y-5">
-                            <div>
-                                <label className="neo-label block mb-2">Nama Target</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] outline-none"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                    placeholder="Contoh: Beli Laptop"
-                                />
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Target Dana (Rp)</label>
-                                <MoneyInput value={targetAmount} onChange={setTargetAmount} />
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Terkumpul Saat Ini (Rp)</label>
-                                <MoneyInput value={currentAmount} onChange={setCurrentAmount} />
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Batas Waktu</label>
-                                <DatePickerNeo
-                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] outline-none"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                    value={deadline}
-                                    onChange={e => setDeadline(e.target.value)}
-                                />
-                            </div>
-                            <button type="submit"
-                                className="brutal-btn w-full py-3.5 text-sm">
-                                Simpan Target
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Add Savings Modal */}
-            {isQuickAddModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetQuickAddForm} />
-                    <div className="w-full max-w-sm z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">Menabung 🐷</h3>
-                            <button onClick={resetQuickAddForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleQuickAddSave} className="space-y-5">
-                            <div>
-                                <label className="neo-label block mb-2">Jumlah yang ditabung (Rp)</label>
-                                <MoneyInput
-                                    value={quickAddAmountValue}
-                                    onChange={setQuickAddAmountValue}
-                                    autoFocus
-                                    className="focus:ring-[var(--primary)]"
-                                />
-                                <p className="text-xs font-semibold text-[var(--text-muted)] mt-2">Saldo akan ditambahkan ke total terkumpul.</p>
-                            </div>
-                            <button type="submit"
-                                className="brutal-btn w-full py-3.5 text-sm">
-                                + Masukkan Tabungan
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </main>
+            {overlays}
+        </div>
     )
 }
+

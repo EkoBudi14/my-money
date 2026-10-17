@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Onboarding langkah 1</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.dots{display:flex;gap:6px}.dots span{width:24px;height:4px;border-radius:2px;background:var(--border-strong)}.dots span.on{background:var(--accent)}</style>
+</helmet>
+<div class="app" style="height: 844px; background: var(--surface)">
+<div class="scroll" style="padding: 24px 20px 32px; min-height: 844px; box-sizing: border-box; gap: 20px">
+<div class="between"><div class="dots" aria-label="Langkah 1 dari 2"><span class="on"></span><span></span></div><span class="lbl">Langkah 1 dari 2</span></div>
+
+<div class="stack" style="gap: 8px; padding-top: 12px">
+<div class="brand-mark" style="width: 48px; height: 48px; border-radius: 14px; font-size: 20px">C</div>
+<h1 class="h1" style="font-size: 26px; margin-top: 8px">Selamat datang di CatatDuit</h1>
+<p class="sub" style="font-size: 15px; line-height: 1.5">Dua dompet sudah disiapkan untuk transaksi harian. Nama dan saldonya bisa diubah nanti.</p>
+</div>
+
+<div class="card-flush">
+<div class="row"><div class="ic c-cash"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg></div><div class="grow"><div class="t">Tunai</div><div class="meta">Uang cash sehari-hari</div></div><span class="badge b-neutral">Saldo aktif</span></div>
+<div class="row"><div class="ic c-bank"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"></path></svg></div><div class="grow"><div class="t">Rekening bank</div><div class="meta">Transfer dan belanja online</div></div><span class="badge b-neutral">Saldo aktif</span></div>
+</div>
+
+<div class="card stack" style="background: var(--surface-2)">
+<h2 class="h3">Dua jenis dompet</h2>
+<div class="hstack" style="align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5"><span class="ic-s" style="background: var(--accent-tint); color: var(--accent)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect></svg></span><span><b>Saldo aktif</b>: uang untuk dipakai. Dihitung di saldo beranda.</span></div>
+<div class="hstack" style="align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5"><span class="ic-s c-aset"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l7-8 7 8-7 8z"></path></svg></span><span><b>Tabungan inti</b>: uang yang disimpan. Tidak ikut terpakai.</span></div>
+</div>
+
+<div class="stack" style="margin-top: auto">
+<a href="Onboarding2.dc.html" class="btn btn-block">Lanjut: siapkan tabungan</a>
+<a href="Main.dc.html" class="btn-2 btn-block" style="border-color: transparent">Mulai mencatat saja</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

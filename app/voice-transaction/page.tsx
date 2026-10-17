@@ -13,9 +13,11 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   ArrowLeftRight,
+  ChevronLeft,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, CATEGORIES } from '@/types'
@@ -44,6 +46,7 @@ function formatRupiah(n: number) {
 export default function VoiceTransactionPage() {
   const router = useRouter()
   const { showToast } = useToast()
+  const isWeb = useIsWeb()
 
   // State machine
   const [state, setState] = useState<RecordingState>('idle')
@@ -361,9 +364,9 @@ export default function VoiceTransactionPage() {
       }
 
       setState('success')
-      showToast('success', 'Transaksi berhasil disimpan! 🎉')
+      showToast('success', 'Transaksi tersimpan')
     } catch (err: any) {
-      showToast('error', err.message || 'Gagal menyimpan transaksi')
+      showToast('error', err.message || 'Transaksi gagal disimpan. Coba lagi.')
       setState('result')
     }
   }
@@ -382,55 +385,49 @@ export default function VoiceTransactionPage() {
 
   const activeWallets = wallets.filter(w => w.category === 'active')
 
+  // Web: hold Space to talk (DESIGN.md 7.11). Ignored while typing in a field.
+  useEffect(() => {
+    if (!isWeb) return
+    const typing = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)
+    }
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || typing(e)) return
+      if (state === 'idle') { e.preventDefault(); startRecording() }
+    }
+    const up = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || typing(e)) return
+      if (state === 'listening') { e.preventDefault(); stopRecording() }
+    }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWeb, state])
+
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] pb-32 md:pb-10">
+    <main className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] sticky top-0 z-40 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 brutal-card-sm bg-[var(--neo-sky)] flex items-center justify-center border-[2px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] !p-0">
-            <Mic className="w-5 h-5 text-[var(--neo-ink)]" />
-          </div>
+      <div className={isWeb ? 'main' : 'top'} style={isWeb ? { paddingBottom: 0, maxWidth: 760 } : { padding: '16px 20px' }}>
+        <div className="top-l">
+          {!isWeb && <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>}
           <div>
-            <h1 className="font-black text-[var(--text-primary)] text-lg leading-tight">
-              Voice Input
-            </h1>
-            <p className="text-xs text-[var(--text-secondary)] font-bold">
-              Catat transaksi dengan suara
-            </p>
+            <h1 className={isWeb ? 'ptitle' : 'h1'} style={isWeb ? undefined : { fontSize: 20 }}>Voice input</h1>
+            <p className="sub">{isWeb ? 'Catat transaksi pakai suara, cek, lalu simpan.' : 'Catat transaksi dengan suara'}</p>
           </div>
         </div>
-        <button
-          onClick={() => router.push('/')}
-          className="w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </header>
+      </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+      <div className="scroll" style={isWeb ? { maxWidth: 760, margin: '0 auto', padding: '20px clamp(16px,3vw,40px) 40px' } : { maxWidth: 560, margin: '0 auto', paddingTop: 0 }}>
         {/* ── SUCCESS STATE ────────────────────────────────────────────────── */}
         {state === 'success' && (
-          <div className="brutal-card p-8 text-center animate-in zoom-in-95 duration-300 bg-[var(--bg-card)]">
-            <div className="w-20 h-20 bg-[var(--neo-mint)] rounded-full border-4 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-[var(--neo-ink)]" />
-            </div>
-            <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2">
-              Berhasil Disimpan!
-            </h2>
-            <div className="flex flex-col gap-3 mt-8">
-              <button
-                onClick={handleReset}
-                className="w-full brutal-btn !py-3.5 !bg-[var(--neo-sky)] text-white flex items-center justify-center gap-2"
-              >
-                <Mic className="w-4 h-4" />
-                Catat Transaksi Lagi
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="w-full brutal-btn !py-3.5 !bg-white text-[var(--text-primary)]"
-              >
-                Kembali ke Dashboard
-              </button>
+          <div className="card stack" style={{ textAlign: 'center', alignItems: 'center', padding: '28px 20px' }}>
+            <div className="ic-l" style={{ background: 'var(--income-tint)', color: 'var(--income)' }}><CheckCircle2 className="i i-l" /></div>
+            <h2 className="h2" style={{ marginTop: 4 }}>Berhasil disimpan!</h2>
+            <div className="stack" style={{ width: '100%', marginTop: 8 }}>
+              <button onClick={handleReset} className="btn btn-block"><Mic className="i i-s" />Catat lagi</button>
+              <button onClick={() => router.push('/')} className="btn-2 btn-block">Kembali ke beranda</button>
             </div>
           </div>
         )}
@@ -439,284 +436,174 @@ export default function VoiceTransactionPage() {
         {(state === 'idle' || state === 'listening' || state === 'processing') && (
           <>
             {/* Mic Button Area */}
-            <div className="brutal-card p-8 bg-[var(--bg-card)] flex flex-col items-center gap-6">
-              <div className="relative flex items-center justify-center">
+            <div className="card stack" style={{ alignItems: 'center', gap: 20, padding: '32px 20px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {state === 'listening' && (
                   <>
-                    <div className="absolute rounded-full bg-[var(--neo-peach)]/30 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '120px', height: '120px', animationDuration: '2s' }} />
-                    <div className="absolute rounded-full bg-[var(--neo-peach)]/20 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '140px', height: '140px', animationDuration: '3s', animationDelay: '0.5s' }} />
+                    <div className="animate-ping" style={{ position: 'absolute', borderRadius: '50%', background: 'var(--danger-tint)', width: 120, height: 120, animationDuration: '2s' }} />
+                    <div className="animate-ping" style={{ position: 'absolute', borderRadius: '50%', background: 'var(--danger-tint)', width: 140, height: 140, animationDuration: '3s', animationDelay: '0.5s' }} />
                   </>
                 )}
-
                 <button
                   id="voice-mic-btn"
                   onClick={state === 'idle' ? startRecording : stopRecording}
                   disabled={state === 'processing'}
-                  className={`relative z-10 w-28 h-28 rounded-[32px] border-[4px] border-[var(--neo-ink)] flex items-center justify-center transition-all duration-200 shadow-[8px_8px_0_var(--neo-ink)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[6px_6px_0_var(--neo-ink)] active:translate-x-[8px] active:translate-y-[8px] active:shadow-none ${
-                    state === 'listening'
-                      ? 'bg-[var(--neo-peach)]'
-                      : state === 'processing'
-                      ? 'bg-slate-200 cursor-wait'
-                      : 'bg-[var(--neo-lav)]'
-                  }`}
+                  style={{
+                    position: 'relative', zIndex: 10, width: 112, height: 112, borderRadius: 32, border: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-accent)',
+                    background: state === 'listening' ? 'var(--danger)' : state === 'processing' ? 'var(--border-strong)' : 'var(--accent)',
+                    cursor: state === 'processing' ? 'wait' : 'pointer',
+                  }}
                 >
-                  {state === 'processing' ? (
-                    <Loader2 className="w-10 h-10 text-[var(--neo-ink)] animate-spin" />
-                  ) : state === 'listening' ? (
-                    <MicOff className="w-10 h-10 text-[var(--neo-ink)]" />
-                  ) : (
-                    <Mic className="w-10 h-10 text-[var(--neo-ink)]" />
-                  )}
+                  {state === 'processing' ? <Loader2 className="i i-l animate-spin" /> : state === 'listening' ? <MicOff className="i i-l" /> : <Mic className="i i-l" />}
                 </button>
               </div>
 
-              <div className="text-center space-y-1.5 mt-4">
-                {state === 'idle' && (
-                  <>
-                    <p className="font-black text-[var(--text-primary)] text-lg">
-                      Tekan mic & bicara
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">
-                      Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"
-                    </p>
-                  </>
-                )}
-                {state === 'listening' && (
-                  <>
-                    <p className="font-black text-[var(--neo-ink)] text-lg animate-pulse">
-                      🎙️ Sedang mendengarkan...
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">
-                      Otomatis berhenti saat Anda selesai bicara ({30 - recordingTime}s)
-                    </p>
-                  </>
-                )}
-                {state === 'processing' && (
-                  <>
-                    <p className="font-black text-[var(--text-primary)] text-lg">
-                      AI sedang menganalisa...
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">Mohon tunggu sebentar</p>
-                  </>
-                )}
+              <div className="stack" style={{ textAlign: 'center', gap: 4 }}>
+                {state === 'idle' && (<>
+                  <p className="t" style={{ fontSize: 16 }}>{isWeb ? 'Klik mic lalu bicara' : 'Tekan mic & bicara'}</p>
+                  <p className="sub" style={{ whiteSpace: 'normal' }}>{isWeb ? 'Atau tahan tombol spasi selama bicara.' : 'Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"'}</p>
+                </>)}
+                {state === 'listening' && (<>
+                  <p className="t" style={{ fontSize: 16, color: 'var(--danger)' }}>Sedang mendengarkan…</p>
+                  <p className="sub">Otomatis berhenti saat selesai ({30 - recordingTime}s)</p>
+                </>)}
+                {state === 'processing' && (<>
+                  <p className="t" style={{ fontSize: 16 }}>AI sedang menganalisa…</p>
+                  <p className="sub">Mohon tunggu sebentar</p>
+                </>)}
               </div>
             </div>
 
+            {/* Example chips */}
+            {state === 'idle' && (
+              <div className="stack">
+              <span className="lbl" style={{ fontWeight: 600 }}>Contoh kalimat</span>
+              <div className="chips">
+                {['makan siang 35 ribu', 'bensin 50 ribu', 'terima gaji 5 juta', 'transfer ke bibit 500 ribu'].map(ex => (
+                  <span key={ex} className="chip">{ex}</span>
+                ))}
+              </div>
+              </div>
+            )}
+
             {error && (
-              <div className="brutal-card-sm p-4 animate-in fade-in bg-[var(--neo-peach)]">
-                <p className="text-sm font-black text-[var(--text-primary)]">{error}</p>
-                <button
-                  onClick={handleReset}
-                  className="mt-2 text-xs font-bold text-[var(--text-primary)] underline decoration-[var(--neo-ink)] decoration-2"
-                >
-                  Coba lagi
-                </button>
+              <div className="banner warn" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ whiteSpace: 'normal' }}>{error}</span>
+                <button onClick={handleReset} className="link" style={{ color: 'var(--warn)' }}>Coba lagi</button>
               </div>
             )}
           </>
         )}
 
-        {/* ── RESULT STATE ─────────────────────────────────────────────────── */}
+        {/* ── RESULT STATE (VoiceHasil — editable) ─────────────────────────── */}
         {(state === 'result' || state === 'saving') && parsed.length > 0 && (
-          <div className="w-full max-w-lg mx-auto flex flex-col gap-6 animate-in slide-in-from-bottom-8 fade-in duration-500 pb-10">
+          <div className="stack-12" style={{ paddingBottom: 24 }}>
 
             {/* Transcript recap */}
             {transcript && (
-              <div className="brutal-card-sm p-4 bg-[var(--neo-yellow)] flex items-start gap-3">
-                <Mic className="w-4 h-4 text-[var(--neo-ink)] mt-0.5 flex-shrink-0" />
+              <div className="card hstack" style={{ gap: 10, alignItems: 'flex-start' }}>
+                <div className="ic-s c-transfer"><Mic className="i i-s" /></div>
                 <div>
-                  <p className="text-xs font-black text-[var(--neo-ink)] uppercase tracking-wider mb-1">Yang AI Dengar</p>
-                  <p className="text-sm text-[var(--text-primary)] font-bold italic leading-relaxed">"{transcript}"</p>
+                  <div className="lbl">Yang AI dengar</div>
+                  <p className="t" style={{ whiteSpace: 'normal', fontStyle: 'italic' }}>“{transcript}”</p>
                 </div>
               </div>
             )}
 
-            {/* Review Cards (Loop over parsed transactions) */}
-            <div className="flex flex-col gap-6">
-              {parsed.map((tx, index) => {
-                const isExpense = tx.type === 'pengeluaran'
-                const isIncome = tx.type === 'pemasukan'
-                const isTopup = tx.type === 'topup'
+            {/* Review cards */}
+            {parsed.map((tx, index) => {
+              const isIncome = tx.type === 'pemasukan'
+              const isTopup = tx.type === 'topup'
+              const currentCategories = isIncome
+                ? CATEGORIES.pemasukan
+                : isTopup ? [{ name: 'Transfer', color: '' }] : CATEGORIES.pengeluaran
+              const typeIcon = isIncome ? <ArrowUpCircle className="i i-s" /> : isTopup ? <ArrowLeftRight className="i i-s" /> : <ArrowDownCircle className="i i-s" />
+              const typeCls = isIncome ? 'c-gaji' : isTopup ? 'c-transfer' : 'c-makan'
 
-                const currentCategories = isIncome
-                  ? CATEGORIES.pemasukan
-                  : isTopup
-                  ? [{ name: 'Transfer', color: '' }]
-                  : CATEGORIES.pengeluaran
+              return (
+                <div key={index} className="card stack-12">
+                  <div className="hstack" style={{ gap: 10 }}>
+                    <div className={`ic-s ${typeCls}`}>{typeIcon}</div>
+                    <h3 className="h3">Transaksi {index + 1}</h3>
+                  </div>
 
-                return (
-                  <div key={index} className="brutal-card p-6 bg-[var(--bg-card)]">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-black text-[var(--text-primary)] flex items-center gap-2">
-                        {isExpense ? (
-                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
-                            <ArrowDownCircle className="w-5 h-5" />
-                          </div>
-                        ) : isIncome ? (
-                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
-                            <ArrowUpCircle className="w-5 h-5" />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 rounded-[8px] bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center text-[var(--text-primary)]">
-                            <ArrowLeftRight className="w-5 h-5" />
-                          </div>
-                        )}
-                        Transaksi {index + 1}
-                      </h3>
-                    </div>
+                  {/* Type segmented */}
+                  <div className="seg">
+                    {(['pengeluaran', 'pemasukan', 'topup'] as const).map(t => (
+                      <button key={t} className={tx.type === t ? 'on' : ''} onClick={() => updateParsed(index, 'type', t)}>
+                        {t === 'pemasukan' ? 'Masuk' : t === 'pengeluaran' ? 'Keluar' : 'Transfer'}
+                      </button>
+                    ))}
+                  </div>
 
-                    <div className="flex flex-col gap-5">
-                      <div className="flex border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
-                        {['pengeluaran', 'pemasukan', 'topup'].map((t, idx) => (
-                          <button
-                            key={t}
-                            onClick={() => updateParsed(index, 'type', t)}
-                            className={`flex-1 py-2 text-sm font-black transition-colors ${idx !== 2 ? 'border-r-2 border-[var(--neo-ink)]' : ''} ${
-                              tx.type === t
-                                ? t === 'pemasukan'
-                                  ? 'bg-[var(--neo-mint)] text-[var(--text-primary)]'
-                                  : t === 'pengeluaran'
-                                  ? 'bg-[var(--neo-peach)] text-[var(--text-primary)]'
-                                  : 'bg-[var(--neo-sky)] text-[var(--text-primary)]'
-                                : 'bg-white text-[var(--text-muted)] hover:bg-[var(--bg-hover)]'
-                            }`}
-                          >
-                            {t === 'pemasukan' ? 'Masuk' : t === 'pengeluaran' ? 'Keluar' : 'Transfer'}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div>
-                        <label className="neo-label">
-                          Nominal
-                        </label>
-                        <div className="flex items-center gap-2 border-b-[3px] border-[var(--neo-ink)] focus-within:bg-[var(--neo-yellow)] pb-1.5 px-2 transition-colors">
-                          <span className="text-[var(--text-primary)] font-black text-lg">Rp</span>
-                          <input
-                            type="text"
-                            value={formatRupiah(tx.amount)}
-                            onChange={e => {
-                              const raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '')
-                              updateParsed(index, 'amount', parseInt(raw) || 0)
-                            }}
-                            className="w-full text-2xl font-black text-[var(--text-primary)] bg-transparent outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="neo-label">
-                          Keterangan
-                        </label>
-                        <input
-                          type="text"
-                          value={tx.title}
-                          onChange={e => updateParsed(index, 'title', e.target.value)}
-                          className="w-full text-base font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none pb-1.5 px-2 transition-colors"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="neo-label">
-                          Tanggal
-                        </label>
-                        <DatePickerNeo
-                          value={tx.date}
-                          onChange={e => updateParsed(index, 'date', e.target.value)}
-                          className="w-full text-sm font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none pb-1.5 px-2 transition-colors"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="neo-label">
-                          Kategori
-                        </label>
-                          <NeoSelect
-                            value={tx.category}
-                            onChange={val => updateParsed(index, 'category', val)}
-                            options={currentCategories.map(c => ({ label: c.name, value: c.name }))}
-                            className="w-full font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                          />
-                      </div>
+                  {/* Nominal */}
+                  <div className="field">Nominal
+                    <div className="amount-box">
+                      <span className="cur">Rp</span>
+                      <input
+                        className="val"
+                        inputMode="numeric"
+                        value={formatRupiah(tx.amount)}
+                        onChange={e => {
+                          const raw = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '')
+                          updateParsed(index, 'amount', parseInt(raw) || 0)
+                        }}
+                      />
                     </div>
                   </div>
-                )
-              })}
-            </div>
 
-            <div className="brutal-card p-6 bg-[var(--bg-card)]">
-              <h3 className="text-lg font-black text-[var(--text-primary)] mb-4">Pengaturan Dompet</h3>
-              
-              {parsed.some(tx => tx.type === 'topup') ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="neo-label">
-                      Dari Dompet
-                    </label>
+                  {/* Keterangan */}
+                  <label className="field">Keterangan
+                    <input className="input" value={tx.title} onChange={e => updateParsed(index, 'title', e.target.value)} />
+                  </label>
+
+                  {/* Tanggal */}
+                  <label className="field">Tanggal
+                    <DatePickerNeo className="input" value={tx.date} onChange={e => updateParsed(index, 'date', e.target.value)} />
+                  </label>
+
+                  {/* Kategori */}
+                  <div className="field">Kategori
                     <NeoSelect
-                      value={sourceWalletId}
-                      onChange={val => setSourceWalletId(val)}
-                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))}
-                      placeholder="Pilih"
-                      className="w-full text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="neo-label">
-                      Ke Dompet
-                    </label>
-                    <NeoSelect
-                      value={selectedWalletId}
-                      onChange={val => setSelectedWalletId(val)}
-                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))}
-                      placeholder="Pilih"
-                      className="w-full text-sm font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-3 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
+                      value={tx.category}
+                      onChange={val => updateParsed(index, 'category', val)}
+                      options={currentCategories.map(c => ({ label: c.name, value: c.name }))}
                     />
                   </div>
                 </div>
+              )
+            })}
+
+            {/* Wallet settings */}
+            <div className="card stack-12">
+              <h3 className="h3">Pengaturan dompet</h3>
+              {parsed.some(tx => tx.type === 'topup') ? (
+                <div className="g2">
+                  <div className="field">Dari dompet
+                    <NeoSelect value={sourceWalletId} onChange={setSourceWalletId} placeholder="Pilih"
+                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))} />
+                  </div>
+                  <div className="field">Ke dompet
+                    <NeoSelect value={selectedWalletId} onChange={setSelectedWalletId} placeholder="Pilih"
+                      options={activeWallets.map(w => ({ label: w.name, value: w.id.toString() }))} />
+                  </div>
+                </div>
               ) : (
-                <div>
-                  <label className="neo-label">
-                    Gunakan Dompet
-                  </label>
-                  <NeoSelect
-                    value={selectedWalletId}
-                    onChange={val => setSelectedWalletId(val)}
-                    options={wallets.map(w => ({ label: `${w.name} — Rp ${formatRupiah(w.balance)}`, value: w.id.toString() }))}
-                    placeholder="Pilih"
-                    className="w-full font-black text-[var(--text-primary)] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] px-4 py-3 transition-colors hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                  />
+                <div className="field">Gunakan dompet
+                  <NeoSelect value={selectedWalletId} onChange={setSelectedWalletId} placeholder="Pilih"
+                    options={wallets.map(w => ({ label: `${w.name} — Rp ${formatRupiah(w.balance)}`, value: w.id.toString() }))} />
                 </div>
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3 pb-4">
-              <button
-                id="voice-confirm-btn"
-                onClick={handleSave}
-                disabled={state === 'saving'}
-                className="w-full brutal-btn !py-4 !bg-[var(--neo-mint)] text-[var(--text-primary)] disabled:opacity-60 disabled:cursor-wait flex items-center justify-center gap-2"
-              >
-                {state === 'saving' ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Menyimpan...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    Simpan Transaksi ({parsed.length})
-                  </>
-                )}
+            {/* Actions */}
+            <div className="stack">
+              <button id="voice-confirm-btn" className="btn btn-block" onClick={handleSave} disabled={state === 'saving'}>
+                {state === 'saving' ? 'Menyimpan…' : <><CheckCircle2 className="i i-s" />Simpan transaksi ({parsed.length})</>}
               </button>
-              <button
-                onClick={handleReset}
-                disabled={state === 'saving'}
-                className="w-full brutal-btn !py-4 !bg-white text-[var(--text-primary)] flex items-center justify-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Ulangi Recording
+              <button className="btn-2 btn-block" onClick={handleReset} disabled={state === 'saving'}>
+                <RotateCcw className="i i-s" />Ulangi rekaman
               </button>
             </div>
           </div>

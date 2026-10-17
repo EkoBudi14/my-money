@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Tambah transaksi web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.catb{min-height:72px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:12px;font-weight:600;color:var(--text);text-align:center;line-height:1.25}
+.catb.on{border-color:var(--accent);background:var(--accent-tint)}
+.ghost-block{background:var(--surface);border:1px solid var(--border);border-radius:20px}
+</style>
+</helmet>
+<div class="pg" style="position: relative; min-height: 900px">
+<aside class="side" aria-hidden="true">
+<div class="brand"><div class="brand-mark">C</div><div style="font-size: 17px; font-weight: 700">CatatDuit</div></div>
+<a href="Web.dc.html" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Beranda</a>
+<a href="RiwayatWeb.dc.html"><svg class="i" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Riwayat</a>
+<a href="AnalitikWeb.dc.html"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Analitik</a>
+<a href="DompetWeb.dc.html"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect></svg>Dompet &amp; tabungan</a>
+</aside>
+<main class="main" aria-hidden="true">
+<div class="ptop"><h1 class="ptitle">Halo, Eko</h1></div>
+<div class="wrap"><div class="hero" style="flex: 2 1 380px; height: 180px"></div><div class="ghost-block" style="flex: 1 1 200px; height: 180px"></div><div class="ghost-block" style="flex: 1 1 200px; height: 180px"></div></div>
+<div class="wrap"><div class="ghost-block" style="flex: 3 1 420px; height: 220px"></div><div class="ghost-block" style="flex: 2 1 300px; height: 220px"></div></div>
+</main>
+
+<div class="modal-scrim">
+<div class="modal" role="dialog" aria-labelledby="tw-title">
+<div class="between" style="padding: 20px 24px; border-bottom: 1px solid var(--border)">
+<h2 class="h2" id="tw-title" style="font-size: 18px">Pengeluaran baru</h2>
+<div class="hstack" style="gap: 6px">
+<a href="ScanWeb.dc.html" class="btn-2" style="height: 40px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Scan struk</a>
+<a href="VoiceWeb.dc.html" class="btn-2" style="height: 40px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Suara</a>
+<a href="Web.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+</div>
+
+<div style="padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 24px">
+<div class="stack-12" style="flex: 1 1 280px">
+<div class="seg"><button class="on">Pengeluaran</button><button>Pemasukan</button><button>Transfer</button></div>
+<div class="stack">
+<div class="lbl" style="font-weight: 600">Jumlah</div>
+<div class="amount-box"><span class="cur">Rp</span><span class="val">35.000</span></div>
+<div class="chips"><button class="chip">+10rb</button><button class="chip">+50rb</button><button class="chip">+100rb</button><button class="chip">+500rb</button></div>
+</div>
+<div class="g2">
+<div class="field">Tanggal<div class="input">16 Okt 2026</div></div>
+<div class="field">Jam<div class="input">12.30</div></div>
+</div>
+<div class="field">Dompet
+<div class="input"><div class="ic-s c-ewallet"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg></div><span class="grow" style="font-weight: 600">GoPay</span><span class="lbl">Rp 210.000</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+</div>
+<label class="field">Catatan (opsional)<textarea class="input" placeholder="Nasi padang dekat kantor" style="min-height: 64px"></textarea></label>
+</div>
+
+<div class="stack-12" style="flex: 1.3 1 340px">
+<div class="field"><div class="between"><span>Kategori</span><span class="lbl" style="font-weight: 500">Wajib dipilih</span></div>
+<div class="g4">
+<button class="catb"><span class="ic-s c-dapur"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H6"></path><circle cx="9" cy="19" r="1.5"></circle><circle cx="17" cy="19" r="1.5"></circle></svg></span>Kebutuhan dapur</button>
+<button class="catb on"><span class="ic-s c-makan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></span>Makan di luar</button>
+<button class="catb"><span class="ic-s c-transport"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path><path d="M7 18v2M17 18v2M3 13h18"></path></svg></span>Transportasi</button>
+<button class="catb"><span class="ic-s c-rumah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></span>Tempat tinggal</button>
+<button class="catb"><span class="ic-s c-tagihan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg></span>Tagihan</button>
+<button class="catb"><span class="ic-s c-belanja"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg></span>Belanja</button>
+<button class="catb"><span class="ic-s c-kesehatan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"></path></svg></span>Kesehatan</button>
+<button class="catb"><span class="ic-s c-cicilan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Cicilan &amp; utang</button>
+<button class="catb"><span class="ic-s c-hiburan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M3 12h18"></path></svg></span>Pribadi &amp; hiburan</button>
+<button class="catb"><span class="ic-s c-edukasi"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path><path d="M4 19V5"></path></svg></span>Edukasi &amp; donasi</button>
+<button class="catb"><span class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></span>Lainnya</button>
+<button class="catb" style="border-style: dashed; color: var(--text-2)"><span class="ic-s" style="border: 1.5px dashed var(--border-strong)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>Kategori baru</button>
+</div>
+</div>
+<div class="card stack" style="background: var(--surface-2); padding: 12px; gap: 8px" aria-label="Dampak ke budget"><div class="between" style="font-size: 13px"><span style="font-weight: 600">Budget Makan di luar</span><span class="lbl" style="font-weight: 700; color: var(--text-2)">Dalam batas</span></div><div class="between" style="font-size: 12px"><span class="lbl">Terpakai + baru</span><b>Rp 1.245.000 / 1.500.000</b></div><div class="bar"><div style="width: 83%; background: #F59E0B"></div></div><span class="lbl">Sisa: <b style="color: var(--text)">Rp 255.000</b></span></div>
+<div class="toggle-row"><div class="grow"><div class="t">Ada yang nitip bayar?</div><div class="meta">Split bill, bagian teman jadi piutang</div></div><button class="switch" aria-label="Split bill"></button></div>
+<div class="toggle-row"><div class="grow"><div class="t">Ini talangan?</div><div class="meta">Tidak dihitung sebagai pengeluaran</div></div><button class="switch" aria-label="Talangan"></button></div>
+</div>
+</div>
+
+<div class="between" style="padding: 16px 24px; border-top: 1px solid var(--border)">
+<span class="lbl">Tekan Enter untuk simpan, Esc untuk tutup</span>
+<div class="hstack"><a class="btn-2" href="Web.dc.html">Batal</a><button class="btn">Simpan pengeluaran</button></div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

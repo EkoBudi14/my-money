@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Tambah agenda</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.swc{width:36px;height:36px;border-radius:18px;border:3px solid var(--surface);box-shadow:0 0 0 1.5px var(--border);padding:0}.swc.on{box-shadow:0 0 0 2.5px var(--text)}</style>
+</helmet>
+<div class="app" style="height: 844px">
+<div class="scroll" aria-hidden="true">
+<div class="top"><h1 class="h1">Halo, Eko</h1></div>
+<div class="card" style="height: 160px"></div>
+</div>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-labelledby="ab-title" style="top: 270px">
+<div class="grabber"></div>
+<div class="between">
+<div><p class="sub">Jumat, 16 Oktober 2026</p><h2 class="h2" id="ab-title" style="font-size: 18px">Tambah agenda</h2></div>
+<a href="Main.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+<label class="field">Isi<input class="input" type="text" placeholder="Bayar listrik, meeting jam 2"></label>
+<div class="field">Tipe
+<div class="seg"><button class="on">Catatan</button><button>Pengingat</button></div>
+</div>
+<div class="field">Warna label
+<div class="hstack" style="gap: 10px">
+<button class="swc on" aria-label="Biru" style="background: #3B82F6"></button>
+<button class="swc" aria-label="Hijau" style="background: #22C55E"></button>
+<button class="swc" aria-label="Kuning" style="background: #F59E0B"></button>
+<button class="swc" aria-label="Merah" style="background: #F43F5E"></button>
+<button class="swc" aria-label="Ungu" style="background: #8B5CF6"></button>
+</div>
+</div>
+<div class="g2" style="margin-top: auto"><a href="Main.dc.html" class="btn-2">Batal</a><button class="btn" style="height: 44px; font-size: 14px">Simpan agenda</button></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

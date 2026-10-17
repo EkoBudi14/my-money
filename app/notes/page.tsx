@@ -1,400 +1,244 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, X, StickyNote, Calendar, Save } from 'lucide-react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { ChevronLeft, Plus, Trash2, X, Search, StickyNote } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useNotes, useInvalidate, qk } from '@/hooks/useAppData'
+import { restoreRow } from '@/lib/undo'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import { SkeletonCards } from '@/components/Skeleton'
+import FieldError from '@/components/FieldError'
 
 interface Note {
-    id: number
-    title: string
-    content: string
-    created_at: string
-    updated_at: string
+  id: number
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
 }
 
+const formatDate = (s: string) =>
+  new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
 export default function NotesPage() {
-    const { showToast } = useToast()
-    const { showConfirm } = useConfirm()
-    const { showSuccess } = useSuccessModal()
-    const [notes, setNotes] = useState<Note[]>([])
-    const [loading, setLoading] = useState(true)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const { showToast } = useToast()
+  const { showConfirm } = useConfirm()
+  const { showSuccess } = useSuccessModal()
 
-    // Form state
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
+  const notesQuery = useNotes()
+  const invalidate = useInvalidate()
+  const notes = useMemo(() => notesQuery.data ?? [], [notesQuery.data])
+  const loading = notesQuery.isLoading
+  const [query, setQuery] = useState('')
+  const isWeb = useIsWeb()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [formError, setFormError] = useState('')
 
-    useEffect(() => {
-        fetchNotes()
-    }, [])
+  const fetchNotes = () => invalidate([qk.notes])
 
-    const fetchNotes = async () => {
-        setLoading(true)
-        const { data, error } = await supabase
-            .from('notes')
-            .select('*')
-            .order('updated_at', { ascending: false })
+  const resetForm = () => { setTitle(''); setContent(''); setEditingNote(null); setFormError(''); setIsModalOpen(false) }
 
-        if (error) {
-            console.error('Error fetching notes:', error)
-        } else {
-            setNotes(data || [])
-        }
-        setLoading(false)
+  // Closing a filled form asks first (DESIGN-TAMBAHAN §10 / PolaDialog §4).
+  const requestCloseForm = async () => {
+    const dirty = editingNote ? (title !== editingNote.title || content !== editingNote.content) : (title.trim() !== '' || content.trim() !== '')
+    if (dirty && !(await showConfirm({ title: 'Buang perubahan?', message: 'Isian form ini belum disimpan.', confirmText: 'Buang', cancelText: 'Lanjut isi' }))) return
+    resetForm()
+  }
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim() && !content.trim()) { setFormError('Isi judul atau isi catatan.'); return }
+    const now = new Date().toISOString()
+
+    if (editingNote) {
+      const { error } = await supabase.from('notes').update({ title, content, updated_at: now }).eq('id', editingNote.id)
+      if (error) { showToast('error', 'Catatan gagal disimpan. Coba lagi.'); console.error(error) }
+      else showToast('success', 'Perubahan tersimpan')
+    } else {
+      const { error } = await supabase.from('notes').insert([{ title: title || 'Catatan Baru', content, created_at: now, updated_at: now }])
+      if (error) { showToast('error', 'Catatan gagal disimpan. Coba lagi.'); console.error(error) }
+      else showToast('success', 'Catatan tersimpan')
     }
+    fetchNotes()
+    resetForm()
+  }
 
-    const resetForm = () => {
-        setTitle('')
-        setContent('')
-        setEditingNote(null)
-        setIsModalOpen(false)
+  const handleDelete = async (id: number) => {
+    const note = notes.find(n => n.id === id)
+    const confirmed = await showConfirm({
+      title: `Hapus catatan “${note?.title || 'Catatan Baru'}”?`,
+      message: 'Catatan dihapus permanen.',
+      confirmText: 'Hapus catatan',
+      cancelText: 'Batal',
+    })
+    if (!confirmed) return
+    const { error } = await supabase.from('notes').delete().eq('id', id)
+    if (error) { showToast('error', 'Catatan gagal dihapus. Coba lagi.'); console.error(error) }
+    else {
+      fetchNotes()
+      showToast('success', 'Catatan dihapus', 6000, {
+        action: {
+          label: 'Urungkan',
+          onClick: async () => {
+            if (note && await restoreRow('notes', { ...note })) { showToast('success', 'Catatan dikembalikan'); fetchNotes() }
+            else showToast('error', 'Catatan gagal dikembalikan.')
+          },
+        },
+      })
     }
+  }
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault()
+  const handleEdit = (note: Note) => {
+    setEditingNote(note); setTitle(note.title); setContent(note.content); setIsModalOpen(true)
+  }
 
-        if (!title.trim() && !content.trim()) {
-            showToast('warning', 'Catatan tidak boleh kosong')
-            return
-        }
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return notes
+    return notes.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q))
+  }, [notes, query])
 
-        const now = new Date().toISOString()
+  // Sheets / dialogs shared by the mobile and web layouts.
+  const overlays = (
+      <>
+      {/* Create / edit sheet */}
+      {isModalOpen && (
+        <>
+          <div className="scrim" onClick={requestCloseForm} />
+          <div className="sheet">
+            <div className="grabber" />
+            <div className="between">
+              <h2 className="h2">{editingNote ? 'Ubah catatan' : 'Tulis catatan'}</h2>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={requestCloseForm}><X className="i" /></button>
+            </div>
+            <form onSubmit={handleSave} className="stack-12">
+              <label className="field">Judul (opsional)
+                <input className={`input ${formError ? 'bad' : ''}`} type="text" placeholder="Judul catatan" value={title} onChange={e => { setTitle(e.target.value); setFormError('') }} autoFocus />
+              </label>
+              <label className="field">Isi
+                <textarea className="input" style={{ minHeight: 160 }} placeholder="Ketik catatanmu di sini…" value={content} onChange={e => { setContent(e.target.value); setFormError('') }} />
+                <FieldError>{formError}</FieldError>
+              </label>
+              <div className="between">
+                <span className="lbl">{content.length} karakter</span>
+                <button type="submit" className="btn" style={{ minWidth: 140 }}>{editingNote ? 'Simpan perubahan' : 'Simpan catatan'}</button>
+              </div>
+              {editingNote && (
+                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingNote.id; resetForm(); handleDelete(id) }}>
+                  <Trash2 className="i i-s" />Hapus catatan
+                </button>
+              )}
+            </form>
+          </div>
+        </>
+      )}
+      </>
+  )
 
-        if (editingNote) {
-            // Update
-            const { error } = await supabase
-                .from('notes')
-                .update({
-                    title,
-                    content,
-                    updated_at: now
-                })
-                .eq('id', editingNote.id)
-
-            if (error) {
-                showToast('error', 'Gagal mengupdate catatan')
-                console.error(error)
-            } else {
-                showSuccess({
-                    type: 'edit',
-                    message: 'Catatan berhasil diperbarui!'
-                })
-            }
-        } else {
-            // Insert
-            const { error } = await supabase
-                .from('notes')
-                .insert([{
-                    title: title || 'Catatan Baru',
-                    content,
-                    created_at: now,
-                    updated_at: now
-                }])
-
-            if (error) {
-                showToast('error', 'Gagal menyimpan catatan')
-                console.error(error)
-            } else {
-                showSuccess({
-                    type: 'create',
-                    message: 'Catatan baru berhasil disimpan!'
-                })
-            }
-        }
-
-        fetchNotes()
-        resetForm()
-    }
-
-    const handleDelete = async (id: number) => {
-        const confirmed = await showConfirm({
-            title: 'Hapus Catatan?',
-            message: 'Tindakan ini tidak dapat dibatalkan.',
-            confirmText: 'Ya, Hapus',
-            cancelText: 'Batal'
-        })
-
-        if (confirmed) {
-            const { error } = await supabase
-                .from('notes')
-                .delete()
-                .eq('id', id)
-
-            if (error) {
-                showToast('error', 'Gagal menghapus catatan')
-                console.error(error)
-            } else {
-                showSuccess({
-                    type: 'delete',
-                    message: 'Catatan berhasil dihapus.'
-                })
-                fetchNotes()
-            }
-        }
-    }
-
-    const handleEdit = (note: Note) => {
-        setEditingNote(note)
-        setTitle(note.title)
-        setContent(note.content)
-        setIsModalOpen(true)
-    }
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
-
-    // Neobrutalism sticky note colors — cycling
-    const NOTE_COLORS = [
-        'var(--neo-yellow)',
-        'var(--neo-mint)',
-        'var(--neo-sky)',
-        'var(--neo-peach)',
-        'var(--neo-lav)',
-        'var(--neo-pink)',
-    ]
-
+  // ── Web (>=768px): CatatanWeb — search in the header + note grid ──
+  if (isWeb) {
     return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            {/* ── Header ── */}
-            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Catatan Keuangan</h2>
-                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                    <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                        EB
-                    </div>
-                </div>
-            </header>
-
-            {/* Floating Action Button - Desktop only */}
-            <button
-                onClick={() => setIsModalOpen(true)}
-                className="hidden md:flex fixed bottom-10 right-10 z-40 brutal-btn group items-center justify-center w-14 h-14 p-0 rounded-full"
-                style={{ borderRadius: '50%' }}
-            >
-                <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
-            </button>
-
-            {/* ===== MOBILE VIEW ===== */}
-            <div className="md:hidden pb-[80px]">
-                {loading ? (
-                    <div className="flex items-center justify-center py-16">
-                        <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-                    </div>
-                ) : (
-                    <div className="px-4 pt-4 space-y-3">
-                        {notes.length === 0 ? (
-                            <div className="brutal-card-sm p-10 text-center">
-                                <StickyNote className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
-                                <p className="text-sm font-semibold text-[var(--text-muted)]">Belum ada catatan</p>
-                            </div>
-                        ) : (
-                            notes.map((note, idx) => (
-                                <div key={note.id}
-                                    className="brutal-card-sm p-4"
-                                    style={{ background: NOTE_COLORS[idx % NOTE_COLORS.length] }}>
-                                    {/* Top Row: Title + date */}
-                                    <div className="flex items-start justify-between mb-2">
-                                        <h3 className="font-black text-[var(--text-primary)] text-sm flex-1 mr-2 line-clamp-1">{note.title}</h3>
-                                        <span className="text-[10px] font-semibold text-[var(--text-muted)] shrink-0 flex items-center gap-1">
-                                            <Calendar className="w-3 h-3" />
-                                            {formatDate(note.updated_at)}
-                                        </span>
-                                    </div>
-
-                                    {/* Content preview */}
-                                    <p className="text-[var(--text-secondary)] text-xs leading-relaxed line-clamp-3 mb-3 whitespace-pre-wrap">
-                                        {note.content || <span className="italic text-[var(--text-muted)]">Tidak ada isi catatan</span>}
-                                    </p>
-
-                                    {/* Action Buttons */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button
-                                            onClick={() => handleEdit(note)}
-                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                        >
-                                            <Pencil className="w-3.5 h-3.5" />
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(note.id)}
-                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-
-                        {/* Add New */}
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="w-full rounded-[20px] p-4 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
-                            style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                        >
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                                style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)' }}>
-                                <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
-                            </div>
-                            <span className="font-black">Tambah Catatan Baru</span>
-                        </button>
-                    </div>
-                )}
+      <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="main">
+          <div className="ptop">
+            <h1 className="ptitle">Catatan</h1>
+            <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <label className="input search" style={{ width: 280, cursor: 'text' }}>
+                <Search className="i i-s" style={{ color: 'var(--text-2)' }} />
+                <input type="text" placeholder="Cari catatan" aria-label="Cari catatan" value={query} onChange={e => setQuery(e.target.value)}
+                  style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }} />
+              </label>
+              <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Tulis catatan</button>
             </div>
+          </div>
 
-            {/* ===== DESKTOP VIEW ===== */}
-            <div className="hidden md:block p-5 md:p-8 relative min-h-[calc(100vh-90px)]">
-                {loading ? (
-                    <div className="text-center py-20 text-[var(--text-muted)] font-semibold animate-pulse">Memuat catatan...</div>
-                ) : notes.length === 0 ? (
-                    <div className="brutal-card flex flex-col items-center justify-center py-20 text-center h-[400px]"
-                        style={{ background: 'var(--neo-yellow)' }}>
-                        <div className="w-20 h-20 rounded-[20px] flex items-center justify-center mb-6"
-                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-sm)' }}>
-                            <StickyNote className="w-10 h-10 text-[var(--text-primary)]" />
-                        </div>
-                        <h3 className="text-xl font-black text-[var(--text-primary)] mb-2">Belum ada catatan</h3>
-                        <p className="text-[var(--text-secondary)] max-w-sm mb-8 font-semibold">
-                            Buat catatan untuk mengingatkan tagihan, rencana belanja, atau tips keuangan.
-                        </p>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="brutal-btn px-6 py-3"
-                        >
-                            Buat Catatan Pertama
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {notes.map((note, idx) => (
-                            <div key={note.id}
-                                onClick={() => handleEdit(note)}
-                                className="brutal-card card-hover flex flex-col min-h-[300px] cursor-pointer relative overflow-hidden p-6 pb-8"
-                                style={{ background: NOTE_COLORS[idx % NOTE_COLORS.length] }}>
-                                <div className="flex justify-between items-start mb-4 relative z-10">
-                                    <h3 className="text-lg font-black text-[var(--text-primary)] line-clamp-1 flex-1">
-                                        {note.title}
-                                    </h3>
-                                    <div className="flex gap-1 ml-2">
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleEdit(note); }}
-                                            className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                        >
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
-                                            className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 overflow-hidden relative mb-4 z-10">
-                                    <p className="text-[var(--text-secondary)] whitespace-pre-wrap break-all text-sm leading-relaxed font-medium">
-                                        {note.content}
-                                    </p>
-                                    <div className="absolute bottom-0 left-0 right-0 h-14 pointer-events-none"
-                                        style={{ background: `linear-gradient(to top, ${NOTE_COLORS[idx % NOTE_COLORS.length]}, transparent)` }} />
-                                </div>
-
-                                <div className="pt-4 flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] z-10"
-                                    style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    <span>{formatDate(note.updated_at)}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+          {loading ? (
+            <SkeletonCards count={3} />
+          ) : filtered.length === 0 ? (
+            query ? (
+              <EmptyState icon={<Search className="i" />} title={`Tidak ada yang cocok dengan “${query.trim()}”`} text="Coba kata lain." actionLabel="Hapus pencarian" actionVariant="secondary" onAction={() => setQuery('')} />
+            ) : (
+              <EmptyState icon={<StickyNote className="i" />} title="Tulis catatan pertama" text="Utang, rencana belanja, atau apa pun soal uang." actionLabel="Tulis catatan" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+            )
+          ) : (
+            <div className="ng">
+              {filtered.map(note => (
+                <button type="button" className="card stack note-card" key={note.id} aria-label={`Ubah catatan ${note.title}`} onClick={() => handleEdit(note)}>
+                  <span className="t">{note.title}</span>
+                  {note.content && <p className="note-body">{note.content}</p>}
+                  <span className="lbl" style={{ marginTop: 'auto' }}>{formatDate(note.updated_at)}</span>
+                </button>
+              ))}
             </div>
-
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetForm} />
-                    <div className="w-full max-w-2xl z-50 relative animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col brutal-card"
-                        style={{ height: '600px', maxHeight: '90vh', background: 'var(--bg-card)' }}>
-                        {/* Modal Header */}
-                        <div className="px-6 py-4 flex justify-between items-center shrink-0"
-                            style={{ borderBottom: 'var(--neo-border)' }}>
-                            <h3 className="text-lg font-black text-[var(--text-primary)] tracking-tight">
-                                {editingNote ? 'Edit Catatan' : 'Catatan Baru'}
-                            </h3>
-                            <button onClick={resetForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <form onSubmit={handleSave} className="flex-1 flex flex-col overflow-hidden">
-                            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-                                <input
-                                    type="text"
-                                    placeholder="Judul Catatan..."
-                                    className="w-full text-2xl font-black bg-transparent border-none outline-none placeholder:text-[var(--text-muted)] text-[var(--text-primary)] tracking-tight"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    autoFocus
-                                />
-                                <div className="h-px w-full" style={{ background: 'var(--neo-ink)', opacity: 0.2 }} />
-                                <textarea
-                                    placeholder="Ketik catatanmu di sini..."
-                                    className="w-full h-full min-h-[300px] resize-none bg-transparent border-none outline-none text-[var(--text-secondary)] text-base leading-relaxed placeholder:text-[var(--text-muted)] font-medium"
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-                                />
-                            </div>
-
-                            {/* Modal Footer */}
-                            <div className="p-4 flex justify-between items-center shrink-0"
-                                style={{ borderTop: 'var(--neo-border)' }}>
-                                <span className="neo-pill text-xs">
-                                    {content.length} karakter
-                                </span>
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={resetForm}
-                                        className="px-5 py-2.5 rounded-[12px] font-bold text-sm"
-                                        style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}
-                                    >
-                                        Batal
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="brutal-btn px-6 py-2.5 flex items-center gap-2 text-sm"
-                                    >
-                                        <Save className="w-4 h-4" />
-                                        Simpan
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+          )}
         </main>
+        {overlays}
+      </div>
     )
+  }
+
+
+  return (
+    <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+      <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+        {/* Header */}
+        <div className="top">
+          <div className="top-l">
+            <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+            <h1 className="h1">Catatan</h1>
+          </div>
+          <button className="icon-btn" aria-label="Tambah catatan" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
+        </div>
+
+        {/* Search */}
+        <label className="input search" style={{ cursor: 'text' }}>
+          <Search className="i i-s" style={{ color: 'var(--text-2)' }} />
+          <input type="text" placeholder="Cari catatan" value={query} onChange={e => setQuery(e.target.value)}
+            style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }} />
+        </label>
+
+        {/* List */}
+        {loading ? (
+          <SkeletonCards count={3} />
+        ) : filtered.length === 0 ? (
+          query ? (
+            <EmptyState
+              icon={<Search className="i" />}
+              title={`Tidak ada yang cocok dengan “${query.trim()}”`}
+              text="Coba kata lain."
+              actionLabel="Hapus pencarian"
+              actionVariant="secondary"
+              onAction={() => setQuery('')}
+            />
+          ) : (
+            <EmptyState
+              icon={<StickyNote className="i" />}
+              title="Tulis catatan pertama"
+              text="Utang, rencana belanja, atau apa pun soal uang."
+              actionLabel="Tulis catatan"
+              onAction={() => { resetForm(); setIsModalOpen(true) }}
+            />
+          )
+        ) : (
+          filtered.map(note => (
+            <button type="button" className="card stack note-card" key={note.id} aria-label={`Ubah catatan ${note.title}`} onClick={() => handleEdit(note)}>
+              <div className="t">{note.title}</div>
+              {note.content && <p className="sub" style={{ whiteSpace: 'pre-line', margin: 0 }}>{note.content}</p>}
+              <div className="lbl">{formatDate(note.updated_at)}</div>
+            </button>
+          ))
+        )}
+      </div>
+
+      {overlays}
+    </div>
+  )
 }

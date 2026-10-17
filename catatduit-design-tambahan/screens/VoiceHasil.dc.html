@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Hasil voice input</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="app" style="height: 1160px; background: var(--surface)">
+<div class="scroll" style="padding-bottom: 120px">
+<div class="top">
+<div class="top-l"><a href="Voice.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a><h1 class="h2" style="font-size: 18px">Cek hasil suara</h1></div>
+<a href="Voice.dc.html" class="link">Rekam ulang</a>
+</div>
+
+<div class="card" style="background: var(--surface-2)">
+<div class="lbl">Yang terdengar</div>
+<div style="font-size: 15px; font-weight: 600; margin-top: 4px; line-height: 1.45">“{{ heard }}”</div>
+</div>
+
+<div class="seg">
+<button class="{{ tOut }}" onClick="{{ setOut }}">Keluar</button>
+<button class="{{ tIn }}" onClick="{{ setIn }}">Masuk</button>
+<button class="{{ tTr }}" onClick="{{ setTr }}">Transfer</button>
+</div>
+
+<div class="field">Nominal
+<div class="amount-box"><span class="cur">Rp</span><span class="val" style="color: {{ amtColor }}">{{ amt }}</span></div>
+</div>
+
+<label class="field">Keterangan<input class="input" type="text" value="{{ desc }}"></label>
+<div class="field">Tanggal<div class="input">Hari ini, 16 Okt 2026</div></div>
+
+<sc-if value="{{ notTr }}" hint-placeholder-val="{{ true }}">
+<div class="field">Kategori
+<div class="input"><span class="grow" style="font-weight: 600">{{ cat }}</span><span class="lbl">Saran</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+</div>
+<div class="field">{{ walletLabel }}
+<div class="chips scrollx"><button class="chip on">GoPay<span class="lbl" style="font-weight: 500">Rp 210rb</span></button><button class="chip">BCA<span class="lbl" style="font-weight: 500">Rp 2,4jt</span></button><button class="chip">Tunai<span class="lbl" style="font-weight: 500">Rp 150rb</span></button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTr }}" hint-placeholder-val="{{ false }}">
+<div class="g2">
+<div class="field">Dari dompet<div class="input"><span class="grow" style="font-weight: 600">BCA</span></div></div>
+<div class="field">Ke dompet<div class="input"><span class="grow" style="font-weight: 600">Bibit</span></div></div>
+</div>
+</sc-if>
+</div>
+<div class="sticky-foot"><button class="btn btn-block">{{ saveLabel }}</button></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1160}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = { t: 'out' }; }
+renderVals() {
+var self = this; var t = this.state.t;
+var set = function (v) { return function () { self.setState({ t: v }); }; };
+var d = {
+out: { heard: 'tadi makan siang 35 ribu pakai gopay', amt: '35.000', desc: 'Makan siang', cat: 'Makan di luar', save: 'Simpan pengeluaran', wl: 'Bayar dari dompet' },
+in: { heard: 'terima gaji 8,5 juta', amt: '8.500.000', desc: 'Gaji', cat: 'Gaji', save: 'Simpan pemasukan', wl: 'Masuk ke dompet' },
+tr: { heard: 'transfer 500 ribu dari BCA ke Bibit', amt: '500.000', desc: 'Transfer ke Bibit', cat: '', save: 'Simpan transfer', wl: '' }
+}[t];
+return {
+tOut: t === 'out' ? 'on' : '', tIn: t === 'in' ? 'on' : '', tTr: t === 'tr' ? 'on' : '',
+setOut: set('out'), setIn: set('in'), setTr: set('tr'),
+heard: d.heard, amt: d.amt, desc: d.desc, cat: d.cat, walletLabel: d.wl, saveLabel: d.save,
+amtColor: t === 'in' ? 'var(--income)' : 'var(--text)',
+isTr: t === 'tr', notTr: t !== 'tr'
+};
+}
+}
+</script>
+</body>
+</html>

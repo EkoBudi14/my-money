@@ -1,14 +1,20 @@
 'use client'
 import { useEffect } from 'react'
-import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react'
+import { Check, AlertTriangle, Info } from 'lucide-react'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
+
+export interface ToastAction {
+    label: string
+    onClick: () => void
+}
 
 export interface Toast {
     id: string
     type: ToastType
     message: string
     duration?: number
+    action?: ToastAction
 }
 
 interface ToastItemProps {
@@ -16,58 +22,42 @@ interface ToastItemProps {
     onClose: (id: string) => void
 }
 
+// Error icon reused for the error pill (circle with "i").
+const ErrorIcon = () => (
+    <svg className="i ti" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" />
+    </svg>
+)
+
 const ToastItem = ({ toast, onClose }: ToastItemProps) => {
+    const defaultDuration = toast.type === 'error' ? 6000 : 4000
+
     useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose(toast.id)
-        }, toast.duration || 3000)
-
+        const timer = setTimeout(() => onClose(toast.id), toast.duration ?? defaultDuration)
         return () => clearTimeout(timer)
-    }, [toast.id, toast.duration, onClose])
+    }, [toast.id, toast.duration, defaultDuration, onClose])
 
-    const getToastStyles = () => {
-        switch (toast.type) {
-            case 'success':
-                return {
-                    bg: 'bg-[var(--neo-mint,#86efac)]',
-                    icon: <CheckCircle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
-                    text: 'text-[var(--neo-ink,#141414)]'
-                }
-            case 'error':
-                return {
-                    bg: 'bg-[var(--neo-peach,#fca5a5)]',
-                    icon: <XCircle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
-                    text: 'text-[var(--neo-ink,#141414)]'
-                }
-            case 'warning':
-                return {
-                    bg: 'bg-[var(--neo-yellow-vivid,#ffd84d)]',
-                    icon: <AlertTriangle className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
-                    text: 'text-[var(--neo-ink,#141414)]'
-                }
-            case 'info':
-                return {
-                    bg: 'bg-[var(--neo-sky,#7dd3fc)]',
-                    icon: <Info className="w-6 h-6 text-[var(--neo-ink,#141414)] stroke-[2.5px]" />,
-                    text: 'text-[var(--neo-ink,#141414)]'
-                }
-        }
-    }
+    const pillClass = toast.type === 'error' ? 't-err' : toast.type === 'warning' ? 't-warn' : ''
+    const role = toast.type === 'error' ? 'alert' : 'status'
 
-    const styles = getToastStyles()
+    const icon =
+        toast.type === 'error' ? <ErrorIcon /> :
+        toast.type === 'warning' ? <AlertTriangle className="i ti" /> :
+        toast.type === 'info' ? <Info className="i ti" /> :
+        <Check className="i ti" />
 
     return (
-        <div
-            className={`${styles.bg} border-[3px] border-[var(--neo-ink,#141414)] shadow-[4px_4px_0_var(--neo-ink,#141414)] rounded-[16px] p-4 mb-3 flex items-center gap-3 min-w-[320px] max-w-md animate-in slide-in-from-right-5 fade-in duration-300`}
-        >
-            <div className="flex-shrink-0">{styles.icon}</div>
-            <p className={`flex-1 text-sm font-medium ${styles.text}`}>{toast.message}</p>
-            <button
-                onClick={() => onClose(toast.id)}
-                className="flex-shrink-0 flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all ml-2"
-            >
-                <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
-            </button>
+        <div className={`toast ${pillClass}`} role={role}>
+            {icon}
+            <span>{toast.message}</span>
+            {toast.action && (
+                <button
+                    className="act"
+                    onClick={() => { toast.action!.onClick(); onClose(toast.id) }}
+                >
+                    {toast.action.label}
+                </button>
+            )}
         </div>
     )
 }
@@ -78,13 +68,12 @@ interface ToastContainerProps {
 }
 
 export default function ToastContainer({ toasts, onClose }: ToastContainerProps) {
+    if (toasts.length === 0) return null
     return (
-        <div className="fixed top-6 right-6 z-[9999] pointer-events-none">
-            <div className="pointer-events-auto">
-                {toasts.map((toast) => (
-                    <ToastItem key={toast.id} toast={toast} onClose={onClose} />
-                ))}
-            </div>
+        <div className="cd toast-wrap">
+            {toasts.map((toast) => (
+                <ToastItem key={toast.id} toast={toast} onClose={onClose} />
+            ))}
         </div>
     )
 }

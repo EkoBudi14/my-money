@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Menu aksi budget</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.act{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;border:0;background:none;padding:0 4px;font-size:15px;font-weight:600;color:var(--text);text-decoration:none;border-bottom:1px solid var(--divider)}.act:last-child{border-bottom:0}</style>
+</helmet>
+<div class="app" style="height: 844px">
+<div class="scroll" aria-hidden="true">
+<div class="top"><h1 class="h1">Budget</h1></div>
+<div class="card" style="height: 140px"></div>
+<div class="card" style="height: 90px"></div>
+<div class="card" style="height: 90px"></div>
+</div>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-labelledby="ab-t" style="gap: 12px">
+<div class="grabber"></div>
+<div class="hstack" style="gap: 12px">
+<div class="ic c-makan"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></div>
+<div class="grow"><h2 class="h2" id="ab-t">Makan di luar</h2><div class="meta">Rp 1.200.000 dari Rp 1.500.000 · 25 Sep – 25 Okt</div></div>
+</div>
+<div class="bar"><div style="width: 80%; background: #F59E0B"></div></div>
+<div class="stack" style="gap: 0; margin-top: 4px">
+<a href="CatatBudget.dc.html" class="act"><span class="ic-s" style="background: var(--accent-tint); color: var(--accent)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><span class="grow">Catat pengeluaran</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2)"><path d="M9 6l6 6-6 6"></path></svg></a>
+<a href="Riwayat.dc.html" class="act"><span class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></span><span class="grow">Lihat transaksi kategori ini</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2)"><path d="M9 6l6 6-6 6"></path></svg></a>
+<a href="BudgetBaru.dc.html" class="act"><span class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></span><span class="grow">Ubah budget</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2)"><path d="M9 6l6 6-6 6"></path></svg></a>
+<button class="act" style="color: var(--danger)"><span class="ic-s" style="background: var(--danger-tint); color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></span><span class="grow" style="text-align: left">Hapus budget</span></button>
+</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

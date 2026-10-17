@@ -45,3 +45,11 @@ next-env.d.ts
 /public/sw.js.map
 /public/workbox-*.js
 /public/workbox-*.js.map
+
+# local tooling / test artifacts
+.mcp.json
+.playwright-mcp/
+/dashboard-*-full.png
+/after-txrow.png
+/__*.mjs
+/*.png

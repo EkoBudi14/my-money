@@ -1,11 +1,19 @@
 'use client'
-import { AlertTriangle, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Trash2, AlertTriangle, Check } from 'lucide-react'
+
+export type ConfirmVariant = 'A' | 'B'
+export type ConfirmTone = 'danger' | 'warn'
 
 interface ConfirmDialogProps {
     title: string
     message: string
     confirmText?: string
     cancelText?: string
+    variant?: ConfirmVariant
+    tone?: ConfirmTone
+    details?: string[]
+    checkLabel?: string
     onConfirm: () => void
     onCancel: () => void
     isOpen: boolean
@@ -14,51 +22,87 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({
     title,
     message,
-    confirmText = 'Ya, Lanjutkan',
+    confirmText = 'Hapus',
     cancelText = 'Batal',
+    variant = 'A',
+    tone = 'danger',
+    details,
+    checkLabel = 'Saya paham data ini tidak bisa dikembalikan',
     onConfirm,
     onCancel,
-    isOpen
+    isOpen,
 }: ConfirmDialogProps) {
+    const [checked, setChecked] = useState(false)
+
+    // Reset the variant-B checkbox whenever the dialog opens.
+    useEffect(() => {
+        if (isOpen) setChecked(false)
+    }, [isOpen])
+
+    // Esc closes the dialog (counts as cancel).
+    useEffect(() => {
+        if (!isOpen) return
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [isOpen, onCancel])
+
     if (!isOpen) return null
 
+    const Icon = tone === 'warn' ? AlertTriangle : Trash2
+    const iconStyle =
+        tone === 'warn'
+            ? { background: 'var(--warn-tint)', color: 'var(--warn)' }
+            : { background: 'var(--danger-tint)', color: 'var(--danger)' }
+    const confirmDisabled = variant === 'B' && !checked
+
     return (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="cd dlg-wrap" onClick={onCancel}>
             <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                onClick={onCancel}
-            ></div>
-
-            <div className="bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] w-full max-w-md rounded-[16px] z-50 p-6 relative animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-                <button
-                    onClick={onCancel}
-                    className="absolute top-4 right-4 flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-                >
-                    <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
-                </button>
-
-                <div className="flex flex-col items-center text-center mt-2">
-                    <div className="w-16 h-16 bg-[var(--neo-yellow-vivid)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[12px] flex items-center justify-center mb-6">
-                        <AlertTriangle className="w-8 h-8 text-[var(--neo-ink)] stroke-[2.5px]" />
-                    </div>
-
-                    <h3 className="text-xl font-black text-[var(--neo-ink)] mb-2 tracking-tight">{title}</h3>
-                    <p className="text-[var(--neo-ink)] opacity-80 font-bold mb-8">{message}</p>
-
-                    <div className="flex gap-3 w-full">
+                className="dlg"
+                role="alertdialog"
+                aria-labelledby="cd-dlg-title"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {variant === 'A' ? (
+                    <>
+                        <div className="ic-l" style={iconStyle}><Icon className="i" /></div>
+                        <div className="stack" style={{ gap: 4 }}>
+                            <h3 className="h2" id="cd-dlg-title" style={{ fontSize: 17 }}>{title}</h3>
+                            <p className="sub" style={{ fontSize: 14, lineHeight: 1.5 }}>{message}</p>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="stack" style={{ gap: 4 }}>
+                            <h3 className="h2" id="cd-dlg-title" style={{ fontSize: 17 }}>{title}</h3>
+                            <p className="sub" style={{ fontSize: 14, lineHeight: 1.5 }}>{message}</p>
+                        </div>
+                        {details && details.length > 0 && (
+                            <div className="dlg-impact">
+                                {details.map((d, i) => <span key={i}>• {d}</span>)}
+                            </div>
+                        )}
                         <button
-                            onClick={onCancel}
-                            className="flex-1 px-6 py-3 brutal-btn bg-white text-[var(--neo-ink)]"
+                            type="button"
+                            className="hstack"
+                            style={{ fontSize: 13, fontWeight: 600, border: 0, background: 'none', padding: 0, textAlign: 'left', color: 'var(--text)' }}
+                            onClick={() => setChecked((v) => !v)}
+                            aria-pressed={checked}
                         >
-                            {cancelText}
+                            <span className={`check ${checked ? 'on' : ''}`}>
+                                {checked && <Check className="i i-s" />}
+                            </span>
+                            {checkLabel}
                         </button>
-                        <button
-                            onClick={onConfirm}
-                            className="flex-1 px-6 py-3 brutal-btn bg-rose-300 text-[var(--neo-ink)]"
-                        >
-                            {confirmText}
-                        </button>
-                    </div>
+                    </>
+                )}
+
+                <div className="g2">
+                    <button className="btn-2" onClick={onCancel} autoFocus>{cancelText}</button>
+                    <button className="btn-danger" onClick={onConfirm} disabled={confirmDisabled}>
+                        {confirmText}
+                    </button>
                 </div>
             </div>
         </div>

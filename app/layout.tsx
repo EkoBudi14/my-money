@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./catatduit.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  // Also add interactive-widget: 'resizes-visual' if needed, but the basic ones are above.
+  // Zoom intentionally left unlocked for accessibility (DESIGN.md section 3).
 };
 
 export const metadata: Metadata = {
@@ -39,6 +38,7 @@ import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { SidebarProvider } from "@/hooks/useSidebar";
+import QueryProvider from "@/components/QueryProvider";
 import NextTopLoader from "nextjs-toploader";
 
 export default function RootLayout({
@@ -69,10 +69,10 @@ export default function RootLayout({
         className={`antialiased bg-[var(--bg-page)] font-sans`}
       >
         <NextTopLoader
-          color="#ffd84d"
+          color="#0F766E"
           initialPosition={0.08}
           crawlSpeed={200}
-          height={5}
+          height={3}
           crawl={true}
           showSpinner={false}
           easing="ease"
@@ -80,23 +80,25 @@ export default function RootLayout({
           shadow="0 2px 4px rgba(0,0,0,0.2)"
           zIndex={99999}
         />
-        <ThemeProvider>
-          <SidebarProvider>
-            <ToastProvider>
-              <ConfirmProvider>
-                <SuccessModalProvider>
-                  <SplashScreen />
-                  <div className="flex min-h-screen">
-                    <Sidebar />
-                    <ContentWrapper>
-                      {children}
-                    </ContentWrapper>
-                  </div>
-                </SuccessModalProvider>
-              </ConfirmProvider>
-            </ToastProvider>
-          </SidebarProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <SidebarProvider>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <SuccessModalProvider>
+                    <SplashScreen />
+                    <div className="flex min-h-screen">
+                      <Sidebar />
+                      <ContentWrapper>
+                        {children}
+                      </ContentWrapper>
+                    </div>
+                  </SuccessModalProvider>
+                </ConfirmProvider>
+              </ToastProvider>
+            </SidebarProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

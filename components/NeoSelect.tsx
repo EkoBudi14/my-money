@@ -65,7 +65,9 @@ export default function NeoSelect({
           checkDropDirection()
           setIsOpen(!isOpen)
         }}
-        className={`flex items-center justify-between w-full text-left outline-none transition-all ${className}`}
+        className={`flex items-center justify-between w-full text-left outline-none transition-all ${className || 'input'}`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2 truncate">
           {selectedOption?.icon && (
@@ -75,7 +77,7 @@ export default function NeoSelect({
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown style={{ color: 'var(--text-2)' }} className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Hidden input for form validation if required */}
@@ -92,11 +94,7 @@ export default function NeoSelect({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className={`absolute z-50 left-0 right-0 bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] rounded-[12px] overflow-hidden ${
-          dropUp
-            ? 'bottom-full mb-2 shadow-[4px_-4px_0_var(--neo-ink)]'
-            : 'top-full mt-2 shadow-[4px_4px_0_var(--neo-ink)]'
-        }`}>
+        <div className={`nsel-pop absolute z-50 left-0 right-0 overflow-hidden ${dropUp ? 'bottom-full mb-2' : 'top-full mt-2'}`} role="listbox">
           <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1 gap-1" style={{ willChange: 'scroll-position', transform: 'translateZ(0)' }}>
             {options.map((option, idx) => (
               <button
@@ -109,14 +107,9 @@ export default function NeoSelect({
                     setIsOpen(false)
                   }
                 }}
-                className={`flex items-center gap-2 w-full text-left px-3 py-2.5 rounded-[8px] border-2 border-transparent font-black text-sm transition-all
-                  ${option.disabled 
-                    ? 'opacity-50 cursor-not-allowed bg-[var(--bg-elevated)] text-[var(--text-muted)]' 
-                    : value === option.value 
-                      ? 'bg-[var(--neo-yellow)] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] text-[var(--neo-ink)]' 
-                      : 'text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--neo-ink)] hover:text-[var(--neo-ink)]'
-                  }
-                `}
+                role="option"
+                aria-selected={value === option.value}
+                className={`nsel-opt flex items-center gap-2 w-full text-left ${option.disabled ? 'off' : value === option.value ? 'on' : ''}`}
               >
                 {option.icon && (
                   <span className="shrink-0">{option.icon}</span>
@@ -126,7 +119,7 @@ export default function NeoSelect({
             ))}
             
             {options.length === 0 && (
-              <div className="p-4 text-center text-sm font-bold text-[var(--text-muted)]">
+              <div className="p-4 text-center text-sm" style={{ color: 'var(--text-2)' }}>
                 Tidak ada opsi tersedia
               </div>
             )}

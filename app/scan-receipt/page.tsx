@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard } from 'lucide-react'
+import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard, ChevronLeft, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import { Wallet, CATEGORIES } from '@/types'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
@@ -12,6 +13,15 @@ import DatePickerNeo from '@/components/DatePickerNeo'
 export default function ScanReceiptPage() {
     const router = useRouter()
     const { showToast } = useToast()
+    const isWeb = useIsWeb()
+    // Jam (optional time) + fields the AI could not read (ScanWeb "perlu dicek") + recent scans
+    const [scanTime, setScanTime] = useState('')
+    const [unsure, setUnsure] = useState<Record<string, boolean>>({})
+    const [recentScans, setRecentScans] = useState<{ title: string; total: number; date: string; type: string }[]>([])
+    useEffect(() => {
+        try { setRecentScans(JSON.parse(localStorage.getItem('scan_recent') || '[]')) } catch { setRecentScans([]) }
+    }, [])
+    const clearUnsure = (k: string) => setUnsure(prev => { const n = { ...prev }; delete n[k]; return n })
     
     const [image, setImage] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false)
@@ -359,7 +369,7 @@ export default function ScanReceiptPage() {
                 }
             }, 100)
         } catch (err: any) {
-            showToast('error', 'Tidak dapat mengakses kamera. Pastikan izin kamera sudah diberikan di browser.')
+            showToast('error', 'Izinkan kamera di pengaturan browser, lalu coba lagi. Atau pilih dari galeri.')
         }
     }
 
@@ -403,6 +413,21 @@ export default function ScanReceiptPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
+        loadImageFile(file)
+    }
+
+    // Drag-and-drop on web (DESIGN.md 7.10).
+    const [isDragging, setIsDragging] = useState(false)
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+        const file = e.dataTransfer.files?.[0]
+        if (!file) return
+        if (!file.type.startsWith('image/')) { showToast('error', 'Pilih file gambar (JPG atau PNG).'); return }
+        loadImageFile(file)
+    }
+
+    const loadImageFile = (file: File) => {
         const objectUrl = URL.createObjectURL(file)
         const img = new Image()
         img.onload = () => {
@@ -464,6 +489,16 @@ export default function ScanReceiptPage() {
             
             // Format result to ensure properties exist
             const data = result.data
+            // Mark fields the AI left empty so the user checks them before saving.
+            setUnsure({
+                ...(data.store_name ? {} : { store_name: true }),
+                ...(data.date ? {} : { date: true }),
+                ...(data.total ? {} : { total: true }),
+            })
+            const now = new Date()
+            setScanTime(typeof data.time === 'string' && /^\d{1,2}[:.]\d{2}$/.test(data.time)
+                ? data.time.replace('.', ':').padStart(5, '0')
+                : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
             setScanResult({
                 document_type: data.document_type || 'struk_belanja',
                 store_name: data.store_name || '',
@@ -516,6 +551,11 @@ export default function ScanReceiptPage() {
         setScanResult({ ...scanResult, [field]: value })
     }
 
+    const handleAddItem = () => {
+        if (!scanResult) return
+        setScanResult({ ...scanResult, items: [...scanResult.items, { name: '', qty: 1, price: 0 }] })
+    }
+
     // ── SAVE ──────────────────────────────────────────────────────────────────
     const handleSave = async () => {
         if (!scanResult || !selectedWalletId) return
@@ -543,7 +583,7 @@ export default function ScanReceiptPage() {
                 title = `Belanja di ${scanResult.store_name}`
             }
 
-            const safeDate = new Date(`${scanResult.date}T12:00:00`).toISOString()
+            const safeDate = new Date(`${scanResult.date}T${scanTime || '12:00'}:00`).toISOString()
             const payload = {
                 title,
                 amount: scanResult.total,
@@ -565,9 +605,15 @@ export default function ScanReceiptPage() {
             await supabase.from('wallets').update({ balance: newBalance }).eq('id', walletId)
 
             setIsSuccess(true)
-            showToast('success', 'Dokumen berhasil disimpan!')
+            showToast('success', txType === 'pemasukan' ? 'Pemasukan tersimpan' : 'Pengeluaran tersimpan')
+            // Remember the last scans on this device (shown on the upload screen).
+            try {
+                const next = [{ title, total: scanResult.total, date: safeDate, type: txType }, ...recentScans].slice(0, 5)
+                localStorage.setItem('scan_recent', JSON.stringify(next))
+                setRecentScans(next)
+            } catch { /* storage unavailable: list just stays empty */ }
         } catch (error: any) {
-            showToast('error', error.message)
+            showToast('error', error.message || 'Transaksi gagal disimpan. Coba lagi.')
         } finally {
             setIsSaving(false)
         }
@@ -577,12 +623,13 @@ export default function ScanReceiptPage() {
     const resetState = () => {
         setImage(null)
         setScanResult(null)
+        setUnsure({})
         setIsSuccess(false)
         if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     return (
-        <main className="min-h-screen bg-[var(--bg-page)] pb-24 md:pb-8">
+        <main className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
 
             {/* ── CAMERA MODAL ─────────────────────────────────────────────── */}
             {showCamera && (
@@ -631,402 +678,303 @@ export default function ScanReceiptPage() {
             )}
 
             {/* ── HEADER ───────────────────────────────────────────────────── */}
-            <header className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] sticky top-0 z-40 mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 brutal-card-sm bg-[var(--neo-sky)] flex items-center justify-center border-[2px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] !p-0">
-                        <ScanLine className="w-5 h-5 text-[var(--neo-ink)]" />
-                    </div>
+            <div className={isWeb ? 'main' : 'top'} style={isWeb ? { paddingBottom: 0 } : { padding: '16px 20px' }}>
+                <div className="top-l">
+                    {!isWeb && <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>}
                     <div>
-                        <h1 className="font-black text-[var(--text-primary)] text-lg leading-tight">Scan Struk</h1>
-                        <p className="text-xs text-[var(--text-secondary)] font-bold">Catat pengeluaran otomatis pakai AI</p>
+                        <h1 className={isWeb ? 'ptitle' : 'h1'} style={isWeb ? undefined : { fontSize: 20 }}>Scan struk</h1>
+                        <p className="sub">{isWeb ? 'Catat pengeluaran dari foto struk, lalu cek sebelum simpan.' : 'Catat pengeluaran dari foto struk'}</p>
                     </div>
                 </div>
-                <button onClick={() => router.push('/')} className="w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]">
-                    <X className="w-4 h-4" />
-                </button>
-            </header>
+            </div>
 
-            <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
+            <div className="scroll" style={isWeb ? { maxWidth: 1240, margin: '0 auto', padding: '20px clamp(16px,3vw,40px) 40px' } : { maxWidth: 640, margin: '0 auto', paddingTop: 0 }}>
 
                 {/* ── SUCCESS ──────────────────────────────────────────────── */}
                 {isSuccess ? (
-                    <div className="brutal-card p-8 text-center animate-in zoom-in-95 duration-300 bg-[var(--bg-card)]">
-                        <div className="w-20 h-20 bg-[var(--neo-mint)] rounded-full border-4 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle2 className="w-10 h-10 text-[var(--neo-ink)]" />
-                        </div>
-                        <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2">Berhasil Disimpan!</h2>
-                        <p className="text-[var(--text-muted)] font-bold mb-8">Transaksi telah ditambahkan ke pengeluaran Anda.</p>
-                        <div className="flex flex-col gap-3">
-                            <button onClick={resetState} className="w-full brutal-btn !py-3.5 !bg-[var(--neo-sky)] text-white">
-                                Scan Struk Lagi
-                            </button>
-                            <button onClick={() => router.push('/')} className="w-full brutal-btn !py-3.5 !bg-white text-[var(--text-primary)]">
-                                Kembali ke Dashboard
-                            </button>
+                    <div className="card stack" style={{ textAlign: 'center', alignItems: 'center', padding: '28px 20px' }}>
+                        <div className="ic-l" style={{ background: 'var(--income-tint)', color: 'var(--income)' }}><CheckCircle2 className="i i-l" /></div>
+                        <h2 className="h2" style={{ marginTop: 4 }}>Berhasil disimpan!</h2>
+                        <p className="sub">Transaksi telah ditambahkan ke pengeluaranmu.</p>
+                        <div className="stack" style={{ width: '100%', marginTop: 8 }}>
+                            <button onClick={resetState} className="btn btn-block">Scan struk lagi</button>
+                            <button onClick={() => router.push('/')} className="btn-2 btn-block">Kembali ke beranda</button>
                         </div>
                     </div>
                 ) : (
                     <>
+                        <div className="scan-cols">
+                        <div className="stack-12" style={{ minWidth: 0 }}>
                         {/* ── UPLOAD AREA ──────────────────────────────────── */}
                         {!image && (
-                            <div className="brutal-card p-6 space-y-4 bg-[var(--bg-card)]">
-                                <div className="aspect-[4/3] w-full rounded-[16px] border-[3px] border-dashed border-[var(--neo-ink)] flex flex-col items-center justify-center gap-4 bg-[var(--bg-elevated)]">
-                                    <div className="w-16 h-16 bg-white rounded-[16px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center">
-                                        <Camera className="w-8 h-8 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-black text-[var(--text-primary)]">Ambil Foto / Upload Struk</p>
-                                        <p className="text-sm font-bold text-[var(--text-secondary)] mt-1">Pastikan tulisan terbaca jelas</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => openCamera('environment')}
-                                        disabled={isConverting}
-                                        className="flex items-center justify-center gap-2 brutal-btn !py-3.5 !bg-[var(--neo-mint)] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Camera className="w-4 h-4" /> Foto
-                                    </button>
-
-                                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={isConverting}
-                                        className="flex items-center justify-center gap-2 brutal-btn !py-3.5 !bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Upload className="w-4 h-4" /> Galeri
-                                    </button>
-                                </div>
-
-                                {/* ── CLIPBOARD BUTTON ───────────────────────── */}
-                                <button
-                                    onClick={handlePasteFromClipboard}
-                                    disabled={isConverting}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] bg-[var(--neo-lav)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                            <div className="stack-12">
+                                <div
+                                    className="card stack"
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                                    onDragLeave={() => setIsDragging(false)}
+                                    onDrop={handleDrop}
+                                    style={{ border: `2px dashed ${isDragging ? 'var(--accent)' : 'var(--border-strong)'}`, background: isDragging ? 'var(--accent-tint)' : undefined, alignItems: 'center', textAlign: 'center', padding: isWeb ? '32px 20px' : '28px 20px' }}
                                 >
-                                    <div className="w-8 h-8 bg-white border-2 border-[var(--neo-ink)] rounded-[8px] flex items-center justify-center flex-shrink-0">
-                                        {isConverting
-                                            ? <Loader2 className="w-4 h-4 text-[var(--neo-ink)] animate-spin" />
-                                            : <Clipboard className="w-4 h-4 text-[var(--neo-ink)]" />
-                                        }
+                                    <div className="ic-l" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Camera className="i i-l" /></div>
+                                    <div className="h2" style={{ marginTop: 4 }}>{isWeb ? 'Seret foto struk ke sini' : 'Foto atau unggah struk'}</div>
+                                    <div className="sub">Nominal, tanggal, dan kategori diisi otomatis pakai AI. Tinggal cek sebelum simpan.</div>
+                                </div>
+
+                                <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
+                                {isWeb ? (
+                                    <>
+                                        <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn btn-block"><Upload className="i i-s" />Pilih file</button>
+                                        <div className="g2">
+                                            <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
+                                                {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
+                                                {isConverting ? 'Memproses…' : 'Tempel (Ctrl+V)'}
+                                            </button>
+                                            <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn-2"><Camera className="i i-s" />Kamera</button>
+                                        </div>
+                                        <span className="lbl" style={{ textAlign: 'center' }}>JPG atau PNG. Bisa juga salin gambar lalu tekan Ctrl+V di halaman ini.</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn btn-block"><Camera className="i i-s" />Ambil foto</button>
+                                        <div className="g2">
+                                            <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn-2"><Upload className="i i-s" />Galeri</button>
+                                            <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
+                                                {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
+                                                {isConverting ? 'Memproses…' : 'Tempel'}
+                                            </button>
+                                        </div>
+                                        <span className="lbl" style={{ textAlign: 'center' }}>Tempel: salin foto dari galeri, lalu tekan Tempel.</span>
+                                    </>
+                                )}
+
+                                {recentScans.length > 0 && (
+                                    <div className="card-flush">
+                                        <div className="lbl" style={{ fontWeight: 700, padding: '12px 0 4px' }}>Scan terakhir</div>
+                                        {recentScans.map((r, i) => (
+                                            <div className="row" key={i}>
+                                                <div className="ic-s c-belanja"><ScanLine className="i i-s" /></div>
+                                                <div className="grow"><div className="t">{r.title}</div><div className="meta">{new Date(r.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                <div className={`amt ${r.type === 'pemasukan' ? 'pos' : ''}`}>{r.type === 'pemasukan' ? '+' : ''}Rp {r.total.toLocaleString('id-ID')}</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="flex-1 text-left">
-                                        <p className="text-sm font-black text-[var(--text-primary)]">
-                                            {isConverting ? 'Memproses foto...' : 'Paste dari Clipboard'}
-                                        </p>
-                                        <p className="text-xs font-bold text-[var(--text-muted)]">
-                                            {isConverting ? 'Mohon tunggu sebentar' : 'Gunakan foto yang di-copy dari Galeri'}
-                                        </p>
-                                    </div>
-                                    {!isConverting && <span className="text-[var(--text-primary)] font-black text-lg">→</span>}
-                                </button>
+                                )}
 
                                 {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
                                 {showManualPaste && (
-                                    <div className="mt-4 p-4 border-[3px] border-dashed border-[var(--neo-ink)] bg-[var(--neo-sky)] rounded-[16px] animate-in fade-in slide-in-from-top-2">
-                                        <p className="text-sm text-[var(--neo-ink)] font-black mb-3 text-center">
-                                            iOS memblokir tombol paste. <br/>Gunakan cara manual:
-                                        </p>
-                                        <input 
-                                            type="text" 
-                                            inputMode="none" 
-                                            placeholder="Tap sekali, lalu pilih 'Paste'" 
-                                            className="w-full text-center py-3.5 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] outline-none font-black"
-                                        />
+                                    <div className="card" style={{ border: '2px dashed var(--border-strong)', background: 'var(--accent-tint)' }}>
+                                        <p className="t" style={{ whiteSpace: 'normal', textAlign: 'center', marginBottom: 10 }}>iOS memblokir tombol paste. Gunakan cara manual:</p>
+                                        <input type="text" inputMode="none" placeholder="Tap sekali, lalu pilih 'Paste'" className="input" style={{ textAlign: 'center' }} />
                                     </div>
                                 )}
+
                             </div>
                         )}
 
-                        {/* ── RATE LIMIT BANNER ───────────────────────────────── */}
+                        {/* ── RATE LIMIT (ScanStatus — quota) ─────────────────── */}
                         {rateLimitInfo && rateLimitCountdown > 0 && (
-                            <div className="brutal-card p-4 animate-in fade-in bg-[var(--neo-peach)]">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-9 h-9 bg-white rounded-[8px] border-2 border-[var(--neo-ink)] flex items-center justify-center flex-shrink-0">
-                                        <span className="text-lg">⏳</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-black text-[var(--text-primary)] text-sm">
-                                            {rateLimitInfo.isPerDay ? 'Kuota Harian Habis' : 'Terlalu Banyak Request'}
-                                        </p>
-                                        <p className="text-xs text-[var(--text-primary)] font-bold mt-0.5">
+                            <div className="card stack" style={{ gap: 10 }}>
+                                <div className="hstack" style={{ gap: 10 }}>
+                                    <div className="ic-s" style={{ background: 'var(--warn-tint)', color: 'var(--warn)' }}><Loader2 className="i i-s" /></div>
+                                    <div className="grow">
+                                        <div className="t">{rateLimitInfo.isPerDay ? 'Kuota harian habis' : 'Terlalu banyak scan'}</div>
+                                        <div className="meta" style={{ whiteSpace: 'normal' }}>
                                             {rateLimitInfo.isPerDay
-                                                ? `Kuota harian habis. Reset pukul ${rateLimitInfo.resetTime} WIB.`
-                                                : `Batas request per menit tercapai. Bisa scan lagi sekitar pukul ${rateLimitInfo.resetTime} WIB.`}
-                                        </p>
-                                        <div className="mt-3">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="text-xs font-bold text-[var(--text-primary)]">Bisa scan lagi dalam:</span>
-                                                <span className="text-sm font-black text-[var(--text-primary)] tabular-nums bg-white px-1 border-2 border-[var(--neo-ink)]">
-                                                    {rateLimitCountdown >= 3600
-                                                        ? `${Math.floor(rateLimitCountdown / 3600)}j ${Math.floor((rateLimitCountdown % 3600) / 60)}m`
-                                                        : rateLimitCountdown >= 60
-                                                            ? `${Math.floor(rateLimitCountdown / 60)}m ${rateLimitCountdown % 60}s`
-                                                            : `${rateLimitCountdown}s`
-                                                    }
-                                                </span>
-                                            </div>
-                                            <div className="w-full bg-white border-[2px] border-[var(--neo-ink)] h-3 rounded-[8px] overflow-hidden">
-                                                <div
-                                                    className="bg-[var(--neo-ink)] h-full transition-all duration-1000"
-                                                    style={{ width: `${(rateLimitCountdown / rateLimitInfo.total) * 100}%` }}
-                                                />
-                                            </div>
+                                                ? `Reset pukul ${rateLimitInfo.resetTime} WIB.`
+                                                : `Bisa scan lagi sekitar pukul ${rateLimitInfo.resetTime} WIB.`}
                                         </div>
                                     </div>
                                 </div>
+                                <div className="between" style={{ fontSize: 12 }}>
+                                    <span className="lbl">Bisa scan lagi dalam</span>
+                                    <span className="num-m" style={{ fontSize: 14 }}>
+                                        {rateLimitCountdown >= 3600
+                                            ? `${Math.floor(rateLimitCountdown / 3600)}j ${Math.floor((rateLimitCountdown % 3600) / 60)}m`
+                                            : rateLimitCountdown >= 60
+                                                ? `${Math.floor(rateLimitCountdown / 60)}m ${rateLimitCountdown % 60}s`
+                                                : `${rateLimitCountdown}s`}
+                                    </span>
+                                </div>
+                                <div className="bar"><div style={{ width: `${(rateLimitCountdown / rateLimitInfo.total) * 100}%` }} /></div>
                             </div>
                         )}
 
                         {/* ── IMAGE PREVIEW ─────────────────────────────────── */}
                         {image && !scanResult && (
-                            <div className="brutal-card overflow-hidden animate-in fade-in !p-0 bg-[var(--bg-card)]">
-                                <div className="relative aspect-[3/4] w-full bg-[var(--neo-ink)] border-b-[3px] border-[var(--neo-ink)]">
-                                    <img src={image} alt="Struk" className="w-full h-full object-contain" />
-                                    <button onClick={resetState} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] text-[var(--text-primary)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all shadow-[2px_2px_0_var(--neo-ink)]">
-                                        <X className="w-4 h-4" />
-                                    </button>
+                            <div className="card stack-12" style={{ padding: 0, overflow: 'hidden' }}>
+                                <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 4', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+                                    <img src={image} alt="Struk" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <button onClick={resetState} className="icon-btn" aria-label="Hapus foto" style={{ position: 'absolute', top: 12, right: 12 }}><X className="i" /></button>
                                 </div>
-                                <div className="p-5">
-                                    <button
-                                        onClick={handleScan}
-                                        disabled={isScanning || rateLimitCountdown > 0}
-                                        className="w-full py-4 bg-[var(--primary)] hover:bg-blue-600 disabled:bg-slate-300 dark:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200 disabled:shadow-none"
-                                    >
-                                        {isScanning ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> Menganalisa Struk...</>
-                                        ) : (
-                                            <><ScanLine className="w-5 h-5" /> Proses dengan AI</>
-                                        )}
+                                <div style={{ padding: 16 }}>
+                                    <button onClick={handleScan} disabled={isScanning || rateLimitCountdown > 0} className="btn btn-block">
+                                        {isScanning ? <><Loader2 className="i animate-spin" /> Menganalisa struk…</> : <><ScanLine className="i" /> Proses dengan AI</>}
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* ── SCAN RESULT ───────────────────────────────────── */}
+                        {/* Web: keep the photo visible next to the result (ScanWeb) */}
+                        {isWeb && image && scanResult && (
+                            <div className="card stack-12" style={{ padding: 0, overflow: 'hidden' }}>
+                                <div style={{ width: '100%', aspectRatio: '3 / 4', background: 'var(--surface-2)' }}>
+                                    <img src={image} alt="Struk" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
+                                <div style={{ padding: '0 16px 16px' }}><button className="btn-2 btn-block" onClick={resetState} disabled={isSaving}>Scan ulang</button></div>
+                            </div>
+                        )}
+                        </div>
+                        <div className="stack-12" style={{ minWidth: 0 }}>
+                        {!image && (
+                            <div className="stack-12">
+                        {/* Tips */}
+                        <div className="card stack">
+                            <h2 className="h3">Biar hasilnya akurat</h2>
+                            {['Foto lurus dari atas, seluruh struk masuk frame', 'Cahaya cukup, tidak ada bayangan di angka total', 'Struk tidak terlipat di bagian total'].map((tip, i) => (
+                                <div className="hstack" key={i} style={{ alignItems: 'flex-start', fontSize: 13 }}>
+                                    <CheckCircle2 className="i i-s" style={{ color: 'var(--accent)', marginTop: 2 }} />
+                                    <span className="grow" style={{ whiteSpace: 'normal' }}>{tip}</span>
+                                </div>
+                            ))}
+                        </div>
+                            </div>
+                        )}
+                        {/* ── SCAN RESULT (ScanCek — editable) ──────────────── */}
                         {scanResult && !isSuccess && (
-                            <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
-                                <div className="brutal-card p-6 bg-[var(--bg-card)]">
-                                    <div className="flex flex-col gap-4 mb-6 pb-6 border-b-[3px] border-dashed border-[var(--neo-ink)]">
-
-                                        {/* ─ Document type badge ─ */}
-                                        <div className="flex items-center gap-2">
-                                            {scanResult.document_type === 'bukti_transfer' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)] font-black text-[var(--text-primary)] text-xs shadow-[2px_2px_0_var(--neo-ink)]">🏦 Bukti Transfer</span>
-                                            ) : scanResult.document_type === 'tagihan' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--neo-lav)] border-2 border-[var(--neo-ink)] font-black text-[var(--text-primary)] text-xs shadow-[2px_2px_0_var(--neo-ink)]">📄 Tagihan</span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)] font-black text-[var(--text-primary)] text-xs shadow-[2px_2px_0_var(--neo-ink)]">🧾 Struk Belanja</span>
-                                            )}
-                                        </div>
-
-                                        {/* ─ Transfer direction toggle ─ */}
-                                        {scanResult.document_type === 'bukti_transfer' && (
-                                            <div className="flex border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)]">
-                                                <button
-                                                    onClick={() => handleResultChange('transaction_type', 'pengeluaran')}
-                                                    className={`flex-1 py-2.5 text-xs font-black transition-colors border-r-2 border-[var(--neo-ink)] ${
-                                                        scanResult.transaction_type === 'pengeluaran'
-                                                            ? 'bg-[var(--neo-peach)] text-[var(--text-primary)]'
-                                                            : 'bg-white text-[var(--text-muted)] hover:bg-[var(--bg-hover)]'
-                                                    }`}
-                                                >
-                                                    ↑ Transfer Keluar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleResultChange('transaction_type', 'pemasukan')}
-                                                    className={`flex-1 py-2.5 text-xs font-black transition-colors ${
-                                                        scanResult.transaction_type === 'pemasukan'
-                                                            ? 'bg-[var(--neo-mint)] text-[var(--text-primary)]'
-                                                            : 'bg-white text-[var(--text-muted)] hover:bg-[var(--bg-hover)]'
-                                                    }`}
-                                                >
-                                                    ↓ Terima Transfer
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        <div>
-                                            <label className="neo-label">Nama Toko</label>
-                                            <input 
-                                                type="text"
-                                                value={scanResult.store_name}
-                                                onChange={(e) => handleResultChange('store_name', e.target.value)}
-                                                className="w-full text-xl font-black text-[var(--text-primary)] bg-transparent border-b-4 border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none py-1 px-2 transition-colors"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="neo-label">Tanggal</label>
-                                                <DatePickerNeo
-                                                    value={scanResult.date}
-                                                    onChange={(e) => handleResultChange('date', e.target.value)}
-                                                    className="w-full font-bold text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none py-1 px-2 transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="neo-label">Total Belanja</label>
-                                                <div className="flex items-center border-b-[3px] border-[var(--neo-ink)] focus-within:bg-[var(--neo-yellow)] transition-colors py-1 px-2">
-                                                    <span className="font-black mr-1">Rp</span>
-                                                    <input 
-                                                        type="text"
-                                                        value={scanResult.total.toLocaleString('id-ID')}
-                                                        onChange={(e) => handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0)}
-                                                        className="w-full text-xl font-black text-[var(--text-primary)] bg-transparent outline-none"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* ─ Keterangan transfer ─ */}
-                                        {scanResult.document_type === 'bukti_transfer' && (
-                                            <div>
-                                                <label className="neo-label">Keterangan Transfer</label>
-                                                <input
-                                                    type="text"
-                                                    value={scanResult.description || ''}
-                                                    onChange={(e) => handleResultChange('description', e.target.value)}
-                                                    placeholder="Keterangan transfer..."
-                                                    className="w-full font-bold text-sm text-[var(--text-primary)] bg-transparent border-b-[3px] border-[var(--neo-ink)] focus:bg-[var(--neo-yellow)] outline-none py-1 px-2 transition-colors"
-                                                />
-                                            </div>
+                            <div className="stack-12" style={{ paddingBottom: 24 }}>
+                                <div className="card stack-12">
+                                    {/* Document type */}
+                                    <div className="hstack">
+                                        {scanResult.document_type === 'bukti_transfer' ? (
+                                            <span className="badge b-neutral">Bukti transfer</span>
+                                        ) : scanResult.document_type === 'tagihan' ? (
+                                            <span className="badge b-warn">Tagihan</span>
+                                        ) : (
+                                            <span className="badge b-ok">Struk belanja</span>
                                         )}
                                     </div>
 
-                                    {/* Detail item hanya tampil untuk struk & tagihan */}
-                                    {scanResult.document_type !== 'bukti_transfer' && (
-                                    <div className="mb-6">
-                                        <h3 className="neo-label flex items-center justify-between">
-                                            Detail Item
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {scanResult.items.map((item: any, idx: number) => (
-                                                <div key={idx} className="flex flex-col gap-2 p-3 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] focus-within:bg-[var(--neo-yellow)] transition-colors relative">
-                                                    <div className="flex justify-between items-start gap-2">
-                                                        <input 
-                                                            type="text"
-                                                            value={item.name}
-                                                            onChange={(e) => handleItemChange(idx, 'name', e.target.value)}
-                                                            className="w-full text-sm font-black text-[var(--text-primary)] bg-transparent outline-none border-b-2 border-transparent focus:border-[var(--neo-ink)]"
-                                                            placeholder="Nama Item"
-                                                        />
-                                                        <button 
-                                                            onClick={() => handleDeleteItem(idx)}
-                                                            className="w-6 h-6 flex items-center justify-center bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] rounded-[4px] shadow-[1px_1px_0_var(--neo-ink)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-[var(--text-primary)]"
-                                                            title="Hapus Item"
-                                                        >
-                                                            <Trash2 className="w-3 h-3" />
-                                                        </button>
-                                                    </div>
-                                                    <div className="flex justify-between items-center text-sm mt-1">
-                                                        {/* Kiri: qty x @harga satuan */}
-                                                        <div className="flex items-center gap-1.5 font-bold text-[var(--text-primary)]">
-                                                            <span className="text-xs font-black">x</span>
-                                                            <input 
-                                                                type="number"
-                                                                value={item.qty}
-                                                                onChange={(e) => handleItemChange(idx, 'qty', parseInt(e.target.value) || 0)}
-                                                                className="w-12 bg-white border-2 border-[var(--neo-ink)] shadow-[1px_1px_0_var(--neo-ink)] text-center text-xs outline-none py-0.5 font-black"
-                                                            />
-                                                            <span className="text-xs">@Rp</span>
-                                                            <input 
-                                                                type="text"
-                                                                value={item.price.toLocaleString('id-ID')}
-                                                                onChange={(e) => handleItemChange(idx, 'price', parseInt(e.target.value.replace(/\./g, '')) || 0)}
-                                                                className="w-24 bg-white border-2 border-[var(--neo-ink)] shadow-[1px_1px_0_var(--neo-ink)] text-right text-xs px-1 outline-none py-0.5 font-black"
-                                                            />
-                                                        </div>
-                                                        {/* Kanan: subtotal (read-only) */}
-                                                        <div className="flex items-center gap-0.5 font-black">
-                                                            <span className="text-xs">Rp</span>
-                                                            <span className="text-sm tabular-nums">
-                                                                {(item.qty * item.price).toLocaleString('id-ID')}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {scanResult.items.length === 0 && (
-                                                <p className="text-sm font-bold text-[var(--text-muted)] text-center py-2">Tidak ada detail item yang terdeteksi.</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    )} {/* end: detail item for non-transfer */}
-
-                                    {/* ── BREAKDOWN DISKON & BIAYA TAMBAHAN ── */}
-                                    {(scanResult.discount > 0 || scanResult.extra_fees > 0) && (
-                                        <div className="brutal-card-sm p-4 space-y-2 bg-[var(--neo-yellow)] mb-6">
-                                            <div className="flex justify-between text-sm font-bold text-[var(--text-primary)]">
-                                                <span>Subtotal Item</span>
-                                                <span>Rp {scanResult.items.reduce((a: number, i: any) => a + i.qty * i.price, 0).toLocaleString('id-ID')}</span>
-                                            </div>
-                                            {scanResult.discount > 0 && (
-                                                <div className="flex justify-between text-sm font-black text-emerald-800">
-                                                    <span>Diskon / Voucher</span>
-                                                    <span>- Rp {scanResult.discount.toLocaleString('id-ID')}</span>
-                                                </div>
-                                            )}
-                                            {scanResult.extra_fees > 0 && (
-                                                <div className="flex justify-between text-sm font-bold text-[var(--text-primary)]">
-                                                    <span>Biaya Tambahan (Ongkir, dll)</span>
-                                                    <span>+ Rp {scanResult.extra_fees.toLocaleString('id-ID')}</span>
-                                                </div>
-                                            )}
-                                            <div className="flex justify-between text-sm font-black pt-2 border-t-2 border-[var(--neo-ink)]">
-                                                <span>Total Dibayar</span>
-                                                <span>Rp {scanResult.total.toLocaleString('id-ID')}</span>
-                                            </div>
+                                    {/* Transfer direction */}
+                                    {scanResult.document_type === 'bukti_transfer' && (
+                                        <div className="seg">
+                                            <button className={scanResult.transaction_type === 'pengeluaran' ? 'on' : ''} onClick={() => handleResultChange('transaction_type', 'pengeluaran')}>Transfer keluar</button>
+                                            <button className={scanResult.transaction_type === 'pemasukan' ? 'on' : ''} onClick={() => handleResultChange('transaction_type', 'pemasukan')}>Terima transfer</button>
                                         </div>
                                     )}
 
-                                    <div className="space-y-4 pt-6 border-t-[3px] border-dashed border-[var(--neo-ink)]">
-                                        <div>
-                                            <label className="neo-label">Kategori Pengeluaran</label>
-                                            <NeoSelect
-                                                value={scanResult.category}
-                                                onChange={(val) => handleResultChange('category', val)}
-                                                options={
-                                                    [{label: scanResult.category, value: scanResult.category}].concat(
-                                                        CATEGORIES.pengeluaran.filter(c => c.name !== scanResult.category).map(cat => ({
-                                                            label: cat.name,
-                                                            value: cat.name
-                                                        }))
-                                                    )
-                                                }
-                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                            />
+                                    {Object.keys(unsure).length > 0 && (
+                                        <div className="banner warn"><AlertTriangle className="i" />{Object.keys(unsure).length} kolom perlu dicek. Kolom kuning tidak terbaca jelas.</div>
+                                    )}
+                                    <label className="field">Nama toko
+                                        <input className={`input ${unsure.store_name ? 'unsure' : ''}`} value={scanResult.store_name} onChange={(e) => { handleResultChange('store_name', e.target.value); clearUnsure('store_name') }} />
+                                    </label>
+                                    <div className="g2">
+                                        <label className="field">Tanggal
+                                            <DatePickerNeo className={`input ${unsure.date ? 'unsure' : ''}`} value={scanResult.date} onChange={(e) => { handleResultChange('date', e.target.value); clearUnsure('date') }} />
+                                        </label>
+                                        <label className="field">Jam
+                                            <input type="time" className="input" value={scanTime} onChange={(e) => setScanTime(e.target.value)} />
+                                        </label>
+                                    </div>
+                                    <div className="g2" style={{ gridTemplateColumns: '1fr' }}>
+                                        <div className="field">Total
+                                            <div className={`input ${unsure.total ? 'unsure' : ''}`} style={{ gap: 4 }}>
+                                                <span className="cur" style={{ color: 'var(--text-2)', fontWeight: 600 }}>Rp</span>
+                                                <input
+                                                    inputMode="numeric"
+                                                    value={scanResult.total.toLocaleString('id-ID')}
+                                                    onChange={(e) => { handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0); clearUnsure('total') }}
+                                                    style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', width: '100%', fontWeight: 700 }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="neo-label">Pilih Dompet Pengeluaran</label>
-                                            <NeoSelect
-                                                value={selectedWalletId}
-                                                onChange={(val) => setSelectedWalletId(val)}
-                                                options={wallets.map(w => ({
-                                                    label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
-                                                    value: w.id.toString()
-                                                }))}
-                                                placeholder="Pilih dompet..."
-                                                className="w-full px-4 py-3 bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] font-black outline-none transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                            />
+                                    </div>
+
+                                    {scanResult.document_type === 'bukti_transfer' && (
+                                        <label className="field">Keterangan transfer
+                                            <input className="input" value={scanResult.description || ''} placeholder="Keterangan transfer…" onChange={(e) => handleResultChange('description', e.target.value)} />
+                                        </label>
+                                    )}
+                                </div>
+
+                                {/* Item details — struk & tagihan only */}
+                                {scanResult.document_type !== 'bukti_transfer' && (
+                                    <div className="card stack-12">
+                                        <div className="between">
+                                            <h3 className="h3">Rincian item</h3>
+                                            <button className="link" onClick={handleAddItem}>+ Tambah item</button>
                                         </div>
+                                        {scanResult.items.length === 0 ? (
+                                            <div className="es" style={{ border: 0, padding: '8px 0' }}>
+                                                <span className="t2">Rincian item tidak terbaca</span>
+                                                <p>Total tetap bisa disimpan. Tambah item manual kalau perlu.</p>
+                                                <button className="btn-2" style={{ height: 40, fontSize: 13 }} onClick={handleAddItem}>Tambah item</button>
+                                            </div>
+                                        ) : (
+                                            <div className="stack">
+                                                {scanResult.items.map((item: any, idx: number) => (
+                                                    <div className="tile stack" key={idx} style={{ gap: 8 }}>
+                                                        <div className="hstack" style={{ gap: 8 }}>
+                                                            <input className="input" style={{ height: 38 }} value={item.name} placeholder="Nama item" onChange={(e) => handleItemChange(idx, 'name', e.target.value)} />
+                                                            <button className="icon-btn ghost" aria-label="Hapus item" style={{ color: 'var(--danger)', width: 38, height: 38 }} onClick={() => handleDeleteItem(idx)}><Trash2 className="i i-s" /></button>
+                                                        </div>
+                                                        <div className="between" style={{ fontSize: 13 }}>
+                                                            <div className="hstack" style={{ gap: 6 }}>
+                                                                <span className="lbl">x</span>
+                                                                <input className="input" style={{ height: 34, width: 48, padding: '0 6px' }} inputMode="numeric" value={item.qty} onChange={(e) => handleItemChange(idx, 'qty', parseInt(e.target.value) || 0)} />
+                                                                <span className="lbl">@Rp</span>
+                                                                <input className="input" style={{ height: 34, width: 96, padding: '0 6px' }} inputMode="numeric" value={item.price.toLocaleString('id-ID')} onChange={(e) => handleItemChange(idx, 'price', parseInt(e.target.value.replace(/\./g, '')) || 0)} />
+                                                            </div>
+                                                            <span className="num-m" style={{ fontSize: 14 }}>Rp {(item.qty * item.price).toLocaleString('id-ID')}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Discount / fees breakdown */}
+                                {(scanResult.discount > 0 || scanResult.extra_fees > 0) && (
+                                    <div className="card stack" style={{ gap: 6, fontSize: 13 }}>
+                                        <div className="between"><span>Subtotal item</span><span>Rp {scanResult.items.reduce((a: number, i: any) => a + i.qty * i.price, 0).toLocaleString('id-ID')}</span></div>
+                                        {scanResult.discount > 0 && <div className="between pos"><span>Diskon / voucher</span><span>− Rp {scanResult.discount.toLocaleString('id-ID')}</span></div>}
+                                        {scanResult.extra_fees > 0 && <div className="between"><span>Biaya tambahan</span><span>+ Rp {scanResult.extra_fees.toLocaleString('id-ID')}</span></div>}
+                                        <div className="between" style={{ fontWeight: 700, borderTop: '1px solid var(--divider)', paddingTop: 6 }}><span>Total dibayar</span><span>Rp {scanResult.total.toLocaleString('id-ID')}</span></div>
+                                    </div>
+                                )}
+
+                                {/* Category + wallet */}
+                                <div className="card stack-12">
+                                    <div className="field">Kategori
+                                        <NeoSelect
+                                            value={scanResult.category}
+                                            onChange={(val) => handleResultChange('category', val)}
+                                            options={[{ label: scanResult.category, value: scanResult.category }].concat(
+                                                CATEGORIES.pengeluaran.filter(c => c.name !== scanResult.category).map(cat => ({ label: cat.name, value: cat.name }))
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="field">Dompet
+                                        <NeoSelect
+                                            value={selectedWalletId}
+                                            onChange={(val) => setSelectedWalletId(val)}
+                                            placeholder="Pilih dompet…"
+                                            options={wallets.map(w => ({ label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`, value: w.id.toString() }))}
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button onClick={resetState} className="brutal-btn !bg-white text-[var(--text-primary)] !py-4">
-                                        Ulangi Foto
+                                <div className="stack">
+                                    <button className="btn btn-block" onClick={handleSave} disabled={isSaving}>
+                                        {isSaving ? 'Menyimpan…' : <><Save className="i i-s" />Simpan</>}
                                     </button>
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        className="brutal-btn !bg-[var(--neo-mint)] text-[var(--text-primary)] !py-4 flex items-center justify-center gap-2"
-                                    >
-                                        {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                        Simpan
-                                    </button>
+                                    <button className="btn-2 btn-block" onClick={resetState} disabled={isSaving}>Ulangi foto</button>
                                 </div>
                             </div>
                         )}
+                        </div>
+                        </div>
                     </>
                 )}
             </div>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Catat pengeluaran dari budget</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="app" style="height: 844px">
+<div class="scroll" aria-hidden="true">
+<div class="top"><h1 class="h1">Budget</h1></div>
+<div class="card" style="height: 140px"></div>
+</div>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-labelledby="cb-t" style="top: 150px">
+<div class="grabber"></div>
+<div class="between">
+<div class="hstack" style="gap: 12px"><div class="ic c-makan"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></div><div><p class="sub">Catat pengeluaran</p><h2 class="h2" id="cb-t" style="font-size: 18px">Makan di luar</h2></div></div>
+<a href="AksiBudget.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+
+<div class="field">Jumlah
+<div class="amount-box"><span class="cur">Rp</span><span class="val">45.000</span></div>
+<div class="chips"><button class="chip">+10rb</button><button class="chip">+50rb</button><button class="chip">+100rb</button></div>
+</div>
+
+<div class="field">Dari dompet
+<div class="chips scrollx"><button class="chip on">GoPay<span class="lbl" style="font-weight: 500">Rp 210rb</span></button><button class="chip">BCA<span class="lbl" style="font-weight: 500">Rp 2,4jt</span></button><button class="chip">Tunai<span class="lbl" style="font-weight: 500">Rp 150rb</span></button></div>
+</div>
+
+<div class="card stack" style="background: var(--surface-2)">
+<div class="between" style="font-size: 13px"><span class="lbl">Terpakai + baru</span><b>Rp 1.245.000 / 1.500.000</b></div>
+<div class="bar"><div style="width: 83%; background: #F59E0B"></div></div>
+<span class="lbl">Sisa setelah ini Rp 255.000</span>
+</div>
+
+<span class="lbl">Tercatat hari ini dengan judul “Pengeluaran Makan di luar”. Ubah detailnya di Riwayat kalau perlu.</span>
+
+<button class="btn btn-block" style="margin-top: auto">Catat Rp 45.000</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

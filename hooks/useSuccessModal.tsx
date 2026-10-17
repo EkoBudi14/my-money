@@ -1,6 +1,7 @@
 'use client'
-import React, { createContext, useContext, useState, useCallback } from 'react'
-import SuccessModal, { SuccessModalOptions } from '@/components/SuccessModal'
+import React, { createContext, useContext, useCallback } from 'react'
+import { SuccessModalOptions } from '@/components/SuccessModal'
+import { useToast } from '@/hooks/useToast'
 
 interface SuccessModalContextType {
     showSuccess: (options: SuccessModalOptions) => void
@@ -8,33 +9,20 @@ interface SuccessModalContextType {
 
 const SuccessModalContext = createContext<SuccessModalContextType | undefined>(undefined)
 
+/**
+ * Kept for API compatibility: the old center success popup now routes to a toast
+ * (DESIGN-TAMBAHAN.md §4). Call sites still call showSuccess({ type, message }).
+ */
 export function SuccessModalProvider({ children }: { children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false)
-    const [options, setOptions] = useState<SuccessModalOptions>({
-        type: 'general',
-        message: ''
-    })
+    const { showToast } = useToast()
 
     const showSuccess = useCallback((opts: SuccessModalOptions) => {
-        setOptions(opts)
-        setIsOpen(true)
-    }, [])
-
-    const handleClose = useCallback(() => {
-        setIsOpen(false)
-    }, [])
+        showToast('success', opts.message)
+    }, [showToast])
 
     return (
         <SuccessModalContext.Provider value={{ showSuccess }}>
             {children}
-            <SuccessModal
-                isOpen={isOpen}
-                onClose={handleClose}
-                type={options.type}
-                title={options.title}
-                message={options.message}
-                duration={options.duration}
-            />
         </SuccessModalContext.Provider>
     )
 }

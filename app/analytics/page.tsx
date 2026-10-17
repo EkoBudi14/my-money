@@ -1,32 +1,43 @@
 'use client'
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { useTransactions, useWallets } from '@/hooks/useAppData'
 import { Transaction, Wallet } from '@/types'
-import {
-    PieChart,
-    Pie,
-    Cell,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    LabelList
-} from 'recharts'
-import { Calendar, ChevronLeft, ChevronRight, Settings, X, TrendingUp, TrendingDown, Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, Zap, SmilePlus, AlertTriangle, Info, ChevronDown, Search } from 'lucide-react'
-import DatePickerNeo from '@/components/DatePickerNeo'
+import { ChevronLeft, ChevronRight, Calendar, Lightbulb } from 'lucide-react'
+import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import PeriodSheet from '@/components/PeriodSheet'
+import { getCategoryIcon } from '@/lib/categories'
+
+// Built-in category -> catatduit color class (DESIGN.md section 6).
+const CAT_CLASS: Record<string, string> = {
+  'Kebutuhan Dapur': 'c-dapur', 'Makan di Luar': 'c-makan', 'Transportasi': 'c-transport',
+  'Tempat Tinggal': 'c-rumah', 'Tagihan': 'c-tagihan', 'Belanja': 'c-belanja',
+  'Kesehatan': 'c-kesehatan', 'Cicilan & Utang': 'c-cicilan', 'Pribadi & Hiburan': 'c-hiburan',
+  'Edukasi & Donasi': 'c-edukasi', 'Gaji': 'c-gaji', 'Bonus & Hadiah': 'c-bonus',
+  'Investasi': 'c-investasi', 'Penjualan': 'c-belanja', 'Lainnya': 'c-lain',
+}
+const EMPTY_CUSTOM = { pengeluaran: [], pemasukan: [] }
+const rpFull = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+const rpShort = (n: number) => {
+  const a = Math.abs(n)
+  if (a >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(a % 1_000_000 ? 1 : 0)}jt`
+  if (a >= 1_000) return `Rp ${Math.round(n / 1_000)}rb`
+  return `Rp ${n}`
+}
 
 export default function AnalyticsPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [wallets, setWallets] = useState<Wallet[]>([])
-    const [loading, setLoading] = useState(true)
+    const txQuery = useTransactions()
+    const walletsQuery = useWallets()
+    const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
+    const wallets = useMemo(() => walletsQuery.data ?? [], [walletsQuery.data])
+    const loading = txQuery.isLoading
 
     // State for Filter & Persistence (Synced with Dashboard)
     const [currentDate, setCurrentDate] = useState(new Date())
     const [showSettings, setShowSettings] = useState(false)
+    const isWeb = useIsWeb()
     const [expandedWallet, setExpandedWallet] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [showTooltip, setShowTooltip] = useState(false) // Net balance tooltip
@@ -133,7 +144,6 @@ export default function AnalyticsPage() {
     }, [filterMode, currentDate, customRange])
 
     useEffect(() => {
-        fetchData()
         // Scroll to top when analytics page first loads on mobile
         // Use requestAnimationFrame to ensure DOM is painted before scrolling
         const resetScroll = () => {
@@ -149,16 +159,6 @@ export default function AnalyticsPage() {
         const t = setTimeout(resetScroll, 100)
         return () => clearTimeout(t)
     }, [])
-
-    const fetchData = async () => {
-        setLoading(true)
-        const { data: txs } = await supabase.from('transactions').select('*').order('created_at', { ascending: false })
-        const { data: wlls } = await supabase.from('wallets').select('*')
-
-        if (txs) setTransactions(txs as unknown as Transaction[])
-        if (wlls) setWallets(wlls)
-        setLoading(false)
-    }
 
     const filteredTxs = useMemo(() => {
         return transactions.filter(t => {
@@ -572,875 +572,425 @@ export default function AnalyticsPage() {
         return result
     }, [transactions, filterMode, currentDate, customRange])
 
+    // ── Derived view data ───────────────────────────────────────────────────
+    const savingRate = income > 0 ? ((income - expense) / income) * 100 : 0
+    const maxCat = categoryData[0]?.value || 1
+    const catPct: Record<string, number | null> = {}
+    periodComparison.categoryRows.forEach(r => { catPct[r.name] = r.pct })
+    const chartData = comparisonData.slice(-6)
+    const chartMax = Math.max(1, ...chartData.map(d => Math.max(d.income, d.expense)))
 
-    return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            <header className="sticky top-0 z-30 flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <div>
-                    <h2 className="font-black uppercase tracking-tighter text-3xl text-[var(--text-primary)]">Analitik</h2>
-                </div>
-                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                    <p className="font-black uppercase tracking-tight text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                        EB
-                    </div>
-                </div>
-            </header>
+    // ── Web (>=768px): AnalitikWeb ──
+    const webChart = comparisonData.slice(-12)
+    const webChartMax = Math.max(1, ...webChart.map(d => Math.max(d.income, d.expense)))
+    const pctLabel = (curr: number, prev: number) => {
+        if (prev <= 0) return 'Belum ada data periode lalu'
+        const p = ((curr - prev) / prev) * 100
+        return `${p >= 0 ? 'Naik' : 'Turun'} ${Math.abs(p).toFixed(0)}% dari periode lalu`
+    }
+    const changeCell = (curr: number, prev: number, goodWhenUp: boolean) => {
+        if (prev <= 0) return <td className="r" style={{ color: 'var(--text-2)' }}>—</td>
+        const p = ((curr - prev) / prev) * 100
+        const good = goodWhenUp ? p >= 0 : p <= 0
+        return <td className={`r ${good ? 'pos' : 'bad'}`} style={{ fontWeight: 600 }}>{p >= 0 ? '+' : '−'}{Math.abs(p).toFixed(0)}%</td>
+    }
+    const topCats = categoryData.slice(0, 5)
+    const otherCats = categoryData.slice(5)
+    const otherTotal = otherCats.reduce((a, c) => a + c.value, 0)
 
-            <div className="p-4 pb-28 md:p-8 md:pb-8 space-y-6 md:space-y-8">
-                {/* Control Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 brutal-card-sm p-4">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 rounded-[14px] p-1" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                            {filterMode === 'monthly' && (
-                                <button
-                                    onClick={prevMonth}
-                                    className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                    style={{ color: 'var(--text-muted)' }}
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                            )}
-                            <div className="flex items-center gap-2 px-4 py-1.5">
-                                <Calendar className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
-                                <span className="font-black text-[var(--text-primary)] whitespace-nowrap min-w-[140px] text-center">
-                                    {getPeriodLabel()}
-                                </span>
-                            </div>
-                            {filterMode === 'monthly' && (
-                                <button
-                                    onClick={nextMonth}
-                                    className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                    style={{ color: 'var(--text-muted)' }}
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
-                            )}
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <div>
+                            <h1 className="ptitle">Analitik</h1>
+                            <p className="sub">{getPeriodLabel()}{periodComparison.hasPrevData ? ` · dibanding ${periodComparison.prevLabel}` : ''}</p>
+                        </div>
+                        <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+                            <button className="icon-btn" aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                            <button className="btn-2" onClick={() => setShowSettings(true)}><Calendar className="i i-s" />Pilih periode</button>
+                            <button className="icon-btn" aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowSettings(!showSettings)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] font-black transition-all active:scale-95"
-                            style={showSettings
-                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
-                                : { background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }
-                            }
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Filter</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative">
-                    <div className="flex items-center gap-3 brutal-card-sm px-4 py-3">
-                        <Search className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-                        <input
-                            type="text"
-                            data-no-ring=""
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Cari transaksi berdasarkan nama, kategori, atau dompet..."
-                            className="flex-1 bg-transparent text-[16px] md:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none font-black"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className="font-bold transition-colors rounded-[10px] p-1"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Search Results Panel */}
-                    {searchQuery.trim() && (
-                        <div className="mt-2 bg-white dark:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-lg overflow-hidden">
-                            <div className="px-4 py-3 border-b border-[var(--border-default)] flex items-center justify-between">
-                                <span className="neo-label !text-[10px]">
-                                    {searchResults.length > 0 ? `${searchResults.length} hasil ditemukan` : 'Tidak ada hasil'}
-                                </span>
-                                {searchResults.length === 50 && (
-                                    <span className="text-xs text-slate-400 dark:text-slate-500">Menampilkan 50 teratas</span>
-                                )}
+                    {!loading && income === 0 && expense === 0 ? (
+                        <EmptyState icon={<Calendar className="i" />} title="Belum ada data periode ini" text="Grafik muncul setelah ada transaksi." actionLabel="Pilih periode lain" actionVariant="secondary" onAction={() => setShowSettings(true)} />
+                    ) : (
+                        <>
+                            <div className="wrap">
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pemasukan</div><div className="num-l pos">{rpFull(income)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(income, periodComparison.prevIncome)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pengeluaran</div><div className="num-l">{rpFull(expense)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(expense, periodComparison.prevExpense)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Sisa periode ini</div><div className="num-l" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpFull(netBalance)}</div><div className="lbl" style={{ marginTop: 4 }}>Pemasukan − pengeluaran</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Saving rate</div><div className="num-l">{savingRate.toFixed(0)}%</div><div className="lbl" style={{ marginTop: 4 }}>Batas sehat 20%</div></div>
                             </div>
 
-                            {searchResults.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400 dark:text-slate-500">
-                                    <Search className="w-8 h-8 opacity-20" />
-                                    <p className="text-sm font-medium">Transaksi tidak ditemukan</p>
-                                    <p className="text-xs">Coba kata kunci lain</p>
-                                </div>
-                            ) : (
-                                <div className="max-h-[400px] overflow-y-auto overflow-x-hidden divide-y divide-[var(--border-default)]">
-                                    {(() => {
-                                        const walletMap = new Map(wallets.map(w => [w.id, w.name]))
-                                        return searchResults.map(tx => {
-                                            const walletName = (tx.wallet_id != null ? walletMap.get(tx.wallet_id) : undefined) || 'Tidak Diketahui'
-                                            const txDate = new Date(tx.date || tx.created_at)
-                                            const txTime = new Date(tx.created_at)
-                                            const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-                                            const isIncome = tx.type === 'pemasukan'
-                                            const isTopup = tx.type === 'topup'
-                                            return (
-                                                <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] transition-colors w-full min-w-0">
-                                                    {/* Type icon */}
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncome ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
-                                                        }`}>
-                                                        {isTopup
-                                                            ? <Zap className="w-4 h-4 text-blue-500" />
-                                                            : isIncome
-                                                                ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                                                                : <ArrowDownRight className="w-4 h-4 text-rose-500" />
-                                                        }
-                                                    </div>
-
-                                                    {/* Info */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-black text-sm text-[var(--text-primary)] truncate">
-                                                            {isTopup && tx.source_wallet_id
-                                                                ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletName})`
-                                                                : tx.title}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                            <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
-                                                            <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1">
-                                                                <WalletIcon className="w-3 h-3" />
-                                                                {walletName}
-                                                            </span>
-                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
-                                                                {tx.category}
-                                                            </span>
-                                                            {tx.is_talangan && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>}
-                                                            {tx.is_piutang && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Amount */}
-                                                    <p className={`text-sm font-bold shrink-0 ${isTopup ? 'text-blue-600' : isIncome ? 'text-emerald-600' : 'text-rose-500'
-                                                        }`}>
-                                                        {isIncome || isTopup ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
-                                                    </p>
-                                                </div>
-                                            )
-                                        })
-                                    })()}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Settings Panel */}
-                {showSettings && (
-                    <>
-                        <div className="fixed inset-0 z-10" onClick={() => setShowSettings(false)} />
-                        <div className="relative z-20 w-full md:max-w-sm md:ml-auto lg:fixed lg:right-8 lg:top-32 lg:z-50 brutal-card p-5 animate-in fade-in zoom-in-95 duration-200"
-                            style={{ background: 'var(--bg-card)' }}>
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)}
-                                    className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
-                                    <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-5">
-                                <div className="space-y-3">
-                                    <label className="neo-label">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 rounded-[14px] p-1.5" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                                        <button
-                                            onClick={() => setFilterMode('monthly')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'monthly'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Bulanan
-                                        </button>
-                                        <button
-                                            onClick={() => setFilterMode('custom')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'custom'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Custom
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Dari Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.start}
-                                                onChange={(e) => setCustomRange(prev => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Sampai Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.end}
-                                                onChange={(e) => setCustomRange(prev => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {loading ? (
-                    <div className="text-center py-20 text-[var(--text-muted)] font-semibold animate-pulse">Memuat analitik...</div>
-                ) : (
-                    <>
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="brutal-card-md brutal-card-mint p-6">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center text-[var(--success)]"
-                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                            <TrendingUp className="w-6 h-6" />
-                                        </div>
-                                        <h3 className="neo-label">Total Pemasukan</h3>
-                                    </div>
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setShowIncomeTooltip(!showIncomeTooltip)}
-                                            className="p-1 transition-colors rounded-full relative z-20"
-                                            style={{ color: 'var(--text-muted)' }}
-                                        >
-                                            <Info className="w-4 h-4" />
-                                        </button>
-
-                                        {/* Invisible overlay */}
-                                        {showIncomeTooltip && (
-                                            <div
-                                                className="fixed inset-0 z-10"
-                                                onClick={() => setShowIncomeTooltip(false)}
-                                            />
-                                        )}
-
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showIncomeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                            }`}>
-                                            <p>Semua <span className="text-emerald-400 font-bold">transaksi masuk</span> pada rentang tanggal yang dipilih.</p>
-                                            <div className="mt-2 pt-2 border-t border-white/20">
-                                                <p className="text-white/70">Catatan: <span className="font-bold">Pembayaran Piutang</span> (uang yang dikembalikan orang lain ke kamu) tidak dihitung sebagai pemasukan.</p>
-                                            </div>
-                                            {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="neo-amount-pos mt-2">Rp {income.toLocaleString('id-ID')}</p>
-                            </div>
-
-                            <div className="brutal-card-md brutal-card-peach p-6">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center"
-                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
-                                            <TrendingDown className="w-6 h-6" />
-                                        </div>
-                                        <h3 className="neo-label">Total Pengeluaran</h3>
-                                    </div>
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setShowExpenseTooltip(!showExpenseTooltip)}
-                                            className="p-1 transition-colors rounded-full relative z-20"
-                                            style={{ color: 'var(--text-muted)' }}
-                                        >
-                                            <Info className="w-4 h-4" />
-                                        </button>
-
-                                        {/* Invisible overlay */}
-                                        {showExpenseTooltip && (
-                                            <div
-                                                className="fixed inset-0 z-10"
-                                                onClick={() => setShowExpenseTooltip(false)}
-                                            />
-                                        )}
-
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showExpenseTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                            }`}>
-                                            <p>Semua <span className="text-rose-400 font-bold">transaksi keluar</span> pada rentang tanggal yang dipilih.</p>
-                                            <div className="mt-2 pt-2 border-t border-white/20">
-                                                <p className="text-white/70">Catatan: Transaksi <span className="font-bold text-amber-300">Talangan</span> (membayarin orang terlebih dahulu) tidak dihitung sebagai pengeluaran.</p>
-                                            </div>
-                                            {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="neo-amount-neg mt-2">Rp {expense.toLocaleString('id-ID')}</p>
-                            </div>
-
-                            <div className={`brutal-card-md p-6 ${netBalance >= 0 ? 'brutal-card-sky' : 'brutal-card-peach'}`}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-11 h-11 rounded-[14px] flex items-center justify-center"
-                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}>
-                                            <WalletIcon className="w-6 h-6" />
-                                        </div>
-                                        <h3 className="neo-label">Sisa Saldo Periode Ini</h3>
-                                    </div>
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setShowTooltip(!showTooltip)}
-                                            className="p-1 transition-colors rounded-full relative z-20"
-                                            style={{ color: 'var(--text-muted)' }}
-                                        >
-                                            <Info className="w-4 h-4" />
-                                        </button>
-
-                                        {/* Invisible overlay to close tooltip when clicking outside */}
-                                        {showTooltip && (
-                                            <div
-                                                className="fixed inset-0 z-10"
-                                                onClick={() => setShowTooltip(false)}
-                                            />
-                                        )}
-
-                                        <div className={`absolute right-0 -mr-2 top-full mt-3 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed ${showTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                            }`}>
-                                            <p>Selisih antara <span className="text-emerald-400 font-bold">Pemasukan</span> dan <span className="text-rose-400 font-bold">Pengeluaran</span> murni pada periode ini.</p>
-                                            <div className="mt-2 pt-2 border-t border-white/20">
-                                                <p className="text-white/70">Catatan: Tidak menghitung transaksi Piutang atau Talangan.</p>
-                                            </div>
-                                            {/* Arrow up */}
-                                            <div className="absolute -top-1.5 right-4 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className={`neo-amount mt-2 ${netBalance >= 0 ? '' : 'neo-amount-neg'}`}>
-                                    Rp {netBalance.toLocaleString('id-ID')}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Quick Insights Row (Top Expenses & Recent Activity) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Top Expenses */}
-                            <div className="brutal-card-md p-6" style={{ background: 'var(--neo-peach)' }}>
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--error)' }}>
-                                        <TrendingDown className="w-5 h-5" />
-                                    </div>
-                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Pengeluaran Terbesar</h3>
-                                </div>
-                                {topExpenses.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {topExpenses.map((tx, idx) => (
-                                            <div key={tx.id} className="flex justify-between items-center group">
-                                                <div className="flex items-center gap-3 min-w-0 pr-4">
-                                                    <span className="text-xs font-black text-slate-300 w-4">{idx + 1}.</span>
-                                                    <div className="min-w-0">
-                                                        <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
-                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
-                                                                {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                            <span className="text-[10px] font-bold bg-[var(--bg-card)] px-2 py-0.5 rounded-md text-[var(--text-primary)] opacity-80 inline-block uppercase tracking-wider">{tx.category}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <p className="font-bold text-sm text-rose-600 shrink-0">-Rp {tx.amount.toLocaleString('id-ID')}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500">
-                                        <p className="text-sm font-medium">Belum ada pengeluaran</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="brutal-card-md p-6" style={{ background: 'var(--neo-sky)' }}>
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-primary)' }}>
-                                        <Zap className="w-5 h-5" />
-                                    </div>
-                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Aktivitas Terakhir</h3>
-                                </div>
-                                {recentActivity.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {recentActivity.map(tx => {
-                                            const isIncome = tx.type === 'pemasukan' || tx.type === 'topup'
-                                            return (
-                                                <div key={tx.id} className="flex justify-between items-center group">
-                                                    <div className="min-w-0 pr-4">
-                                                        <p className="font-bold text-sm text-[var(--text-primary)] truncate">{tx.title}</p>
-                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1 items-start">
-                                                            <span className="text-[10px] font-bold text-[var(--text-primary)] opacity-70">
-                                                                {new Date(tx.date || tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                            <span className="text-[10px] font-bold bg-[var(--bg-card)] px-2 py-0.5 rounded-md text-[var(--text-primary)] opacity-80 inline-block uppercase tracking-wider">{tx.category}</span>
-                                                        </div>
-                                                    </div>
-                                                    <p className={`font-bold text-sm shrink-0 ${isIncome ? 'text-emerald-600' : 'text-rose-600'
-                                                        }`}>
-                                                        {isIncome ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
-                                                    </p>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 text-slate-400 dark:text-slate-500">
-                                        <p className="text-sm font-medium">Belum ada aktivitas</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Spending Insights */}
-                        {insights.length > 0 && (
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-[var(--text-primary)]" />
-                                    <h3 className="font-black text-[var(--text-primary)] tracking-tight">Spending Insights</h3>
-                                    <span className="text-xs font-bold text-[var(--text-muted)]">— analisis otomatis periode ini</span>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {insights.map((ins, i) => (
-                                        <div
-                                            key={i}
-                                            className={`p-4 rounded-[14px] flex items-start gap-3 transition-all brutal-shadow-sm ${ins.type === 'positive' ? 'bg-[var(--neo-mint)] border-2 border-[var(--neo-ink)]' :
-                                                ins.type === 'negative' ? 'bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)]' :
-                                                    ins.type === 'warning' ? 'bg-[var(--neo-yellow-vivid)] border-2 border-[var(--neo-ink)]' :
-                                                        'bg-[var(--neo-sky)] border-2 border-[var(--neo-ink)]'
-                                                }`}
-                                        >
-                                            <span className="text-xl mt-0.5 shrink-0">{ins.emoji}</span>
-                                            <div className="min-w-0">
-                                                <p className="font-black text-sm text-[var(--text-primary)]">{ins.title}</p>
-                                                <p className="text-xs mt-1 font-bold leading-relaxed text-[var(--text-primary)]/80">{ins.desc}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Period Comparison Table */}
-                        <div className="brutal-card overflow-hidden max-w-[calc(100vw-2rem)] md:max-w-full">
-                            <div className="p-5 flex items-center gap-2" style={{ borderBottom: '2px solid var(--border-default)' }}>
-                                <ArrowUpRight className="w-4 h-4 text-[var(--text-primary)]" />
-                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Perbandingan Periode</h3>
-                                <span className="text-xs font-bold text-[var(--text-muted)] ml-1">— otomatis vs periode sebelumnya</span>
-                            </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm min-w-[600px]">
-                                    <thead>
-                                        <tr className="bg-[var(--bg-elevated)]">
-                                            <th className="text-left px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider w-36">Item</th>
-                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-primary)] uppercase tracking-wider">
-                                                <div>Periode Ini</div>
-                                                <div className="text-[10px] font-bold text-[var(--text-primary)] normal-case mt-0.5">{periodComparison.currentLabel}</div>
-                                            </th>
-                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider">
-                                                <div>Periode Lalu</div>
-                                                <div className="text-[10px] font-bold text-[var(--text-muted)] normal-case mt-0.5">{periodComparison.prevLabel}</div>
-                                            </th>
-                                            <th className="text-right px-5 py-3 text-xs font-black text-[var(--text-muted)] uppercase tracking-wider">
-                                                <div className="flex items-center justify-end gap-1.5">
-                                                    Perubahan
-                                                    <div className="relative inline-flex">
-                                                        <button
-                                                            onClick={() => setShowChangeTooltip(!showChangeTooltip)}
-                                                            className="transition-colors rounded-full text-[var(--text-muted)]"
-                                                        >
-                                                            <Info className="w-3.5 h-3.5" />
-                                                        </button>
-
-                                                        {showChangeTooltip && (
-                                                            <div
-                                                                className="fixed inset-0 z-10"
-                                                                onClick={() => setShowChangeTooltip(false)}
-                                                            />
-                                                        )}
-
-                                                        <div className={`absolute right-0 top-full mt-2 w-64 p-3 bg-[var(--neo-ink)] text-white text-xs rounded-[14px] shadow-xl transition-all z-20 font-medium leading-relaxed normal-case text-left ${showChangeTooltip ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1'
-                                                            }`}>
-                                                            <p>Persentase selisih lompatan nilai dari periode lalu.</p>
-                                                            <div className="mt-2 pt-2 border-t border-white/20">
-                                                                <p className="text-white/70">💡 <span className="font-bold text-emerald-400">Catatan:</span> Persentase kenaikan <b>bisa melebihi 100%</b> jika lonjakan terjadi cukup besar. (Misal: nominal awal 100rb menjadi 500rb adalah naik 400%).</p>
-                                                            </div>
-                                                            <div className="absolute -top-1.5 right-1 w-3 h-3 bg-[var(--neo-ink)] rotate-45"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-[var(--border-default)]">
-                                        {/* Summary rows */}
-                                        {([
-                                            { label: 'Pemasukan', curr: periodComparison.currIncome, prev: periodComparison.prevIncome, color: 'text-emerald-600', positive: true },
-                                            { label: 'Pengeluaran', curr: periodComparison.currExpense, prev: periodComparison.prevExpense, color: 'text-rose-500', positive: false },
-                                            { label: 'Selisih', curr: periodComparison.currNet, prev: periodComparison.prevNet, color: periodComparison.currNet >= 0 ? 'text-[var(--text-primary)]' : 'text-rose-600', positive: true },
-                                        ] as const).map(row => {
-                                            const pct = periodComparison.pctDiff(row.curr, row.prev)
-                                            const isGood = row.positive ? (pct !== null && pct > 0) : (pct !== null && pct < 0)
-                                            return (
-                                                <tr key={row.label} className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
-                                                    <td className="px-5 py-3.5 font-semibold text-[var(--text-primary)]">{row.label}</td>
-                                                    <td className={`px-5 py-3.5 text-right font-bold ${row.color}`}>
-                                                        {row.curr >= 0 ? '+' : ''}Rp {row.curr.toLocaleString('id-ID')}
-                                                    </td>
-                                                    <td className="px-5 py-3.5 text-right text-[var(--text-secondary)] font-medium">
-                                                        {periodComparison.hasPrevData ? (
-                                                            <>Rp {row.prev.toLocaleString('id-ID')}</>
-                                                        ) : <span className="text-slate-300">—</span>}
-                                                    </td>
-                                                    <td className="px-5 py-3.5 text-right">
-                                                        {pct !== null && periodComparison.hasPrevData ? (
-                                                            <div className="flex flex-col items-end gap-1">
-                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                                    }`}>
-                                                                    {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                                    {Math.abs(pct).toFixed(1)}%
-                                                                </span>
-                                                                {pct > 100 && (
-                                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                                                        (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        ) : <span className="text-slate-300 text-xs">—</span>}
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                        {/* Saving Rate row */}
-                                        <tr className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
-                                            <td className="px-5 py-3.5 font-semibold text-[var(--text-primary)]">Saving Rate</td>
-                                            <td className={`px-5 py-3.5 text-right font-bold ${periodComparison.currSavingRate >= 20 ? 'text-emerald-600' :
-                                                periodComparison.currSavingRate >= 0 ? 'text-amber-500' : 'text-rose-600'
-                                                }`}>{periodComparison.currSavingRate.toFixed(1)}%</td>
-                                            <td className="px-5 py-3.5 text-right text-[var(--text-secondary)] font-medium">
-                                                {periodComparison.hasPrevData ? `${periodComparison.prevSavingRate.toFixed(1)}%` : <span className="text-slate-300">—</span>}
-                                            </td>
-                                            <td className="px-5 py-3.5 text-right">
-                                                {periodComparison.hasPrevData ? (() => {
-                                                    const diff = periodComparison.currSavingRate - periodComparison.prevSavingRate
-                                                    return (
-                                                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${diff >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                            }`}>
-                                                            {diff >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                            {Math.abs(diff).toFixed(1)}%
-                                                        </span>
-                                                    )
-                                                })() : <span className="text-slate-300 text-xs">—</span>}
-                                            </td>
-                                        </tr>
-
-                                        {/* Category rows separator */}
-                                        {periodComparison.categoryRows.length > 0 && (
-                                            <tr>
-                                                <td colSpan={4} className="px-5 pt-4 pb-1">
-                                                    <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Per Kategori (Pengeluaran)</p>
-                                                </td>
-                                            </tr>
-                                        )}
-                                        {periodComparison.categoryRows.map(row => {
-                                            const pct = row.pct
-                                            const isGood = pct !== null && pct < 0  // spending down = good
-                                            return (
-                                                <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-[var(--bg-elevated)] dark:bg-[var(--bg-elevated)]/60 transition-colors">
-                                                    <td className="px-5 py-3 text-[var(--text-primary)] font-medium">{row.name}</td>
-                                                    <td className="px-5 py-3 text-right font-semibold text-rose-500">
-                                                        Rp {row.curr.toLocaleString('id-ID')}
-                                                    </td>
-                                                    <td className="px-5 py-3 text-right text-[var(--text-secondary)] font-medium">
-                                                        {periodComparison.hasPrevData && row.prev > 0
-                                                            ? `Rp ${row.prev.toLocaleString('id-ID')}`
-                                                            : <span className="text-slate-300">—</span>}
-                                                    </td>
-                                                    <td className="px-5 py-3 text-right">
-                                                        {pct !== null && periodComparison.hasPrevData ? (
-                                                            <div className="flex flex-col items-end gap-1">
-                                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${isGood ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-500'
-                                                                    }`}>
-                                                                    {pct > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                                    {Math.abs(pct).toFixed(0)}%
-                                                                </span>
-                                                                {pct > 100 && (
-                                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                                                        (naik {((pct / 100) + 1).toLocaleString('id-ID', { maximumFractionDigits: 1 })}x)
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        ) : <span className="text-slate-300 text-xs">—</span>}
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                                {!periodComparison.hasPrevData && (
-                                    <div className="text-center py-4 text-xs text-slate-400 dark:text-slate-500 border-t border-[var(--border-default)]">
-                                        Belum ada data dari periode sebelumnya ({periodComparison.prevLabel})
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-
-                        {/* Charts Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Summary Pie Chart */}
-                            <div className="brutal-card-md p-6">
-                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Ringkasan Arus Kas</h3>
-                                <div className="w-full h-[300px]">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={summaryData}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={100}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                                stroke="none"
-                                            >
-                                                {summaryData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
-                                                itemStyle={{ color: 'var(--text-primary)' }}
-                                            />
-                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-
-                            {/* Category Bar Chart */}
-                            <div className="brutal-card-md p-6">
-                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Pengeluaran per Kategori</h3>
-                                <div className="w-full h-[300px]">
-                                    {categoryData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={categoryData.slice(0, 5)} layout="vertical" margin={{ top: 5, right: 5, left: 40, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border-default)" />
-                                                <XAxis type="number" hide />
-                                                <YAxis
-                                                    dataKey="name"
-                                                    type="category"
-                                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}
-                                                    width={100}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                />
-                                                <Tooltip
-                                                    formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                    cursor={{ fill: 'var(--bg-elevated)' }}
-                                                    contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
-                                                    itemStyle={{ color: 'var(--text-primary)' }}
-                                                />
-                                                <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={28}>
-                                                    <LabelList
-                                                        dataKey="value"
-                                                        position="insideEnd"
-                                                        formatter={(val: any) => `Rp ${(val || 0).toLocaleString('id-ID')}`}
-                                                        style={{ fontSize: '11px', fill: '#ffffff', fontWeight: 700 }}
-                                                    />
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-2">
-                                            <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
-                                                <TrendingDown className="w-5 h-5 opacity-20" />
-                                            </div>
-                                            <span className="text-sm font-medium">Belum ada data pengeluaran</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Wallet Distribution */}
-                            <div className="brutal-card-md p-6 lg:col-span-2">
-                                <h3 className="font-black text-lg text-[var(--text-primary)] mb-6 tracking-tight">Pengeluaran Berdasarkan Sumber Dana</h3>
-                                <div className="w-full h-[300px]">
-                                    {walletData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={walletData}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={80}
-                                                    dataKey="value"
-                                                    label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                                                    labelLine={{ stroke: '#CBD5E1' }}
-                                                    stroke="none"
-                                                >
-                                                    {walletData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip
-                                                    formatter={(value: any) => `Rp ${(value || 0).toLocaleString('id-ID')}`}
-                                                    contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-default)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', color: 'var(--text-primary)' }}
-                                                    itemStyle={{ color: 'var(--text-primary)' }}
-                                                />
-                                                <Legend />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 gap-2">
-                                            <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
-                                                <WalletIcon className="w-5 h-5 opacity-20" />
-                                            </div>
-                                            <span className="text-sm font-medium">Belum ada data wallet</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Wallet Transaction Breakdown */}
-                        <div className="brutal-card overflow-hidden">
-                            <div className="p-5 flex items-center gap-2" style={{ borderBottom: '2px solid var(--border-default)' }}>
-                                <WalletIcon className="w-4 h-4 text-[var(--text-primary)]" />
-                                <h3 className="font-black text-[var(--text-primary)] tracking-tight">Transaksi Per Dompet</h3>
-                                <span className="text-xs font-bold text-[var(--text-muted)] ml-1">— rincian per sumber dana</span>
-                            </div>
-
-                            {walletTransactionBreakdown.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500 gap-2">
-                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[var(--bg-elevated)] rounded-full flex items-center justify-center">
-                                        <WalletIcon className="w-5 h-5 opacity-20" />
-                                    </div>
-                                    <span className="text-sm font-medium">Belum ada transaksi di periode ini</span>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-[var(--border-default)]">
-                                    {walletTransactionBreakdown.map((walletGroup) => {
-                                        const isExpanded = expandedWallet === walletGroup.walletName
+                            {insights.length > 0 && (
+                                <div className="wrap">
+                                    {insights.slice(0, 3).map((ins, i) => {
+                                        const cls = ins.type === 'positive' ? 'c-gaji' : ins.type === 'negative' ? 'c-cicilan' : ins.type === 'warning' ? 'c-makan' : 'c-transfer'
                                         return (
-                                            <div key={walletGroup.walletName}>
-                                                {/* Wallet Header — clickable accordion toggle */}
-                                                <button
-                                                    onClick={() => setExpandedWallet(isExpanded ? null : walletGroup.walletName)}
-                                                    className="w-full flex items-center gap-3 px-5 py-4 hover:bg-[var(--bg-elevated)] transition-colors text-left group"
-                                                >
-                                                    <div className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0" style={{ background: 'var(--neo-sky)', border: '2px solid var(--neo-ink)' }}>
-                                                        <WalletIcon className="w-4 h-4 text-[var(--neo-ink)]" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-black text-[var(--text-primary)] text-sm">{walletGroup.walletName}</p>
-                                                        <div className="flex items-center gap-3 mt-0.5">
-                                                            <span className="text-xs text-emerald-600 font-bold">+Rp {walletGroup.totalIncome.toLocaleString('id-ID')}</span>
-                                                            <span className="text-xs text-rose-500 font-bold">-Rp {walletGroup.totalExpense.toLocaleString('id-ID')}</span>
-                                                            <span className="text-xs font-bold text-[var(--text-muted)]">{walletGroup.transactions.length} transaksi</span>
-                                                        </div>
-                                                    </div>
-                                                    <ChevronDown
-                                                        className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180' : ''
-                                                            }`}
-                                                    />
-                                                </button>
-
-                                                {/* Transaction List */}
-                                                {isExpanded && (
-                                                    <div className="bg-[var(--bg-elevated)] overflow-x-hidden" style={{ borderTop: '2px solid var(--border-default)' }}>
-                                                        {walletGroup.transactions.map((tx, idx) => {
-                                                            const txDate = new Date(tx.date || tx.created_at)
-                                                            const txTime = new Date(tx.created_at)
-                                                            const dateStr = `${txDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} • ${txTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-                                                            
-                                                            const isTopup = tx.type === 'topup'
-                                                            // Calculate if it's income for THIS wallet group
-                                                            // A transaction is incoming if it's 'pemasukan', OR if it's 'topup' and this wallet is the destination
-                                                            const walletMap = new Map(wallets.map(w => [w.id, w.name]))
-                                                            const isDestination = tx.wallet_id != null && walletMap.get(tx.wallet_id) === walletGroup.walletName
-                                                            const isIncoming = tx.type === 'pemasukan' || (isTopup && isDestination)
-
-                                                            return (
-                                                                <div
-                                                                    key={tx.id}
-                                                                    className={`flex items-center gap-3 px-5 py-[14px] w-full min-w-0 ${idx !== walletGroup.transactions.length - 1
-                                                                        ? 'border-b-2 border-dashed border-[#141414]/20'
-                                                                        : ''
-                                                                        } hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-colors`}
-                                                                >
-                                                                    {/* Type indicator */}
-                                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isTopup ? 'bg-blue-50 dark:bg-blue-950/30' : isIncoming ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-rose-50 dark:bg-rose-950/30'
-                                                                        }`}>
-                                                                        {isTopup
-                                                                            ? <Zap className="w-4 h-4 text-blue-500" />
-                                                                            : isIncoming
-                                                                                ? <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-                                                                                : <ArrowDownRight className="w-4 h-4 text-rose-500" />
-                                                                        }
-                                                                    </div>
-
-                                                                    {/* Info */}
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
-                                                                            {isTopup && tx.source_wallet_id
-                                                                                ? `${tx.title} (${walletMap.get(tx.source_wallet_id) || '?'} → ${walletMap.get(tx.wallet_id!) || '?'})`
-                                                                                : tx.title}
-                                                                        </p>
-                                                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                                                            <span className="text-xs text-[var(--text-secondary)]">{dateStr}</span>
-                                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-500 dark:text-slate-400">
-                                                                                {tx.category}
-                                                                            </span>
-                                                                            {tx.is_talangan && (
-                                                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">Talangan</span>
-                                                                            )}
-                                                                            {tx.is_piutang && (
-                                                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">Piutang</span>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Amount */}
-                                                                    <p className={`text-base font-black tracking-tight shrink-0 ${isTopup ? 'text-blue-600' : isIncoming ? 'text-[#0f7b3b]' : 'text-[#b42318]'
-                                                                        }`}>
-                                                                        {isIncoming ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
-                                                                    </p>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                )}
+                                            <div className="card hstack" key={i} style={{ flex: '1 1 260px', gap: 12, alignItems: 'flex-start' }}>
+                                                <div className={`ic ${cls}`}><Lightbulb className="i" /></div>
+                                                <div className="grow"><div className="t" style={{ whiteSpace: 'normal' }}>{ins.title}</div><div className="meta" style={{ whiteSpace: 'normal' }}>{ins.desc}</div></div>
                                             </div>
                                         )
                                     })}
                                 </div>
                             )}
-                        </div>
 
-                    </>
+                            <div className="wrap">
+                                <section className="card stack-12" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <div className="between" style={{ flexWrap: 'wrap' }}>
+                                        <h2 className="h2">Arus kas {webChart.length} periode</h2>
+                                        <div className="hstack" style={{ gap: 14, fontSize: 12, color: 'var(--text-2)' }}>
+                                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--income-chart)' }} />Pemasukan</span>
+                                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--accent)' }} />Pengeluaran</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: `44px repeat(${Math.max(1, webChart.length)}, minmax(0, 1fr))`, gap: 8, alignItems: 'end', height: 220 }}>
+                                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-2)' }}><span>{rpShort(webChartMax).replace('Rp ', '')}</span><span>{rpShort(webChartMax / 2).replace('Rp ', '')}</span><span>0</span></div>
+                                        {webChart.map((d, i) => (
+                                            <div key={i} className="colb">
+                                                <div title={`Pemasukan ${rpFull(d.income)}`} style={{ height: `${(d.income / webChartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)' }} />
+                                                <div title={`Pengeluaran ${rpFull(d.expense)}`} style={{ height: `${(d.expense / webChartMax) * 100}%`, minHeight: 2, background: 'var(--accent)' }} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: `44px repeat(${Math.max(1, webChart.length)}, minmax(0, 1fr))`, gap: 8, textAlign: 'center', fontSize: 11, color: 'var(--text-2)' }}>
+                                        <span />
+                                        {webChart.map((d, i) => <span key={i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', ...(i === webChart.length - 1 ? { color: 'var(--text)', fontWeight: 700 } : {}) }}>{d.label}</span>)}
+                                    </div>
+                                </section>
+                                <section className="card stack-12" style={{ flex: '2 1 320px', padding: 20 }}>
+                                    <h2 className="h2">Pengeluaran per kategori</h2>
+                                    {categoryData.length === 0 ? <span className="lbl">Belum ada pengeluaran.</span> : (
+                                        <>
+                                            {topCats.map(c => {
+                                                const share = expense > 0 ? (c.value / expense) * 100 : 0
+                                                return (
+                                                    <div className="stack" key={c.name} style={{ gap: 6 }}>
+                                                        <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{c.name}</b><span>{rpShort(c.value)} <span className="lbl">· {share.toFixed(0)}%</span></span></div>
+                                                        <div className="bar"><div style={{ width: `${(c.value / maxCat) * 100}%` }} /></div>
+                                                    </div>
+                                                )
+                                            })}
+                                            {otherCats.length > 0 && (
+                                                <div className="stack" style={{ gap: 6 }}>
+                                                    <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>Lainnya ({otherCats.length} kategori)</b><span>{rpShort(otherTotal)} <span className="lbl">· {expense > 0 ? ((otherTotal / expense) * 100).toFixed(0) : 0}%</span></span></div>
+                                                    <div className="bar"><div style={{ width: `${Math.min(100, (otherTotal / maxCat) * 100)}%`, background: 'var(--text-2)' }} /></div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </section>
+                            </div>
+
+                            <div className="wrap" style={{ alignItems: 'flex-start' }}>
+                                <section className="card" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <h2 className="h2" style={{ marginBottom: 8 }}>Perbandingan periode</h2>
+                                    {!periodComparison.hasPrevData ? <span className="lbl">Belum ada data periode lalu untuk dibandingkan.</span> : (
+                                        <div className="tbl-box">
+                                            <table className="tbl" style={{ minWidth: 520 }}>
+                                                <thead><tr><th>Item</th><th className="r">Periode ini</th><th className="r">Periode lalu</th><th className="r">Perubahan</th></tr></thead>
+                                                <tbody>
+                                                    <tr><td style={{ fontWeight: 600 }}>Pemasukan</td><td className="r">{rpFull(periodComparison.currIncome)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevIncome)}</td>{changeCell(periodComparison.currIncome, periodComparison.prevIncome, true)}</tr>
+                                                    <tr><td style={{ fontWeight: 600 }}>Pengeluaran</td><td className="r">{rpFull(periodComparison.currExpense)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevExpense)}</td>{changeCell(periodComparison.currExpense, periodComparison.prevExpense, false)}</tr>
+                                                    <tr><td style={{ fontWeight: 600 }}>Selisih</td><td className="r">{rpFull(periodComparison.currNet)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevNet)}</td>{changeCell(periodComparison.currNet, periodComparison.prevNet, true)}</tr>
+                                                    <tr>
+                                                        <td style={{ fontWeight: 600 }}>Saving rate</td>
+                                                        <td className="r">{periodComparison.currSavingRate.toFixed(0)}%</td>
+                                                        <td className="r" style={{ color: 'var(--text-2)' }}>{periodComparison.prevSavingRate.toFixed(0)}%</td>
+                                                        <td className={`r ${periodComparison.currSavingRate >= periodComparison.prevSavingRate ? 'pos' : 'bad'}`} style={{ fontWeight: 600 }}>{periodComparison.currSavingRate >= periodComparison.prevSavingRate ? '+' : '−'}{Math.abs(periodComparison.currSavingRate - periodComparison.prevSavingRate).toFixed(0)} poin</td>
+                                                    </tr>
+                                                    {periodComparison.categoryRows.length > 0 && (
+                                                        <tr><td colSpan={4} style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)', paddingTop: 18 }}>Per kategori pengeluaran</td></tr>
+                                                    )}
+                                                    {periodComparison.categoryRows.slice(0, 8).map(r => (
+                                                        <tr key={r.name}><td>{r.name}</td><td className="r">{rpFull(r.curr)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(r.prev)}</td>{changeCell(r.curr, r.prev, false)}</tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </section>
+                                <section className="card" style={{ flex: '2 1 320px', padding: 20 }}>
+                                    <h2 className="h2" style={{ marginBottom: 4 }}>Pengeluaran terbesar</h2>
+                                    {topExpenses.length === 0 ? <span className="lbl">Belum ada pengeluaran.</span> : topExpenses.map((t, i) => (
+                                        <div className="row" key={t.id}>
+                                            <span className="rank">{i + 1}</span>
+                                            <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                            <div className="amt">{rpFull(t.amount)}</div>
+                                        </div>
+                                    ))}
+                                </section>
+                            </div>
+
+                            <div className="wrap" style={{ alignItems: 'flex-start' }}>
+                                <section className="card stack-12" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <h2 className="h2">Transaksi per dompet</h2>
+                                    {walletTransactionBreakdown.map(w => {
+                                        const tot = w.totalIncome + w.totalExpense
+                                        return (
+                                            <div className="stack" key={w.walletName} style={{ gap: 6 }}>
+                                                <div className="between" style={{ fontSize: 13 }}>
+                                                    <b style={{ fontWeight: 600 }}>{w.walletName}</b>
+                                                    <span className="lbl">{w.transactions.length} transaksi · <span className="pos">+{rpShort(w.totalIncome)}</span> · {rpShort(w.totalExpense)}</span>
+                                                </div>
+                                                <div className="bar" style={{ display: 'flex' }}>
+                                                    <div style={{ width: `${tot > 0 ? (w.totalIncome / tot) * 100 : 0}%`, background: 'var(--income-chart)', borderRadius: 0 }} />
+                                                    <div style={{ width: `${tot > 0 ? (w.totalExpense / tot) * 100 : 0}%`, background: 'var(--accent)', borderRadius: 0 }} />
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </section>
+                                <div className="stack" style={{ flex: '2 1 320px', gap: 16 }}>
+                                    {walletData.length > 0 && (
+                                        <section className="card stack-12" style={{ padding: 20 }}>
+                                            <h2 className="h2">Pengeluaran per sumber dana</h2>
+                                            {[...walletData].sort((a, z) => z.value - a.value).map(w => (
+                                                <div className="stack" key={w.name} style={{ gap: 6 }}>
+                                                    <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{w.name}</b><span>{rpShort(w.value)} <span className="lbl">· {expense > 0 ? Math.round((w.value / expense) * 100) : 0}%</span></span></div>
+                                                    <div className="bar"><div style={{ width: `${expense > 0 ? Math.min(100, (w.value / expense) * 100) : 0}%` }} /></div>
+                                                </div>
+                                            ))}
+                                        </section>
+                                    )}
+                                    {recentActivity.length > 0 && (
+                                        <section className="card" style={{ padding: 20 }}>
+                                            <h2 className="h2" style={{ marginBottom: 4 }}>Aktivitas terakhir</h2>
+                                            {recentActivity.map(t => (
+                                                <div className="row" key={t.id}>
+                                                    <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                    <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                                </div>
+                                            ))}
+                                        </section>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </main>
+                <PeriodSheet
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    filterMode={filterMode}
+                    setFilterMode={setFilterMode}
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
+                    customRange={customRange}
+                    setCustomRange={setCustomRange}
+                />
+            </div>
+        )
+    }
+
+
+    return (
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Analitik</h1>
+                    </div>
+                </div>
+
+                {/* Period selector */}
+                <div className="hstack" style={{ gap: 4 }}>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                    <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSettings(s => !s)}><Calendar className="i i-s" />{getPeriodLabel()}</button>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                </div>
+                {periodComparison.hasPrevData && <div className="lbl">Dibanding {periodComparison.prevLabel}</div>}
+
+                {/* Summary */}
+                <div className="card stack-12">
+                    <div className="g3">
+                        <div><div className="lbl">Pemasukan</div><div className="num-m pos">+{rpShort(income)}</div></div>
+                        <div><div className="lbl">Pengeluaran</div><div className="num-m">{rpShort(expense)}</div></div>
+                        <div><div className="lbl">Sisa</div><div className="num-m" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpShort(netBalance)}</div></div>
+                    </div>
+                    <div className="between" style={{ borderTop: '1px solid var(--divider)', paddingTop: 10 }}>
+                        <span className="lbl">Saving rate</span>
+                        <span className="num-m" style={{ color: savingRate >= 20 ? 'var(--income)' : savingRate > 0 ? 'var(--warn)' : 'var(--danger)' }}>{savingRate.toFixed(1)}%</span>
+                    </div>
+                </div>
+
+                {/* Insights */}
+                {insights.length > 0 && (
+                    <div className="stack">
+                        <span className="lbl" style={{ fontWeight: 700 }}>Insight</span>
+                        {insights.slice(0, 3).map((ins, i) => {
+                            const color = ins.type === 'positive' ? 'var(--income)' : ins.type === 'negative' ? 'var(--danger)' : ins.type === 'warning' ? 'var(--warn)' : 'var(--accent-hover)'
+                            return (
+                                <div className="card stack" key={i} style={{ gap: 4 }}>
+                                    <div className="t" style={{ whiteSpace: 'normal', color }}>{ins.title}</div>
+                                    <div className="meta" style={{ whiteSpace: 'normal' }}>{ins.desc}</div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+
+                {/* Expense by category */}
+                {categoryData.length > 0 && (
+                    <div className="card stack-12">
+                        <h2 className="h3">Pengeluaran per kategori</h2>
+                        {categoryData.slice(0, 8).map(c => {
+                            const { Icon } = getCategoryIcon(c.name, 'pengeluaran', EMPTY_CUSTOM)
+                            const cls = CAT_CLASS[c.name] || 'c-lain'
+                            const pct = catPct[c.name]
+                            return (
+                                <div className="stack" key={c.name} style={{ gap: 6 }}>
+                                    <div className="hstack" style={{ gap: 10 }}>
+                                        <div className={`ic-s ${cls}`}><Icon className="i i-s" /></div>
+                                        <span className="grow t">{c.name}</span>
+                                        {pct != null && <span className="lbl" style={{ color: pct > 0 ? 'var(--danger)' : 'var(--income)' }}>{pct > 0 ? '+' : ''}{pct.toFixed(0)}%</span>}
+                                        <span className="amt">{rpFull(c.value)}</span>
+                                    </div>
+                                    <div className="bar"><div style={{ width: `${(c.value / maxCat) * 100}%` }} /></div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+
+                {/* Cash flow chart */}
+                {chartData.length > 0 && (
+                    <div className="card stack-12">
+                        <h2 className="h3">Arus kas</h2>
+                        <div className="hstack" style={{ alignItems: 'flex-end', gap: 10, height: 140, justifyContent: 'space-between' }}>
+                            {chartData.map((d, i) => (
+                                <div key={i} className="stack" style={{ flex: 1, alignItems: 'center', gap: 6, minWidth: 0 }}>
+                                    <div className="hstack" style={{ alignItems: 'flex-end', gap: 3, height: 100 }}>
+                                        <div style={{ width: 10, height: `${(d.income / chartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)', borderRadius: 3 }} title={`Masuk ${rpShort(d.income)}`} />
+                                        <div style={{ width: 10, height: `${(d.expense / chartMax) * 100}%`, minHeight: 2, background: 'var(--accent)', borderRadius: 3 }} title={`Keluar ${rpShort(d.expense)}`} />
+                                    </div>
+                                    <span className="lbl" style={{ fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{d.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="hstack" style={{ gap: 16, justifyContent: 'center' }}>
+                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--income-chart)' }} /><span className="lbl">Masuk</span></span>
+                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--accent)' }} /><span className="lbl">Keluar</span></span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Period comparison table */}
+                {periodComparison.hasPrevData && (
+                    <div className="card stack-12">
+                        <h2 className="h3">Perbandingan periode</h2>
+                        <div className="tbl-box">
+                            <table className="tbl" style={{ minWidth: 0 }}>
+                                <thead>
+                                    <tr><th></th><th className="r">Sekarang</th><th className="r">Sebelumnya</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Pemasukan</td><td className="r">{rpShort(periodComparison.currIncome)}</td><td className="r">{rpShort(periodComparison.prevIncome)}</td></tr>
+                                    <tr><td>Pengeluaran</td><td className="r">{rpShort(periodComparison.currExpense)}</td><td className="r">{rpShort(periodComparison.prevExpense)}</td></tr>
+                                    <tr><td>Sisa</td><td className="r">{rpShort(periodComparison.currNet)}</td><td className="r">{rpShort(periodComparison.prevNet)}</td></tr>
+                                    <tr><td>Saving rate</td><td className="r">{periodComparison.currSavingRate.toFixed(0)}%</td><td className="r">{periodComparison.prevSavingRate.toFixed(0)}%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Top expenses */}
+                {topExpenses.length > 0 && (
+                    <div className="stack">
+                        <span className="lbl" style={{ fontWeight: 700 }}>5 pengeluaran terbesar</span>
+                        <div className="card-flush">
+                            {topExpenses.map(t => {
+                                const { Icon } = getCategoryIcon(t.category, 'pengeluaran', EMPTY_CUSTOM)
+                                const cls = CAT_CLASS[t.category] || 'c-lain'
+                                return (
+                                    <div className="row" key={t.id}>
+                                        <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                        <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category}</div></div>
+                                        <div className="amt">{rpFull(t.amount)}</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Per wallet */}
+                {walletTransactionBreakdown.length > 0 && (
+                    <div className="stack">
+                        <span className="lbl" style={{ fontWeight: 700 }}>Transaksi per dompet</span>
+                        {walletTransactionBreakdown.map(w => (
+                            <div className="card stack" key={w.walletName} style={{ gap: 8 }}>
+                                <div className="between"><span className="t">{w.walletName}</span><span className="lbl">{w.transactions.length} transaksi</span></div>
+                                <div className="g2">
+                                    <div><div className="lbl">Masuk</div><div className="num-m pos">+{rpShort(w.totalIncome)}</div></div>
+                                    <div><div className="lbl">Keluar</div><div className="num-m">{rpShort(w.totalExpense)}</div></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Expense per funding source (old "per sumber dana") */}
+                {walletData.length > 0 && (
+                    <div className="card stack-12">
+                        <h2 className="h3">Pengeluaran per sumber dana</h2>
+                        {[...walletData].sort((a, z) => z.value - a.value).map(w => (
+                            <div className="stack" key={w.name} style={{ gap: 6 }}>
+                                <div className="between" style={{ fontSize: 13 }}><span style={{ fontWeight: 600 }}>{w.name}</span><span>{rpFull(w.value)} <span className="lbl">· {expense > 0 ? Math.round((w.value / expense) * 100) : 0}%</span></span></div>
+                                <div className="bar"><div style={{ width: `${expense > 0 ? Math.min(100, (w.value / expense) * 100) : 0}%` }} /></div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Recent activity this period */}
+                {recentActivity.length > 0 && (
+                    <div className="stack">
+                        <span className="lbl" style={{ fontWeight: 700 }}>Aktivitas terakhir</span>
+                        <div className="card-flush">
+                            {recentActivity.map(t => {
+                                const { Icon } = getCategoryIcon(t.category, t.type, EMPTY_CUSTOM)
+                                const cls = t.is_piutang ? 'c-piutang' : t.type === 'topup' ? 'c-transfer' : (CAT_CLASS[t.category] || 'c-lain')
+                                return (
+                                    <div className="row" key={t.id}>
+                                        <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                        <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                        <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {!loading && income === 0 && expense === 0 && (
+                    <div className="card" style={{ textAlign: 'center' }}>
+                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada data periode ini</p>
+                        <p className="lbl" style={{ marginTop: 4 }}>Catat transaksi dulu untuk melihat analitik.</p>
+                    </div>
                 )}
             </div>
-        </main>
+
+            {/* Filter & period sheet */}
+            <PeriodSheet
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+                customRange={customRange}
+                setCustomRange={setCustomRange}
+            />
+        </div>
     )
 }
+
+

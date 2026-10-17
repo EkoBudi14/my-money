@@ -71,9 +71,13 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
     }, [refreshTrigger])
 
     const handleDelete = async (id: number) => {
+        const bill = bills.find(b => b.id === id)
+        const isIncome = bill?.type === 'pemasukan'
         const confirmed = await showConfirm({
-            title: 'Hapus',
-            message: 'Yakin ingin menghapus item rutin ini?'
+            title: `Hapus ${isIncome ? 'pemasukan' : 'tagihan'} rutin “${bill?.name ?? ''}”?`,
+            message: `Pengingat bulanan berhenti. Transaksi ${isIncome ? 'pemasukan' : 'pembayaran'} yang sudah tercatat tidak ikut terhapus.`,
+            confirmText: 'Hapus',
+            cancelText: 'Batal',
         })
         if (!confirmed) return
         
@@ -82,8 +86,9 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             await deleteRecurringBill(id)
             fetchBills()
             if (onUpdate) onUpdate()
+            showToast('success', `${isIncome ? 'Pemasukan' : 'Tagihan'} rutin dihapus`)
         } catch (error) {
-            alert('Gagal menghapus')
+            showToast('error', `${isIncome ? 'Pemasukan' : 'Tagihan'} rutin gagal dihapus. Coba lagi.`)
         } finally {
             setDeletingId(null)
         }
@@ -192,7 +197,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
                 transaction_id: txData.id
             })
             
-            showToast('success', isIncome ? 'Pemasukan berhasil dicatat! 🎉' : 'Tagihan berhasil dibayar!')
+            showToast('success', isIncome ? `Pemasukan ${selectedPaymentBill.name} dicatat` : `Tagihan ${selectedPaymentBill.name} dibayar`)
             
             if (onUpdate) onUpdate()
             
@@ -203,7 +208,7 @@ export default function RecurringBillsList({ onUpdate, refreshTrigger = 0 }: Rec
             setShowPaymentModal(false)
         } catch (error) {
             console.error(error)
-            showToast('error', isIncome ? 'Gagal mencatat pemasukan' : 'Gagal membayar tagihan')
+            showToast('error', isIncome ? 'Pemasukan gagal dicatat. Coba lagi.' : 'Tagihan gagal dibayar. Coba lagi.')
         } finally {
             setPayingBillId(null)
         }

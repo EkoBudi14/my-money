@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, TrendingDown, TrendingUp } from 'lucide-react'
+import { X } from 'lucide-react'
 import { addRecurringBill, updateRecurringBill } from '@/lib/recurring-bills'
 import { RecurringBill, CATEGORIES } from '@/types'
-import MoneyInput from './MoneyInput'
+import FieldError from './FieldError'
 import NeoSelect from './NeoSelect'
 import DatePickerNeo from './DatePickerNeo'
 import { supabase } from '@/lib/supabase'
+import { useToast } from '@/hooks/useToast'
 
 interface AddBillModalProps {
     isOpen?: boolean
@@ -19,6 +20,7 @@ interface AddBillModalProps {
 }
 
 export default function AddBillModal({ isOpen = true, onClose, onSuccess, initialData, mode = 'modal', editId }: AddBillModalProps) {
+    const { showToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [billType, setBillType] = useState<'pengeluaran' | 'pemasukan'>('pengeluaran')
     const [formData, setFormData] = useState({
@@ -28,10 +30,14 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
         category: 'Tagihan'
     })
     const [fullDate, setFullDate] = useState('')
+    // Inline field validation (DESIGN-TAMBAHAN.md §5)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     // Reset or Populate form when modal opens
     useEffect(() => {
         if (isOpen) {
+            setErrors({})
             if (initialData) {
                 const type = initialData.type ?? 'pengeluaran'
                 setBillType(type)
@@ -85,9 +91,16 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
     if (!isOpen && !isPage) return null
 
     const categoryOptions = billType === 'pemasukan' ? CATEGORIES.pemasukan : CATEGORIES.pengeluaran
+    const isPemasukan = billType === 'pemasukan'
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        const errs: Record<string, string> = {}
+        if (!formData.name.trim()) errs.name = isPemasukan ? 'Isi nama pemasukan.' : 'Isi nama tagihan.'
+        if (!(Number(formData.amount) > 0)) errs.amount = 'Isi jumlah lebih dari Rp 0.'
+        if (!formData.due_date) errs.date = 'Pilih tanggal.'
+        setErrors(errs)
+        if (Object.keys(errs).length) return
         setLoading(true)
 
         try {
@@ -111,153 +124,109 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
             onClose()
         } catch (error) {
             console.error(error)
-            alert('Gagal menyimpan')
+            showToast('error', 'Tagihan rutin gagal disimpan. Coba lagi.')
         } finally {
             setLoading(false)
         }
     }
 
-    const isPemasukan = billType === 'pemasukan'
+    const isEdit = !!(initialData || editId)
+    const title = isEdit
+        ? (isPemasukan ? 'Ubah pemasukan rutin' : 'Ubah tagihan rutin')
+        : (isPemasukan ? 'Tambah pemasukan rutin' : 'Tambah tagihan rutin')
+
+    const form = (
+        <form onSubmit={handleSubmit} className="stack-12">
+            {/* Type tabs — only for new entries */}
+            {!isEdit && (
+                <div className="seg">
+                    <button type="button" className={!isPemasukan ? 'on' : ''} onClick={() => handleTypeChange('pengeluaran')}>Tagihan rutin</button>
+                    <button type="button" className={isPemasukan ? 'on' : ''} onClick={() => handleTypeChange('pemasukan')}>Pemasukan rutin</button>
+                </div>
+            )}
+
+            <label className="field">{isPemasukan ? 'Nama pemasukan' : 'Nama tagihan'}
+                <input
+                    className={`input ${errors.name ? 'bad' : ''}`}
+                    type="text"
+                    placeholder={isPemasukan ? 'Gaji, uang kos dari adik' : 'Netflix, internet, listrik'}
+                    value={formData.name}
+                    onChange={e => { setFormData({ ...formData, name: e.target.value }); clearErr('name') }}
+                />
+                <FieldError>{errors.name}</FieldError>
+            </label>
+
+            <div className="field">{isPemasukan ? 'Jumlah pemasukan' : 'Jumlah tagihan'}
+                <div className={`amount-box ${errors.amount ? 'bad' : ''}`} style={{ borderBottomWidth: 1.5 }}>
+                    <span className="cur">Rp</span>
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        className="val"
+                        style={{ fontSize: 28 }}
+                        value={formData.amount ? parseInt(formData.amount.replace(/D/g, '') || '0').toLocaleString('id-ID') : ''}
+                        onChange={e => { setFormData({ ...formData, amount: e.target.value.replace(/D/g, '') }); clearErr('amount') }}
+                    />
+                </div>
+                <FieldError>{errors.amount}</FieldError>
+            </div>
+
+            <div className="field">Kategori
+                <NeoSelect
+                    value={formData.category}
+                    onChange={val => setFormData({ ...formData, category: val })}
+                    options={categoryOptions.map(cat => ({ label: cat.name, value: cat.name }))}
+                />
+            </div>
+
+            <div className="field">{isPemasukan ? 'Tanggal terima pertama' : 'Tanggal bayar pertama'}
+                <DatePickerNeo
+                    className={`input ${errors.date ? 'bad' : ''}`}
+                    value={fullDate}
+                    onChange={(e) => {
+                        setFullDate(e.target.value)
+                        const date = new Date(e.target.value)
+                        if (!isNaN(date.getDate())) {
+                            setFormData({ ...formData, due_date: date.getDate().toString() })
+                            clearErr('date')
+                        }
+                    }}
+                />
+                <span className="lbl" style={{ fontWeight: 500 }}>
+                    {formData.due_date ? `Berulang tiap bulan di tanggal ${formData.due_date}.` : 'Berulang tiap bulan di tanggal yang sama.'}
+                </span>
+                <FieldError>{errors.date}</FieldError>
+            </div>
+
+            <button type="submit" disabled={loading} className="btn btn-block">
+                {loading ? 'Menyimpan…' : isEdit ? 'Simpan perubahan' : 'Simpan'}
+            </button>
+        </form>
+    )
+
+    if (isPage) {
+        return (
+            <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto' }}>
+                <div className="top">
+                    <h1 className="h2">{title}</h1>
+                    <button type="button" className="icon-btn ghost" aria-label="Tutup" onClick={onClose}><X className="i" /></button>
+                </div>
+                {form}
+            </div>
+        )
+    }
 
     return (
-        <div className={isPage
-            ? "min-h-screen bg-[var(--bg-page)] pt-4 pb-20 px-4 md:py-12 md:px-8"
-            : "fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-4 pb-6"}>
-            <div className={`mx-auto bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] rounded-[16px] w-full max-w-md animate-in ${
-                isPage ? 'fade-in slide-in-from-bottom-8 duration-500' : 'fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 max-h-[85dvh] overflow-y-auto custom-scrollbar'
-            }`}>
-                <div className="p-6 border-b-[3px] border-[var(--neo-ink)] bg-[var(--neo-yellow-vivid)] flex justify-between items-center sticky top-0 z-10 rounded-t-[14px]">
-                    <h3 className="text-xl font-black text-[var(--neo-ink)]">
-                        {(initialData || editId)
-                            ? (isPemasukan ? 'Edit Pemasukan Rutin' : 'Edit Tagihan Rutin')
-                            : (isPemasukan ? 'Tambah Pemasukan Rutin' : 'Tambah Tagihan Rutin')
-                        }
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-                    >
-                        <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
-                    </button>
+        <div className="cd">
+            <div className="scrim" onClick={() => !loading && onClose()} />
+            <div className="sheet" role="dialog" aria-labelledby="bill-title">
+                <div className="grabber" />
+                <div className="between">
+                    <h2 className="h2" id="bill-title">{title}</h2>
+                    <button type="button" className="icon-btn ghost" aria-label="Tutup" onClick={onClose}><X className="i" /></button>
                 </div>
-                <div className="p-6 pt-6">
-
-                    {/* Type Toggle — only show for new entries */}
-                    {(!initialData && !editId) && (
-                        <div className="flex gap-3 mb-6">
-                            <button
-                                type="button"
-                                onClick={() => handleTypeChange('pengeluaran')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-[10px] text-sm font-black transition-all border-[3px] border-[var(--neo-ink)] ${billType === 'pengeluaran'
-                                    ? 'bg-rose-300 text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px]'
-                                    : 'bg-white text-[var(--neo-ink)] opacity-70 hover:opacity-100 hover:shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px]'
-                                    }`}
-                            >
-                                <TrendingDown size={18} className="stroke-[3px]" />
-                                Tagihan Rutin
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleTypeChange('pemasukan')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-[10px] text-sm font-black transition-all border-[3px] border-[var(--neo-ink)] ${billType === 'pemasukan'
-                                    ? 'bg-emerald-300 text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] translate-y-[-2px]'
-                                    : 'bg-white text-[var(--neo-ink)] opacity-70 hover:opacity-100 hover:shadow-[2px_2px_0_var(--neo-ink)] hover:translate-y-[-1px]'
-                                    }`}
-                            >
-                                <TrendingUp size={18} className="stroke-[3px]" />
-                                Pemasukan Rutin
-                            </button>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-black text-[var(--text-primary)]">
-                                {isPemasukan ? 'Nama Pemasukan' : 'Nama Tagihan'}
-                            </label>
-                            <input
-                                required
-                                type="text"
-                                placeholder={isPemasukan ? 'Contoh: Gaji Bulanan, Tunjangan' : 'Contoh: Netflix, WiFi, Listrik'}
-                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold focus:outline-none focus:translate-y-[-2px] focus:shadow-[6px_6px_0_var(--neo-ink)] transition-all placeholder:text-[var(--text-primary)] placeholder:opacity-50"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-black text-[var(--text-primary)]">
-                                {isPemasukan ? 'Jumlah Pemasukan (Rp)' : 'Jumlah Tagihan (Rp)'}
-                            </label>
-                            <MoneyInput
-                                value={formData.amount}
-                                onChange={(val) => setFormData({ ...formData, amount: val })}
-                                placeholder="0"
-                            />
-                        </div>
-
-                        {/* Category */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-black text-[var(--text-primary)]">Kategori</label>
-                            <NeoSelect
-                                className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                value={formData.category}
-                                onChange={val => setFormData({ ...formData, category: val })}
-                                options={categoryOptions.map(cat => ({ label: cat.name, value: cat.name }))}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-black text-[var(--text-primary)]">
-                                {isPemasukan ? 'Mulai Tanggal Terima' : 'Mulai Tanggal Pembayaran'}
-                            </label>
-                            <div className="relative">
-                                <DatePickerNeo
-                                    required
-                                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[10px] text-[var(--text-primary)] font-bold transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                    value={fullDate}
-                                    onChange={(e) => {
-                                        setFullDate(e.target.value)
-                                        const date = new Date(e.target.value)
-                                        if (!isNaN(date.getDate())) {
-                                            setFormData({
-                                                ...formData,
-                                                due_date: date.getDate().toString()
-                                            })
-                                        }
-                                    }}
-                                />
-                                {formData.due_date && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[var(--neo-ink)] font-black uppercase tracking-wider bg-[var(--neo-yellow-vivid)] px-2 py-1 rounded-[6px] border-2 border-[var(--neo-ink)]">
-                                        Setiap tgl {formData.due_date}
-                                    </div>
-                                )}
-                            </div>
-                            <p className="text-[10px] font-bold opacity-70 px-1 uppercase tracking-wide mt-1">
-                                {isPemasukan
-                                    ? 'Pilih tanggal pertama kali pemasukan diterima. Akan berulang setiap bulan di tanggal yang sama.'
-                                    : 'Pilih tanggal pembayaran pertama. Tagihan akan otomatis berulang setiap bulannya pada tanggal yang sama.'
-                                }
-                            </p>
-                        </div>
-
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full py-4 brutal-btn flex items-center justify-center gap-2 disabled:opacity-50 text-lg font-black text-[var(--neo-ink)] ${
-                                    isPemasukan
-                                        ? 'bg-emerald-300'
-                                        : 'bg-[var(--neo-yellow-vivid)]'
-                                    }`}
-                            >
-                                {loading ? (
-                                    <div className="w-6 h-6 border-[4px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin"></div>
-                                ) : ((initialData || editId) ? 'Simpan Perubahan' : 'Simpan')}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                {form}
             </div>
         </div>
     )

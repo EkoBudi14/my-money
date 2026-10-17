@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Filter dan periode</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.mo{height:44px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:600}.mo.on{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-hover)}</style>
+</helmet>
+<div class="app" style="height: 844px">
+<div class="scroll" aria-hidden="true">
+<div class="top"><h1 class="h1">Halo, Eko</h1></div>
+<div class="hero" style="height: 160px"></div>
+</div>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-labelledby="pd-title" style="top: 150px">
+<div class="grabber"></div>
+<div class="between">
+<h2 class="h2" id="pd-title" style="font-size: 18px">Filter dan periode</h2>
+<a href="Main.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+
+<div class="seg"><button class="{{ tabB }}" onClick="{{ setB }}">Bulanan</button><button class="{{ tabC }}" onClick="{{ setC }}">Custom</button></div>
+
+<sc-if value="{{ isB }}" hint-placeholder-val="{{ true }}">
+<div class="stack-12">
+<div class="between"><button class="icon-btn" aria-label="Tahun sebelumnya" style="width: 40px; height: 40px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button><span class="h3">2026</span><button class="icon-btn" aria-label="Tahun berikutnya" style="width: 40px; height: 40px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button></div>
+<div class="g4" style="gap: 8px">
+<button class="mo">Jan</button><button class="mo">Feb</button><button class="mo">Mar</button><button class="mo">Apr</button>
+<button class="mo">Mei</button><button class="mo">Jun</button><button class="mo">Jul</button><button class="mo">Agu</button>
+<button class="mo">Sep</button><button class="mo on">Okt</button><button class="mo">Nov</button><button class="mo">Des</button>
+</div>
+<span class="lbl">Tanggal 1 sampai akhir bulan.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ isC }}" hint-placeholder-val="{{ false }}">
+<div class="stack-12">
+<div class="field">Dari tanggal<div class="input"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>25 Sep 2026</div></div>
+<div class="field">Sampai tanggal<div class="input"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>25 Okt 2026</div></div>
+<span class="lbl">Rentang ini tersimpan dan dipakai lagi saat app dibuka. Rentang 2 hari atau lebih masuk rekap Excel.</span>
+</div>
+</sc-if>
+
+<div class="g2" style="margin-top: auto"><button class="btn-2">Reset ke bulan ini</button><a href="Main.dc.html" class="btn" style="height: 44px; font-size: 14px">Terapkan</a></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = { mode: 'c' }; }
+renderVals() {
+var self = this; var m = this.state.mode;
+return {
+tabB: m === 'b' ? 'on' : '', tabC: m === 'c' ? 'on' : '',
+setB: function () { self.setState({ mode: 'b' }); },
+setC: function () { self.setState({ mode: 'c' }); },
+isB: m === 'b', isC: m === 'c'
+};
+}
+}
+</script>
+</body>
+</html>

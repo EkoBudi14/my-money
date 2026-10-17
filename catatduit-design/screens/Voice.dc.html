@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Voice input</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.mic{width:120px;height:120px;border-radius:60px;border:0;display:flex;align-items:center;justify-content:center;align-self:center}.kv{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:10px 0;border-bottom:1px solid var(--divider)}.kv:last-child{border-bottom:0}</style>
+</helmet>
+<div class="app" style="height: 900px">
+<div class="scroll">
+
+<div class="top">
+<div class="top-l">
+<a href="Lainnya.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<div><h1 class="h1">Voice input</h1><p class="sub">Catat transaksi pakai suara</p></div>
+</div>
+</div>
+
+<div class="card stack-12" style="align-items: center; padding: 28px 20px; text-align: center">
+<button class="mic" onClick="{{ toggle }}" aria-label="{{ micLabel }}" style="background: {{ micBg }}; color: {{ micFg }}; box-shadow: 0 0 0 {{ ring }} var(--accent-tint)">
+<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 44px; height: 44px"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+</button>
+<div class="h2" style="margin-top: 6px">{{ status }}</div>
+<div class="sub">{{ hint }}</div>
+</div>
+
+<sc-if value="{{ idle }}" hint-placeholder-val="{{ true }}">
+<div class="stack">
+<span class="lbl" style="font-weight: 600">Contoh kalimat</span>
+<div class="chips">
+<span class="chip">tadi makan siang 35 ribu</span>
+<span class="chip">terima gaji 8,5 juta</span>
+<span class="chip">isi bensin 50 ribu pakai tunai</span>
+<span class="chip">transfer 500 ribu dari BCA ke Bibit</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+<div class="stack-12">
+<div class="card" style="background: var(--surface-2)">
+<div class="lbl">Kamu bilang</div>
+<div style="font-size: 15px; font-weight: 600; margin-top: 4px">tadi makan siang 35 ribu pakai gopay</div>
+</div>
+<div class="card-flush">
+<div class="kv"><span class="lbl">Jenis</span><span style="font-weight: 600">Pengeluaran</span></div>
+<div class="kv"><span class="lbl">Jumlah</span><span style="font-weight: 700">Rp 35.000</span></div>
+<div class="kv"><span class="lbl">Kategori</span><span class="hstack" style="font-weight: 600; gap: 6px"><span class="ic-s c-makan" style="width: 24px; height: 24px; border-radius: 7px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 13px; height: 13px"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></span>Makan di luar</span></div>
+<div class="kv"><span class="lbl">Dompet</span><span style="font-weight: 600">GoPay</span></div>
+<div class="kv"><span class="lbl">Waktu</span><span style="font-weight: 600">Hari ini, 12.30</span></div>
+</div>
+<div class="g2"><a href="Tambah.dc.html" class="btn-2">Ubah dulu</a><button class="btn" style="height: 44px; font-size: 14px">Simpan</button></div>
+</div>
+</sc-if>
+</div>
+
+<nav class="nav" aria-label="Navigasi utama">
+<a href="Main.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Beranda</a>
+<a href="Analitik.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Analitik</a>
+<a href="Tambah.dc.html" aria-label="Tambah transaksi"><span class="fab"><svg class="i i-l" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span></a>
+<a href="Dompet.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M16 13.5h.01"></path></svg>Dompet</a>
+<a href="Lainnya.dc.html" class="on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"></rect><rect x="14" y="4" width="6" height="6" rx="1.5"></rect><rect x="4" y="14" width="6" height="6" rx="1.5"></rect><rect x="14" y="14" width="6" height="6" rx="1.5"></rect></svg>Lainnya</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { phase: 'idle' };
+}
+renderVals() {
+var self = this;
+var p = this.state.phase;
+var next = { idle: 'listening', listening: 'done', done: 'idle' };
+var status = { idle: 'Tekan mic lalu bicara', listening: 'Mendengarkan…', done: 'Cek hasilnya' };
+var hint = { idle: 'Sebut jumlah, untuk apa, dan dompetnya.', listening: 'Tekan lagi kalau sudah selesai bicara.', done: 'Tekan mic untuk mulai ulang.' };
+return {
+toggle: function () { self.setState({ phase: next[self.state.phase] }); },
+status: status[p],
+hint: hint[p],
+micLabel: p === 'listening' ? 'Berhenti merekam' : 'Mulai merekam',
+micBg: p === 'listening' ? 'var(--danger)' : 'var(--accent)',
+micFg: '#FFFFFF',
+ring: p === 'listening' ? '14px' : '0px',
+idle: p === 'idle',
+done: p === 'done'
+};
+}
+}
+</script>
+</body>
+</html>

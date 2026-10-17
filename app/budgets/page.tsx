@@ -1,15 +1,37 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { restoreRow } from '@/lib/undo'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
-import { Plus, Trash2, Pencil, AlertCircle, X, Wallet as WalletIcon, ChevronLeft, ChevronRight, Settings, Calendar, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle, MoreHorizontal, List } from 'lucide-react'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import { useRouter } from 'next/navigation'
+import EmptyState from '@/components/EmptyState'
 import Link from 'next/link'
-import MoneyInput from '@/components/MoneyInput'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import PeriodSheet from '@/components/PeriodSheet'
+import { getCategoryIcon } from '@/lib/categories'
+import { SkeletonCards } from '@/components/Skeleton'
+import FieldError from '@/components/FieldError'
+
+// Built-in category -> catatduit color class (DESIGN.md section 6).
+const CAT_CLASS: Record<string, string> = {
+  'Kebutuhan Dapur': 'c-dapur', 'Makan di Luar': 'c-makan', 'Transportasi': 'c-transport',
+  'Tempat Tinggal': 'c-rumah', 'Tagihan': 'c-tagihan', 'Belanja': 'c-belanja',
+  'Kesehatan': 'c-kesehatan', 'Cicilan & Utang': 'c-cicilan', 'Pribadi & Hiburan': 'c-hiburan',
+  'Edukasi & Donasi': 'c-edukasi', 'Lainnya': 'c-lain',
+}
+const getName = (c: string | CustomCategoryDef) => (typeof c === 'string' ? c : c.name)
+const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+const shortRp = (n: number) => {
+  if (n >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}jt`
+  if (n >= 1_000) return `Rp ${Math.round(n / 1_000)}rb`
+  return `Rp ${n}`
+}
 
 export default function BudgetsPage() {
     const [budgets, setBudgets] = useState<Budget[]>([])
@@ -42,6 +64,18 @@ export default function BudgetsPage() {
         }
     })
     const [showSettings, setShowSettings] = useState(false)
+    const isWeb = useIsWeb()
+    const router = useRouter()
+    // "Rata-rata 3 periode terakhir" for the chosen category (DESIGN-TAMBAHAN §10)
+    const [avg3, setAvg3] = useState<number | null>(null)
+    // "Ulangi tiap periode" (needs budgets.is_recurring — see supabase/migrations)
+    const [canRecur, setCanRecur] = useState(false)
+    const [isRecurring, setIsRecurring] = useState(false)
+    useEffect(() => {
+        supabase.from('budgets').select('is_recurring').limit(1).then(({ error }) => setCanRecur(!error))
+    }, [])
+    // Budget action sheet (DESIGN-TAMBAHAN §7 / AksiBudget)
+    const [actionBudget, setActionBudget] = useState<{ b: Budget; spent: number; pct: number; over: boolean; near: boolean } | null>(null)
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
@@ -63,6 +97,12 @@ export default function BudgetsPage() {
     const [quickExpCategory, setQuickExpCategory] = useState('')
     const [quickExpAmount, setQuickExpAmount] = useState('')
     const [quickExpWalletId, setQuickExpWalletId] = useState('')
+
+    // Inline validation errors (DESIGN-TAMBAHAN.md §5)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const [qErrors, setQErrors] = useState<Record<string, string>>({})
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
+    const clearQErr = (k: string) => setQErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     // Persist filter settings to localStorage whenever they change
     useEffect(() => {
@@ -121,7 +161,30 @@ export default function BudgetsPage() {
         if (walletsRes.data) setWallets(walletsRes.data)
         
         if (budgetsRes.error) showToast('error', 'Gagal memuat budget')
-        if (budgetsRes.data) setBudgets(budgetsRes.data)
+        let periodBudgets = budgetsRes.data || []
+        // Copy recurring budgets from earlier periods into this one when missing.
+        const localDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+        const recurCheck = await supabase.from('budgets').select('*').eq('is_recurring', true).lt('end_date', targetStartDateStr)
+        if (!recurCheck.error && recurCheck.data && recurCheck.data.length > 0) {
+            const have = new Set(periodBudgets.map((b: Budget) => b.category))
+            const latest = new Map<string, Budget & { is_recurring?: boolean }>()
+            for (const b of recurCheck.data as (Budget & { is_recurring?: boolean })[]) {
+                const prev = latest.get(b.category)
+                if (!prev || b.end_date > prev.end_date) latest.set(b.category, b)
+            }
+            const toCreate = [...latest.values()].filter(b => !have.has(b.category))
+            if (toCreate.length > 0) {
+                const { data: created } = await supabase.from('budgets').insert(toCreate.map(b => ({
+                    category: b.category, amount: b.amount, start_date: localDay(new Date(startIso)), end_date: localDay(new Date(endIso)), is_recurring: true,
+                }))).select()
+                if (created) {
+                    // The chain continues from the new copy only.
+                    await supabase.from('budgets').update({ is_recurring: false }).in('id', toCreate.map(b => b.id))
+                    periodBudgets = [...periodBudgets, ...created]
+                }
+            }
+        }
+        setBudgets(periodBudgets)
         
         if (transactionsRes.data) setTransactions(transactionsRes.data as unknown as Transaction[])
 
@@ -129,6 +192,7 @@ export default function BudgetsPage() {
     }
 
     const resetForm = () => {
+        setIsRecurring(false)
         setCategory('')
         setAmount('')
         setEditingId(null)
@@ -144,6 +208,7 @@ export default function BudgetsPage() {
         setBudgetStartDate(startD)
         setBudgetEndDate(endD)
 
+        setErrors({})
         setIsModalOpen(false)
     }
 
@@ -151,22 +216,25 @@ export default function BudgetsPage() {
         setQuickExpCategory('')
         setQuickExpAmount('')
         setQuickExpWalletId('')
+        setQErrors({})
         setIsQuickExpModalOpen(false)
     }
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!category || !amount || !budgetStartDate || !budgetEndDate) return showToast('error', "Mohon lengkapi data")
+        const err: Record<string, string> = {}
+        if (!category) err.category = 'Pilih satu kategori.'
+        if (!amount || parseFloat(amount) <= 0) err.amount = 'Isi jumlah lebih dari Rp 0.'
+        if (budgetStartDate && budgetEndDate && new Date(budgetStartDate) > new Date(budgetEndDate)) err.dates = 'Tanggal mulai harus sebelum tanggal selesai.'
+        setErrors(err)
+        if (Object.keys(err).length > 0) return
 
-        if (new Date(budgetStartDate) > new Date(budgetEndDate)) {
-            return showToast('error', "Tanggal mulai tidak boleh lebih dari tanggal selesai")
-        }
-
-        const payload = {
+        const payload: Record<string, unknown> = {
             category,
             amount: parseFloat(amount),
             start_date: budgetStartDate,
-            end_date: budgetEndDate
+            end_date: budgetEndDate,
+            ...(canRecur ? { is_recurring: isRecurring } : {}),
         }
 
         let error
@@ -183,7 +251,7 @@ export default function BudgetsPage() {
                 .gte('end_date', budgetStartDate)
                 .limit(1)
             if (existingBudgets && existingBudgets.length > 0) {
-                return showToast('error', `Budget untuk kategori ${category} sudah ada dan bertabrakan di tanggal ini.`)
+                return setErrors({ category: `Budget ${category} untuk tanggal ini sudah ada. Ubah budget yang lama atau pilih tanggal lain.` })
             }
 
             const res = await supabase.from('budgets').insert([payload])
@@ -192,27 +260,25 @@ export default function BudgetsPage() {
 
         if (error) {
             console.error(error)
-            showToast('error', "Gagal menyimpan budget")
+            showToast('error', 'Budget gagal disimpan. Coba lagi.')
         } else {
             fetchAllData()
             resetForm()
-            showSuccess({
-                type: editingId ? 'edit' : 'create',
-                message: editingId ? 'Budget berhasil diperbarui!' : 'Budget baru berhasil ditambahkan!'
-            })
+            showToast('success', editingId ? 'Perubahan tersimpan' : 'Budget ditambahkan')
         }
     }
 
     const handleQuickExpenseSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickExpAmount || !quickExpWalletId) return showToast('error', "Mohon lengkapi data")
-
+        const qe: Record<string, string> = {}
+        if (!quickExpAmount || parseFloat(quickExpAmount) <= 0) qe.amount = 'Isi jumlah lebih dari Rp 0.'
+        if (!quickExpWalletId) qe.wallet = 'Pilih dompet.'
         const wallet = wallets.find(w => w.id === parseInt(quickExpWalletId))
-        if (!wallet) return showToast('error', "Dompet tidak ditemukan")
-
-        if (wallet.balance < parseFloat(quickExpAmount)) {
-            return showToast('error', "Saldo dompet tidak mencukupi")
+        if (quickExpWalletId && wallet && !qe.amount && wallet.balance < parseFloat(quickExpAmount)) {
+            qe.wallet = `Saldo ${wallet.name} kurang Rp ${(parseFloat(quickExpAmount) - wallet.balance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.`
         }
+        setQErrors(qe)
+        if (Object.keys(qe).length > 0 || !wallet) return
 
         // 1. Insert Transaction
         // Fix timezone bug: pakai T12:00:00 agar tidak shift 1 hari di WIB (sama dengan pattern di handleSaveTransaction)
@@ -232,7 +298,7 @@ export default function BudgetsPage() {
 
         if (txError) {
             console.error(txError)
-            return showToast('error', "Gagal menyimpan pengeluaran")
+            return showToast('error', 'Pengeluaran gagal disimpan. Coba lagi.')
         }
 
         // 2. Update Wallet Balance
@@ -241,17 +307,16 @@ export default function BudgetsPage() {
 
         fetchAllData()
         resetQuickExpForm()
-        showSuccess({
-            type: 'create',
-            title: 'Pengeluaran Dicatat!',
-            message: 'Pengeluaran cepat berhasil dicatat dan saldo dompet diperbarui.'
-        })
+        showToast('success', 'Pengeluaran tersimpan')
     }
 
     const handleDelete = async (id: number) => {
+        const budget = budgets.find(b => b.id === id)
         const confirm = await showConfirm({
-            title: 'Hapus Budget?',
-            message: 'Yakin ingin menghapus budget ini?'
+            title: `Hapus budget “${budget?.category ?? ''}”?`,
+            message: 'Transaksi yang sudah tercatat tidak ikut terhapus.',
+            confirmText: 'Hapus budget',
+            cancelText: 'Batal',
         })
         if (!confirm) return
 
@@ -267,18 +332,24 @@ export default function BudgetsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchAllData()
-            showSuccess({
-                type: 'delete',
-                message: 'Budget berhasil dihapus dari daftar.'
+            showToast('success', 'Budget dihapus', 6000, {
+                action: {
+                    label: 'Urungkan',
+                    onClick: async () => {
+                        if (budget && await restoreRow('budgets', { ...budget })) { showToast('success', 'Budget dikembalikan'); fetchAllData() }
+                        else showToast('error', 'Budget gagal dikembalikan.')
+                    },
+                },
             })
         } else {
             // 4. Rollback jika gagal
             setBudgets(previousBudgets)
-            showToast('error', 'Gagal menghapus budget')
+            showToast('error', 'Budget gagal dihapus. Coba lagi.')
         }
     }
 
     const handleEdit = (b: Budget) => {
+        setIsRecurring(!!(b as Budget & { is_recurring?: boolean }).is_recurring)
         setEditingId(b.id)
         setCategory(b.category)
         setAmount(b.amount.toString())
@@ -312,513 +383,323 @@ export default function BudgetsPage() {
         }
     }
 
-    return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            {/* Top Header */}
-            <div className="flex items-center justify-between w-full h-[70px] md:h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="md:hidden p-2 -ml-2 rounded-[12px] transition-colors" style={{ color: 'var(--text-muted)' }}>
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Manajemen Budget</h2>
-                </div>
-                <div className="hidden md:flex items-center gap-3 pl-3 ml-auto" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                    <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                    <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                        style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                        EB
-                    </div>
-                </div>
-            </div>
+    useEffect(() => {
+        if (!isModalOpen || !category || !budgetStartDate) { setAvg3(null); return }
+        let cancelled = false
+        const run = async () => {
+            const start = new Date(budgetStartDate)
+            const from = new Date(start.getFullYear(), start.getMonth() - 3, 1)
+            const to = new Date(start.getFullYear(), start.getMonth(), 0, 23, 59, 59)
+            const { data } = await supabase.from('transactions').select('amount, is_talangan')
+                .eq('type', 'pengeluaran').eq('category', category)
+                .gte('date', from.toISOString()).lte('date', to.toISOString())
+            if (cancelled) return
+            const total = (data || []).filter(t => !t.is_talangan).reduce((a, t) => a + t.amount, 0)
+            setAvg3(Math.round(total / 3))
+        }
+        run()
+        return () => { cancelled = true }
+    }, [isModalOpen, category, budgetStartDate])
 
-            <div className="relative min-h-[calc(100vh-90px)]">
+    // ── Derived values for the redesigned view ──────────────────────────────
+    const totalBudget = budgets.reduce((a, b) => a + b.amount, 0)
+    const totalSpent = budgets.reduce((a, b) => a + getSpentAmount(b.category), 0)
+    const totalSisa = Math.max(totalBudget - totalSpent, 0)
+    const totalPct = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0
+    const periodEnd = filterMode === 'monthly'
+        ? new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+        : new Date(customRange.end)
+    periodEnd.setHours(23, 59, 59, 999)
+    const daysLeft = Math.max(0, Math.ceil((periodEnd.getTime() - Date.now()) / 86400000))
+    const perDay = daysLeft > 0 ? Math.floor(totalSisa / daysLeft) : totalSisa
 
-                {/* Control Bar - Filter UI */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mx-4 md:mx-8 mt-6 brutal-card-sm p-4">
-                    <div className="flex w-full md:w-auto items-center gap-2 rounded-[14px] p-1" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={prevMonth}
-                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                        )}
-                        <div className="flex-1 flex items-center justify-center gap-2 px-4 py-1.5 min-w-[140px]">
-                            <Calendar className="w-4 h-4" style={{ color: 'var(--text-primary)' }} />
-                            <span className="font-black text-[var(--text-primary)] whitespace-nowrap text-center text-sm">
-                                {getPeriodLabel()}
-                            </span>
-                        </div>
-                        {filterMode === 'monthly' && (
-                            <button
-                                onClick={nextMonth}
-                                className="p-2 rounded-[10px] transition-all font-bold active:scale-95"
-                                style={{ color: 'var(--text-muted)' }}
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        )}
-                    </div>
+    const ranked = [...budgets].map(b => {
+        const spent = getSpentAmount(b.category)
+        const pct = b.amount > 0 ? (spent / b.amount) * 100 : 0
+        return { b, spent, pct, over: spent > b.amount, near: spent <= b.amount && pct >= 80 }
+    }).sort((a, z) => (z.over ? 1 : 0) - (a.over ? 1 : 0) || z.pct - a.pct)
+    const overCount = ranked.filter(r => r.over).length
+    const nearCount = ranked.filter(r => r.near).length
+    const warnParts = [overCount ? `${overCount} budget lewat batas` : '', nearCount ? `${nearCount} hampir habis` : ''].filter(Boolean)
 
-                    <div className="flex w-full md:w-auto items-center gap-2">
-                        <button
-                            onClick={() => setShowSettings(!showSettings)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-[14px] font-black transition-all active:scale-95"
-                            style={showSettings
-                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
-                                : { background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }
-                            }
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Filter</span>
-                        </button>
-                    </div>
-                </div>
+    // Categories without a budget this period (DESIGN.md 7.6), keeping the one being edited.
+    const catOptions = [
+        ...CATEGORIES.pengeluaran.map(c => c.name),
+        ...((customCategories.pengeluaran || []).map(getName)),
+    ] // All expense categories; clashes are rejected on save (DESIGN-TAMBAHAN §1)
 
-                {/* Settings Panel */}
-                {showSettings && (
+    // Sheets / dialogs shared by the mobile and web layouts.
+    const overlays = (
+        <>
+            {/* Budget action sheet (AksiBudget) */}
+            {actionBudget && (() => {
+                const { b, spent, pct, over, near } = actionBudget
+                const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                const fmt = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                const close = () => setActionBudget(null)
+                return (
                     <>
-                        <div className="fixed inset-0 z-10" onClick={() => setShowSettings(false)} />
-                        <div className="relative mx-4 md:mx-8 mt-2 z-20 w-auto md:max-w-sm md:ml-auto lg:absolute lg:right-8 lg:top-[90px] brutal-card p-5 animate-in fade-in zoom-in-95 duration-200"
-                            style={{ background: 'var(--bg-card)' }}>
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-black uppercase tracking-tighter text-xl text-[var(--text-primary)]">Pengaturan Filter</h3>
-                                <button onClick={() => setShowSettings(false)}
-                                    className="flex items-center justify-center p-1.5 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
-                                    <X className="w-4 h-4 text-[#141414]" strokeWidth={3} />
-                                </button>
+                        <div className="scrim" onClick={close} />
+                        <div className="sheet" role="dialog" aria-labelledby="ab-title" style={{ gap: 12 }}>
+                            <div className="grabber" />
+                            <div className="hstack" style={{ gap: 12 }}>
+                                <div className={`ic ${CAT_CLASS[b.category] || 'c-lain'}`}><Icon className="i" /></div>
+                                <div className="grow"><h2 className="h2" id="ab-title">{b.category}</h2><div className="meta">{rp(spent)} dari {rp(b.amount)} · {fmt(b.start_date)} – {fmt(b.end_date)}</div></div>
                             </div>
-
-                            <div className="space-y-5">
-                                <div className="space-y-3">
-                                    <label className="neo-label">Mode Tampilan</label>
-                                    <div className="grid grid-cols-2 gap-2 rounded-[14px] p-1.5" style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}>
-                                        <button
-                                            onClick={() => setFilterMode('monthly')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'monthly'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Bulanan
-                                        </button>
-                                        <button
-                                            onClick={() => setFilterMode('custom')}
-                                            className="px-3 py-2.5 rounded-[10px] text-sm font-black transition-all"
-                                            style={filterMode === 'custom'
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', color: 'var(--neo-ink)' }
-                                                : { color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            Custom
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {filterMode === 'custom' && (
-                                    <div className="space-y-4 pt-2" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Dari Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.start}
-                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="neo-label">Sampai Tanggal</label>
-                                            <DatePickerNeo
-                                                value={customRange.end}
-                                                onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))}
-                                                className="w-full px-4 py-2.5 rounded-[12px] text-sm font-bold text-[var(--text-primary)] outline-none"
-                                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
+                            <div className={`bar ${over ? 'over' : ''}`}><div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} /></div>
+                            <div className="stack" style={{ gap: 0, marginTop: 4 }}>
+                                <button className="act" onClick={() => { close(); openQuickExp(b.category) }}><span className="ic-s" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Plus className="i i-s" /></span><span className="grow">Catat pengeluaran</span></button>
+                                <button className="act" onClick={() => { close(); router.push(`/transactions?category=${encodeURIComponent(b.category)}`) }}><span className="ic-s c-lain"><List className="i i-s" /></span><span className="grow">Lihat transaksi kategori ini</span></button>
+                                <button className="act" onClick={() => { close(); handleEdit(b) }}><span className="ic-s c-lain"><Pencil className="i i-s" /></span><span className="grow">Ubah budget</span></button>
+                                <button className="act" style={{ color: 'var(--danger)' }} onClick={() => { close(); handleDelete(b.id) }}><span className="ic-s" style={{ background: 'var(--danger-tint)', color: 'var(--danger)' }}><Trash2 className="i i-s" /></span><span className="grow">Hapus budget</span></button>
                             </div>
                         </div>
                     </>
-                )}
+                )
+            })()}
 
-                {/* ===== MOBILE VIEW ===== */}
-                <div className="md:hidden pb-[80px]">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : (() => {
-                        const totalBudget = budgets.reduce((acc, b) => acc + b.amount, 0)
-                        const totalSpent = budgets.reduce((acc, b) => acc + getSpentAmount(b.category), 0)
-                        const totalRemaining = Math.max(totalBudget - totalSpent, 0)
-                        const overallPct = totalBudget > 0 ? Math.min(Math.round((totalSpent / totalBudget) * 100), 100) : 0
-                        const isOverall = totalSpent > totalBudget
+            {/* Filter & period sheet */}
+            <PeriodSheet
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+                customRange={customRange}
+                setCustomRange={setCustomRange}
+            />
 
-                        return (
-                            <>
-                                {/* Summary Card — Neobrutalism */}
-                                <div className={`mx-4 mt-4 brutal-card-md p-5 ${isOverall ? 'brutal-card-peach' : 'brutal-card-yellow'}`}>
-                                    <p className="neo-label mb-1">{getPeriodLabel()}</p>
-                                    <div className="flex items-end justify-between mt-1 mb-3">
-                                        <div>
-                                            <p className="neo-label mb-0.5">Total Terpakai</p>
-                                            <p className="neo-amount">Rp {totalSpent.toLocaleString('id-ID')}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="neo-label mb-0.5">Total Budget</p>
-                                            <p className="font-black text-base text-[var(--text-primary)]">Rp {totalBudget.toLocaleString('id-ID')}</p>
-                                        </div>
-                                    </div>
-                                    {/* Overall progress */}
-                                    <div className="w-full h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                        <div className="h-full rounded-full transition-all duration-500"
-                                            style={{ width: `${overallPct}%`, background: isOverall ? 'var(--error)' : 'var(--neo-ink)' }} />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="neo-label">Sisa: <span className="font-black text-[var(--text-primary)]">Rp {totalRemaining.toLocaleString('id-ID')}</span></p>
-                                        <span className="neo-pill text-[10px]">{overallPct}% terpakai</span>
-                                    </div>
+            {/* Create / edit budget sheet */}
+            {isModalOpen && (
+                <>
+                    <div className="scrim" onClick={resetForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><h2 className="h2">{editingId ? 'Ubah budget' : 'Buat budget'}</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button></div>
+                        <form onSubmit={handleSave} className="stack-12">
+                            <div className="field">Kategori
+                                <div className="g2">
+                                    {catOptions.map(name => {
+                                        const { Icon } = getCategoryIcon(name, 'pengeluaran', customCategories)
+                                        const cls = CAT_CLASS[name] || 'c-lain'
+                                        return (
+                                            <button key={name} type="button" className={`catb ${category === name ? 'on' : ''} ${errors.category ? 'bad' : ''}`} style={{ minHeight: 56, flexDirection: 'row', justifyContent: 'flex-start', gap: 8, padding: '0 10px' }} onClick={() => { setCategory(name); clearErr('category') }}>
+                                                <span className={`ic-s ${cls}`}><Icon className="i i-s" /></span>
+                                                <span style={{ textAlign: 'left' }}>{name}</span>
+                                            </button>
+                                        )
+                                    })}
                                 </div>
-
-                                {/* Info Bar */}
-                                <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="font-black uppercase tracking-tight text-[var(--text-primary)]">{budgets.length} kategori budget</p>
-                                    <p className="neo-label mt-1">Tap untuk edit / hapus / catat</p>
-                                </div>
-
-                                {/* Budget List */}
-                                {budgets.length === 0 ? (
-                                    <div className="mx-4 brutal-card-sm p-10 text-center">
-                                        <p className="text-sm font-semibold text-[var(--text-muted)]">Belum ada budget bulan ini.</p>
-                                    </div>
-                                ) : (
-                                    <div className="mx-4 space-y-2">
-                                        {budgets.map((budget, idx) => {
-                                            const spent = getSpentAmount(budget.category)
-                                            const percent = Math.min((spent / budget.amount) * 100, 100)
-                                            const isOver = spent > budget.amount
-                                            const allCats = [
-                                                ...CATEGORIES.pengeluaran,
-                                                ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                            ]
-                                            const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-
-                                            return (
-                                                <div key={budget.id} className="brutal-card-sm p-4"
-                                                    style={{ background: isOver ? 'var(--neo-peach)' : 'var(--bg-card)' }}>
-                                                    {/* Top Row: Category badge + amounts */}
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <span className="neo-pill text-[10px]">{budget.category}</span>
-                                                        <div className="text-right ml-2">
-                                                            <p className="font-black text-sm text-[var(--text-primary)]">Rp {spent.toLocaleString('id-ID')}</p>
-                                                            <p className="text-[11px] font-semibold text-[var(--text-muted)]">/ Rp {budget.amount.toLocaleString('id-ID')}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Progress bar */}
-                                                    <div className="w-full h-1.5 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-500"
-                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
-                                                        />
-                                                    </div>
-
-                                                    {/* Sisa / % */}
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        {isOver ? (
-                                                            <span className="text-[10px] font-black flex items-center gap-1" style={{ color: 'var(--error)' }}>
-                                                                <AlertCircle className="w-3 h-3" /> Over Budget!
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-[10px] font-semibold text-[var(--text-muted)]">Sisa: Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
-                                                        )}
-                                                        <span className="text-[10px] font-black text-[var(--text-primary)]">{Math.round(percent)}%</span>
-                                                    </div>
-
-                                                    {/* Action Buttons — 3 columns */}
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        <button
-                                                            onClick={() => handleEdit(budget)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                        >
-                                                            <Pencil className="w-3.5 h-3.5" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openQuickExp(budget.category)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-black rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }}
-                                                        >
-                                                            <Plus className="w-3.5 h-3.5" />
-                                                            Catat
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(budget.id)}
-                                                            className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                            Hapus
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-
-                                {/* Tambah Budget Button */}
-                                <button
-                                    onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] rounded-[20px] p-4 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
-                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                                >
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)' }}>
-                                        <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <span className="font-black">Buat Budget Baru</span>
-                                </button>
-                            </>
-                        )
-                    })()}
-                </div>
-
-                {/* ===== DESKTOP VIEW ===== */}
-                <div className="hidden md:block p-8">
-                    {loading ? (
-                        <div className="text-center py-12 text-[var(--text-muted)] font-semibold animate-pulse">Memuat budget...</div>
-                    ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {budgets.map((budget, idx) => {
-                                    const spent = getSpentAmount(budget.category)
-                                    const percent = Math.min((spent / budget.amount) * 100, 100)
-                                    const isOver = spent > budget.amount
-                                    const allCats = [
-                                        ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                    ]
-                                    const catColor = allCats.find(c => c.name === budget.category)?.color || 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500'
-                                    // Cycle card colors for variety
-                                    const BUDGET_COLORS = ['var(--neo-yellow)', 'var(--neo-sky)', 'var(--neo-mint)', 'var(--neo-lav)']
-
-                                    return (
-                                        <div key={budget.id}
-                                            className="brutal-card card-hover flex flex-col justify-between min-h-[320px] p-6 pb-8"
-                                            style={{ background: isOver ? 'var(--neo-peach)' : BUDGET_COLORS[idx % BUDGET_COLORS.length] }}>
-                                            <div>
-                                                <div className="flex justify-between items-start mb-5">
-                                                    <span className="neo-pill text-xs">{budget.category}</span>
-                                                    <button onClick={() => handleDelete(budget.id)}
-                                                        className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                                        style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="mb-5">
-                                                    <p className="neo-label">Total Terpakai</p>
-                                                    <p className="text-3xl font-black text-[var(--text-primary)] mt-1 tracking-tight">Rp {spent.toLocaleString('id-ID')}</p>
-                                                    <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">
-                                                        Limit: Rp {budget.amount.toLocaleString('id-ID')}
-                                                    </p>
-
-                                                    {isOver && (
-                                                        <div className="flex items-center gap-1.5 text-xs font-black mt-2 mb-1 p-2 rounded-[10px]"
-                                                            style={{ background: 'rgba(20,20,20,0.08)', color: 'var(--error)' }}>
-                                                            <AlertCircle className="w-3.5 h-3.5" />
-                                                            <span>Over Budget!</span>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="w-full h-2.5 rounded-full overflow-hidden mt-3"
-                                                        style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                        <div
-                                                            className="h-full rounded-full transition-all duration-500"
-                                                            style={{ width: `${percent}%`, background: isOver ? 'var(--error)' : percent > 80 ? '#f97316' : 'var(--neo-ink)' }}
-                                                        />
-                                                    </div>
-                                                    <p className="text-xs font-semibold text-[var(--text-muted)] mt-2">
-                                                        Sisa: <span className="font-black text-[var(--text-primary)]">Rp {Math.max(budget.amount - spent, 0).toLocaleString('id-ID')}</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-3 pt-4" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                                <button
-                                                    onClick={() => handleEdit(budget)}
-                                                    className="py-3 font-bold rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                >
-                                                    <Pencil className="w-4 h-4" /> Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => openQuickExp(budget.category)}
-                                                    className="py-3 font-black rounded-[14px] transition-all active:scale-95 flex justify-center items-center gap-2 text-sm"
-                                                    style={{ background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)', color: 'var(--neo-ink)' }}
-                                                >
-                                                    <Plus className="w-4 h-4" /> Catat
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-
-                                {/* Add New Card */}
-                                <button
-                                    onClick={() => { resetForm(); setIsModalOpen(true); }}
-                                    className="rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 font-bold text-sm transition-all min-h-[320px] group active:scale-[0.98]"
-                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                                >
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
-                                        style={{ background: 'var(--neo-yellow)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                        <Plus className="w-6 h-6 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <span className="font-black">Buat Budget Baru</span>
-                                </button>
+                                <FieldError>{errors.category}</FieldError>
                             </div>
-
-                            {budgets.length === 0 && (
-                                <div className="brutal-card-sm text-center py-12">
-                                    <p className="font-semibold text-[var(--text-muted)]">Belum ada budget untuk bulan ini.</p>
+                            <label className="field">Batas (Rp)
+                                <input className={`input ${errors.amount ? 'bad' : ''}`} inputMode="numeric" placeholder="0" value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setAmount(e.target.value.replace(/\D/g, '')); clearErr('amount') }} />
+                                <FieldError>{errors.amount}</FieldError>
+                                {avg3 !== null && category && (
+                                    <span className="lbl hstack" style={{ fontWeight: 500, gap: 6, flexWrap: 'wrap' }}>
+                                        Rata-rata 3 periode terakhir: <b style={{ color: 'var(--text)' }}>{rp(avg3)}</b>
+                                        {avg3 > 0 && <button type="button" className="link" onClick={() => { setAmount(String(avg3)); clearErr('amount') }}>Pakai angka ini</button>}
+                                    </span>
+                                )}
+                            </label>
+                            <div className="g2">
+                                <label className="field">Tanggal mulai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetStartDate} onChange={(e) => { setBudgetStartDate(e.target.value); clearErr('dates') }} required /></label>
+                                <label className="field">Tanggal selesai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetEndDate} onChange={(e) => { setBudgetEndDate(e.target.value); clearErr('dates') }} required /></label>
+                            </div>
+                            <FieldError>{errors.dates}</FieldError>
+                            {canRecur && (
+                                <div className="toggle-row">
+                                    <div className="grow">
+                                        <div className="t">Ulangi tiap periode</div>
+                                        <div className="meta" style={{ whiteSpace: 'normal' }}>Budget ini dibuat lagi otomatis untuk periode berikutnya.</div>
+                                    </div>
+                                    <button type="button" className={`switch ${isRecurring ? 'on' : ''}`} aria-label="Ulangi tiap periode" aria-pressed={isRecurring} onClick={() => setIsRecurring(v => !v)} />
                                 </div>
                             )}
+                            <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan budget'}</button>
+                            {editingId && (
+                                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingId; resetForm(); handleDelete(id) }}>
+                                    <Trash2 className="i i-s" />Hapus budget
+                                </button>
+                            )}
+                        </form>
+                    </div>
+                </>
+            )}
+
+            {/* Quick expense sheet */}
+            {isQuickExpModalOpen && (
+                <>
+                    <div className="scrim" onClick={resetQuickExpForm} />
+                    <div className="sheet">
+                        <div className="grabber" />
+                        <div className="between"><div><h2 className="h2">Catat pengeluaran</h2><div className="lbl">Kategori: {quickExpCategory}</div></div><button className="icon-btn ghost" aria-label="Tutup" onClick={resetQuickExpForm}><X className="i" /></button></div>
+                        <form onSubmit={handleQuickExpenseSave} className="stack-12">
+                            <label className="field">Jumlah (Rp)
+                                <input className={`input ${qErrors.amount ? 'bad' : ''}`} inputMode="numeric" autoFocus placeholder="0" value={quickExpAmount ? parseInt(quickExpAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setQuickExpAmount(e.target.value.replace(/\D/g, '')); clearQErr('amount'); clearQErr('wallet') }} />
+                                <FieldError>{qErrors.amount}</FieldError>
+                            </label>
+                            <div className="field">Ambil dari dompet
+                                <NeoSelect value={quickExpWalletId} onChange={(v) => { setQuickExpWalletId(v); clearQErr('wallet') }} options={wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))} placeholder="Pilih dompet" />
+                                <FieldError>{qErrors.wallet}</FieldError>
+                            </div>
+                            <button type="submit" className="btn btn-block">Simpan pengeluaran</button>
+                        </form>
+                    </div>
+                </>
+            )}
+        </>
+    )
+
+    // ── Web (>=768px): BudgetWeb — summary row + card grid; forms open as modals ──
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <h1 className="ptitle">Budget</h1>
+                        <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+                            <button className="icon-btn" aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                            <button className="btn-2" onClick={() => setShowSettings(true)}><Calendar className="i i-s" />{getPeriodLabel()}</button>
+                            <button className="icon-btn" aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                            <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
+                        </div>
+                    </div>
+
+                    <div className="wrap">
+                        <div className="card stack-12" style={{ flex: '2 1 380px', padding: 20 }}>
+                            <span className="lbl">Terpakai dari total budget</span>
+                            <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
+                            <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
+                            <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">{totalPct}% terpakai · {daysLeft} hari lagi</span></div>
+                        </div>
+                        <div className="card stack" style={{ flex: '1 1 220px', padding: 20 }}>
+                            <span className="lbl">Aman dipakai per hari</span>
+                            <span className="num-l">± {rp(perDay)}</span>
+                            <span className="lbl">Untuk {daysLeft} hari tersisa</span>
+                        </div>
+                        <div className="card stack" style={{ flex: '1 1 220px', padding: 20 }}>
+                            <span className="lbl">Status</span>
+                            <div className="hstack" style={{ flexWrap: 'wrap', gap: 6 }}>
+                                {overCount > 0 && <span className="badge b-bad">{overCount} lewat batas</span>}
+                                {nearCount > 0 && <span className="badge b-warn">{nearCount} hampir habis</span>}
+                                {ranked.length - overCount - nearCount > 0 && <span className="badge b-ok">{ranked.length - overCount - nearCount} aman</span>}
+                                {ranked.length === 0 && <span className="lbl">Belum ada budget</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <SkeletonCards count={4} />
+                    ) : ranked.length === 0 ? (
+                        <EmptyState icon={<Calendar className="i" />} title="Belum ada budget periode ini" text="Batasi kategori yang paling boros dulu." actionLabel="Buat budget" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+                    ) : (
+                        <div className="bgrid">
+                            {ranked.map(({ b, spent, pct, over, near }) => {
+                                const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                                const cls = CAT_CLASS[b.category] || 'c-lain'
+                                const sisa = Math.max(b.amount - spent, 0)
+                                return (
+                                    <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
+                                        <div className="hstack" style={{ gap: 12 }}>
+                                            <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                            <div className="grow" style={{ minWidth: 0 }}>
+                                                <div className="t">{b.category}</div>
+                                                <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
+                                            </div>
+                                            <MoreHorizontal className="i i-s" style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                                        </div>
+                                        <div className={`bar ${over ? 'over' : ''}`}><div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} /></div>
+                                        {over ? <span className="badge b-bad" style={{ alignSelf: 'flex-start' }}>Lewat {shortRp(spent - b.amount)}</span>
+                                            : near ? <span className="badge b-warn" style={{ alignSelf: 'flex-start' }}>Sisa {shortRp(sisa)}</span>
+                                                : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
+                                    </button>
+                                )
+                            })}
                         </div>
                     )}
+                </main>
+                {overlays}
+            </div>
+        )
+    }
+
+
+    return (
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Budget</h1>
+                    </div>
+                    <button className="icon-btn" aria-label="Buat budget" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
                 </div>
 
+                {/* Period selector */}
+                <div className="hstack" style={{ gap: 4 }}>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                    <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSettings(s => !s)}>
+                        <Calendar className="i i-s" />{getPeriodLabel()}
+                    </button>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                </div>
+
+                {/* Total card */}
+                <div className="card stack-12">
+                    <div className="between"><span className="lbl">Terpakai dari total budget</span><span className="lbl">{daysLeft} hari lagi</span></div>
+                    <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
+                    <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
+                    <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">Aman dipakai ± {shortRp(perDay)} per hari</span></div>
+                </div>
+
+                {warnParts.length > 0 && (
+                    <div className="banner warn"><AlertTriangle className="i" />{warnParts.join(', ')}</div>
+                )}
+
+                {/* Budget list */}
+                {loading ? (
+                    <SkeletonCards count={4} />
+                ) : ranked.length === 0 ? (
+                    <div className="card" style={{ textAlign: 'center' }}>
+                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada budget periode ini</p>
+                        <p className="lbl" style={{ marginTop: 4 }}>Batasi kategori yang paling boros dulu.</p>
+                        <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Buat budget</button>
+                    </div>
+                ) : (
+                    ranked.map(({ b, spent, pct, over, near }) => {
+                        const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                        const cls = CAT_CLASS[b.category] || 'c-lain'
+                        const sisa = Math.max(b.amount - spent, 0)
+                        return (
+                            <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
+                                <div className="hstack" style={{ gap: 12 }}>
+                                    <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                    <div className="grow">
+                                        <div className="t">{b.category}</div>
+                                        <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
+                                    </div>
+                                    {over ? <span className="badge b-bad">Lewat {shortRp(spent - b.amount)}</span>
+                                        : near ? <span className="badge b-warn">Sisa {shortRp(sisa)}</span>
+                                            : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
+                                </div>
+                                <div className={`bar ${over ? 'over' : ''}`}>
+                                    <div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} />
+                                </div>
+                            </button>
+                        )
+                    })
+                )}
+
+                {!loading && ranked.length > 0 && (
+                    <button className="btn-2 btn-block" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
+                )}
             </div>
 
-            {/* Main Modal (Add/Edit Budget) */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetForm} />
-                    <div className="w-full max-w-md z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">{editingId ? 'Edit Budget' : 'Tambah Budget'}</h3>
-                            <button onClick={resetForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSave} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="neo-label block mb-2">Tanggal Mulai</label>
-                                    <DatePickerNeo
-                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
-                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
-                                        value={budgetStartDate}
-                                        onChange={(e) => setBudgetStartDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="neo-label block mb-2">Tanggal Selesai</label>
-                                    <DatePickerNeo
-                                        className="w-full px-[18px] py-[14px] rounded-[18px] font-extrabold text-[14px] text-[var(--text-primary)] outline-none"
-                                        style={{ background: 'var(--bg-elevated)', border: '3px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-sm)' }}
-                                        value={budgetEndDate}
-                                        onChange={(e) => setBudgetEndDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-3">Pilih Kategori</label>
-                                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-                                    {[
-                                        ...CATEGORIES.pengeluaran,
-                                        ...(customCategories.pengeluaran || []).map(c => typeof c === 'string' ? { name: c, color: 'bg-slate-100 dark:bg-[var(--bg-hover)] text-slate-600 dark:text-slate-500' } : { name: c.name, color: c.color })
-                                    ].map(cat => (
-                                        <button
-                                            key={cat.name}
-                                            type="button"
-                                            onClick={() => setCategory(cat.name)}
-                                            className="p-3 rounded-[12px] text-xs font-black uppercase tracking-wider transition-all text-left flex items-center gap-2 active:scale-95"
-                                            style={category === cat.name
-                                                ? { background: 'var(--neo-yellow-vivid)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--neo-ink)' }
-                                                : { background: 'var(--bg-elevated)', border: '2px solid rgba(20,20,20,0.15)', color: 'var(--text-muted)' }
-                                            }
-                                        >
-                                            <div className={`w-2 h-2 rounded-full ${cat.color.split(' ')[0].replace('bg-', 'bg-')}`}></div>
-                                            {cat.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Batasan (Rp)</label>
-                                <MoneyInput
-                                    value={amount}
-                                    onChange={setAmount}
-                                />
-                            </div>
-                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
-                                Simpan Budget
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Expense Modal */}
-            {isQuickExpModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[var(--neo-ink)]/60 backdrop-blur-sm transition-opacity" onClick={resetQuickExpForm} />
-                    <div className="w-full max-w-sm z-50 relative animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto brutal-card p-6"
-                        style={{ background: 'var(--bg-card)' }}>
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight">Catat Pengeluaran</h3>
-                                <p className="text-sm font-semibold text-[var(--text-muted)] mt-1">Kategori: <span className="neo-pill text-xs font-black">{quickExpCategory}</span></p>
-                            </div>
-                            <button onClick={resetQuickExpForm}
-                                className="p-2 rounded-[12px] transition-colors"
-                                style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: 'var(--text-muted)' }}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleQuickExpenseSave} className="space-y-5">
-                            <div>
-                                <label className="neo-label block mb-2">Jumlah (Rp)</label>
-                                <MoneyInput
-                                    value={quickExpAmount}
-                                    onChange={setQuickExpAmount}
-                                    autoFocus
-                                    className="focus:ring-[var(--primary)]"
-                                />
-                            </div>
-                            <div>
-                                <label className="neo-label block mb-2">Ambil dari Dompet</label>
-                                <NeoSelect
-                                    value={quickExpWalletId}
-                                    onChange={(val) => setQuickExpWalletId(val)}
-                                    options={wallets.map(w => ({
-                                        label: `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
-                                        value: w.id.toString()
-                                    }))}
-                                    placeholder="Pilih Dompet"
-                                    className="w-full p-3.5 rounded-[14px] font-semibold text-sm text-[var(--text-primary)] transition-all hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]"
-                                    style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)' }}
-                                />
-                            </div>
-                            <button type="submit" className="brutal-btn w-full py-3.5 text-sm">
-                                Simpan Pengeluaran
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </main>
+            {overlays}
+        </div>
     )
 }
+
