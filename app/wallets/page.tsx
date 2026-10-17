@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import WalletModal from '@/components/WalletModal'
+import { SkeletonRows } from '@/components/Skeleton'
 
 type Tab = 'active' | 'savings'
 type WalletType = 'bank' | 'ewallet' | 'cash'
@@ -189,11 +190,7 @@ export default function WalletsPage() {
 
         {/* List */}
         {loading ? (
-          <div className="card-flush">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="row"><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div>
-            ))}
-          </div>
+          <SkeletonRows count={5} />
         ) : shown.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>
             <p className="t" style={{ whiteSpace: 'normal' }}>{tab === 'active' ? 'Belum ada dompet aktif' : 'Belum ada aset tabungan'}</p>

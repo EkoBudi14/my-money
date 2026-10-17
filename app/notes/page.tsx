@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import CalendarCard from '@/components/CalendarCard'
+import { SkeletonCards } from '@/components/Skeleton'
 
 interface Note {
   id: number
@@ -111,7 +112,7 @@ export default function NotesPage() {
 
         {/* List */}
         {loading ? (
-          <div className="stack-12">{[0, 1].map(i => <div key={i} className="card"><div className="t" style={{ opacity: 0.4 }}>Memuat…</div></div>)}</div>
+          <SkeletonCards count={3} />
         ) : filtered.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>
             <div className="ic c-lain" style={{ margin: '0 auto 8px' }}><StickyNote className="i" /></div>

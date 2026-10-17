@@ -8,6 +8,7 @@ import DatePickerNeo from '@/components/DatePickerNeo'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import { SkeletonCards } from '@/components/Skeleton'
 
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([])
@@ -199,11 +200,7 @@ export default function GoalsPage() {
 
                 {/* Goal list */}
                 {loading ? (
-                    <div className="stack-12">
-                        {[0, 1].map(i => (
-                            <div key={i} className="card stack-12"><div className="hstack" style={{ gap: 12 }}><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div><div className="bar thick"><div style={{ width: '40%' }} /></div></div>
-                        ))}
-                    </div>
+                    <SkeletonCards count={2} />
                 ) : goals.length === 0 ? (
                     <div className="card" style={{ textAlign: 'center' }}>
                         <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada goal</p>
