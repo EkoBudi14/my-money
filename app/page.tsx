@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft, ChevronRight, Calendar, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  AlertTriangle, X, StickyNote, HandCoins, Info, Download, RotateCw, Receipt, Plus, Trash2,
+  AlertTriangle, X, StickyNote, HandCoins, Info, Download, RotateCw, Receipt, Plus, Trash2, Bell,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
@@ -25,6 +25,7 @@ import { Wallet, Transaction, Budget, Debt, Note, RecurringBill, CustomCategoryD
 import PeriodSheet from '@/components/PeriodSheet'
 import CalendarCard from '@/components/CalendarCard'
 import EmptyState from '@/components/EmptyState'
+import ExportSheet from '@/components/ExportSheet'
 import PullToRefresh from '@/components/PullToRefresh'
 import Onboarding, { createDefaultWallets } from '@/components/Onboarding'
 import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
@@ -107,6 +108,7 @@ export default function HomePage() {
   const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [calendarKey, setCalendarKey] = useState(0)
+  const [showExport, setShowExport] = useState(false)
   const onboardingChecked = useRef(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   // Web (>=768px) layout + transaction modal (DESIGN.md 7.1 web, TambahWeb)
@@ -371,6 +373,29 @@ export default function HomePage() {
   const urgentBill = dueBills.find(b => { const diff = b.due_date - new Date().getDate(); return diff >= 0 && diff <= 3 })
   const topBills = dueBills.slice(0, 3)
 
+  // Notifications (DESIGN.md 0.5 "Ikon notifikasi"): bills due ≤3 days / overdue + budgets over the limit.
+  const notifications = useMemo(() => {
+    const day = new Date().getDate()
+    const items: { key: string; text: string; tone: 'warn' | 'bad'; href: string }[] = []
+    dueBills.forEach(b => {
+      const diff = b.due_date - day
+      if (diff < 0) items.push({ key: `b${b.id}`, text: `${b.name} terlewat (tgl ${b.due_date}) · ${rp(b.amount)}`, tone: 'bad', href: '/recurring' })
+      else if (diff <= 3) items.push({ key: `b${b.id}`, text: `${b.name} jatuh tempo ${diff === 0 ? 'hari ini' : `${diff} hari lagi`} · ${rp(b.amount)}`, tone: 'warn', href: '/recurring' })
+    })
+    budgets.forEach(b => {
+      const spent = filteredTransactions.filter(t => t.type === 'pengeluaran' && !t.is_talangan && t.category === b.category).reduce((a, c) => a + c.amount, 0)
+      if (spent > b.amount) items.push({ key: `g${b.id}`, text: `Budget ${b.category} lewat ${rp(spent - b.amount)}`, tone: 'bad', href: '/budgets' })
+    })
+    return items
+  }, [dueBills, budgets, filteredTransactions])
+  const [showNotif, setShowNotif] = useState(false)
+  const notifButton = (
+    <button className="icon-btn notif-btn" aria-label={`Notifikasi${notifications.length ? `, ${notifications.length} baru` : ''}`} onClick={() => setShowNotif(true)}>
+      <Bell className="i" />
+      {notifications.length > 0 && <span className="notif-dot">{notifications.length > 9 ? '9+' : notifications.length}</span>}
+    </button>
+  )
+
   const recentTx = useMemo(() => {
     return [...filteredTransactions].sort((a, z) => {
       const d = new Date(z.date || z.created_at).getTime() - new Date(a.date || a.created_at).getTime()
@@ -440,6 +465,34 @@ export default function HomePage() {
         </>
       )}
       {showOnboarding && <Onboarding onDone={() => { setShowOnboarding(false); loadAll() }} />}
+
+      <ExportSheet isOpen={showExport} onClose={() => setShowExport(false)} periodLabel={getPeriodLabel()} rowCount={filteredTransactions.length} rangeCount={filterHistory.length} walletCount={wallets.length} onChangePeriod={() => setShowSettings(true)} onDownload={handleExport} />
+
+      {showNotif && (
+        <>
+          <div className="scrim" onClick={() => setShowNotif(false)} />
+          <div className="sheet" role="dialog" aria-labelledby="notif-title">
+            <div className="grabber" />
+            <div className="between">
+              <h2 className="h2" id="notif-title">Notifikasi</h2>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowNotif(false)}><X className="i" /></button>
+            </div>
+            {notifications.length === 0 ? (
+              <EmptyState icon={<Bell className="i" />} title="Semua aman" text="Tidak ada tagihan yang jatuh tempo dan tidak ada budget yang lewat batas." style={{ border: 0 }} />
+            ) : (
+              <div className="card-flush">
+                {notifications.map(n => (
+                  <Link key={n.key} href={n.href} className="row rowlink" onClick={() => setShowNotif(false)}>
+                    <div className="ic-s" style={{ background: n.tone === 'bad' ? 'var(--danger-tint)' : 'var(--warn-tint)', color: n.tone === 'bad' ? 'var(--danger)' : 'var(--warn)' }}><AlertTriangle className="i i-s" /></div>
+                    <span className="grow" style={{ fontSize: 14, whiteSpace: 'normal' }}>{n.text}</span>
+                    <ChevronRight className="i i-s" style={{ color: 'var(--text-2)' }} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Transaction add / edit modal (web) */}
       {txModal && (
@@ -518,6 +571,7 @@ export default function HomePage() {
               <button className="btn-2" onClick={() => setShowSettings(true)}><Calendar className="i i-s" />{getPeriodLabel()}</button>
               <button className="icon-btn" aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
               <button className="icon-btn" aria-label={showBalance ? 'Sembunyikan angka' : 'Tampilkan angka'} aria-pressed={showBalance} onClick={() => setShowBalance(v => !v)}>{showBalance ? <EyeOff className="i" /> : <Eye className="i" />}</button>
+              {notifButton}
               <button className="btn" onClick={() => setTxModal({ editing: null, type: 'pengeluaran' })}><Plus className="i i-s" />Tambah transaksi</button>
             </div>
           </div>
@@ -640,7 +694,7 @@ export default function HomePage() {
               <div className="between" style={{ marginBottom: 8 }}>
                 <h2 className="h2">Transaksi terakhir</h2>
                 <div className="hstack" style={{ gap: 4 }}>
-                  <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Export ke Excel" title="Export ke Excel" onClick={handleExport}><Download className="i i-s" /></button>
+                  <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Export ke Excel" title="Export ke Excel" onClick={() => setShowExport(true)}><Download className="i i-s" /></button>
                   <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Muat ulang data" title="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
                   <Link className="link" href="/transactions">Lihat semua</Link>
                 </div>
@@ -707,6 +761,7 @@ export default function HomePage() {
               <h1 className="h1" style={{ fontSize: 18 }}>Halo, Eko</h1>
             </div>
           </div>
+          {notifButton}
         </div>
 
         {/* Period selector */}
@@ -842,7 +897,7 @@ export default function HomePage() {
           <div className="between">
             <h2 className="h2">Transaksi terakhir</h2>
             <div className="hstack" style={{ gap: 4 }}>
-              <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Export ke Excel" onClick={handleExport}><Download className="i i-s" /></button>
+              <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Export ke Excel" onClick={() => setShowExport(true)}><Download className="i i-s" /></button>
               <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
               <Link className="link" href="/transactions">Lihat semua</Link>
             </div>

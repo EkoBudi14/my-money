@@ -13,6 +13,7 @@ import DatePickerNeo from '@/components/DatePickerNeo'
 import AddBillModal from '@/components/AddBillModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
+import BillCalendar from '@/components/BillCalendar'
 import { ActionSheet, DropdownMenu, ActionItem } from '@/components/ActionMenu'
 import { useIsWeb } from '@/hooks/useIsWeb'
 
@@ -297,7 +298,8 @@ export default function RecurringPage() {
             <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">{tab === 'pemasukan' ? 'Belum diterima' : 'Belum dibayar'}</div><div className={`num-l ${unpaidTotal > 0 && tab === 'pengeluaran' ? 'bad' : ''}`}>{rp(unpaidTotal)}</div></div>
           </div>
 
-          <section className="card" style={{ padding: 0 }}>
+          <div className="wrap" style={{ alignItems: 'flex-start' }}>
+          <section className="card" style={{ padding: 0, flex: '3 1 480px', minWidth: 0 }}>
             {loading ? (
               <div style={{ padding: 20 }}><SkeletonRows count={3} /></div>
             ) : rows.length === 0 ? (
@@ -353,6 +355,8 @@ export default function RecurringPage() {
               </div>
             )}
           </section>
+          <div style={{ flex: '2 1 300px', minWidth: 0 }}>{bills.length > 0 && <BillCalendar bills={bills} paid={billPayments} />}</div>
+          </div>
         </main>
         {overlays}
       </div>
@@ -383,6 +387,9 @@ export default function RecurringPage() {
           <div><div className="lbl">Total per bulan</div><div className="num-m">{rp(totalPerMonth)}</div></div>
           <div><div className="lbl">{tab === 'pemasukan' ? 'Belum diterima' : 'Belum dibayar'}</div><div className="num-m">{unpaid.length}</div></div>
         </div>
+
+        {/* Bill calendar (DESIGN.md 7.8) */}
+        {!loading && bills.length > 0 && <BillCalendar bills={bills} paid={billPayments} />}
 
         {loading ? (
           <SkeletonRows count={3} />

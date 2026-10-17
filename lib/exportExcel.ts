@@ -34,7 +34,7 @@ export async function exportTransactionsExcel({
   showToast,
 }: ExportOptions) {
   try {
-    showToast('success', 'Sedang menyiapkan laporan Excel...')
+    showToast('info', 'Menyiapkan file Excel…')
     const ExcelJS = (await import('exceljs')).default
     const fileSaverModule = await import('file-saver')
     const saveAs = fileSaverModule.saveAs || (fileSaverModule as any).default?.saveAs
@@ -385,9 +385,9 @@ export async function exportTransactionsExcel({
     const buffer = await wb.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     saveAs(blob, `CatatDuit_${fileNamePeriod}.xlsx`)
-    showToast('success', `Berhasil mengekspor ${filteredTransactions.length} transaksi (${periodLabel})!`)
+    showToast('success', `${filteredTransactions.length.toLocaleString('id-ID')} transaksi diekspor`)
   } catch (error) {
     console.error('Export Excel error:', error)
-    showToast('error', 'Gagal mengekspor file Excel.')
+    showToast('error', 'File Excel gagal dibuat. Coba lagi.')
   }
 }

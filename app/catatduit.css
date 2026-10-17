@@ -354,3 +354,15 @@ html.dark .cd .b-ok,.cd[data-theme="dark"] .b-ok{color:var(--income)}
 @media(min-width:768px){.cd.onb{background:rgba(8,20,18,.55);align-items:center;padding:24px}.cd .onb-card{min-height:0;background:var(--surface);border-radius:24px;border:1px solid var(--border)}}
 .cd .dots{display:flex;gap:6px}.cd .dots span{width:24px;height:6px;border-radius:3px;background:var(--divider)}.cd .dots span.on{background:var(--accent)}
 .cd.offline-bar{position:fixed;top:0;left:0;right:0;justify-content:center;z-index:70;display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--warn-tint);color:var(--warn);font-size:13px;line-height:1.4;border-bottom:1px solid var(--border)}
+/* Bill calendar (Tagihan rutin, DESIGN.md 7.8) */
+.cd .bc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:13px}
+.cd .bc-head{font-size:11px;color:var(--text-2);font-weight:600}
+.cd .bc-day{padding:8px 0;border-radius:8px}
+.cd .bc-today{box-shadow:inset 0 0 0 1.5px var(--accent);font-weight:700}
+.cd .bc-paid{background:var(--income-tint);color:#3F6212;font-weight:700}
+.cd .bc-soon{background:var(--warn-tint);color:var(--warn);font-weight:700}
+.cd .bc-late{background:var(--danger-tint);color:var(--danger-text);font-weight:700}
+.cd .bc-income{background:var(--accent-tint);color:var(--accent-hover);font-weight:700}
+html.dark .cd .bc-paid{color:var(--income)}
+.cd .bc-key{width:8px;height:8px;border-radius:2px;display:block;padding:0}
+.cd .notif-btn{position:relative}.cd .notif-dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;box-sizing:border-box}

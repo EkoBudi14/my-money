@@ -14,6 +14,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
+import ExportSheet from '@/components/ExportSheet'
 import PullToRefresh from '@/components/PullToRefresh'
 import SwipeRow from '@/components/SwipeRow'
 import NeoSelect from '@/components/NeoSelect'
@@ -91,6 +92,9 @@ export default function TransactionsPage() {
   // Period filter shared with Beranda / Analitik (DESIGN.md 7.14)
   const period = usePeriodSettings()
   const [showPeriod, setShowPeriod] = useState(false)
+  const [showExport, setShowExport] = useState(false)
+  // Lainnya > Export ke Excel opens /transactions?export=1
+  useEffect(() => { if (new URLSearchParams(window.location.search).get('export') === '1') setShowExport(true) }, [])
   const periodLabel = formatPeriodLabel(period.filterMode, period.currentDate, period.customRange)
 
   // "Lihat transaksi kategori ini" from Budget opens /transactions?category=…
@@ -240,7 +244,7 @@ export default function TransactionsPage() {
               <button className="btn-2" onClick={() => setShowPeriod(true)}><Calendar className="i i-s" />{periodLabel}</button>
               <button className="icon-btn" aria-label="Periode berikutnya" disabled={period.filterMode === 'custom'} onClick={() => { period.nextMonth(); setWebPage(0) }}><ChevronRight className="i i-s" /></button>
               <button className="btn-2" aria-label="Muat ulang data" title="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
-              <button className="btn-2" onClick={handleExport}><Download className="i i-s" />Export</button>
+              <button className="btn-2" onClick={() => setShowExport(true)}><Download className="i i-s" />Export</button>
               <button className="btn" onClick={() => setTxModal({ editing: null })}><Plus className="i i-s" />Tambah transaksi</button>
             </div>
           </div>
@@ -341,6 +345,7 @@ export default function TransactionsPage() {
             )}
           </section>
         </main>
+        <ExportSheet isOpen={showExport} onClose={() => setShowExport(false)} periodLabel={periodLabel} rowCount={filtered.length} rangeCount={filterHistory.length} walletCount={wallets.length} onChangePeriod={() => setShowPeriod(true)} onDownload={handleExport} />
         <PeriodSheet
           isOpen={showPeriod}
           onClose={() => setShowPeriod(false)}
@@ -386,7 +391,7 @@ export default function TransactionsPage() {
           </div>
           <div className="hstack" style={{ gap: 6 }}>
             <button className="icon-btn" aria-label="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i ${refreshing ? 'animate-spin' : ''}`} /></button>
-            <button className="icon-btn" aria-label="Export ke Excel" onClick={handleExport}><Download className="i" /></button>
+            <button className="icon-btn" aria-label="Export ke Excel" onClick={() => setShowExport(true)}><Download className="i" /></button>
           </div>
         </div>
 
@@ -496,6 +501,7 @@ export default function TransactionsPage() {
           </>
         )}
       </div>
+        <ExportSheet isOpen={showExport} onClose={() => setShowExport(false)} periodLabel={periodLabel} rowCount={filtered.length} rangeCount={filterHistory.length} walletCount={wallets.length} onChangePeriod={() => setShowPeriod(true)} onDownload={handleExport} />
         <PeriodSheet
           isOpen={showPeriod}
           onClose={() => setShowPeriod(false)}

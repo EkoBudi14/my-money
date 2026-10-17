@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronRight, Wallet, Target, Repeat, ScanLine, Mic, StickyNote, List, Moon } from 'lucide-react'
+import { ChevronRight, Wallet, Target, Repeat, ScanLine, Mic, StickyNote, List, Moon, Tags, Download } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 
 const tileStyle: React.CSSProperties = {
@@ -48,6 +48,12 @@ export default function MorePage() {
         <div className="card-flush">
           <Link href="/transactions" className="row" style={{ textDecoration: 'none', color: 'var(--text)' }}>
             <List className="i" /><span className="grow t">Riwayat transaksi</span><ChevronRight className="i i-s" style={{ color: 'var(--text-2)' }} />
+          </Link>
+          <Link href="/kategori" className="row" style={{ textDecoration: 'none', color: 'var(--text)' }}>
+            <Tags className="i" /><span className="grow t">Kelola kategori</span><ChevronRight className="i i-s" style={{ color: 'var(--text-2)' }} />
+          </Link>
+          <Link href="/transactions?export=1" className="row" style={{ textDecoration: 'none', color: 'var(--text)' }}>
+            <Download className="i" /><span className="grow t">Export ke Excel</span><ChevronRight className="i i-s" style={{ color: 'var(--text-2)' }} />
           </Link>
           <div className="row">
             <Moon className="i" /><span className="grow t">Mode gelap</span>
