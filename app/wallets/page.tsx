@@ -1,366 +1,253 @@
 'use client'
-import { useEffect, useState } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import { Plus, Eye, EyeOff, Info, CreditCard, Wallet as WalletIcon, Banknote, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { Wallet } from '@/types'
-import { Plus, Wallet as WalletIcon, CreditCard, Banknote, Trash2, Pencil, X } from 'lucide-react'
-import MoneyInput from '@/components/MoneyInput'
+import { Wallet, Transaction } from '@/types'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
-import { useRouter } from 'next/navigation'
 import WalletModal from '@/components/WalletModal'
 
+type Tab = 'active' | 'savings'
+type WalletType = 'bank' | 'ewallet' | 'cash'
+
+const TYPE_META: Record<WalletType, { label: string; cls: string; Icon: any }> = {
+  bank: { label: 'Bank', cls: 'c-bank', Icon: CreditCard },
+  ewallet: { label: 'E-wallet', cls: 'c-ewallet', Icon: WalletIcon },
+  cash: { label: 'Tunai', cls: 'c-cash', Icon: Banknote },
+}
+const TYPE_ORDER: WalletType[] = ['bank', 'ewallet', 'cash']
+const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+
+// Last-used label for a wallet, computed from its transactions.
+const usedLabel = (ts: number | undefined) => {
+  if (!ts) return 'Belum dipakai'
+  const d = new Date(ts); d.setHours(12, 0, 0, 0)
+  const today = new Date(); today.setHours(12, 0, 0, 0)
+  const days = Math.round((today.getTime() - d.getTime()) / 86400000)
+  if (days <= 0) return 'Dipakai hari ini'
+  if (days === 1) return 'Dipakai kemarin'
+  if (days < 7) return `Dipakai ${days} hari lalu`
+  if (days < 30) return `Dipakai ${Math.floor(days / 7)} minggu lalu`
+  return `Dipakai ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`
+}
+
 export default function WalletsPage() {
-    const router = useRouter()
-    const [activeWallets, setActiveWallets] = useState<Wallet[]>([])
-    const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
-    const [loading, setLoading] = useState(true)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingId, setEditingId] = useState<number | null>(null)
+  const { showToast } = useToast()
+  const { showConfirm } = useConfirm()
+  const { showSuccess } = useSuccessModal()
 
-    const { showToast } = useToast()
-    const { showConfirm } = useConfirm()
-    const { showSuccess } = useSuccessModal()
+  const [wallets, setWallets] = useState<Wallet[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<Tab>('active')
+  const [showBalance, setShowBalance] = useState(true)
 
-    useEffect(() => {
-        fetchWallets()
-    }, [])
+  // Open the Tabungan inti tab when arriving from /main-savings?tab=tabungan.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'tabungan') {
+      setTab('savings')
+    }
+  }, [])
 
-    const fetchWallets = async () => {
-        setLoading(true)
-        const { data, error } = await supabase
-            .from('wallets')
-            .select('*')
-            .order('created_at', { ascending: true })
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
 
-        if (error) {
-            console.error('Error fetching wallets:', error)
-            showToast('error', 'Gagal memuat data dompet')
-        } else {
-            const allWallets = data || []
-            setActiveWallets(allWallets.filter(w => w.category === 'active'))
-            setSavingsWallets(allWallets.filter(w => w.category === 'savings'))
-        }
-        setLoading(false)
+  const fetchAll = async () => {
+    setLoading(true)
+    const [wRes, tRes] = await Promise.all([
+      supabase.from('wallets').select('*').order('created_at', { ascending: true }),
+      supabase.from('transactions').select('wallet_id,source_wallet_id,date,created_at'),
+    ])
+    if (wRes.error) showToast('error', 'Gagal memuat data dompet')
+    else setWallets(wRes.data || [])
+    if (tRes.data) setTransactions(tRes.data as Transaction[])
+    setLoading(false)
+  }
+
+  useEffect(() => { fetchAll() }, [])
+
+  // Map wallet id -> most recent transaction timestamp.
+  const lastUsedMap = useMemo(() => {
+    const m = new Map<number, number>()
+    for (const t of transactions) {
+      const ts = new Date(t.date || t.created_at).getTime()
+      for (const id of [t.wallet_id, t.source_wallet_id]) {
+        if (id == null) continue
+        if (!m.has(id) || ts > m.get(id)!) m.set(id, ts)
+      }
+    }
+    return m
+  }, [transactions])
+
+  const activeWallets = wallets.filter(w => w.category === 'active')
+  const savingsWallets = wallets.filter(w => w.category === 'savings')
+  const shown = tab === 'active' ? activeWallets : savingsWallets
+  const activeTotal = activeWallets.reduce((a, w) => a + w.balance, 0)
+  const savingsTotal = savingsWallets.reduce((a, w) => a + w.balance, 0)
+  const total = tab === 'active' ? activeTotal : savingsTotal
+
+  // Group shown wallets by type, preserving TYPE_ORDER.
+  const groups = useMemo(() => {
+    return TYPE_ORDER
+      .map(type => ({ type, items: shown.filter(w => w.type === type) }))
+      .filter(g => g.items.length > 0)
+  }, [shown])
+
+  const openAdd = () => { setEditingId(null); setModalOpen(true) }
+  const openEdit = (w: Wallet) => { setEditingId(w.id); setModalOpen(true) }
+
+  // Active wallet delete: refund topup source + cascade-delete transactions.
+  const deleteActive = async (id: number) => {
+    const { data: wallet } = await supabase.from('wallets').select('*').eq('id', id).single()
+    if (!wallet) return showToast('error', 'Dompet tidak ditemukan')
+
+    let refundMessage = ''
+    if (wallet.source_wallet_id && wallet.balance > 0) {
+      const { data: src } = await supabase.from('wallets').select('*').eq('id', wallet.source_wallet_id).single()
+      if (src) refundMessage = `Sisa saldo ${rp(wallet.balance)} akan dikembalikan ke ${src.name}.`
     }
 
-    const handleDelete = async (id: number) => {
-        // 1. Fetch wallet details first to check for source_wallet_id and balance
-        const { data: walletToDelete } = await supabase.from('wallets').select('*').eq('id', id).single()
+    const ok = await showConfirm({
+      title: 'Hapus Dompet?',
+      message: `Hapus dompet "${wallet.name}"? SEMUA RIWAYAT TRANSAKSI terkait akan TERHAPUS. ${refundMessage}`,
+      confirmText: 'Hapus dompet',
+      cancelText: 'Batal',
+    })
+    if (!ok) return
 
-        if (!walletToDelete) {
-            return showToast('error', 'Dompet not found')
-        }
-
-        let refundMessage = ''
-
-        // 2. Check logic for refund
-        if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
-            const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
-
-            if (sourceWallet) {
-                refundMessage = `Sisa saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} akan dikembalikan ke ${sourceWallet.name}.`
-            }
-        }
-
-        const confirm = await showConfirm({
-            title: 'Hapus Dompet?',
-            message: `Hapus dompet "${walletToDelete.name}"? SEMUA RIWAYAT TRANSAKSI terkait akan TERHAPUS. ${refundMessage}`
-        })
-        if (!confirm) return
-
-        // 3. Process Refund if confirmed and applicable
-        if (walletToDelete.source_wallet_id && walletToDelete.balance > 0) {
-            const { data: sourceWallet } = await supabase.from('wallets').select('*').eq('id', walletToDelete.source_wallet_id).single()
-
-            if (sourceWallet) {
-                const newBalance = sourceWallet.balance + walletToDelete.balance
-                await supabase.from('wallets').update({ balance: newBalance }).eq('id', sourceWallet.id)
-                showToast('success', `Saldo Rp ${walletToDelete.balance.toLocaleString('id-ID')} dikembalikan ke ${sourceWallet.name}`)
-            }
-        }
-
-        // 4. Delete associated transactions first
-        const { error: txError } = await supabase.from('transactions').delete().eq('wallet_id', id)
-
-        if (txError) {
-            console.error(txError)
-            return showToast('error', 'Gagal menghapus riwayat transaksi terkait')
-        }
-
-        // 5. Delete the wallet
-        const { error } = await supabase.from('wallets').delete().eq('id', id)
-
-        if (error) {
-            showToast('error', 'Gagal menghapus dompet')
-        } else {
-            fetchWallets()
-            showSuccess({
-                type: 'delete',
-                message: 'Dompet berhasil dihapus beserta seluruh riwayat transaksinya.'
-            })
-        }
+    if (wallet.source_wallet_id && wallet.balance > 0) {
+      const { data: src } = await supabase.from('wallets').select('*').eq('id', wallet.source_wallet_id).single()
+      if (src) {
+        await supabase.from('wallets').update({ balance: src.balance + wallet.balance }).eq('id', src.id)
+        showToast('success', `Saldo ${rp(wallet.balance)} dikembalikan ke ${src.name}`)
+      }
     }
 
-    const handleMobileEdit = (w: Wallet) => {
-        router.push(`/wallet?category=active&edit=${w.id}`)
-    }
+    const { error: txErr } = await supabase.from('transactions').delete().eq('wallet_id', id)
+    if (txErr) return showToast('error', 'Gagal menghapus riwayat transaksi terkait')
 
-    const handleDesktopEdit = (w: Wallet) => {
-        setEditingId(w.id)
-        setIsModalOpen(true)
-    }
+    const { error } = await supabase.from('wallets').delete().eq('id', id)
+    if (error) return showToast('error', 'Gagal menghapus dompet')
+    await fetchAll()
+    showSuccess({ type: 'delete', message: 'Dompet berhasil dihapus beserta seluruh riwayat transaksinya.' })
+  }
 
-    const getIcon = (type: string) => {
-        switch (type) {
-            case 'bank': return <CreditCard className="w-6 h-6" />
-            case 'ewallet': return <WalletIcon className="w-6 h-6" />
-            case 'cash': return <Banknote className="w-6 h-6" />
-            default: return <WalletIcon className="w-6 h-6" />
-        }
-    }
+  // Savings wallet delete: simple removal.
+  const deleteSavings = async (id: number) => {
+    const ok = await showConfirm({
+      title: 'Hapus Aset?',
+      message: 'Yakin ingin menghapus aset tabungan ini?',
+      confirmText: 'Hapus aset',
+      cancelText: 'Batal',
+    })
+    if (!ok) return
+    await supabase.from('wallets').delete().eq('id', id)
+    await fetchAll()
+    showSuccess({ type: 'delete', message: 'Aset tabungan berhasil dihapus.' })
+  }
 
-    // Neobrutalism color per wallet type
-    const getCardColor = (type: string) => {
-        switch (type) {
-            case 'bank': return 'var(--neo-sky)'
-            case 'ewallet': return 'var(--neo-lav)'
-            case 'cash': return 'var(--neo-mint)'
-            default: return 'var(--neo-yellow)'
-        }
-    }
+  const handleDelete = (w: Wallet) => (w.category === 'active' ? deleteActive(w.id) : deleteSavings(w.id))
 
-    const getIconColor = (type: string) => {
-        switch (type) {
-            case 'bank': return '#2563eb'
-            case 'ewallet': return '#7c3aed'
-            case 'cash': return '#059669'
-            default: return 'var(--text-primary)'
-        }
-    }
+  return (
+    <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+      <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+        {/* Header */}
+        <div className="top">
+          <h1 className="h1">Dompet</h1>
+          <button className="icon-btn" aria-label="Tambah dompet" onClick={openAdd}><Plus className="i" /></button>
+        </div>
 
-    return (
-        <main className="flex-1 bg-[var(--bg-page)] min-h-screen overflow-x-hidden transition-all duration-300">
-            {/* ── Header ── */}
-            <div className="flex items-center justify-between w-full h-[90px] shrink-0 bg-[var(--bg-card)] px-5 md:px-8"
-                style={{ borderBottom: 'var(--neo-border)' }}>
-                <h2 className="font-black text-2xl tracking-tight text-[var(--text-primary)]">Dompet Saya</h2>
-                <div className="flex items-center gap-3">
-                    <div className="hidden md:flex items-center gap-3 pl-3" style={{ borderLeft: '2px solid var(--border-default)' }}>
-                        <p className="font-bold text-[var(--text-primary)] text-sm">Eko Budi</p>
-                        <div className="w-10 h-10 rounded-[14px] flex items-center justify-center font-black text-sm"
-                            style={{ background: 'var(--neo-yellow-vivid)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                            EB
+        {/* Tabs */}
+        <div className="seg" role="tablist">
+          <button className={tab === 'active' ? 'on' : ''} onClick={() => setTab('active')}>Saldo aktif</button>
+          <button className={tab === 'savings' ? 'on' : ''} onClick={() => setTab('savings')}>Tabungan inti</button>
+        </div>
+
+        {/* Hero total */}
+        <div className="hero stack">
+          <div className="between">
+            <span className="lbl">
+              {tab === 'active' ? `Total saldo aktif · ${activeWallets.length} dompet` : `Total tabungan inti · ${savingsWallets.length} aset`}
+            </span>
+            <button className="icon-btn" aria-label="Sembunyikan nominal" style={{ width: 40, height: 40 }} onClick={() => setShowBalance(v => !v)}>
+              {showBalance ? <Eye className="i i-s" /> : <EyeOff className="i i-s" />}
+            </button>
+          </div>
+          <div className="num-xl">{showBalance ? rp(total) : 'Rp ••••••'}</div>
+          <div className="lbl">{tab === 'active' ? 'Uang siap pakai sehari-hari' : 'Simpanan yang tidak dihitung sebagai saldo aktif'}</div>
+        </div>
+
+        {/* List */}
+        {loading ? (
+          <div className="card-flush">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="row"><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div>
+            ))}
+          </div>
+        ) : shown.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center' }}>
+            <p className="t" style={{ whiteSpace: 'normal' }}>{tab === 'active' ? 'Belum ada dompet aktif' : 'Belum ada aset tabungan'}</p>
+            <p className="lbl" style={{ marginTop: 4 }}>{tab === 'active' ? 'Tambahkan dompet untuk mulai mencatat saldo harian.' : 'Catat tabungan inti seperti emas, deposito, atau arisan.'}</p>
+            <button className="btn btn-block" style={{ marginTop: 12 }} onClick={openAdd}>{tab === 'active' ? 'Tambah dompet' : 'Tambah aset'}</button>
+          </div>
+        ) : (
+          groups.map(group => {
+            const meta = TYPE_META[group.type]
+            return (
+              <div key={group.type}>
+                <div className="date-h">{meta.label}</div>
+                <div className="card-flush">
+                  {group.items.map(w => {
+                    const Icon = meta.Icon
+                    return (
+                      <div className="row" key={w.id}>
+                        <div className={`ic ${meta.cls}`}><Icon className="i" /></div>
+                        <div className="grow">
+                          <div className="t">{w.name}</div>
+                          <div className="meta">{usedLabel(lastUsedMap.get(w.id))}</div>
                         </div>
-                    </div>
+                        <div className="amt">{showBalance ? rp(w.balance) : 'Rp ••••'}</div>
+                        <button className="icon-btn ghost" aria-label={`Ubah ${w.name}`} style={{ width: 36, height: 36 }} onClick={() => openEdit(w)}>
+                          <Pencil className="i i-s" />
+                        </button>
+                        <button className="icon-btn ghost" aria-label={`Hapus ${w.name}`} style={{ width: 36, height: 36, color: 'var(--danger)' }} onClick={() => handleDelete(w)}>
+                          <Trash2 className="i i-s" />
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
-            </div>
+              </div>
+            )
+          })
+        )}
 
-            <div className="relative min-h-[calc(100vh-90px)]">
+        {/* Cross-tab info banner */}
+        {!loading && tab === 'active' && savingsTotal > 0 && (
+          <div className="banner info">
+            <Info className="i" />
+            <span>Aset tersimpan {rp(savingsTotal)} ada di tab Tabungan inti dan tidak dihitung sebagai saldo aktif.</span>
+          </div>
+        )}
 
-                {/* ===== MOBILE VIEW ===== */}
-                <div className="md:hidden pb-[80px]">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <div className="w-6 h-6 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : (() => {
-                        const totalBalance = activeWallets.reduce((acc, w) => acc + w.balance, 0)
-                        const cashCount = activeWallets.filter(w => w.type === 'cash').length
-                        const ewalletCount = activeWallets.filter(w => w.type === 'ewallet').length
-                        const bankCount = activeWallets.filter(w => w.type === 'bank').length
+        {!loading && shown.length > 0 && (
+          <button className="btn-2 btn-block" onClick={openAdd}>
+            <Plus className="i i-s" />{tab === 'active' ? 'Tambah dompet' : 'Tambah aset'}
+          </button>
+        )}
+      </div>
 
-                        return (
-                            <>
-                                {/* Summary Card — Neobrutalism sky */}
-                                <div className="mx-4 mt-4 brutal-card-md brutal-card-sky p-5">
-                                    <p className="neo-label mb-1">Total Semua Dompet</p>
-                                    <p className="neo-amount mt-1">Rp {totalBalance.toLocaleString('id-ID')}</p>
-                                    <div className="flex items-center gap-2 flex-wrap mt-3">
-                                        {cashCount > 0 && (
-                                            <span className="neo-pill text-[10px]">
-                                                <span className="w-2 h-2 rounded-full bg-[var(--success)] inline-block" />
-                                                {cashCount} Cash
-                                            </span>
-                                        )}
-                                        {ewalletCount > 0 && (
-                                            <span className="neo-pill text-[10px]">
-                                                <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
-                                                {ewalletCount} E-Wallet
-                                            </span>
-                                        )}
-                                        {bankCount > 0 && (
-                                            <span className="neo-pill text-[10px]">
-                                                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-                                                {bankCount} Bank
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Info Bar */}
-                                <div className="flex items-center justify-between px-4 mt-5 mb-2">
-                                    <p className="text-sm font-black text-[var(--text-primary)]">{activeWallets.length} dompet aktif</p>
-                                    <p className="text-[11px] font-semibold text-[var(--text-muted)]">Tap untuk edit / hapus</p>
-                                </div>
-
-                                {/* Wallet List */}
-                                <div className="mx-4 space-y-2">
-                                    {activeWallets.map((wallet) => {
-                                        const pct = totalBalance > 0 ? Math.round((wallet.balance / totalBalance) * 100) : 0
-                                        return (
-                                            <div
-                                                key={wallet.id}
-                                                className="brutal-card-sm p-4"
-                                                style={{ background: getCardColor(wallet.type) }}
-                                            >
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    {/* Icon */}
-                                                    <div className="w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0"
-                                                        style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', color: getIconColor(wallet.type) }}>
-                                                        {getIcon(wallet.type)}
-                                                    </div>
-
-                                                    {/* Info */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-0.5">
-                                                            <p className="font-black text-[var(--text-primary)] text-sm truncate">{wallet.name}</p>
-                                                            <p className="font-black text-sm text-[var(--text-primary)] shrink-0 ml-2">Rp {wallet.balance.toLocaleString('id-ID')}</p>
-                                                        </div>
-                                                        <div className="flex items-center justify-between mb-1.5">
-                                                            <span className="neo-pill text-[9px] py-0.5 px-2">{wallet.type}</span>
-                                                            <p className="text-[11px] font-semibold text-[var(--text-muted)]">{pct}% dari total</p>
-                                                        </div>
-                                                        {/* Progress bar */}
-                                                        <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(20,20,20,0.12)' }}>
-                                                            <div
-                                                                className="h-full rounded-full transition-all duration-500"
-                                                                style={{ width: `${pct}%`, background: 'var(--neo-ink)' }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <button
-                                                        onClick={() => handleMobileEdit(wallet)}
-                                                        className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                        style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}
-                                                    >
-                                                        <Pencil className="w-3.5 h-3.5" />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(wallet.id)}
-                                                        className="py-2 flex items-center justify-center gap-1.5 font-bold rounded-[12px] text-xs active:scale-95 transition-all"
-                                                        style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-
-                                {/* Tambah Dompet Button */}
-                                <button
-                                    onClick={() => router.push('/wallet?category=active')}
-                                    className="mx-4 mt-3 w-[calc(100%-2rem)] rounded-[20px] p-4 flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-[0.98]"
-                                    style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                                >
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                                        style={{ background: 'var(--neo-sky)', border: '2px solid var(--neo-ink)' }}>
-                                        <Plus className="w-4 h-4 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <span className="font-black">Tambah Dompet Baru</span>
-                                </button>
-                            </>
-                        )
-                    })()}
-                </div>
-
-                {/* ===== DESKTOP VIEW ===== */}
-                <div className="hidden md:block p-8 space-y-6">
-                    {/* Total Banner */}
-                    <div className="brutal-card-md brutal-card-sky px-6 py-6 flex items-center gap-5">
-                        <div className="w-14 h-14 rounded-[16px] flex items-center justify-center text-blue-600"
-                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                            <WalletIcon className="w-7 h-7" />
-                        </div>
-                        <div>
-                            <p className="neo-label">Total Semua Dompet</p>
-                            <p className="neo-amount mt-1">Rp {activeWallets.reduce((acc, w) => acc + w.balance, 0).toLocaleString('id-ID')}</p>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="text-center py-12 text-[var(--text-muted)] font-semibold animate-pulse">Memuat dompet...</div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {activeWallets.map((wallet: Wallet) => (
-                                <div key={wallet.id}
-                                    className="brutal-card card-hover flex flex-col justify-between min-h-[220px] p-6 pb-8 relative overflow-hidden"
-                                    style={{ background: getCardColor(wallet.type) }}>
-                                    <div className="absolute top-0 right-0 p-4 flex gap-2 z-20">
-                                        <button onClick={() => handleDesktopEdit(wallet)}
-                                            className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                            style={{ background: 'var(--bg-elevated)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--text-primary)' }}>
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(wallet.id)}
-                                            className="p-2.5 rounded-[12px] transition-all active:scale-95 active:translate-x-[2px] active:translate-y-[2px]"
-                                            style={{ background: 'var(--neo-peach)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)', color: 'var(--error)' }}>
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    <div className="z-10 mt-2">
-                                        <div className="w-14 h-14 rounded-[16px] flex items-center justify-center mb-5"
-                                            style={{ background: 'var(--bg-elevated)', border: 'var(--neo-border)', boxShadow: 'var(--neo-shadow-xs)', color: getIconColor(wallet.type) }}>
-                                            {getIcon(wallet.type)}
-                                        </div>
-                                        <h3 className="font-black text-xl text-[var(--text-primary)] mb-1 tracking-tight">{wallet.name}</h3>
-                                        <span className="neo-pill text-[10px]">{wallet.type}</span>
-                                    </div>
-
-                                    <div className="z-10 mt-6 pt-4" style={{ borderTop: '2px dashed rgba(20,20,20,0.18)' }}>
-                                        <p className="neo-label">Saldo Saat Ini</p>
-                                        <p className="text-2xl font-black text-[var(--text-primary)] mt-1">Rp {wallet.balance.toLocaleString('id-ID')}</p>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* Add New Wallet Card */}
-                            <button
-                                onClick={() => { setEditingId(null); setIsModalOpen(true); }}
-                                className="rounded-[24px] p-6 flex flex-col items-center justify-center gap-4 font-bold text-sm transition-all min-h-[220px] group active:scale-[0.98]"
-                                style={{ border: '2.5px dashed var(--neo-ink)', color: 'var(--text-muted)', background: 'transparent' }}
-                            >
-                                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110"
-                                    style={{ background: 'var(--neo-sky)', border: '2px solid var(--neo-ink)', boxShadow: 'var(--neo-shadow-xs)' }}>
-                                    <Plus className="w-6 h-6 text-[var(--neo-ink)]" />
-                                </div>
-                                <span className="font-black">Tambah Dompet Baru</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-            </div>
-
-            {/* Modal */}
-            {isModalOpen && (
-                <WalletModal
-                    editId={editingId}
-                    defaultCategory="active"
-                    onClose={() => setIsModalOpen(false)}
-                    onSaved={() => { setIsModalOpen(false); fetchWallets(); }}
-                    mode="modal"
-                />
-            )}
-        </main>
-    )
+      {modalOpen && (
+        <WalletModal
+          editId={editingId}
+          defaultCategory={tab}
+          onClose={() => setModalOpen(false)}
+          onSaved={() => { setModalOpen(false); fetchAll() }}
+          mode="modal"
+        />
+      )}
+    </div>
+  )
 }
