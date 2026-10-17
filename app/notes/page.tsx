@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Trash2, X, Search, StickyNote } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useNotes, useInvalidate, qk } from '@/hooks/useAppData'
 import { restoreRow } from '@/lib/undo'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -29,8 +30,10 @@ export default function NotesPage() {
   const { showConfirm } = useConfirm()
   const { showSuccess } = useSuccessModal()
 
-  const [notes, setNotes] = useState<Note[]>([])
-  const [loading, setLoading] = useState(true)
+  const notesQuery = useNotes()
+  const invalidate = useInvalidate()
+  const notes = useMemo(() => notesQuery.data ?? [], [notesQuery.data])
+  const loading = notesQuery.isLoading
   const [query, setQuery] = useState('')
   const isWeb = useIsWeb()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -39,15 +42,7 @@ export default function NotesPage() {
   const [content, setContent] = useState('')
   const [formError, setFormError] = useState('')
 
-  const fetchNotes = async () => {
-    setLoading(true)
-    const { data, error } = await supabase.from('notes').select('*').order('updated_at', { ascending: false })
-    if (error) console.error('Error fetching notes:', error)
-    else setNotes(data || [])
-    setLoading(false)
-  }
-
-  useEffect(() => { fetchNotes() }, [])
+  const fetchNotes = () => invalidate([qk.notes])
 
   const resetForm = () => { setTitle(''); setContent(''); setEditingNote(null); setFormError(''); setIsModalOpen(false) }
 

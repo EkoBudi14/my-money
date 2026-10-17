@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Nabung ke goal</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="app" style="height: 844px">
+<div class="scroll" aria-hidden="true">
+<div class="top"><h1 class="h1">Goals</h1></div>
+<div class="hero" style="height: 140px"></div>
+<div class="card" style="height: 220px"></div>
+</div>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-labelledby="nb-title" style="top: 196px">
+<div class="grabber"></div>
+<div class="between">
+<div><p class="sub">Nabung ke</p><h2 class="h2" id="nb-title" style="font-size: 18px">Tabungan nikah</h2></div>
+<a href="Goals.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+</div>
+
+<div class="field">Jumlah
+<div class="amount-box"><span class="cur">Rp</span><span class="val">1.000.000</span></div>
+<div class="chips"><button class="chip">+100rb</button><button class="chip">+500rb</button><button class="chip">+1jt</button><button class="chip">+5jt</button></div>
+</div>
+
+<div class="field">Ambil dari dompet (opsional, fitur baru)
+<div class="input"><div class="ic-s c-bank"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"></path></svg></div><span class="grow" style="font-weight: 600">BCA</span><span class="lbl">Rp 2.380.000</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+<span class="lbl" style="font-weight: 500">Kosongkan kalau cuma mau menambah angka terkumpul, seperti sekarang.</span>
+</div>
+
+<div class="card stack" style="background: var(--surface-2)">
+<div class="between" style="font-size: 13px"><span class="lbl">Setelah nabung</span><span style="font-weight: 700">Rp 5.874.000 · 6%</span></div>
+<div class="bar"><div style="width: 6%"></div></div>
+</div>
+
+<button class="btn btn-block" style="margin-top: auto">Tambah ke tabungan</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

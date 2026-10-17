@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Calendar, TrendingUp, Pencil, Trash2, X, CheckCircle2, Undo2, MoreHorizontal, Wallet as WalletIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { getRecurringBills, deleteRecurringBill } from '@/lib/recurring-bills'
-import { RecurringBill, Wallet } from '@/types'
+import { deleteRecurringBill } from '@/lib/recurring-bills'
+import { useBills, useWallets, useBillPayments, useInvalidate, qk } from '@/hooks/useAppData'
+import { RecurringBill } from '@/types'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import NeoSelect from '@/components/NeoSelect'
@@ -24,10 +25,15 @@ export default function RecurringPage() {
   const { showToast } = useToast()
   const { showConfirm } = useConfirm()
 
-  const [bills, setBills] = useState<RecurringBill[]>([])
-  const [wallets, setWallets] = useState<Wallet[]>([])
-  const [billPayments, setBillPayments] = useState<Record<number, boolean>>({})
-  const [loading, setLoading] = useState(true)
+  const monthKey = new Date().toISOString().slice(0, 7)
+  const billsQuery = useBills()
+  const walletsQuery = useWallets()
+  const billPaymentsQuery = useBillPayments(monthKey)
+  const invalidate = useInvalidate()
+  const bills = useMemo(() => billsQuery.data ?? [], [billsQuery.data])
+  const wallets = useMemo(() => walletsQuery.data ?? [], [walletsQuery.data])
+  const billPayments = billPaymentsQuery.data ?? {}
+  const loading = billsQuery.isLoading
   const [tab, setTab] = useState<Tab>('pengeluaran')
   const [deletingId, setDeletingId] = useState<number | null>(null)
   // Action sheet per item (DESIGN-TAMBAHAN §7 / AksiTagihan)
@@ -45,25 +51,12 @@ export default function RecurringPage() {
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0])
   const [paying, setPaying] = useState(false)
 
-  const fetchBills = async () => {
-    try { setBills(await getRecurringBills()) } catch (e) { console.error(e) } finally { setLoading(false) }
-  }
-  const fetchWallets = async () => {
-    const { data } = await supabase.from('wallets').select('*')
-    setWallets(data || [])
-  }
-  const checkBillPayments = async () => {
-    const currentMonth = new Date().toISOString().slice(0, 7)
-    const { data } = await supabase.from('bill_payments').select('bill_id').eq('month', currentMonth)
-    const map: Record<number, boolean> = {}
-    data?.forEach(p => { map[p.bill_id] = true })
-    setBillPayments(map)
-  }
-
-  const refreshAll = () => { fetchBills(); fetchWallets(); checkBillPayments() }
+  const fetchBills = () => invalidate([qk.bills])
+  const fetchWallets = () => invalidate([qk.wallets])
+  const checkBillPayments = () => invalidate([qk.billPayments(monthKey)])
+  const refreshAll = () => invalidate([qk.bills, qk.wallets, qk.billPayments(monthKey)])
 
   useEffect(() => {
-    refreshAll()
     if (typeof window !== 'undefined') {
       const e = new URLSearchParams(window.location.search).get('edit')
       if (e) { setEditId(parseInt(e)); setAddOpen(true) }

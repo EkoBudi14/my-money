@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Riwayat transaksi web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.dot{width:8px;height:8px;border-radius:4px;display:inline-block;margin-right:8px;vertical-align:1px}</style>
+</helmet>
+<div class="pg">
+<aside class="side" aria-label="Navigasi utama">
+<div class="brand"><div class="brand-mark">C</div><div style="font-size: 17px; font-weight: 700">CatatDuit</div></div>
+<a href="Web.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Beranda</a>
+<a href="RiwayatWeb.dc.html" class="on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Riwayat</a>
+<a href="AnalitikWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Analitik</a>
+<a href="DompetWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M16 13.5h.01"></path></svg>Dompet &amp; tabungan</a>
+<div class="grp">Rencana</div>
+<a href="BudgetWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12A9 9 0 1 1 12 3v9z"></path><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"></path></svg>Budget</a>
+<a href="GoalsWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg>Goals</a>
+<a href="TagihanWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg>Tagihan rutin</a>
+<a href="CatatanWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg>Catatan</a>
+<div class="grp">Catat cepat</div>
+<a href="ScanWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Scan struk</a>
+<a href="VoiceWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Voice input</a>
+<div class="stack" style="margin-top: auto; padding-top: 20px; gap: 4px">
+<a href="#"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z"></path></svg>Mode gelap</a>
+<div class="hstack" style="padding: 10px 12px; border-radius: 12px; background: var(--surface-2)"><div class="avatar" style="width: 34px; height: 34px; font-size: 13px; border-radius: 10px">EB</div><div style="font-size: 13px; font-weight: 600">Eko Budi</div></div>
+</div>
+</aside>
+
+<main class="main">
+<div class="ptop">
+<h1 class="ptitle">Riwayat transaksi</h1>
+<div class="hstack" style="flex-wrap: wrap">
+<button class="btn-2"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>25 Sep – 25 Okt 2026<svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+<button class="btn-2"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"></path></svg>Export</button>
+<a class="btn" href="TambahWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Tambah transaksi</a>
+</div>
+</div>
+
+<div class="wrap">
+<div class="card" style="flex: 1 1 200px"><div class="lbl">Masuk</div><div class="num-l pos">+Rp 8.550.000</div></div>
+<div class="card" style="flex: 1 1 200px"><div class="lbl">Keluar</div><div class="num-l">Rp 5.200.000</div></div>
+<div class="card" style="flex: 1 1 200px"><div class="lbl">Selisih</div><div class="num-l" style="color: var(--accent)">Rp 3.350.000</div></div>
+<div class="card" style="flex: 1 1 200px"><div class="lbl">Jumlah transaksi</div><div class="num-l">42</div></div>
+</div>
+
+<section class="card" style="padding: 0">
+<div style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid var(--border)">
+<div class="input search" style="flex: 1 1 260px; width: auto"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2)"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg><span style="color: var(--text-2)">Cari transaksi atau catatan</span></div>
+<div class="chips">
+<button class="chip on">Semua</button><button class="chip">Pengeluaran</button><button class="chip">Pemasukan</button><button class="chip">Transfer</button><button class="chip">Piutang</button>
+</div>
+<button class="btn-2" style="height: 36px">Kategori<svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+<button class="btn-2" style="height: 36px">Dompet<svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+</div>
+<div class="tbl-box">
+<table class="tbl">
+<thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Dompet</th><th class="r">Nominal</th><th class="r"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden">Aksi</span></th></tr></thead>
+<tbody>
+<tr><td><div style="font-weight: 600">16 Okt</div><div class="lbl">12.30</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-makan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></div><div><div style="font-weight: 600">Makan siang</div><div class="lbl">Nasi padang dekat kantor</div></div></div></td><td><span class="dot" style="background: #F59E0B"></span>Makan di luar</td><td>GoPay</td><td class="r" style="font-weight: 600">Rp 35.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">16 Okt</div><div class="lbl">11.25</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-piutang"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2 20a7 7 0 0 1 14 0"></path></svg></div><div><div style="font-weight: 600">Piutang dari Rudi</div><div class="lbl">Patungan makan 27 Sep</div></div></div></td><td><span class="dot" style="background: #10B981"></span>Piutang</td><td>BCA</td><td class="r pos" style="font-weight: 600">+Rp 50.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">15 Okt</div><div class="lbl">15.10</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-makan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></div><div><div style="font-weight: 600">Kopi susu</div><div class="lbl">—</div></div></div></td><td><span class="dot" style="background: #F59E0B"></span>Makan di luar</td><td>OVO</td><td class="r" style="font-weight: 600">Rp 28.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">15 Okt</div><div class="lbl">07.40</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-transport"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path><path d="M7 18v2M17 18v2M3 13h18"></path></svg></div><div><div style="font-weight: 600">Bensin</div><div class="lbl">Full tank motor</div></div></div></td><td><span class="dot" style="background: #3B82F6"></span>Transportasi</td><td>Tunai</td><td class="r" style="font-weight: 600">Rp 50.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">14 Okt</div><div class="lbl">19.05</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-dapur"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H6"></path><circle cx="9" cy="19" r="1.5"></circle><circle cx="17" cy="19" r="1.5"></circle></svg></div><div><div style="font-weight: 600">Belanja bulanan</div><div class="lbl">Supermarket</div></div></div></td><td><span class="dot" style="background: #F97316"></span>Kebutuhan dapur</td><td>BCA</td><td class="r" style="font-weight: 600">Rp 412.500</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">1 Okt</div><div class="lbl">08.18</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-tagihan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg></div><div><div style="font-weight: 600">Bayar internet</div><div class="lbl">Tagihan rutin</div></div></div></td><td><span class="dot" style="background: #6366F1"></span>Tagihan</td><td>BCA</td><td class="r" style="font-weight: 600">Rp 300.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">1 Okt</div><div class="lbl">08.17</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-transfer"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg></div><div><div style="font-weight: 600">BCA ke Bibit</div><div class="lbl">Admin Rp 0</div></div></div></td><td><span class="dot" style="background: #0F766E"></span>Transfer</td><td>BCA → Bibit</td><td class="r" style="font-weight: 600; color: var(--text-2)">Rp 500.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+<tr><td><div style="font-weight: 600">25 Sep</div><div class="lbl">23.29</div></td><td><div class="hstack" style="gap: 10px"><div class="ic-s c-gaji"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></div><div><div style="font-weight: 600">Gaji Oktober</div><div class="lbl">—</div></div></div></td><td><span class="dot" style="background: #84CC16"></span>Gaji</td><td>BCA</td><td class="r pos" style="font-weight: 600">+Rp 8.500.000</td><td class="r"><div class="hstack" style="justify-content: flex-end; gap: 4px"><button class="icon-btn ghost" aria-label="Ubah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div></td></tr>
+</tbody>
+</table>
+</div>
+<div class="between" style="padding: 14px 20px; border-top: 1px solid var(--border); flex-wrap: wrap">
+<span class="lbl">Menampilkan 1–8 dari 42 transaksi</span>
+<div class="hstack"><button class="btn-2" style="height: 36px">Sebelumnya</button><button class="btn-2" style="height: 36px">Berikutnya</button></div>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

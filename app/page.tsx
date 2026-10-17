@@ -8,20 +8,20 @@ import {
   AlertTriangle, X, StickyNote, HandCoins, Info, Download, RotateCw, Receipt, Plus, Trash2, Bell,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getFreshWalletBalance } from '@/lib/queries'
 import {
-  getTransactions, getWallets, getBudgets, getDebts, getLatestNote, getNotesCount,
-  getFreshWalletBalance,
-} from '@/lib/queries'
+  useTransactions, useWallets, useBudgets, useDebts, useBills, useBillPayments,
+  useNotes, useSettings, useFilterHistory, useInvalidate, qk,
+} from '@/hooks/useAppData'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useIsWeb } from '@/hooks/useIsWeb'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
 import TransactionModal from '@/components/TransactionModal'
 import { SkeletonRows } from '@/components/Skeleton'
-import { getRecurringBills } from '@/lib/recurring-bills'
 import { getCategoryIcon } from '@/lib/categories'
 import { getPercentageChange, formatPeriodLabel } from '@/lib/format'
-import { Wallet, Transaction, Budget, Debt, Note, RecurringBill, CustomCategoryDef } from '@/types'
+import { Transaction, Debt, RecurringBill, CustomCategoryDef } from '@/types'
 import PeriodSheet from '@/components/PeriodSheet'
 import CalendarCard from '@/components/CalendarCard'
 import EmptyState from '@/components/EmptyState'
@@ -84,16 +84,35 @@ function InfoTip({ label, children }: { label: string; children: React.ReactNode
 
 export default function HomePage() {
   const router = useRouter()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [wallets, setWallets] = useState<Wallet[]>([])
-  const [budgets, setBudgets] = useState<Budget[]>([])
-  const [debts, setDebts] = useState<Debt[]>([])
-  const [latestNote, setLatestNote] = useState<Note | null>(null)
-  const [noteCount, setNoteCount] = useState(0)
-  const [bills, setBills] = useState<RecurringBill[]>([])
-  const [billPayments, setBillPayments] = useState<Record<number, boolean>>({})
+  const month = new Date().toISOString().slice(0, 7)
+
+  // Cached data (stale-while-revalidate): revisiting shows last data instantly
+  // and revalidates in the background instead of flashing a skeleton.
+  const txQuery = useTransactions()
+  const walletsQuery = useWallets()
+  const budgetsQuery = useBudgets()
+  const debtsQuery = useDebts()
+  const billsQuery = useBills()
+  const billPaymentsQuery = useBillPayments(month)
+  const notesQuery = useNotes()
+  const settingsQuery = useSettings()
+  const filterHistoryQuery = useFilterHistory()
+  const invalidate = useInvalidate()
+
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
+  const wallets = useMemo(() => walletsQuery.data ?? [], [walletsQuery.data])
+  const budgets = useMemo(() => budgetsQuery.data ?? [], [budgetsQuery.data])
+  const debts = useMemo(() => debtsQuery.data ?? [], [debtsQuery.data])
+  const bills = useMemo(() => billsQuery.data ?? [], [billsQuery.data])
+  const billPayments = useMemo(() => billPaymentsQuery.data ?? {}, [billPaymentsQuery.data])
+  const notes = useMemo(() => notesQuery.data ?? [], [notesQuery.data])
+  const latestNote = notes[0] ?? null
+  const noteCount = notes.length
+  const recentNotes = useMemo(() => notes.slice(0, 2), [notes])
+  // Skeleton only on the very first load (no cached data yet).
+  const loading = txQuery.isLoading
+
   const [customCategories, setCustomCategories] = useState<CustomMap>({ pengeluaran: [], pemasukan: [] })
-  const [loading, setLoading] = useState(true)
 
   const [currentDate, setCurrentDate] = useState(new Date())
   const [filterMode, setFilterMode] = useState<'monthly' | 'custom'>('monthly')
@@ -113,7 +132,6 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   // Web (>=768px) layout + transaction modal (DESIGN.md 7.1 web, TambahWeb)
   const isWeb = useIsWeb()
-  const [recentNotes, setRecentNotes] = useState<Note[]>([])
   const [txModal, setTxModal] = useState<{ editing: Transaction | null; type?: 'pengeluaran' | 'pemasukan' | 'topup' } | null>(null)
   const { showConfirm } = useConfirm()
 
@@ -121,67 +139,54 @@ export default function HomePage() {
   const [lunasiDebt, setLunasiDebt] = useState<Debt | null>(null)
   const [repayingWalletId, setRepayingWalletId] = useState<number | null>(null)
 
-  const loadAll = useCallback(async () => {
-    const month = new Date().toISOString().slice(0, 7)
-    const [txRes, wRes, bRes, dRes, noteRes, noteCountRes, billsData, bpRes, csRes, notesRes] = await Promise.all([
-      getTransactions(), getWallets(), getBudgets(), getDebts(),
-      getLatestNote(), getNotesCount(), getRecurringBills(),
-      supabase.from('bill_payments').select('bill_id').eq('month', month),
-      supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
-      supabase.from('notes').select('*').order('updated_at', { ascending: false }).limit(2),
-    ])
-    if (txRes.data) setTransactions(txRes.data as Transaction[])
-    if (wRes.data) setWallets(wRes.data as Wallet[])
-    // First run: no wallets yet -> create Tunai + Rekening Bank and show onboarding (old behaviour).
-    if (wRes.data && wRes.data.length === 0 && !onboardingChecked.current) {
-      onboardingChecked.current = true
-      const { error } = await createDefaultWallets()
-      if (!error) {
-        const fresh = await getWallets()
-        if (fresh.data) setWallets(fresh.data as Wallet[])
-        setShowOnboarding(true)
-      }
-    }
-    if (bRes.data) setBudgets(bRes.data as Budget[])
-    if (dRes.data) setDebts(dRes.data as Debt[])
-    if (noteRes.data) setLatestNote(noteRes.data as Note)
-    if (notesRes.data) setRecentNotes(notesRes.data as Note[])
-    if (typeof noteCountRes.count === 'number') setNoteCount(noteCountRes.count)
-    setBills(billsData || [])
-    const bp: Record<number, boolean> = {}
-    bpRes.data?.forEach(p => { bp[p.bill_id] = true })
-    setBillPayments(bp)
-    if (csRes.data?.custom_categories) setCustomCategories(csRes.data.custom_categories as CustomMap)
-    setLoading(false)
-  }, [])
+  // Revalidate every cached table this page reads (used after mutations/refresh).
+  const reloadAll = useCallback(() => invalidate([
+    qk.transactions, qk.wallets, qk.budgets, qk.debts, qk.bills,
+    qk.billPayments(month), qk.notes, qk.settings,
+  ]), [invalidate, month])
 
-  useEffect(() => { loadAll() }, [loadAll])
+  // First run: no wallets yet -> create Tunai + Rekening Bank and show onboarding.
+  useEffect(() => {
+    if (!walletsQuery.isFetched) return
+    if (wallets.length === 0 && !onboardingChecked.current) {
+      onboardingChecked.current = true
+      createDefaultWallets().then(({ error }) => {
+        if (!error) { invalidate([qk.wallets]); setShowOnboarding(true) }
+      })
+    }
+  }, [walletsQuery.isFetched, wallets.length, invalidate])
+
+  // Seed custom categories from user_settings.
+  useEffect(() => {
+    const cc = settingsQuery.data?.custom_categories
+    if (cc) setCustomCategories(cc as CustomMap)
+  }, [settingsQuery.data])
 
   // Filter settings sync with user_settings + filter_history (restored from the old dashboard).
   useEffect(() => {
-    const loadSettings = async () => {
-      const { data: settings } = await supabase.from('user_settings').select('*').eq('id', 1).single()
-      if (settings) {
-        if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
-        if (settings.custom_start_date && settings.custom_end_date) {
-          setCustomRange({ start: settings.custom_start_date, end: settings.custom_end_date })
-        }
-      } else {
-        await supabase.from('user_settings').insert({
-          id: 1,
-          filter_mode: 'monthly',
-          custom_start_date: customRange.start,
-          custom_end_date: customRange.end,
-          updated_at: new Date().toISOString(),
-        })
+    if (!settingsQuery.isFetched) return
+    const settings = settingsQuery.data
+    if (settings) {
+      if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+      if (settings.custom_start_date && settings.custom_end_date) {
+        setCustomRange({ start: settings.custom_start_date, end: settings.custom_end_date })
       }
-      const { data: historyData } = await supabase.from('filter_history').select('*').order('start_date', { ascending: true })
-      if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
-      setIsInitialized(true)
+    } else {
+      supabase.from('user_settings').insert({
+        id: 1,
+        filter_mode: 'monthly',
+        custom_start_date: customRange.start,
+        custom_end_date: customRange.end,
+        updated_at: new Date().toISOString(),
+      })
     }
-    loadSettings()
+    setIsInitialized(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [settingsQuery.isFetched, settingsQuery.data])
+
+  useEffect(() => {
+    if (filterHistoryQuery.data) setFilterHistory(filterHistoryQuery.data as FilterHistoryEntry[])
+  }, [filterHistoryQuery.data])
 
   useEffect(() => {
     if (!isInitialized) return
@@ -202,17 +207,16 @@ export default function HomePage() {
             { start_date: customRange.start, end_date: customRange.end, label: `${fmt(customRange.start)} – ${fmt(customRange.end)}` },
             { onConflict: 'start_date,end_date' },
           )
-          const { data: historyData } = await supabase.from('filter_history').select('*').order('start_date', { ascending: true })
-          if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
+          invalidate([qk.filterHistory])
         }
       }
     }, 500)
     return () => clearTimeout(timeoutId)
-  }, [filterMode, customRange, isInitialized])
+  }, [filterMode, customRange, isInitialized, invalidate])
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await loadAll()
+    await reloadAll()
     setCalendarKey(k => k + 1)
     setRefreshing(false)
     showToast('success', 'Data diperbarui')
@@ -270,7 +274,7 @@ export default function HomePage() {
     if (!debtError) {
       showToast('success', `Piutang ${debt.person_name} lunas`)
       setLunasiDebt(null)
-      await loadAll()
+      await reloadAll()
     } else {
       showToast('error', 'Pelunasan gagal disimpan. Coba lagi.')
     }
@@ -464,7 +468,7 @@ export default function HomePage() {
           </div>
         </>
       )}
-      {showOnboarding && <Onboarding onDone={() => { setShowOnboarding(false); loadAll() }} />}
+      {showOnboarding && <Onboarding onDone={() => { setShowOnboarding(false); reloadAll() }} />}
 
       <ExportSheet isOpen={showExport} onClose={() => setShowExport(false)} periodLabel={getPeriodLabel()} rowCount={filteredTransactions.length} rangeCount={filterHistory.length} walletCount={wallets.length} onChangePeriod={() => setShowSettings(true)} onDownload={handleExport} />
 
@@ -507,7 +511,7 @@ export default function HomePage() {
           customCategories={customCategories}
           onCustomCategoriesChange={(c) => setCustomCategories(c)}
           onClose={() => setTxModal(null)}
-          onSaved={() => { setTxModal(null); loadAll() }}
+          onSaved={() => { setTxModal(null); reloadAll() }}
         />
       )}
     </>
@@ -551,7 +555,7 @@ export default function HomePage() {
   }).slice(0, 6)
   const handleWebDelete = async (id: number) => {
     const res = await deleteTransactionWithRollback(id, { confirm: showConfirm, toast: showToast })
-    if (res.deleted) await loadAll()
+    if (res.deleted) await reloadAll()
   }
   const longDate = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const changeText = (pct: number, prev: number) => prev > 0 ? `${pct >= 0 ? 'Naik' : 'Turun'} ${Math.abs(pct).toFixed(0)}% dari periode lalu` : 'Belum ada data periode lalu'
@@ -737,7 +741,7 @@ export default function HomePage() {
               ))}
             </section>
             <section style={{ flex: '2 1 300px', minWidth: 0 }}>
-              <CalendarCard refreshTrigger={calendarKey} onUpdate={loadAll} />
+              <CalendarCard refreshTrigger={calendarKey} onUpdate={reloadAll} />
             </section>
           </div>
         </main>
@@ -874,24 +878,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Kalender (stays on Beranda, DESIGN-TAMBAHAN §1) */}
-        <CalendarCard refreshTrigger={calendarKey} onUpdate={loadAll} />
-
-        {/* Catatan terbaru */}
-        {latestNote && (
-          <div className="stack-12">
-            <div className="between"><h2 className="h2">Catatan terbaru</h2><Link className="link" href="/notes">Semua catatan</Link></div>
-            <Link href="/notes" className="card hstack" style={{ gap: 12, alignItems: 'flex-start', textDecoration: 'none', color: 'var(--text)' }}>
-              <div className="ic c-lain"><StickyNote className="i" /></div>
-              <div className="grow">
-                <div className="t">{latestNote.title}</div>
-                {latestNote.content && <div className="meta" style={{ whiteSpace: 'normal' }}>{latestNote.content}</div>}
-                {noteCount > 1 && <div className="lbl" style={{ marginTop: 4 }}>+{noteCount - 1} catatan lain</div>}
-              </div>
-            </Link>
-          </div>
-        )}
-
         {/* Transaksi terakhir */}
         <div className="stack-12">
           <div className="between">
@@ -939,6 +925,24 @@ export default function HomePage() {
             </>
           )}
         </div>
+
+        {/* Catatan terbaru */}
+        {latestNote && (
+          <div className="stack-12">
+            <div className="between"><h2 className="h2">Catatan terbaru</h2><Link className="link" href="/notes">Semua catatan</Link></div>
+            <Link href="/notes" className="card hstack" style={{ gap: 12, alignItems: 'flex-start', textDecoration: 'none', color: 'var(--text)' }}>
+              <div className="ic c-lain"><StickyNote className="i" /></div>
+              <div className="grow">
+                <div className="t">{latestNote.title}</div>
+                {latestNote.content && <div className="meta" style={{ whiteSpace: 'normal' }}>{latestNote.content}</div>}
+                {noteCount > 1 && <div className="lbl" style={{ marginTop: 4 }}>+{noteCount - 1} catatan lain</div>}
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Kalender (stays on Beranda, DESIGN-TAMBAHAN §1) */}
+        <CalendarCard refreshTrigger={calendarKey} onUpdate={reloadAll} />
       </div>
 
       {overlays}

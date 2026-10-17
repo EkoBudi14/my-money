@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Status scan struk</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.ph{width:272px;height:600px;border-radius:32px;border:1px solid var(--border);background:var(--surface);overflow:hidden;position:relative;display:flex;flex-direction:column;flex:none}
+.cap{font-size:12px;font-weight:700;color:var(--text-2);margin:0 0 10px}
+.ctr{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:24px}
+.ctr p{margin:0}
+</style>
+</helmet>
+<div style="width: 1280px; height: 900px; box-sizing: border-box; background: var(--bg); color: var(--text); padding: 48px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font)">
+<div><h1 style="margin: 0; font-size: 26px; font-weight: 700">Scan struk · kamera, proses, kuota habis, berhasil</h1><p class="sub" style="font-size: 14px; margin-top: 6px">Semua state ini sudah ada di app lama. Tampilan baru saja.</p></div>
+<div class="hstack" style="gap: 24px; align-items: flex-start">
+
+<div><p class="cap">1 · Kamera</p>
+<div class="ph" style="background: #0B0F0E; border-color: #0B0F0E">
+<div class="between" style="padding: 16px; color: #fff"><button class="icon-btn" aria-label="Tutup kamera" style="background: rgba(255,255,255,.12); border: 0; color: #fff"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><span style="font-size: 13px; font-weight: 600">Foto struk</span><button class="icon-btn" aria-label="Ganti kamera" style="background: rgba(255,255,255,.12); border: 0; color: #fff"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3"></path><path d="M4 4v4h4M20 20v-4h-4"></path></svg></button></div>
+<div style="flex: 1; margin: 8px 28px; border: 2px dashed rgba(255,255,255,.5); border-radius: 18px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 14px"><span style="font-size: 12px; color: rgba(255,255,255,.8)">Arahkan kamera ke struk</span></div>
+<div style="display: flex; justify-content: center; padding: 22px"><button aria-label="Ambil foto" style="width: 68px; height: 68px; border-radius: 34px; border: 4px solid #fff; background: rgba(255,255,255,.2)"></button></div>
+</div></div>
+
+<div><p class="cap">2 · Memproses</p>
+<div class="ph">
+<div class="ctr">
+<div style="width: 64px; height: 64px; border-radius: 32px; border: 5px solid var(--accent-tint); border-top-color: var(--accent)" role="img" aria-label="Sedang memproses"></div>
+<p class="h2">Membaca struk…</p>
+<p class="sub" style="font-size: 13px">Biasanya 5–10 detik. Jangan tutup halaman ini.</p>
+</div>
+</div></div>
+
+<div><p class="cap">3 · Kuota habis / terlalu banyak permintaan</p>
+<div class="ph">
+<div class="ctr">
+<div class="ic-l" style="background: var(--warn-tint); color: var(--warn)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
+<p class="h2">Kuota scan hari ini habis</p>
+<p class="sub" style="font-size: 13px">Bisa scan lagi dalam</p>
+<p class="num-l" style="font-variant-numeric: tabular-nums">03:12:40</p>
+<a href="Tambah.dc.html" class="btn btn-block" style="margin-top: 8px">Catat manual</a>
+<span class="lbl">Varian “terlalu banyak permintaan”: judul “Tunggu sebentar”, hitung mundur detik.</span>
+</div>
+</div></div>
+
+<div><p class="cap">4 · Berhasil</p>
+<div class="ph">
+<div class="ctr">
+<div class="ic-l" style="background: var(--income-tint); color: var(--income)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></div>
+<p class="h2">Pengeluaran tersimpan</p>
+<div class="tile" style="width: 100%; box-sizing: border-box; text-align: left"><div class="t">Belanja di Supermarket Segar</div><div class="meta">Kebutuhan dapur · BCA · 14 Okt</div><div class="num-m" style="margin-top: 4px">Rp 160.500</div></div>
+<a href="Scan.dc.html" class="btn btn-block" style="margin-top: 8px">Scan struk lagi</a>
+<a href="Main.dc.html" class="btn-2 btn-block" style="border-color: transparent">Ke beranda</a>
+</div>
+</div></div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

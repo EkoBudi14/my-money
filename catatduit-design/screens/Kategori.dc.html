@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Kelola kategori</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.icb{height:48px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;padding:0}.icb.on{border-color:var(--accent);background:var(--accent-tint);color:var(--accent)}.swc{width:36px;height:36px;border-radius:18px;border:3px solid var(--surface);box-shadow:0 0 0 1.5px var(--border);padding:0}.swc.on{box-shadow:0 0 0 2.5px var(--text)}</style>
+</helmet>
+<div class="app" style="height: 1040px; background: var(--surface)">
+<div class="scroll" style="padding-bottom: 32px">
+
+<div class="top">
+<div class="top-l">
+<a href="Tambah.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 class="h2" style="font-size: 18px">Kelola kategori</h1>
+</div>
+</div>
+
+<div class="seg"><button class="on">Pengeluaran</button><button>Pemasukan</button></div>
+
+<div class="stack">
+<div class="between"><span class="lbl" style="font-weight: 700">Kategori buatan kamu</span><span class="lbl">3</span></div>
+<div class="card-flush">
+<div class="row"><div class="ic c-lain"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18"></path></svg></div><span class="grow t">admin</span><button class="icon-btn ghost" aria-label="Ubah admin"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus admin" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div>
+<div class="row"><div class="ic c-piutang"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"></path></svg></div><span class="grow t">sedekah</span><button class="icon-btn ghost" aria-label="Ubah sedekah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus sedekah" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div>
+<div class="row"><div class="ic c-rumah"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l4 4M4 20l6-6M14 6l-4 4 4 4 4-4z"></path></svg></div><span class="grow t">alat alat</span><button class="icon-btn ghost" aria-label="Ubah alat alat"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></button><button class="icon-btn ghost" aria-label="Hapus alat alat" style="color: var(--danger)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button></div>
+</div>
+<span class="lbl">Kategori bawaan (Makan di luar, Tagihan, dan lainnya) tidak bisa diubah atau dihapus.</span>
+</div>
+
+<div class="card stack-12" style="background: var(--surface-2)">
+<h2 class="h2">Buat kategori baru</h2>
+<label class="field">Nama kategori<input class="input" type="text" placeholder="Parkir" style="background: var(--surface)"></label>
+<div class="field">Ikon
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+<button class="icb on" aria-label="Ikon mobil"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path><path d="M7 18v2M17 18v2M3 13h18"></path></svg></button>
+<button class="icb" aria-label="Ikon makan"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></button>
+<button class="icb" aria-label="Ikon tas"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg></button>
+<button class="icb" aria-label="Ikon hati"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"></path></svg></button>
+<button class="icb" aria-label="Ikon kilat"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg></button>
+<button class="icb" aria-label="Ikon buku"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path></svg></button>
+<button class="icb" aria-label="Ikon rumah"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></button>
+<button class="icb" aria-label="Ikon kartu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18"></path></svg></button>
+<button class="icb" aria-label="Ikon hadiah"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="5"></rect><path d="M5 13v8h14v-8M12 8v13"></path></svg></button>
+<button class="icb" aria-label="Ikon orang"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg></button>
+<button class="icb" aria-label="Ikon alat"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l4 4M4 20l6-6M14 6l-4 4 4 4 4-4z"></path></svg></button>
+<button class="icb" aria-label="Ikon lainnya"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+</div>
+</div>
+<div class="field">Warna
+<div class="hstack" style="flex-wrap: wrap; gap: 10px">
+<button class="swc" aria-label="Kuning" style="background: #F59E0B"></button>
+<button class="swc on" aria-label="Biru" style="background: #3B82F6"></button>
+<button class="swc" aria-label="Pink" style="background: #EC4899"></button>
+<button class="swc" aria-label="Ungu" style="background: #8B5CF6"></button>
+<button class="swc" aria-label="Merah" style="background: #EF4444"></button>
+<button class="swc" aria-label="Hijau" style="background: #22C55E"></button>
+<button class="swc" aria-label="Oranye" style="background: #F97316"></button>
+<button class="swc" aria-label="Abu" style="background: #94A3B8"></button>
+</div>
+</div>
+<div class="tile hstack" style="gap: 12px"><div class="ic c-transport"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path><path d="M7 18v2M17 18v2M3 13h18"></path></svg></div><div><div class="lbl">Pratinjau</div><div class="t">Parkir</div></div></div>
+<span class="lbl">Saat kategori diubah namanya, semua transaksi lama dengan kategori ini ikut berganti nama.</span>
+<button class="btn btn-block">Simpan kategori</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

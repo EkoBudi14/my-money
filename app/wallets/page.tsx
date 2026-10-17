@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Eye, EyeOff, Info, CreditCard, Wallet as WalletIcon, Banknote, ChevronRight, PiggyBank } from 'lucide-react'
 import { useIsWeb } from '@/hooks/useIsWeb'
 import { supabase } from '@/lib/supabase'
+import { useWallets, useTransactions, useInvalidate, qk } from '@/hooks/useAppData'
 import { Wallet, Transaction } from '@/types'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -41,9 +42,15 @@ export default function WalletsPage() {
   const { showConfirm } = useConfirm()
   const { showSuccess } = useSuccessModal()
 
-  const [wallets, setWallets] = useState<Wallet[]>([])
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
+  const walletsQuery = useWallets()
+  const txQuery = useTransactions()
+  const invalidate = useInvalidate()
+  const wallets = useMemo(
+    () => [...(walletsQuery.data ?? [])].sort((a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()),
+    [walletsQuery.data],
+  )
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
+  const loading = walletsQuery.isLoading
   const [tab, setTab] = useState<Tab>('active')
   const isWeb = useIsWeb()
   const [showBalance, setShowBalance] = useState(false)
@@ -58,19 +65,12 @@ export default function WalletsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
 
-  const fetchAll = async () => {
-    setLoading(true)
-    const [wRes, tRes] = await Promise.all([
-      supabase.from('wallets').select('*').order('created_at', { ascending: true }),
-      supabase.from('transactions').select('wallet_id,source_wallet_id,date,created_at'),
-    ])
-    if (wRes.error) showToast('error', 'Gagal memuat data dompet')
-    else setWallets(wRes.data || [])
-    if (tRes.data) setTransactions(tRes.data as Transaction[])
-    setLoading(false)
-  }
+  const fetchAll = () => invalidate([qk.wallets, qk.transactions])
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => {
+    if (walletsQuery.error) showToast('error', 'Gagal memuat data dompet')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletsQuery.error])
 
   // Map wallet id -> most recent transaction timestamp.
   const lastUsedMap = useMemo(() => {

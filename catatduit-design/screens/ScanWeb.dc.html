@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Scan struk web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.unsure{background:var(--warn-tint);border-color:#F59E0B}</style>
+</helmet>
+<div class="pg">
+<aside class="side" aria-label="Navigasi utama">
+<div class="brand"><div class="brand-mark">C</div><div style="font-size: 17px; font-weight: 700">CatatDuit</div></div>
+<a href="Web.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Beranda</a>
+<a href="RiwayatWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Riwayat</a>
+<a href="AnalitikWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Analitik</a>
+<a href="DompetWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M16 13.5h.01"></path></svg>Dompet &amp; tabungan</a>
+<div class="grp">Rencana</div>
+<a href="BudgetWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12A9 9 0 1 1 12 3v9z"></path><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"></path></svg>Budget</a>
+<a href="GoalsWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg>Goals</a>
+<a href="TagihanWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg>Tagihan rutin</a>
+<a href="CatatanWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg>Catatan</a>
+<div class="grp">Catat cepat</div>
+<a href="ScanWeb.dc.html" class="on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Scan struk</a>
+<a href="VoiceWeb.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Voice input</a>
+<div class="stack" style="margin-top: auto; padding-top: 20px; gap: 4px">
+<a href="#"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z"></path></svg>Mode gelap</a>
+<div class="hstack" style="padding: 10px 12px; border-radius: 12px; background: var(--surface-2)"><div class="avatar" style="width: 34px; height: 34px; font-size: 13px; border-radius: 10px">EB</div><div style="font-size: 13px; font-weight: 600">Eko Budi</div></div>
+</div>
+</aside>
+
+<main class="main">
+<div class="ptop"><div><h1 class="ptitle">Scan struk</h1><p class="sub">Catat pengeluaran dari foto struk, lalu cek sebelum simpan.</p></div></div>
+
+<div class="wrap" style="align-items: flex-start">
+<div class="stack-12" style="flex: 1 1 320px">
+<div class="card stack" style="border: 2px dashed var(--border-strong); align-items: center; text-align: center; padding: 32px 20px">
+<div class="ic-l" style="background: var(--accent-tint); color: var(--accent)"><svg class="i i-l" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"></path></svg></div>
+<div class="h2" style="margin-top: 4px">Seret foto struk ke sini</div>
+<div class="sub">JPG atau PNG, maksimal 10 MB</div>
+<div class="hstack" style="margin-top: 8px; flex-wrap: wrap; justify-content: center"><button class="btn" style="height: 44px; font-size: 14px">Pilih file</button><button class="btn-2">Tempel (Ctrl+V)</button></div>
+</div>
+<div class="card stack">
+<h2 class="h3">Biar hasilnya akurat</h2>
+<div class="hstack" style="align-items: flex-start; font-size: 13px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--accent); margin-top: 2px"><path d="M5 12l5 5 9-10"></path></svg>Foto lurus dari atas, seluruh struk masuk frame</div>
+<div class="hstack" style="align-items: flex-start; font-size: 13px"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--accent); margin-top: 2px"><path d="M5 12l5 5 9-10"></path></svg>Cahaya cukup, angka total tidak tertutup bayangan</div>
+</div>
+</div>
+
+<section class="panel" style="flex: 2 1 460px">
+<div class="between"><h2 class="h2">Hasil scan</h2><span class="badge b-warn">2 kolom perlu dicek</span></div>
+<div class="g2" style="gap: 12px">
+<label class="field">Keterangan<input class="input" type="text" value="Supermarket Segar"></label>
+<div class="field">Total<div class="input" style="font-weight: 700; font-size: 16px">Rp 412.500</div></div>
+<div class="field">Tanggal<div class="input">14 Okt 2026</div></div>
+<div class="field">Jam<div class="input unsure">19.05</div></div>
+<div class="field">Kategori<div class="input"><span class="grow" style="font-weight: 600">Kebutuhan dapur</span><span class="lbl">Saran</span></div></div>
+<div class="field">Dompet<div class="input"><span class="grow" style="font-weight: 600">BCA</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div></div>
+</div>
+<div class="tbl-box" style="border: 1px solid var(--border); border-radius: 14px">
+<table class="tbl" style="min-width: 420px">
+<thead><tr><th>Item</th><th class="r">Jumlah</th><th class="r">Harga</th><th class="r">Subtotal</th></tr></thead>
+<tbody>
+<tr><td>Beras 5 kg</td><td class="r">1</td><td class="r">Rp 72.000</td><td class="r">Rp 72.000</td></tr>
+<tr><td>Minyak goreng 2 L</td><td class="r">1</td><td class="r">Rp 38.500</td><td class="r">Rp 38.500</td></tr>
+<tr style="background: var(--warn-tint)"><td>Telur ayam <span class="lbl" style="color: var(--warn)">· jumlah kurang terbaca</span></td><td class="r">1</td><td class="r">Rp 31.000</td><td class="r">Rp 31.000</td></tr>
+<tr><td>Sabun cuci piring</td><td class="r">2</td><td class="r">Rp 14.500</td><td class="r">Rp 29.000</td></tr>
+<tr><td colspan="4" style="color: var(--accent); font-weight: 600; font-size: 13px">Lihat 8 item lain</td></tr>
+</tbody>
+</table>
+</div>
+<div class="between" style="flex-wrap: wrap"><button class="btn-2">Scan ulang</button><button class="btn">Simpan pengeluaran</button></div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":920}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Catatan</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border-radius:12px;font-size:11px;color:var(--text-2);border:0;background:transparent}.day b{font-size:15px;color:var(--text)}.day.on{background:var(--accent);color:var(--on-accent-2)}.day.on b{color:#fff}.dot{width:5px;height:5px;border-radius:3px;background:var(--accent)}.day.on .dot{background:#fff}.note-body{font-size:13px;color:var(--text-3);line-height:1.55;white-space:pre-line;margin:0}</style>
+</helmet>
+<div class="app" style="height: 1080px">
+<div class="scroll">
+
+<div class="top">
+<div class="top-l">
+<a href="Lainnya.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 class="h1">Catatan</h1>
+</div>
+<a href="CatatanBaru.dc.html" class="icon-btn" aria-label="Tulis catatan"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></a>
+</div>
+
+<div class="input search"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2)"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg><span style="color: var(--text-2)">Cari catatan</span></div>
+
+
+<div class="card stack">
+<div class="between"><span class="t">Utang ke Andi</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--accent)"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"></path></svg></div>
+<p class="note-body">Total Rp 1.000.000, sudah dicicil Rp 500.000.
+Sisa Rp 500.000, bayar sebelum 30 Okt.</p>
+<div class="between"><span class="lbl">12 Okt 2026, 11.01</span></div>
+</div>
+
+<div class="card stack">
+<span class="t">Daftar piutang</span>
+<p class="note-body">1. Rudi Rp 50.000, sudah dibayar
+2. Sari Rp 25.000
+3. Bimo Rp 120.000</p>
+<div class="between"><span class="lbl">27 Sep 2026, 09.20</span></div>
+</div>
+
+<div class="card stack">
+<span class="t">Rencana servis motor</span>
+<p class="note-body">Ganti oli dan kampas rem, kira-kira Rp 350.000. Jadwal Sabtu 17 Okt.</p>
+<div class="between"><span class="lbl">8 Okt 2026, 20.15</span></div>
+</div>
+</div>
+
+<nav class="nav" aria-label="Navigasi utama">
+<a href="Main.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Beranda</a>
+<a href="Analitik.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Analitik</a>
+<a href="Tambah.dc.html" aria-label="Tambah transaksi"><span class="fab"><svg class="i i-l" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span></a>
+<a href="Dompet.dc.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"></path><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M16 13.5h.01"></path></svg>Dompet</a>
+<a href="Lainnya.dc.html" class="on"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"></rect><rect x="14" y="4" width="6" height="6" rx="1.5"></rect><rect x="4" y="14" width="6" height="6" rx="1.5"></rect><rect x="14" y="14" width="6" height="6" rx="1.5"></rect></svg>Lainnya</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

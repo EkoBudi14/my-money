@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { useTransactions, useWallets } from '@/hooks/useAppData'
 import { Transaction, Wallet } from '@/types'
 import { ChevronLeft, ChevronRight, Calendar, Lightbulb } from 'lucide-react'
 import EmptyState from '@/components/EmptyState'
@@ -27,9 +28,11 @@ const rpShort = (n: number) => {
 }
 
 export default function AnalyticsPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [wallets, setWallets] = useState<Wallet[]>([])
-    const [loading, setLoading] = useState(true)
+    const txQuery = useTransactions()
+    const walletsQuery = useWallets()
+    const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
+    const wallets = useMemo(() => walletsQuery.data ?? [], [walletsQuery.data])
+    const loading = txQuery.isLoading
 
     // State for Filter & Persistence (Synced with Dashboard)
     const [currentDate, setCurrentDate] = useState(new Date())
@@ -141,7 +144,6 @@ export default function AnalyticsPage() {
     }, [filterMode, currentDate, customRange])
 
     useEffect(() => {
-        fetchData()
         // Scroll to top when analytics page first loads on mobile
         // Use requestAnimationFrame to ensure DOM is painted before scrolling
         const resetScroll = () => {
@@ -157,16 +159,6 @@ export default function AnalyticsPage() {
         const t = setTimeout(resetScroll, 100)
         return () => clearTimeout(t)
     }, [])
-
-    const fetchData = async () => {
-        setLoading(true)
-        const { data: txs } = await supabase.from('transactions').select('*').order('created_at', { ascending: false })
-        const { data: wlls } = await supabase.from('wallets').select('*')
-
-        if (txs) setTransactions(txs as unknown as Transaction[])
-        if (wlls) setWallets(wlls)
-        setLoading(false)
-    }
 
     const filteredTxs = useMemo(() => {
         return transactions.filter(t => {

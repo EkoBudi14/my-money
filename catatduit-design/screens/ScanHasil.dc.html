@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Hasil scan</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}.ln{height:6px;border-radius:3px;background:var(--border-strong)}.unsure{background:var(--warn-tint);border-color:#F59E0B}</style>
+</helmet>
+<div class="app" style="height: 1140px; background: var(--surface)">
+<div class="scroll" style="padding-bottom: 120px">
+
+<div class="top">
+<div class="top-l">
+<a href="Scan.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 class="h2" style="font-size: 18px">Cek hasil scan</h1>
+</div>
+<a href="Scan.dc.html" class="link">Scan ulang</a>
+</div>
+
+<div class="hstack" style="gap: 12px; align-items: stretch">
+<div style="width: 88px; flex: none; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 6px" role="img" aria-label="Foto struk">
+<div class="ln" style="width: 70%; align-self: center"></div><div class="ln"></div><div class="ln" style="width: 80%"></div><div class="ln"></div><div class="ln" style="width: 60%"></div><div class="ln" style="width: 90%"></div><div class="ln" style="width: 50%; margin-top: 6px; background: var(--text-2)"></div>
+</div>
+<div class="banner info grow" style="align-items: flex-start">
+<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
+<span>12 item terbaca. Kolom kuning kurang yakin, cek dulu sebelum simpan.</span>
+</div>
+</div>
+
+<label class="field">Keterangan<input class="input" type="text" value="Supermarket Segar"></label>
+
+<div class="field">Total
+<div class="amount-box"><span class="cur">Rp</span><span class="val">412.500</span></div>
+</div>
+
+<div class="g2">
+<div class="field">Tanggal<div class="input">14 Okt 2026</div></div>
+<div class="field">Jam<div class="input unsure">19.05</div></div>
+</div>
+
+<div class="field">Kategori
+<div class="input"><div class="ic-s c-dapur"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H6"></path><circle cx="9" cy="19" r="1.5"></circle><circle cx="17" cy="19" r="1.5"></circle></svg></div><span class="grow" style="font-weight: 600">Kebutuhan dapur</span><span class="lbl">Saran otomatis</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+</div>
+
+<div class="field">Dompet
+<div class="chips"><button class="chip on">BCA</button><button class="chip">GoPay</button><button class="chip">Tunai</button><button class="chip">Lainnya</button></div>
+</div>
+
+<div class="card-flush" style="background: var(--surface-2)">
+<div class="between" style="padding: 12px 0 4px"><h2 class="h3">Rincian item</h2><span class="lbl">12 item</span></div>
+<div class="row"><div class="grow"><div class="t" style="font-weight: 500">Beras 5 kg</div><div class="meta">1 × Rp 72.000</div></div><div class="amt">Rp 72.000</div></div>
+<div class="row"><div class="grow"><div class="t" style="font-weight: 500">Minyak goreng 2 L</div><div class="meta">1 × Rp 38.500</div></div><div class="amt">Rp 38.500</div></div>
+<div class="row" style="margin: 0 -16px; padding: 12px 16px; background: var(--warn-tint)"><div class="grow"><div class="t" style="font-weight: 500">Telur ayam</div><div class="meta" style="color: var(--warn)">Jumlah kurang terbaca</div></div><div class="amt">Rp 31.000</div></div>
+<div class="row"><div class="grow"><div class="t" style="font-weight: 500">Sabun cuci piring</div><div class="meta">2 × Rp 14.500</div></div><div class="amt">Rp 29.000</div></div>
+<button class="link" style="padding: 10px 0">Lihat 8 item lain</button>
+</div>
+</div>
+
+<div class="sticky-foot">
+<button class="btn btn-block">Simpan pengeluaran</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1140}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

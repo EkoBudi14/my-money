@@ -161,7 +161,8 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .wrap>*{box-sizing:border-box}
 
 /* Bottom nav + FAB (mobile) */
-.cd.nav{position:fixed;left:0;right:0;bottom:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;z-index:50}
+/* Floating iOS-style bottom nav: detached pill with frosted blur + shadow. */
+.cd.nav{position:fixed;left:16px;right:16px;bottom:calc(12px + env(safe-area-inset-bottom));height:64px;padding:0 6px;background:var(--surface);background:color-mix(in srgb, var(--surface) 82%, transparent);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:1px solid var(--border);border-radius:26px;box-shadow:0 10px 30px rgba(0,0,0,.14);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;z-index:50}
 @media(min-width:768px){.cd.nav{display:none}}
 .cd.side-reopen{align-items:center;justify-content:center}
 @media(max-width:767px){.cd.side,.cd.side-reopen{display:none!important}}

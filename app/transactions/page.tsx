@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Calendar, X, Search, Download, RotateCw, Receipt, Plus, Pencil, Trash2 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { getTransactions, getWallets, getDebts, getBudgets } from '@/lib/queries'
+import {
+  useTransactions, useWallets, useDebts, useBudgets, useSettings, useFilterHistory, useInvalidate, qk,
+} from '@/hooks/useAppData'
 import { getCategoryIcon } from '@/lib/categories'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
 import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
@@ -72,19 +73,27 @@ export default function TransactionsPage() {
   const { showConfirm } = useConfirm()
   const { showSuccess } = useSuccessModal()
 
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [wallets, setWallets] = useState<Wallet[]>([])
-  const [debts, setDebts] = useState<Debt[]>([])
+  const txQuery = useTransactions()
+  const walletsQuery = useWallets()
+  const debtsQuery = useDebts()
+  const budgetsQuery = useBudgets()
+  const settingsQuery = useSettings()
+  const filterHistoryQuery = useFilterHistory()
+  const invalidate = useInvalidate()
+
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
+  const wallets = useMemo(() => walletsQuery.data ?? [], [walletsQuery.data])
+  const debts = useMemo(() => debtsQuery.data ?? [], [debtsQuery.data])
+  const budgets = useMemo(() => budgetsQuery.data ?? [], [budgetsQuery.data])
+  const filterHistory = useMemo(() => (filterHistoryQuery.data as FilterHistoryEntry[]) ?? [], [filterHistoryQuery.data])
+  const loading = txQuery.isLoading
   const [customCategories, setCustomCategories] = useState<CustomMap>({ pengeluaran: [], pemasukan: [] })
-  const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
-  const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterKey>('semua')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [refreshing, setRefreshing] = useState(false)
   // Web table state (RiwayatWeb)
   const isWeb = useIsWeb()
-  const [budgets, setBudgets] = useState<Budget[]>([])
   const [catFilter, setCatFilter] = useState('')
   const [walletFilter, setWalletFilter] = useState('')
   const [webPage, setWebPage] = useState(0)
@@ -103,29 +112,19 @@ export default function TransactionsPage() {
     if (c) setCatFilter(c)
   }, [])
 
-  const loadAll = async () => {
-    const [txRes, wRes, dRes, csRes, fhRes, bRes] = await Promise.all([
-      getTransactions(),
-      getWallets(),
-      getDebts(),
-      supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
-      supabase.from('filter_history').select('*'),
-      getBudgets(),
-    ])
-    if (bRes.data) setBudgets(bRes.data as Budget[])
-    if (txRes.data) setTransactions(txRes.data as Transaction[])
-    if (wRes.data) setWallets(wRes.data as Wallet[])
-    if (dRes.data) setDebts(dRes.data as Debt[])
-    if (csRes.data?.custom_categories) setCustomCategories(csRes.data.custom_categories as CustomMap)
-    if (fhRes.data) setFilterHistory(fhRes.data as FilterHistoryEntry[])
-    setLoading(false)
-  }
+  const reloadAll = () => invalidate([
+    qk.transactions, qk.wallets, qk.debts, qk.budgets, qk.settings, qk.filterHistory,
+  ])
 
-  useEffect(() => { loadAll() }, [])
+  // Seed custom categories from user_settings.
+  useEffect(() => {
+    const cc = settingsQuery.data?.custom_categories
+    if (cc) setCustomCategories(cc as CustomMap)
+  }, [settingsQuery.data])
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await loadAll()
+    await reloadAll()
     setRefreshing(false)
     showToast('success', 'Data diperbarui')
   }
@@ -202,7 +201,7 @@ export default function TransactionsPage() {
       toast: showToast,
       success: showSuccess,
     })
-    if (res.deleted) await loadAll()
+    if (res.deleted) await reloadAll()
   }
 
   const iconFor = (t: Transaction) => {
@@ -368,7 +367,7 @@ export default function TransactionsPage() {
             customCategories={customCategories}
             onCustomCategoriesChange={(c) => setCustomCategories(c)}
             onClose={() => setTxModal(null)}
-            onSaved={() => { setTxModal(null); loadAll() }}
+            onSaved={() => { setTxModal(null); reloadAll() }}
           />
         )}
       </div>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Ubah transaksi</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.catb{min-height:80px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:11px;font-weight:600;color:var(--text);text-align:center;line-height:1.25}
+.catb.on{border-color:var(--accent);background:var(--accent-tint)}
+</style>
+</helmet>
+<div class="app" style="height: 1380px; background: var(--surface)">
+<div class="scroll" style="padding-bottom: 120px">
+<div class="top">
+<a href="Riwayat.dc.html" class="icon-btn ghost" aria-label="Kembali"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<h1 class="h2">Ubah transaksi</h1>
+<span style="width: 44px"></span>
+</div>
+
+<div class="seg"><button class="on">Pengeluaran</button><button>Pemasukan</button><button>Transfer</button></div>
+<div class="stack">
+<div class="lbl" style="font-weight: 600">Jumlah</div>
+<div class="amount-box"><span class="cur">Rp</span><span class="val">21.600</span></div>
+<div class="chips"><button class="chip">+10rb</button><button class="chip">+50rb</button><button class="chip">+100rb</button><button class="chip">+500rb</button></div>
+</div>
+
+<div class="g2">
+<div class="field">Tanggal<div class="input">5 Okt 2026</div></div>
+<div class="field">Jam<div class="input">10.20</div></div>
+</div>
+
+<div class="field">Dompet
+<div class="chips scrollx"><button class="chip on">My BCA<span class="lbl" style="font-weight: 500">Rp 378rb</span></button><button class="chip">GoPay<span class="lbl" style="font-weight: 500">Rp 1rb</span></button><button class="chip">Mandiri<span class="lbl" style="font-weight: 500">Rp 85rb</span></button></div>
+<span class="lbl" style="font-weight: 500">Ganti dompet: saldo My BCA dikembalikan Rp 21.600, saldo dompet baru dikurangi.</span>
+</div>
+
+<div class="field">Kategori
+<div class="g4">
+<button class="catb"><span class="ic-s c-dapur"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H6"></path></svg></span>Kebutuhan dapur</button>
+<button class="catb"><span class="ic-s c-makan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></span>Makan di luar</button>
+<button class="catb"><span class="ic-s c-transport"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path></svg></span>Transportasi</button>
+<button class="catb on"><span class="ic-s c-belanja"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg></span>Belanja</button>
+</div>
+<button class="link" style="align-self: flex-start; padding-top: 4px">Lihat semua kategori</button>
+</div>
+
+<div class="card stack" style="background: var(--surface-2); padding: 12px; gap: 8px" aria-label="Dampak ke budget"><div class="between" style="font-size: 13px"><span style="font-weight: 600">Budget Belanja</span><span class="lbl" style="font-weight: 700; color: var(--danger)">Limit terlampaui</span></div><div class="between" style="font-size: 12px"><span class="lbl">Terpakai + baru</span><b>Rp 1.021.600 / 1.000.000</b></div><div class="bar"><div style="width: 100%; background: var(--danger)"></div></div><span class="lbl">Sisa: <b style="color: var(--text)">Rp 0</b></span></div>
+<span class="lbl" style="margin-top: -6px">Terpakai dihitung tanpa nominal lama transaksi ini.</span>
+<div class="toggle-row"><div class="grow"><div class="t">Ada yang nitip bayar?</div><div class="meta">Split bill</div></div><button class="switch" aria-label="Split bill"></button></div>
+<div class="toggle-row"><div class="grow"><div class="t">Ini talangan?</div><div class="meta">Tidak dihitung pengeluaran</div></div><button class="switch" aria-label="Talangan"></button></div>
+
+<label class="field">Catatan<textarea class="input">beli tempat es</textarea></label>
+
+<div class="card stack" style="background: var(--surface-2); gap: 4px; font-size: 12px">
+<span class="lbl">Dicatat 5 Okt 2026, 10.20</span>
+</div>
+
+<a href="HapusKonfirmasi.dc.html" class="btn-2 btn-block" style="color: var(--danger); border-color: var(--danger-tint)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Hapus transaksi</a>
+</div>
+<div class="sticky-foot"><button class="btn btn-block">Simpan perubahan</button></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1380}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

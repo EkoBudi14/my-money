@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Tambah transaksi</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.catb{min-height:80px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:11px;font-weight:600;color:var(--text);text-align:center;line-height:1.25}
+.catb.on{border-color:var(--accent);background:var(--accent-tint)}
+.catb.add{border-style:dashed;color:var(--text-2)}
+</style>
+</helmet>
+<div class="app" style="height: 1440px; background: var(--surface)">
+<div class="scroll" style="padding-bottom: 120px">
+
+<div class="top">
+<a href="Main.dc.html" class="icon-btn ghost" aria-label="Tutup"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+<h1 class="h2">{{ title }}</h1>
+<div class="hstack" style="gap: 6px">
+<a href="Scan.dc.html" class="icon-btn" aria-label="Scan struk"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></a>
+<a href="Voice.dc.html" class="icon-btn" aria-label="Input suara"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></a>
+</div>
+</div>
+
+<div class="seg" role="tablist">
+<button class="{{ tabKeluar }}" onClick="{{ setKeluar }}">Pengeluaran</button>
+<button class="{{ tabMasuk }}" onClick="{{ setMasuk }}">Pemasukan</button>
+<button class="{{ tabTransfer }}" onClick="{{ setTransfer }}">Transfer</button>
+</div>
+
+<sc-if value="{{ isTransfer }}" hint-placeholder-val="{{ false }}">
+<div class="stack-12">
+<div class="field">Dari dompet
+<div class="input"><div class="ic-s c-bank"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"></path></svg></div><span class="grow" style="font-weight: 600">BCA</span><span class="lbl">Rp 15,6jt</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+</div>
+<button class="icon-btn" aria-label="Tukar dompet asal dan tujuan" style="align-self: center; width: 40px; height: 40px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M4 16l4 4 4-4M16 20V4M12 8l4-4 4 4"></path></svg></button>
+<div class="field">Ke dompet
+<div class="input"><div class="ic-s c-aset"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"></path></svg></div><span class="grow" style="font-weight: 600">Bibit</span><span class="lbl">Tabungan inti</span><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></div>
+</div>
+</div>
+</sc-if>
+
+<div class="stack">
+<div class="lbl" style="font-weight: 600">{{ amountLabel }}</div>
+<div class="amount-box"><span class="cur">Rp</span><span class="val" style="color: {{ amountColor }}">{{ amountText }}</span></div>
+<div class="chips">
+<sc-for list="{{ quick }}" as="q" hint-placeholder-count="5">
+<button class="chip" onClick="{{ q.add }}">{{ q.label }}</button>
+</sc-for>
+<button class="chip" onClick="{{ reset }}" style="color: var(--text-2)">Reset</button>
+</div>
+</div>
+
+<sc-if value="{{ isTransfer }}" hint-placeholder-val="{{ false }}">
+<div class="stack-12">
+<div class="field">Biaya admin (opsional)
+<div class="input">Rp 2.500</div>
+</div>
+<div class="card stack" style="background: var(--surface-2)">
+<div class="between" style="font-size: 13px"><span class="lbl">Nominal transfer</span><span style="font-weight: 600">Rp {{ amountText }}</span></div>
+<div class="between" style="font-size: 13px"><span class="lbl">Biaya admin</span><span style="font-weight: 600">Rp 2.500</span></div>
+<div class="between" style="border-top: 1px solid var(--border); padding-top: 8px"><span style="font-weight: 700; font-size: 14px">Total keluar dari BCA</span><span style="font-weight: 700; font-size: 15px">Rp {{ totalText }}</span></div>
+</div>
+</div>
+</sc-if>
+
+<div class="g2">
+<div class="field">Tanggal
+<div class="input"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Hari ini, 16 Okt</div>
+</div>
+<div class="field">Jam
+<div class="input"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>12.30</div>
+</div>
+</div>
+
+<sc-if value="{{ notTransfer }}" hint-placeholder-val="{{ true }}">
+<div class="stack-12">
+<div class="field">Dompet
+<div class="chips scrollx">
+<sc-for list="{{ wallets }}" as="w" hint-placeholder-count="5">
+<button class="chip {{ w.cls }}" onClick="{{ w.pick }}">{{ w.name }}<span class="lbl" style="font-weight: 500">{{ w.bal }}</span></button>
+</sc-for>
+</div>
+</div>
+
+<div class="field">
+<div class="between"><span>Kategori</span><span class="lbl" style="font-weight: 500">Wajib dipilih</span></div>
+<sc-if value="{{ isKeluar }}" hint-placeholder-val="{{ true }}">
+<div class="g4">
+<button class="catb {{ c.dapur }}" onClick="{{ p.dapur }}"><span class="ic-s c-dapur"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H6"></path><circle cx="9" cy="19" r="1.5"></circle><circle cx="17" cy="19" r="1.5"></circle></svg></span>Kebutuhan dapur</button>
+<button class="catb {{ c.makan }}" onClick="{{ p.makan }}"><span class="ic-s c-makan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 0-4 2-4 6v4h4"></path></svg></span>Makan di luar</button>
+<button class="catb {{ c.transport }}" onClick="{{ p.transport }}"><span class="ic-s c-transport"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2-5h14l2 5v5H3z"></path><path d="M7 18v2M17 18v2M3 13h18"></path></svg></span>Transportasi</button>
+<button class="catb {{ c.rumah }}" onClick="{{ p.rumah }}"><span class="ic-s c-rumah"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></span>Tempat tinggal</button>
+<button class="catb {{ c.tagihan }}" onClick="{{ p.tagihan }}"><span class="ic-s c-tagihan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"></path></svg></span>Tagihan</button>
+<button class="catb {{ c.belanja }}" onClick="{{ p.belanja }}"><span class="ic-s c-belanja"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg></span>Belanja</button>
+<button class="catb {{ c.kesehatan }}" onClick="{{ p.kesehatan }}"><span class="ic-s c-kesehatan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"></path></svg></span>Kesehatan</button>
+<button class="catb {{ c.cicilan }}" onClick="{{ p.cicilan }}"><span class="ic-s c-cicilan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Cicilan &amp; utang</button>
+<button class="catb {{ c.hiburan }}" onClick="{{ p.hiburan }}"><span class="ic-s c-hiburan"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 4v16M17 4v16M3 12h18"></path></svg></span>Pribadi &amp; hiburan</button>
+<button class="catb {{ c.edukasi }}" onClick="{{ p.edukasi }}"><span class="ic-s c-edukasi"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path><path d="M4 19V5"></path></svg></span>Edukasi &amp; donasi</button>
+<button class="catb {{ c.lainnya }}" onClick="{{ p.lainnya }}"><span class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></span>Lainnya</button>
+<a href="Kategori.dc.html" class="catb add" style="text-decoration: none"><span class="ic-s" style="border: 1.5px dashed var(--border-strong)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>Kelola kategori</a>
+</div>
+</sc-if>
+<sc-if value="{{ isMasuk }}" hint-placeholder-val="{{ false }}">
+<div class="g4">
+<button class="catb {{ c.gaji }}" onClick="{{ p.gaji }}"><span class="ic-s c-gaji"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></span>Gaji</button>
+<button class="catb {{ c.bonus }}" onClick="{{ p.bonus }}"><span class="ic-s c-bonus"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="5"></rect><path d="M5 13v8h14v-8M12 8v13M12 8s-4-1-4-3a2 2 0 0 1 4 0M12 8s4-1 4-3a2 2 0 0 0-4 0"></path></svg></span>Bonus &amp; hadiah</button>
+<button class="catb {{ c.investasi }}" onClick="{{ p.investasi }}"><span class="ic-s c-investasi"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"></path></svg></span>Investasi</button>
+<button class="catb {{ c.penjualan }}" onClick="{{ p.penjualan }}"><span class="ic-s c-belanja"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span>Penjualan</button>
+<button class="catb {{ c.lainnya }}" onClick="{{ p.lainnya }}"><span class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></span>Lainnya</button>
+<button class="catb add"><span class="ic-s" style="border: 1.5px dashed var(--border-strong)"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>Kategori baru</button>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ showBudget }}" hint-placeholder-val="{{ true }}">
+<div class="card stack" style="background: var(--surface-2); padding: 12px; gap: 8px" aria-label="Dampak ke budget"><div class="between" style="font-size: 13px"><span style="font-weight: 600">Budget Makan di luar</span><span class="lbl" style="font-weight: 700; color: {{ bStatusColor }}">{{ bStatus }}</span></div><div class="between" style="font-size: 12px"><span class="lbl">Terpakai + baru</span><b>Rp {{ bUsed }} / 1.500.000</b></div><div class="bar"><div style="width: {{ bPct }}%; background: {{ bColor }}"></div></div><span class="lbl">Sisa: <b style="color: var(--text)">Rp {{ bSisa }}</b></span></div>
+</sc-if>
+
+<sc-if value="{{ isKeluar }}" hint-placeholder-val="{{ true }}">
+<div class="stack">
+<div class="toggle-row">
+<div class="ic-s c-piutang"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2 20a7 7 0 0 1 14 0"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 4 6"></path></svg></div>
+<div class="grow"><div class="t">Ada yang nitip bayar?</div><div class="meta" style="white-space: normal">Split bill. Bagian teman dicatat jadi piutang.</div></div>
+<button class="switch {{ splitCls }}" onClick="{{ toggleSplit }}" aria-label="Split bill"></button>
+</div>
+<sc-if value="{{ split }}" hint-placeholder-val="{{ false }}">
+<div class="card stack" style="background: var(--surface-2)">
+<div class="between" style="font-size: 13px"><span style="font-weight: 600">Rudi</span><span>Rp 25.000</span></div>
+<div class="between" style="font-size: 13px"><span style="font-weight: 600">Sari</span><span>Rp 25.000</span></div>
+<button class="link" style="align-self: flex-start">+ Tambah orang</button>
+<div class="between" style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 13px"><span class="lbl">Bagian kamu</span><span style="font-weight: 700">Rp {{ myShare }}</span></div>
+</div>
+</sc-if>
+<div class="toggle-row">
+<div class="ic-s c-lain"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"></path></svg></div>
+<div class="grow"><div class="t">Ini talangan?</div><div class="meta" style="white-space: normal">Uang ditalangi dulu, tidak dihitung pengeluaran.</div></div>
+<button class="switch {{ talanganCls }}" onClick="{{ toggleTalangan }}" aria-label="Talangan"></button>
+</div>
+<sc-if value="{{ talangan }}" hint-placeholder-val="{{ false }}">
+<label class="field">Nama orang yang ditalangi (opsional)<input class="input" type="text" placeholder="Rudi"></label>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ isMasuk }}" hint-placeholder-val="{{ false }}">
+<div class="toggle-row">
+<div class="ic-s c-piutang"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2 20a7 7 0 0 1 14 0"></path></svg></div>
+<div class="grow"><div class="t">Ini pengembalian piutang?</div><div class="meta" style="white-space: normal">Uang balik dari teman, tidak dihitung pemasukan.</div></div>
+<button class="switch {{ piutangCls }}" onClick="{{ togglePiutang }}" aria-label="Piutang"></button>
+</div>
+<sc-if value="{{ piutang }}" hint-placeholder-val="{{ false }}">
+<label class="field">Nama peminjam (opsional)<input class="input" type="text" placeholder="Sigit"></label>
+</sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<label class="field">Catatan (opsional)
+<textarea class="input" placeholder="Nasi padang dekat kantor"></textarea>
+</label>
+</div>
+
+<div class="sticky-foot">
+<button class="btn btn-block" onClick="{{ save }}" style="background: {{ saveBg }}">{{ saveLabel }}</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1440}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { type: 'keluar', amount: 35000, cat: 'makan', wallet: 'GoPay', split: false, talangan: false, piutang: false, saved: false };
+}
+renderVals() {
+var s = this.state;
+var self = this;
+var set = function (patch) { return function () { patch.saved = false; self.setState(patch); }; };
+var fmt = function (n) { return Number(n || 0).toLocaleString('id-ID'); };
+var names = ['dapur','makan','transport','rumah','tagihan','belanja','kesehatan','cicilan','hiburan','edukasi','lainnya','gaji','bonus','investasi','penjualan'];
+var c = {}; var p = {};
+names.forEach(function (n) { c[n] = s.cat === n ? 'on' : ''; p[n] = set({ cat: n }); });
+var steps = [['+10rb', 10000], ['+50rb', 50000], ['+100rb', 100000], ['+500rb', 500000], ['+1jt', 1000000]];
+var quick = steps.map(function (q) { return { label: q[0], add: function () { self.setState({ amount: self.state.amount + q[1], saved: false }); } }; });
+var bals = { BCA: 'Rp 15,6jt', GoPay: 'Rp 210rb', Mandiri: 'Rp 1,1jt', OVO: 'Rp 85rb', Tunai: 'Rp 150rb' };
+var wallets = Object.keys(bals).map(function (w) { return { name: w, bal: bals[w], cls: s.wallet === w ? 'on' : '', pick: set({ wallet: w }) }; });
+var titles = { keluar: 'Pengeluaran baru', masuk: 'Pemasukan baru', transfer: 'Transfer saldo' };
+var saves = { keluar: 'Simpan pengeluaran', masuk: 'Simpan pemasukan', transfer: 'Simpan transfer' };
+var bUsedN = 1210000 + (s.split ? Math.max(s.amount - 50000, 0) : s.amount); var bOver = bUsedN > 1500000; var bPctN = Math.min(Math.round(bUsedN * 100 / 1500000), 100);
+return {
+title: titles[s.type],
+showBudget: s.type === 'keluar' && s.cat === 'makan',
+bUsed: fmt(bUsedN), bPct: bPctN, bSisa: fmt(Math.max(1500000 - bUsedN, 0)),
+bStatus: bOver ? 'Limit terlampaui' : 'Dalam batas', bStatusColor: bOver ? 'var(--danger)' : 'var(--text-2)',
+bColor: bOver ? 'var(--danger)' : (bPctN > 80 ? '#F59E0B' : 'var(--accent)'),
+tabKeluar: s.type === 'keluar' ? 'on' : '',
+tabMasuk: s.type === 'masuk' ? 'on' : '',
+tabTransfer: s.type === 'transfer' ? 'on' : '',
+setKeluar: set({ type: 'keluar', cat: 'makan' }),
+setMasuk: set({ type: 'masuk', cat: 'gaji' }),
+setTransfer: set({ type: 'transfer' }),
+isKeluar: s.type === 'keluar',
+isMasuk: s.type === 'masuk',
+isTransfer: s.type === 'transfer',
+notTransfer: s.type !== 'transfer',
+amountLabel: s.type === 'transfer' ? 'Nominal transfer' : 'Jumlah',
+amountText: fmt(s.amount),
+totalText: fmt(s.amount + 2500),
+myShare: fmt(Math.max(s.amount - 50000, 0)),
+amountColor: s.type === 'masuk' ? 'var(--income)' : 'var(--text)',
+quick: quick,
+reset: set({ amount: 0 }),
+wallets: wallets,
+c: c, p: p,
+split: s.split,
+splitCls: s.split ? 'on' : '',
+toggleSplit: function () { self.setState({ split: !self.state.split, saved: false }); },
+talangan: s.talangan,
+piutang: s.piutang,
+talanganCls: s.talangan ? 'on' : '',
+toggleTalangan: function () { self.setState({ talangan: !self.state.talangan, saved: false }); },
+piutangCls: s.piutang ? 'on' : '',
+togglePiutang: function () { self.setState({ piutang: !self.state.piutang, saved: false }); },
+save: function () { self.setState({ saved: true }); },
+saveLabel: s.saved ? 'Tersimpan' : saves[s.type],
+saveBg: s.saved ? 'var(--income)' : 'var(--accent)'
+};
+}
+}
+</script>
+</body>
+</html>

@@ -38,6 +38,7 @@ import { ConfirmProvider } from "@/hooks/useConfirm";
 import { SuccessModalProvider } from "@/hooks/useSuccessModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { SidebarProvider } from "@/hooks/useSidebar";
+import QueryProvider from "@/components/QueryProvider";
 import NextTopLoader from "nextjs-toploader";
 
 export default function RootLayout({
@@ -79,23 +80,25 @@ export default function RootLayout({
           shadow="0 2px 4px rgba(0,0,0,0.2)"
           zIndex={99999}
         />
-        <ThemeProvider>
-          <SidebarProvider>
-            <ToastProvider>
-              <ConfirmProvider>
-                <SuccessModalProvider>
-                  <SplashScreen />
-                  <div className="flex min-h-screen">
-                    <Sidebar />
-                    <ContentWrapper>
-                      {children}
-                    </ContentWrapper>
-                  </div>
-                </SuccessModalProvider>
-              </ConfirmProvider>
-            </ToastProvider>
-          </SidebarProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <SidebarProvider>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <SuccessModalProvider>
+                    <SplashScreen />
+                    <div className="flex min-h-screen">
+                      <Sidebar />
+                      <ContentWrapper>
+                        {children}
+                      </ContentWrapper>
+                    </div>
+                  </SuccessModalProvider>
+                </ConfirmProvider>
+              </ToastProvider>
+            </SidebarProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

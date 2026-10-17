@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Modal web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./catatduit.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.mw{background:var(--surface);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;box-shadow:0 12px 32px rgba(8,20,18,.08)}
+.mw-h{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.mw-h h2{margin:0;font-size:16px;font-weight:700}
+.mw-b{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.mw-f{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border)}
+.mw-f .btn,.mw-f .btn-2{height:40px;font-size:13px}
+.tag{font-size:11px;font-weight:700;color:var(--accent);margin:0 0 6px}
+.opt{border:1.5px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--surface);color:var(--text)}
+.opt.on{border-color:var(--accent);background:var(--accent-tint)}
+.swc{width:28px;height:28px;border-radius:14px;border:3px solid var(--surface);box-shadow:0 0 0 1.5px var(--border);padding:0}
+.swc.on{box-shadow:0 0 0 2.5px var(--text)}
+.x{width:36px;height:36px}
+</style>
+</helmet>
+<div style="width: 1280px; min-height: 2080px; box-sizing: border-box; background: var(--bg); color: var(--text); padding: 48px; display: flex; flex-direction: column; gap: 24px; font-family: var(--font)">
+<div><h1 style="margin: 0; font-size: 30px; font-weight: 700">Web · semua form sebagai modal</h1><p class="sub" style="font-size: 15px; margin-top: 6px">Field sama persis dengan sheet HP. Lebar 480px (form sederhana) atau 560px (Kategori). Esc tutup, Enter simpan, fokus terkunci di modal. Halaman Dompet dan Budget boleh pakai panel kanan sebagai ganti modal.</p></div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start">
+
+<div><p class="tag">Dompet · tambah / ubah (/wallets)</p>
+<div class="mw" role="dialog" aria-label="Ubah dompet">
+<div class="mw-h"><h2>Ubah dompet</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Nama dompet<input class="input" type="text" value="GoPay"></label>
+<div class="field">Tipe<div class="seg"><button>Bank</button><button class="on">E-wallet</button><button>Tunai</button></div></div>
+<div class="field">Masuk ke<div class="g2"><button class="opt on"><span class="t" style="font-size: 13px">Saldo aktif</span></button><button class="opt"><span class="t" style="font-size: 13px">Tabungan inti</span></button></div></div>
+<label class="field">Nilai saat ini<input class="input" type="text" value="Rp 210.000"></label>
+<div class="field">Sumber dana (opsional)<div class="input"><span class="grow" style="font-weight: 600">BCA</span><span class="lbl">Rp 2.380.000</span></div><span class="lbl" style="font-weight: 500">Selisih nilai diambil dari BCA (atau dikembalikan ke BCA) dan dicatat sebagai transfer.</span></div>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2" style="color: var(--danger)">Hapus dompet</button><div class="hstack"><button class="btn-2">Batal</button><button class="btn">Simpan perubahan</button></div></div>
+</div></div>
+
+<div><p class="tag">Budget · tambah / ubah</p>
+<div class="mw" role="dialog" aria-label="Ubah budget">
+<div class="mw-h"><h2>Ubah budget</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<div class="g2"><div class="field">Mulai<div class="input">25 Sep 2026</div></div><div class="field">Selesai<div class="input">25 Okt 2026</div></div></div>
+<div class="field">Kategori<div class="input"><span class="grow" style="font-weight: 600">Makan di luar</span></div></div>
+<label class="field">Batas<input class="input" type="text" value="Rp 1.500.000"></label>
+<span class="lbl">Budget tidak menghitung transaksi piutang atau talangan.</span>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2" style="color: var(--danger)">Hapus budget</button><div class="hstack"><button class="btn-2">Batal</button><button class="btn">Simpan perubahan</button></div></div>
+</div></div>
+
+<div><p class="tag">Budget · catat pengeluaran cepat</p>
+<div class="mw" role="dialog" aria-label="Catat pengeluaran">
+<div class="mw-h"><div><p class="sub" style="font-size: 12px">Catat pengeluaran</p><h2>Makan di luar</h2></div><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Jumlah<input class="input" type="text" value="Rp 45.000" style="font-size: 18px; font-weight: 700"></label>
+<div class="field">Dari dompet<div class="input"><span class="grow" style="font-weight: 600">GoPay</span><span class="lbl">Rp 210.000</span></div></div>
+<div class="card stack" style="background: var(--surface-2); padding: 12px"><div class="between" style="font-size: 13px"><span class="lbl">Terpakai + baru</span><b>Rp 1.245.000 / 1.500.000</b></div><div class="bar"><div style="width: 83%; background: #F59E0B"></div></div></div>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Catat pengeluaran</button></div>
+</div></div>
+
+<div><p class="tag">Goal · tambah / ubah</p>
+<div class="mw" role="dialog" aria-label="Ubah goal">
+<div class="mw-h"><h2>Ubah goal</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Nama goal<input class="input" type="text" value="Tabungan nikah"></label>
+<label class="field">Target dana<input class="input" type="text" value="Rp 100.000.000"></label>
+<label class="field">Sudah terkumpul<input class="input" type="text" value="Rp 4.874.000"></label>
+<div class="field">Batas waktu (opsional)<div class="input">Des 2027</div></div>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2" style="color: var(--danger)">Hapus goal</button><div class="hstack"><button class="btn-2">Batal</button><button class="btn">Simpan perubahan</button></div></div>
+</div></div>
+
+<div><p class="tag">Goal · nabung</p>
+<div class="mw" role="dialog" aria-label="Nabung">
+<div class="mw-h"><div><p class="sub" style="font-size: 12px">Nabung ke</p><h2>Tabungan nikah</h2></div><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Jumlah<input class="input" type="text" value="Rp 1.000.000" style="font-size: 18px; font-weight: 700"></label>
+<div class="chips"><button class="chip">+100rb</button><button class="chip">+500rb</button><button class="chip">+1jt</button></div>
+<div class="card stack" style="background: var(--surface-2); padding: 12px"><div class="between" style="font-size: 13px"><span class="lbl">Setelah nabung</span><b>Rp 5.874.000 · 6%</b></div><div class="bar"><div style="width: 6%"></div></div></div>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Tambah ke tabungan</button></div>
+</div></div>
+
+<div><p class="tag">Tagihan / pemasukan rutin · tambah / ubah</p>
+<div class="mw" role="dialog" aria-label="Ubah tagihan rutin">
+<div class="mw-h"><h2>Ubah tagihan rutin</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<div class="seg"><button class="on">Tagihan rutin</button><button>Pemasukan rutin</button></div>
+<label class="field">Nama tagihan<input class="input" type="text" value="Netflix"></label>
+<label class="field">Jumlah<input class="input" type="text" value="Rp 65.000"></label>
+<div class="field">Kategori<div class="input"><span class="grow" style="font-weight: 600">Pribadi &amp; hiburan</span></div></div>
+<div class="field">Tanggal bayar pertama<div class="input">18 Okt 2026</div><span class="lbl" style="font-weight: 500">Berulang tiap bulan di tanggal yang sama.</span></div>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2" style="color: var(--danger)">Hapus</button><div class="hstack"><button class="btn-2">Batal</button><button class="btn">Simpan perubahan</button></div></div>
+</div></div>
+
+<div><p class="tag">Tagihan · bayar (pemasukan rutin: “Catat diterima”)</p>
+<div class="mw" role="dialog" aria-label="Bayar tagihan">
+<div class="mw-h"><div><p class="sub" style="font-size: 12px">Bayar tagihan</p><h2>Netflix</h2></div><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Jumlah pembayaran<input class="input" type="text" value="Rp 65.000" style="font-size: 18px; font-weight: 700"></label>
+<span class="lbl" style="margin-top: -6px">Default sesuai tagihan.</span>
+<div class="field">Tanggal<div class="input">16 Okt 2026</div></div>
+<div class="field">Bayar dari dompet<div class="input"><span class="grow" style="font-weight: 600">GoPay</span><span class="lbl">Rp 210.000</span></div></div>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Bayar Rp 65.000</button></div>
+</div></div>
+
+<div><p class="tag">Piutang · lunasi</p>
+<div class="mw" role="dialog" aria-label="Lunasi piutang">
+<div class="mw-h"><div><p class="sub" style="font-size: 12px">Lunasi piutang</p><h2>Sigit · Rp 10.000</h2></div><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<div class="field">Uang masuk ke dompet
+<div class="stack" style="gap: 6px">
+<button class="opt on" style="flex-direction: row; align-items: center; gap: 10px"><span class="grow t" style="font-size: 13px">BCA</span><span class="lbl">Rp 2.380.000</span></button>
+<button class="opt" style="flex-direction: row; align-items: center; gap: 10px"><span class="grow t" style="font-size: 13px">GoPay</span><span class="lbl">Rp 210.000</span></button>
+<button class="opt" style="flex-direction: row; align-items: center; gap: 10px"><span class="grow t" style="font-size: 13px">Tunai</span><span class="lbl">Rp 150.000</span></button>
+</div></div>
+<span class="lbl">Dicatat sebagai pemasukan “Pelunasan piutang: Sigit”, tidak dihitung di total pemasukan.</span>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Tandai lunas</button></div>
+</div></div>
+
+<div><p class="tag">Catatan · tulis / ubah</p>
+<div class="mw" role="dialog" aria-label="Ubah catatan">
+<div class="mw-h"><h2>Ubah catatan</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Judul (opsional)<input class="input" type="text" value="Utang ke Andi"></label>
+<label class="field"><span class="between"><span>Isi</span><span class="lbl" style="font-weight: 500">58 karakter</span></span><textarea class="input" style="min-height: 96px">Sisa Rp 500.000, bayar sebelum 30 Okt.</textarea></label>
+<span class="lbl">Judul atau isi wajib diisi salah satu.</span>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2" style="color: var(--danger)">Hapus catatan</button><div class="hstack"><button class="btn-2">Batal</button><button class="btn">Simpan perubahan</button></div></div>
+</div></div>
+
+<div><p class="tag">Kalender · tambah / ubah agenda</p>
+<div class="mw" role="dialog" aria-label="Tambah agenda">
+<div class="mw-h"><div><p class="sub" style="font-size: 12px">Jumat, 16 Oktober 2026</p><h2>Tambah agenda</h2></div><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<label class="field">Isi<input class="input" type="text" placeholder="Bayar listrik, meeting jam 2"></label>
+<div class="field">Tipe<div class="seg"><button class="on">Catatan</button><button>Pengingat</button></div></div>
+<div class="field">Warna label<div class="hstack" style="gap: 8px"><button class="swc on" aria-label="Biru" style="background: #3B82F6"></button><button class="swc" aria-label="Hijau" style="background: #22C55E"></button><button class="swc" aria-label="Kuning" style="background: #F59E0B"></button><button class="swc" aria-label="Merah" style="background: #F43F5E"></button><button class="swc" aria-label="Ungu" style="background: #8B5CF6"></button></div></div>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Simpan agenda</button></div>
+</div></div>
+
+<div><p class="tag">Export ke Excel</p>
+<div class="mw" role="dialog" aria-label="Export ke Excel">
+<div class="mw-h"><h2>Export ke Excel</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<div class="field">Periode<div class="input"><span class="grow" style="font-weight: 600">25 Sep – 25 Okt 2026</span><span class="link">Ubah</span></div></div>
+<div class="field">Isi file (4 sheet)<div class="card-flush" style="background: var(--surface-2)"><div class="row" style="padding: 8px 0"><span class="grow" style="font-size: 13px; font-weight: 600">Transaksi</span><span class="lbl">42 baris</span></div><div class="row" style="padding: 8px 0"><span class="grow" style="font-size: 13px; font-weight: 600">Per kategori</span><span class="lbl">Periode ini</span></div><div class="row" style="padding: 8px 0"><span class="grow" style="font-size: 13px; font-weight: 600">Rekap per rentang</span><span class="lbl">Semua rentang custom</span></div><div class="row" style="padding: 8px 0"><span class="grow" style="font-size: 13px; font-weight: 600">Dompet</span><span class="lbl">Saldo saat ini</span></div></div></div>
+</div>
+<div class="mw-f"><button class="btn-2">Batal</button><button class="btn">Unduh .xlsx</button></div>
+</div></div>
+
+<div><p class="tag">Filter dan periode (popover di bawah tombol periode)</p>
+<div class="mw" role="dialog" aria-label="Filter dan periode">
+<div class="mw-h"><h2>Filter dan periode</h2><button class="icon-btn ghost x" aria-label="Tutup"><svg class="i i-s" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="mw-b">
+<div class="seg"><button>Bulanan</button><button class="on">Custom</button></div>
+<div class="g2"><div class="field">Dari<div class="input">25 Sep 2026</div></div><div class="field">Sampai<div class="input">25 Okt 2026</div></div></div>
+<span class="lbl">Bulanan: pilih tahun lalu bulan (tanggal 1 sampai akhir bulan). Rentang custom tersimpan dan dipakai lagi saat app dibuka.</span>
+</div>
+<div class="mw-f" style="justify-content: space-between"><button class="btn-2">Reset ke bulan ini</button><button class="btn">Terapkan</button></div>
+</div></div>
+
+</div>
+<div class="tile" style="font-size: 13px">Kelola kategori di web: modal 560px. Kiri daftar kategori custom (ubah, hapus), kanan form buat/ubah (nama, ikon, warna, pratinjau). Isi sama dengan <b>Kategori.dc.html</b>.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2080}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,9 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
+import { useGoals, useWallets, useInvalidate, qk } from '@/hooks/useAppData'
 import { restoreRow } from '@/lib/undo'
 import Link from 'next/link'
-import { Goal, Wallet } from '@/types'
+import { Goal } from '@/types'
 import { Plus, Target, Trash2, Pencil, X, ChevronLeft } from 'lucide-react'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import NeoSelect from '@/components/NeoSelect'
@@ -16,8 +18,12 @@ import { useIsWeb } from '@/hooks/useIsWeb'
 import FieldError from '@/components/FieldError'
 
 export default function GoalsPage() {
-    const [goals, setGoals] = useState<Goal[]>([])
-    const [loading, setLoading] = useState(true)
+    const goalsQuery = useGoals()
+    const walletsQuery = useWallets()
+    const invalidate = useInvalidate()
+    const qc = useQueryClient()
+    const goals = useMemo(() => goalsQuery.data ?? [], [goalsQuery.data])
+    const loading = goalsQuery.isLoading
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const { showToast } = useToast()
@@ -41,27 +47,21 @@ export default function GoalsPage() {
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [qaError, setQaError] = useState('')
     // Nabung from a wallet (optional, DESIGN.md 0.5) + archive support (needs goals.archived_at)
-    const [wallets, setWallets] = useState<Wallet[]>([])
+    const wallets = useMemo(() => (walletsQuery.data ?? []).filter(w => w.category === 'active'), [walletsQuery.data])
     const [qaWalletId, setQaWalletId] = useState('')
     const [canArchive, setCanArchive] = useState(false)
     const [showArchived, setShowArchived] = useState(false)
     useEffect(() => {
-        supabase.from('wallets').select('*').eq('category', 'active').then(({ data }) => setWallets((data || []) as Wallet[]))
         supabase.from('goals').select('archived_at').limit(1).then(({ error }) => setCanArchive(!error))
     }, [])
     const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     useEffect(() => {
-        fetchGoals()
-    }, [])
+        if (goalsQuery.error) showToast('error', 'Gagal memuat goals')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [goalsQuery.error])
 
-    const fetchGoals = async () => {
-        setLoading(true)
-        const { data, error } = await supabase.from('goals').select('*').order('created_at', { ascending: false })
-        if (data) setGoals(data)
-        if (error) showToast('error', 'Gagal memuat goals')
-        setLoading(false)
-    }
+    const fetchGoals = () => invalidate([qk.goals, qk.wallets, qk.transactions])
 
     const resetForm = () => {
         setName('')
@@ -165,10 +165,10 @@ export default function GoalsPage() {
         if (!confirm) return
 
         // 1. Simpan state sebelumnya untuk rollback
-        const previousGoals = [...goals]
+        const previousGoals = goals
 
-        // 2. Optimistic update: langsung hapus dari state lokal
-        setGoals(prev => prev.filter(g => g.id !== id))
+        // 2. Optimistic update: langsung hapus dari cache
+        qc.setQueryData(qk.goals, previousGoals.filter(g => g.id !== id))
 
         // 3. Request ke database
         const { error } = await supabase.from('goals').delete().eq('id', id)
@@ -187,7 +187,7 @@ export default function GoalsPage() {
             })
         } else {
             // 4. Rollback jika gagal
-            setGoals(previousGoals)
+            qc.setQueryData(qk.goals, previousGoals)
             showToast('error', 'Goal gagal dihapus. Coba lagi.')
         }
     }
