@@ -345,3 +345,4 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .rank{width:22px;font-size:13px;font-weight:700;color:var(--text-2);flex:none}.cd .colb{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%;border-bottom:1px solid var(--border)}.cd .colb>div{width:16px;border-radius:6px 6px 0 0}
 .cd .ng .note-card{min-height:140px}
 @media(min-width:768px){.cd .scan-cols{display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,1.5fr);gap:20px;align-items:start}}.cd .scan-cols{display:flex;flex-direction:column;gap:12px}@media(min-width:768px){.cd .scan-cols{display:grid}}
+html.dark .cd .b-ok,.cd[data-theme="dark"] .b-ok{color:var(--income)}
