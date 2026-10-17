@@ -10,6 +10,7 @@ import { useSuccessModal } from '@/hooks/useSuccessModal'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { getCategoryIcon } from '@/lib/categories'
+import { SkeletonCards } from '@/components/Skeleton'
 
 // Built-in category -> catatduit color class (DESIGN.md section 6).
 const CAT_CLASS: Record<string, string> = {
@@ -383,11 +384,7 @@ export default function BudgetsPage() {
 
                 {/* Budget list */}
                 {loading ? (
-                    <div className="stack-12">
-                        {[0, 1, 2].map(i => (
-                            <div key={i} className="card stack"><div className="hstack" style={{ gap: 12 }}><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div><div className="bar"><div style={{ width: '40%' }} /></div></div>
-                        ))}
-                    </div>
+                    <SkeletonCards count={4} />
                 ) : ranked.length === 0 ? (
                     <div className="card" style={{ textAlign: 'center' }}>
                         <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada budget periode ini</p>

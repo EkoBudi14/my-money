@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Calendar, TrendingUp, AlertTriangle, Pencil, Trash2, X, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, Plus, Calendar, TrendingUp, Pencil, Trash2, X, CheckCircle2, Undo2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getRecurringBills, deleteRecurringBill } from '@/lib/recurring-bills'
 import { RecurringBill, Wallet } from '@/types'
@@ -11,6 +11,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import AddBillModal from '@/components/AddBillModal'
+import { SkeletonRows } from '@/components/Skeleton'
 
 type Tab = 'pengeluaran' | 'pemasukan'
 const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
@@ -128,14 +129,52 @@ export default function RecurringPage() {
       await supabase.from('wallets').update({ balance: isIncome ? fresh.balance + amountNum : fresh.balance - amountNum }).eq('id', payWalletId)
       await supabase.from('bill_payments').insert({ bill_id: paySheet.id, month, paid_at: new Date().toISOString(), transaction_id: tx.id })
 
-      showToast('success', isIncome ? 'Pemasukan berhasil dicatat!' : 'Tagihan berhasil dibayar!')
+      showToast('success', isIncome ? `Pemasukan ${paySheet.name} dicatat` : `Tagihan ${paySheet.name} dibayar`)
       setPaySheet(null)
       refreshAll()
     } catch (e) {
       console.error(e)
-      showToast('error', isIncome ? 'Gagal mencatat pemasukan' : 'Gagal membayar tagihan')
+      showToast('error', isIncome ? 'Pemasukan gagal dicatat. Coba lagi.' : 'Tagihan gagal dibayar. Coba lagi.')
     } finally {
       setPaying(false)
+    }
+  }
+
+  // Cancel this month's payment/receipt: delete the bill_payment + its transaction
+  // and reverse the wallet balance (refund for an expense, deduct for income).
+  const handleCancelPayment = async (bill: RecurringBill) => {
+    const income = isPemasukan(bill)
+    const ok = await showConfirm({
+      title: income ? `Batalkan penerimaan ${bill.name}?` : `Batalkan pembayaran ${bill.name}?`,
+      message: income
+        ? `Transaksi pemasukan dihapus dan saldo dompet berkurang. ${bill.name} kembali berstatus belum diterima.`
+        : `Transaksi pembayaran dihapus dan saldonya dikembalikan ke dompet. ${bill.name} kembali berstatus belum dibayar.`,
+      confirmText: income ? 'Batalkan' : 'Batalkan bayar',
+      cancelText: 'Kembali',
+      tone: 'warn',
+    })
+    if (!ok) return
+    try {
+      const month = new Date().toISOString().slice(0, 7)
+      const { data: existing } = await supabase.from('bill_payments').select('*').eq('bill_id', bill.id).eq('month', month).single()
+      if (existing?.transaction_id) {
+        const { data: tx } = await supabase.from('transactions').select('*').eq('id', existing.transaction_id).single()
+        if (tx) {
+          const { data: w } = await supabase.from('wallets').select('balance').eq('id', tx.wallet_id).single()
+          if (w) {
+            const newBal = tx.type === 'pemasukan' ? w.balance - tx.amount : w.balance + tx.amount
+            await supabase.from('wallets').update({ balance: newBal }).eq('id', tx.wallet_id)
+          }
+          await supabase.from('transactions').delete().eq('id', tx.id)
+        }
+      }
+      const { error } = await supabase.from('bill_payments').delete().eq('bill_id', bill.id).eq('month', month)
+      if (error) throw error
+      showToast('success', income ? `Penerimaan ${bill.name} dibatalkan` : `Pembayaran ${bill.name} dibatalkan`)
+      refreshAll()
+    } catch (e) {
+      console.error(e)
+      showToast('error', income ? 'Penerimaan gagal dibatalkan. Coba lagi.' : 'Pembayaran gagal dibatalkan. Coba lagi.')
     }
   }
 
@@ -175,9 +214,7 @@ export default function RecurringPage() {
         </div>
 
         {loading ? (
-          <div className="card-flush">
-            {[0, 1, 2].map(i => <div key={i} className="row"><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div>)}
-          </div>
+          <SkeletonRows count={3} />
         ) : activeBills.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>
             <p className="t" style={{ whiteSpace: 'normal' }}>{tab === 'pemasukan' ? 'Belum ada pemasukan rutin' : 'Belum ada tagihan rutin'}</p>
@@ -222,10 +259,12 @@ export default function RecurringPage() {
                 <div className="date-h">{tab === 'pemasukan' ? 'Sudah diterima bulan ini' : 'Sudah dibayar bulan ini'}</div>
                 <div className="card-flush">
                   {paid.map(b => (
-                    <div className="row" key={b.id} style={{ opacity: 0.7 }}>
+                    <div className="row" key={b.id}>
                       <div className="ic c-investasi"><CheckCircle2 className="i" /></div>
-                      <div className="grow"><div className="t">{b.name}</div></div>
-                      <div className="amt">{rp(b.amount)}</div>
+                      <div className="grow"><div className="t">{b.name}</div><div className="meta">{rp(b.amount)}</div></div>
+                      <button className="btn-2" style={{ height: 36, fontSize: 13 }} onClick={() => handleCancelPayment(b)}>
+                        <Undo2 className="i i-s" />Batalkan
+                      </button>
                     </div>
                   ))}
                 </div>
