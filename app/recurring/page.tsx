@@ -13,7 +13,8 @@ import DatePickerNeo from '@/components/DatePickerNeo'
 import AddBillModal from '@/components/AddBillModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
-import { ActionSheet } from '@/components/ActionMenu'
+import { ActionSheet, DropdownMenu, ActionItem } from '@/components/ActionMenu'
+import { useIsWeb } from '@/hooks/useIsWeb'
 
 type Tab = 'pengeluaran' | 'pemasukan'
 const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
@@ -30,6 +31,7 @@ export default function RecurringPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
   // Action sheet per item (DESIGN-TAMBAHAN §7 / AksiTagihan)
   const [menuBill, setMenuBill] = useState<RecurringBill | null>(null)
+  const isWeb = useIsWeb()
 
   // Add / edit modal
   const [addOpen, setAddOpen] = useState(false)
@@ -194,6 +196,170 @@ export default function RecurringPage() {
 
   const closeAdd = () => { setAddOpen(false); setEditId(null) }
 
+  // Sheets / dialogs shared by the mobile and web layouts.
+  const overlays = (
+      <>
+      {/* Pay / receive sheet */}
+      {paySheet && (
+        <>
+          <div className="scrim" onClick={() => setPaySheet(null)} />
+          <div className="sheet">
+            <div className="grabber" />
+            <div className="between">
+              <div><h2 className="h2">{isPemasukan(paySheet) ? 'Terima pemasukan' : 'Bayar tagihan'}</h2><div className="lbl">{paySheet.name}</div></div>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={() => setPaySheet(null)}><X className="i" /></button>
+            </div>
+            <label className="field">{isPemasukan(paySheet) ? 'Jumlah diterima (Rp)' : 'Jumlah pembayaran (Rp)'}
+              <input className="input" inputMode="numeric" placeholder="0" value={payAmount ? parseInt(payAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={e => setPayAmount(e.target.value.replace(/\D/g, ''))} />
+            </label>
+            <label className="field">Tanggal
+              <DatePickerNeo className="input" value={payDate} onChange={e => setPayDate(e.target.value)} />
+            </label>
+            <div className="field">{isPemasukan(paySheet) ? 'Masuk ke dompet' : 'Bayar dari dompet'}
+              <NeoSelect value={payWalletId ? payWalletId.toString() : ''} onChange={v => setPayWalletId(Number(v))} placeholder="Pilih dompet"
+                options={wallets.map(w => ({ label: `${w.name} — ${rp(w.balance)}`, value: w.id.toString() }))} />
+            </div>
+            <div className="g2">
+              <button className="btn-2" disabled={paying} onClick={() => setPaySheet(null)}>Batal</button>
+              <button className="btn" style={{ height: 44, fontSize: 14 }} disabled={!payWalletId || !payAmount || paying} onClick={confirmPayment}>
+                {paying ? 'Menyimpan…' : `${isPemasukan(paySheet) ? 'Terima' : 'Bayar'} ${rp(parseInt(payAmount.replace(/D/g, '') || '0'))}`}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Item action sheet */}
+      <ActionSheet
+        isOpen={!!menuBill}
+        onClose={() => setMenuBill(null)}
+        header={menuBill ? { title: menuBill.name, subtitle: `${rp(menuBill.amount)} · tiap tanggal ${menuBill.due_date}` } : undefined}
+        items={menuBill ? (billPayments[menuBill.id]
+          ? [
+            { key: 'cancel', label: isPemasukan(menuBill) ? 'Batalkan penerimaan bulan ini' : 'Batalkan pembayaran bulan ini', icon: <Undo2 className="i i-s" />, onClick: () => handleCancelPayment(menuBill) },
+            { key: 'edit', label: isPemasukan(menuBill) ? 'Ubah pemasukan rutin' : 'Ubah tagihan', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
+            { key: 'del', label: isPemasukan(menuBill) ? 'Hapus pemasukan rutin' : 'Hapus tagihan rutin', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
+          ]
+          : [
+            { key: 'pay', label: isPemasukan(menuBill) ? 'Catat diterima' : 'Bayar tagihan', icon: <WalletIcon className="i i-s" />, onClick: () => openPay(menuBill) },
+            { key: 'edit', label: 'Ubah', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
+            { key: 'del', label: 'Hapus', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
+          ]) : []}
+      />
+
+      {/* Add / edit recurring item */}
+      {addOpen && (
+        <AddBillModal
+          isOpen={addOpen}
+          mode="modal"
+          editId={editId}
+          onClose={closeAdd}
+          onSuccess={() => { closeAdd(); refreshAll() }}
+        />
+      )}
+      </>
+  )
+
+  // ── Web (>=768px): TagihanWeb — summary cards + table; ⋯ opens a dropdown ──
+  const countOf = (t: Tab) => bills.filter(b => (b.type ?? 'pengeluaran') === t).length
+  const paidTotal = paid.reduce((a, b) => a + b.amount, 0)
+  const unpaidTotal = unpaid.reduce((a, b) => a + b.amount, 0)
+  const webMenu = (b: RecurringBill): ActionItem[] => billPayments[b.id]
+    ? [
+      { key: 'cancel', label: isPemasukan(b) ? 'Batalkan penerimaan bulan ini' : 'Batalkan pembayaran bulan ini', icon: <Undo2 className="i i-s" />, onClick: () => handleCancelPayment(b) },
+      { key: 'edit', label: 'Ubah', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(b.id); setAddOpen(true) } },
+      { key: 'del', label: 'Hapus', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(b.id) },
+    ]
+    : [
+      { key: 'edit', label: 'Ubah', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(b.id); setAddOpen(true) } },
+      { key: 'del', label: 'Hapus', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(b.id) },
+    ]
+
+  if (isWeb) {
+    const rows = [...unpaid, ...paid]
+    return (
+      <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="main">
+          <div className="ptop">
+            <h1 className="ptitle">Tagihan rutin</h1>
+            <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <div className="seg" style={{ minWidth: 280 }}>
+                <button className={tab === 'pengeluaran' ? 'on' : ''} onClick={() => setTab('pengeluaran')}>Tagihan · {countOf('pengeluaran')}</button>
+                <button className={tab === 'pemasukan' ? 'on' : ''} onClick={() => setTab('pemasukan')}>Pemasukan · {countOf('pemasukan')}</button>
+              </div>
+              <button className="btn" onClick={() => { setEditId(null); setAddOpen(true) }}><Plus className="i i-s" />{tab === 'pemasukan' ? 'Tambah pemasukan' : 'Tambah tagihan'}</button>
+            </div>
+          </div>
+
+          <div className="wrap">
+            <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Total per bulan</div><div className="num-l">{rp(totalPerMonth)}</div></div>
+            <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">{tab === 'pemasukan' ? 'Sudah diterima' : 'Sudah dibayar'}</div><div className="num-l pos">{rp(paidTotal)}</div></div>
+            <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">{tab === 'pemasukan' ? 'Belum diterima' : 'Belum dibayar'}</div><div className={`num-l ${unpaidTotal > 0 && tab === 'pengeluaran' ? 'bad' : ''}`}>{rp(unpaidTotal)}</div></div>
+          </div>
+
+          <section className="card" style={{ padding: 0 }}>
+            {loading ? (
+              <div style={{ padding: 20 }}><SkeletonRows count={3} /></div>
+            ) : rows.length === 0 ? (
+              <div style={{ padding: 20 }}>
+                {tab === 'pemasukan' ? (
+                  <EmptyState icon={<TrendingUp className="i" />} title="Belum ada pemasukan rutin" text="Gaji atau uang bulanan yang datang di tanggal sama." actionLabel="Tambah pemasukan" onAction={() => { setEditId(null); setAddOpen(true) }} style={{ border: 0 }} />
+                ) : (
+                  <EmptyState icon={<Calendar className="i" />} title="Belum ada tagihan rutin" text="Netflix, internet, listrik. Diingatkan tiap bulan." actionLabel="Tambah tagihan" onAction={() => { setEditId(null); setAddOpen(true) }} style={{ border: 0 }} />
+                )}
+              </div>
+            ) : (
+              <div className="tbl-box">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th style={{ paddingLeft: 20 }}>{tab === 'pemasukan' ? 'Pemasukan' : 'Tagihan'}</th><th className="r">Nominal</th><th>Jatuh tempo</th><th>Kategori</th><th>Status</th>
+                      <th className="r" style={{ paddingRight: 20 }}><span className="sr-only">Aksi</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(b => {
+                      const done = !!billPayments[b.id]
+                      const income = isPemasukan(b)
+                      const st = done ? { cls: 'b-ok', text: income ? 'Sudah diterima' : 'Lunas' } : getStatus(b.due_date)
+                      return (
+                        <tr key={b.id}>
+                          <td style={{ paddingLeft: 20 }}>
+                            <div className="hstack" style={{ gap: 10 }}>
+                              <div className={`ic-s ${income ? 'c-gaji' : 'c-tagihan'}`}>{income ? <TrendingUp className="i i-s" /> : <Calendar className="i i-s" />}</div>
+                              <b style={{ fontWeight: 600 }}>{b.name}</b>
+                            </div>
+                          </td>
+                          <td className="r" style={{ fontWeight: 600, color: income ? 'var(--income)' : 'var(--text)', whiteSpace: 'nowrap' }}>{income ? '+' : ''}{rp(b.amount)}</td>
+                          <td>Tiap tgl {b.due_date}</td>
+                          <td>{b.category}</td>
+                          <td><span className={`badge ${st.cls}`}>{st.text}</span></td>
+                          <td className="r" style={{ paddingRight: 20, whiteSpace: 'nowrap' }}>
+                            <div className="hstack" style={{ gap: 6, justifyContent: 'flex-end' }}>
+                              {!done && <button className="btn" style={{ height: 36, fontSize: 13, padding: '0 14px' }} disabled={deletingId === b.id} onClick={() => openPay(b)}>{income ? 'Terima' : 'Bayar'}</button>}
+                              <DropdownMenu ariaLabel={`Opsi ${b.name}`} items={webMenu(b)} />
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!loading && rows.length > 0 && (
+              <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)' }} className="lbl">
+                {tab === 'pemasukan' ? 'Terima mencatat pemasukan ke dompet yang dipilih dan menandainya sudah diterima bulan ini.' : 'Bayar mencatat pengeluaran dari dompet yang dipilih dan menandai tagihan lunas bulan ini.'}
+              </div>
+            )}
+          </section>
+        </main>
+        {overlays}
+      </div>
+    )
+  }
+
+
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
@@ -281,64 +447,7 @@ export default function RecurringPage() {
         )}
       </div>
 
-      {/* Pay / receive sheet */}
-      {paySheet && (
-        <>
-          <div className="scrim" onClick={() => setPaySheet(null)} />
-          <div className="sheet">
-            <div className="grabber" />
-            <div className="between">
-              <div><h2 className="h2">{isPemasukan(paySheet) ? 'Terima pemasukan' : 'Bayar tagihan'}</h2><div className="lbl">{paySheet.name}</div></div>
-              <button className="icon-btn ghost" aria-label="Tutup" onClick={() => setPaySheet(null)}><X className="i" /></button>
-            </div>
-            <label className="field">{isPemasukan(paySheet) ? 'Jumlah diterima (Rp)' : 'Jumlah pembayaran (Rp)'}
-              <input className="input" inputMode="numeric" placeholder="0" value={payAmount ? parseInt(payAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={e => setPayAmount(e.target.value.replace(/\D/g, ''))} />
-            </label>
-            <label className="field">Tanggal
-              <DatePickerNeo className="input" value={payDate} onChange={e => setPayDate(e.target.value)} />
-            </label>
-            <div className="field">{isPemasukan(paySheet) ? 'Masuk ke dompet' : 'Bayar dari dompet'}
-              <NeoSelect value={payWalletId ? payWalletId.toString() : ''} onChange={v => setPayWalletId(Number(v))} placeholder="Pilih dompet"
-                options={wallets.map(w => ({ label: `${w.name} — ${rp(w.balance)}`, value: w.id.toString() }))} />
-            </div>
-            <div className="g2">
-              <button className="btn-2" disabled={paying} onClick={() => setPaySheet(null)}>Batal</button>
-              <button className="btn" style={{ height: 44, fontSize: 14 }} disabled={!payWalletId || !payAmount || paying} onClick={confirmPayment}>
-                {paying ? 'Menyimpan…' : `${isPemasukan(paySheet) ? 'Terima' : 'Bayar'} ${rp(parseInt(payAmount.replace(/D/g, '') || '0'))}`}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Item action sheet */}
-      <ActionSheet
-        isOpen={!!menuBill}
-        onClose={() => setMenuBill(null)}
-        header={menuBill ? { title: menuBill.name, subtitle: `${rp(menuBill.amount)} · tiap tanggal ${menuBill.due_date}` } : undefined}
-        items={menuBill ? (billPayments[menuBill.id]
-          ? [
-            { key: 'cancel', label: isPemasukan(menuBill) ? 'Batalkan penerimaan bulan ini' : 'Batalkan pembayaran bulan ini', icon: <Undo2 className="i i-s" />, onClick: () => handleCancelPayment(menuBill) },
-            { key: 'edit', label: isPemasukan(menuBill) ? 'Ubah pemasukan rutin' : 'Ubah tagihan', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
-            { key: 'del', label: isPemasukan(menuBill) ? 'Hapus pemasukan rutin' : 'Hapus tagihan rutin', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
-          ]
-          : [
-            { key: 'pay', label: isPemasukan(menuBill) ? 'Catat diterima' : 'Bayar tagihan', icon: <WalletIcon className="i i-s" />, onClick: () => openPay(menuBill) },
-            { key: 'edit', label: 'Ubah', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
-            { key: 'del', label: 'Hapus', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
-          ]) : []}
-      />
-
-      {/* Add / edit recurring item */}
-      {addOpen && (
-        <AddBillModal
-          isOpen={addOpen}
-          mode="modal"
-          editId={editId}
-          onClose={closeAdd}
-          onSuccess={() => { closeAdd(); refreshAll() }}
-        />
-      )}
+      {overlays}
     </div>
   )
 }

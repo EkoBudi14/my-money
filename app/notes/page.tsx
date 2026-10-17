@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import { SkeletonCards } from '@/components/Skeleton'
 import FieldError from '@/components/FieldError'
 
@@ -30,6 +31,7 @@ export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
+  const isWeb = useIsWeb()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [title, setTitle] = useState('')
@@ -90,6 +92,86 @@ export default function NotesPage() {
     return notes.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q))
   }, [notes, query])
 
+  // Sheets / dialogs shared by the mobile and web layouts.
+  const overlays = (
+      <>
+      {/* Create / edit sheet */}
+      {isModalOpen && (
+        <>
+          <div className="scrim" onClick={resetForm} />
+          <div className="sheet">
+            <div className="grabber" />
+            <div className="between">
+              <h2 className="h2">{editingNote ? 'Ubah catatan' : 'Tulis catatan'}</h2>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button>
+            </div>
+            <form onSubmit={handleSave} className="stack-12">
+              <label className="field">Judul (opsional)
+                <input className={`input ${formError ? 'bad' : ''}`} type="text" placeholder="Judul catatan" value={title} onChange={e => { setTitle(e.target.value); setFormError('') }} autoFocus />
+              </label>
+              <label className="field">Isi
+                <textarea className="input" style={{ minHeight: 160 }} placeholder="Ketik catatanmu di sini…" value={content} onChange={e => { setContent(e.target.value); setFormError('') }} />
+                <FieldError>{formError}</FieldError>
+              </label>
+              <div className="between">
+                <span className="lbl">{content.length} karakter</span>
+                <button type="submit" className="btn" style={{ minWidth: 140 }}>{editingNote ? 'Simpan perubahan' : 'Simpan catatan'}</button>
+              </div>
+              {editingNote && (
+                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingNote.id; resetForm(); handleDelete(id) }}>
+                  <Trash2 className="i i-s" />Hapus catatan
+                </button>
+              )}
+            </form>
+          </div>
+        </>
+      )}
+      </>
+  )
+
+  // ── Web (>=768px): CatatanWeb — search in the header + note grid ──
+  if (isWeb) {
+    return (
+      <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="main">
+          <div className="ptop">
+            <h1 className="ptitle">Catatan</h1>
+            <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <label className="input search" style={{ width: 280, cursor: 'text' }}>
+                <Search className="i i-s" style={{ color: 'var(--text-2)' }} />
+                <input type="text" placeholder="Cari catatan" aria-label="Cari catatan" value={query} onChange={e => setQuery(e.target.value)}
+                  style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }} />
+              </label>
+              <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Tulis catatan</button>
+            </div>
+          </div>
+
+          {loading ? (
+            <SkeletonCards count={3} />
+          ) : filtered.length === 0 ? (
+            query ? (
+              <EmptyState icon={<Search className="i" />} title={`Tidak ada yang cocok dengan “${query.trim()}”`} text="Coba kata lain." actionLabel="Hapus pencarian" actionVariant="secondary" onAction={() => setQuery('')} />
+            ) : (
+              <EmptyState icon={<StickyNote className="i" />} title="Tulis catatan pertama" text="Utang, rencana belanja, atau apa pun soal uang." actionLabel="Tulis catatan" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+            )
+          ) : (
+            <div className="ng">
+              {filtered.map(note => (
+                <button type="button" className="card stack note-card" key={note.id} aria-label={`Ubah catatan ${note.title}`} onClick={() => handleEdit(note)}>
+                  <span className="t">{note.title}</span>
+                  {note.content && <p className="note-body">{note.content}</p>}
+                  <span className="lbl" style={{ marginTop: 'auto' }}>{formatDate(note.updated_at)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </main>
+        {overlays}
+      </div>
+    )
+  }
+
+
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
@@ -142,37 +224,7 @@ export default function NotesPage() {
         )}
       </div>
 
-      {/* Create / edit sheet */}
-      {isModalOpen && (
-        <>
-          <div className="scrim" onClick={resetForm} />
-          <div className="sheet">
-            <div className="grabber" />
-            <div className="between">
-              <h2 className="h2">{editingNote ? 'Ubah catatan' : 'Tulis catatan'}</h2>
-              <button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button>
-            </div>
-            <form onSubmit={handleSave} className="stack-12">
-              <label className="field">Judul (opsional)
-                <input className={`input ${formError ? 'bad' : ''}`} type="text" placeholder="Judul catatan" value={title} onChange={e => { setTitle(e.target.value); setFormError('') }} autoFocus />
-              </label>
-              <label className="field">Isi
-                <textarea className="input" style={{ minHeight: 160 }} placeholder="Ketik catatanmu di sini…" value={content} onChange={e => { setContent(e.target.value); setFormError('') }} />
-                <FieldError>{formError}</FieldError>
-              </label>
-              <div className="between">
-                <span className="lbl">{content.length} karakter</span>
-                <button type="submit" className="btn" style={{ minWidth: 140 }}>{editingNote ? 'Simpan perubahan' : 'Simpan catatan'}</button>
-              </div>
-              {editingNote && (
-                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingNote.id; resetForm(); handleDelete(id) }}>
-                  <Trash2 className="i i-s" />Hapus catatan
-                </button>
-              )}
-            </form>
-          </div>
-        </>
-      )}
+      {overlays}
     </div>
   )
 }
