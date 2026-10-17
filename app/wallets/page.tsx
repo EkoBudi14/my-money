@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Eye, EyeOff, Info, CreditCard, Wallet as WalletIcon, Banknote, ChevronRight, PiggyBank } from 'lucide-react'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import { supabase } from '@/lib/supabase'
 import { Wallet, Transaction } from '@/types'
 import { useToast } from '@/hooks/useToast'
@@ -44,6 +45,7 @@ export default function WalletsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('active')
+  const isWeb = useIsWeb()
   const [showBalance, setShowBalance] = useState(false)
 
   // Open the Tabungan inti tab when arriving from /main-savings?tab=tabungan.
@@ -160,6 +162,93 @@ export default function WalletsPage() {
 
   const handleDelete = (w: Wallet) => (w.category === 'active' ? deleteActive(w.id) : deleteSavings(w.id))
 
+  const walletModal = (
+    <>
+      {modalOpen && (
+        <WalletModal
+          editId={editingId}
+          defaultCategory={tab}
+          onClose={() => setModalOpen(false)}
+          onSaved={() => { setModalOpen(false); fetchAll() }}
+          onDelete={() => {
+            const w = wallets.find(x => x.id === editingId)
+            if (w) { setModalOpen(false); handleDelete(w) }
+          }}
+          mode="modal"
+        />
+      )}
+    </>
+  )
+
+  // ── Web (>=768px): DompetWeb — both groups at once as tile grids ──
+  const sortByUsed = (list: Wallet[]) => [...list].sort((a, z) => (lastUsedMap.get(z.id) || 0) - (lastUsedMap.get(a.id) || 0))
+  const walletTile = (w: Wallet, foot: string) => {
+    const meta = TYPE_META[(w.type as WalletType)] || TYPE_META.bank
+    const Icon = meta.Icon
+    return (
+      <button type="button" className="wtile" key={w.id} aria-label={`Ubah ${w.name}`} onClick={() => openEdit(w)}>
+        <div className="between"><div className={`ic ${w.category === 'savings' && w.type !== 'bank' ? 'c-aset' : meta.cls}`}><Icon className="i" /></div><span className="lbl">{meta.label}</span></div>
+        <div><div className="t">{w.name}</div><div className="num-m">{showBalance ? rp(w.balance) : 'Rp ••••'}</div></div>
+        <div className="lbl">{foot}</div>
+      </button>
+    )
+  }
+
+  if (isWeb) {
+    return (
+      <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="main">
+          <div className="ptop">
+            <h1 className="ptitle">Dompet &amp; tabungan</h1>
+            <div className="hstack" style={{ gap: 8 }}>
+              <button className="icon-btn" aria-label={showBalance ? 'Sembunyikan angka' : 'Tampilkan angka'} aria-pressed={showBalance} onClick={() => setShowBalance(v => !v)}>{showBalance ? <EyeOff className="i" /> : <Eye className="i" />}</button>
+              <button className="btn" onClick={() => { setTab('active'); openAdd() }}><Plus className="i i-s" />Tambah dompet</button>
+            </div>
+          </div>
+
+          <div className="wrap">
+            <div className="hero stack" style={{ flex: '1 1 240px' }}>
+              <span className="lbl">Saldo aktif · {activeWallets.length} dompet</span>
+              <span className="num-xl">{showBalance ? rp(activeTotal) : 'Rp ••••••'}</span>
+              <span className="lbl">Uang siap pakai sehari-hari</span>
+            </div>
+            <div className="card stack" style={{ flex: '1 1 240px', padding: 20 }}>
+              <span className="lbl">Aset tersimpan · {savingsWallets.length} aset</span>
+              <span className="num-xl" style={{ color: 'var(--text)' }}>{showBalance ? rp(savingsTotal) : 'Rp ••••••'}</span>
+              <span className="lbl">Tidak dihitung di saldo aktif</span>
+            </div>
+          </div>
+
+          {loading ? <SkeletonRows count={5} /> : (
+            <>
+              <section className="stack-12">
+                <div className="between"><h2 className="h2">Saldo aktif</h2><span className="lbl">Urut berdasarkan terakhir dipakai</span></div>
+                {activeWallets.length === 0 ? (
+                  <EmptyState icon={<WalletIcon className="i" />} title="Tambah dompet pertama" text="Bank, e-wallet, atau tunai yang kamu pakai harian." actionLabel="Tambah dompet" onAction={() => { setTab('active'); openAdd() }} />
+                ) : (
+                  <div className="wg">{sortByUsed(activeWallets).map(w => walletTile(w, usedLabel(lastUsedMap.get(w.id))))}</div>
+                )}
+              </section>
+              <section className="stack-12">
+                <div className="between">
+                  <h2 className="h2">Tabungan inti</h2>
+                  <button className="link" onClick={() => { setTab('savings'); openAdd() }}>+ Tambah aset</button>
+                </div>
+                {savingsWallets.length === 0 ? (
+                  <EmptyState icon={<PiggyBank className="i" />} title="Catat aset pertama" text="Tabungan, emas, reksadana. Tidak dihitung di saldo aktif." actionLabel="Tambah aset" onAction={() => { setTab('savings'); openAdd() }} />
+                ) : (
+                  <div className="wg">{[...savingsWallets].sort((a, z) => z.balance - a.balance).map(w => walletTile(w, savingsTotal > 0 ? `${Math.round((w.balance / savingsTotal) * 100)}% dari aset` : 'Aset'))}</div>
+                )}
+              </section>
+            </>
+          )}
+        </main>
+        {walletModal}
+      </div>
+    )
+  }
+
+
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
@@ -240,19 +329,7 @@ export default function WalletsPage() {
         )}
       </div>
 
-      {modalOpen && (
-        <WalletModal
-          editId={editingId}
-          defaultCategory={tab}
-          onClose={() => setModalOpen(false)}
-          onSaved={() => { setModalOpen(false); fetchAll() }}
-          onDelete={() => {
-            const w = wallets.find(x => x.id === editingId)
-            if (w) { setModalOpen(false); handleDelete(w) }
-          }}
-          mode="modal"
-        />
-      )}
+      {walletModal}
     </div>
   )
 }

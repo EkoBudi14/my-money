@@ -334,3 +334,11 @@ html.dark .cd,.cd[data-theme="dark"]{
 /* Web filter dropdown trigger + clickable table rows (RiwayatWeb) */
 .cd .sel-btn{height:36px;width:100%;justify-content:space-between;font-size:13px;padding:0 12px;gap:6px}
 .cd .tbl-row:hover td{background:var(--surface-2)}
+/* Web grids per page (DompetWeb, BudgetWeb, GoalsWeb, CatatanWeb) */
+.cd .wg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.cd .wtile{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;font:inherit;color:var(--text);text-align:left;cursor:pointer}
+.cd .wtile:hover{border-color:var(--border-strong)}
+.cd .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cd .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.cd .ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.cd .note-body{font-size:13px;color:var(--text-3);line-height:1.55;white-space:pre-line;margin:0}

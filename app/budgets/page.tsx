@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
-import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle, MoreHorizontal } from 'lucide-react'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import EmptyState from '@/components/EmptyState'
 import Link from 'next/link'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
@@ -60,6 +62,7 @@ export default function BudgetsPage() {
         }
     })
     const [showSettings, setShowSettings] = useState(false)
+    const isWeb = useIsWeb()
     // Budget action sheet (DESIGN-TAMBAHAN §7 / AksiBudget)
     const [actionBudget, setActionBudget] = useState<{ b: Budget; spent: number; pct: number; over: boolean; near: boolean } | null>(null)
 
@@ -336,7 +339,6 @@ export default function BudgetsPage() {
     }
 
     // ── Derived values for the redesigned view ──────────────────────────────
-    const budgeted = budgets.map(b => b.category)
     const totalBudget = budgets.reduce((a, b) => a + b.amount, 0)
     const totalSpent = budgets.reduce((a, b) => a + getSpentAmount(b.category), 0)
     const totalSisa = Math.max(totalBudget - totalSpent, 0)
@@ -361,80 +363,11 @@ export default function BudgetsPage() {
     const catOptions = [
         ...CATEGORIES.pengeluaran.map(c => c.name),
         ...((customCategories.pengeluaran || []).map(getName)),
-    ].filter(name => name === category || !budgeted.includes(name))
+    ] // All expense categories; clashes are rejected on save (DESIGN-TAMBAHAN §1)
 
-    return (
-        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
-            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
-                {/* Header */}
-                <div className="top">
-                    <div className="top-l">
-                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
-                        <h1 className="h1">Budget</h1>
-                    </div>
-                    <button className="icon-btn" aria-label="Buat budget" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
-                </div>
-
-                {/* Period selector */}
-                <div className="hstack" style={{ gap: 4 }}>
-                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
-                    <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSettings(s => !s)}>
-                        <Calendar className="i i-s" />{getPeriodLabel()}
-                    </button>
-                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
-                </div>
-
-                {/* Total card */}
-                <div className="card stack-12">
-                    <div className="between"><span className="lbl">Terpakai dari total budget</span><span className="lbl">{daysLeft} hari lagi</span></div>
-                    <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
-                    <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
-                    <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">Aman dipakai ± {shortRp(perDay)} per hari</span></div>
-                </div>
-
-                {warnParts.length > 0 && (
-                    <div className="banner warn"><AlertTriangle className="i" />{warnParts.join(', ')}</div>
-                )}
-
-                {/* Budget list */}
-                {loading ? (
-                    <SkeletonCards count={4} />
-                ) : ranked.length === 0 ? (
-                    <div className="card" style={{ textAlign: 'center' }}>
-                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada budget periode ini</p>
-                        <p className="lbl" style={{ marginTop: 4 }}>Batasi kategori yang paling boros dulu.</p>
-                        <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Buat budget</button>
-                    </div>
-                ) : (
-                    ranked.map(({ b, spent, pct, over, near }) => {
-                        const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
-                        const cls = CAT_CLASS[b.category] || 'c-lain'
-                        const sisa = Math.max(b.amount - spent, 0)
-                        return (
-                            <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
-                                <div className="hstack" style={{ gap: 12 }}>
-                                    <div className={`ic ${cls}`}><Icon className="i" /></div>
-                                    <div className="grow">
-                                        <div className="t">{b.category}</div>
-                                        <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
-                                    </div>
-                                    {over ? <span className="badge b-bad">Lewat {shortRp(spent - b.amount)}</span>
-                                        : near ? <span className="badge b-warn">Sisa {shortRp(sisa)}</span>
-                                            : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
-                                </div>
-                                <div className={`bar ${over ? 'over' : ''}`}>
-                                    <div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} />
-                                </div>
-                            </button>
-                        )
-                    })
-                )}
-
-                {!loading && ranked.length > 0 && (
-                    <button className="btn-2 btn-block" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
-                )}
-            </div>
-
+    // Sheets / dialogs shared by the mobile and web layouts.
+    const overlays = (
+        <>
             {/* Budget action sheet (AksiBudget) */}
             {actionBudget && (() => {
                 const { b, spent, pct, over, near } = actionBudget
@@ -537,6 +470,156 @@ export default function BudgetsPage() {
                     </div>
                 </>
             )}
+        </>
+    )
+
+    // ── Web (>=768px): BudgetWeb — summary row + card grid; forms open as modals ──
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <h1 className="ptitle">Budget</h1>
+                        <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+                            <button className="icon-btn" aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                            <button className="btn-2" onClick={() => setShowSettings(true)}><Calendar className="i i-s" />{getPeriodLabel()}</button>
+                            <button className="icon-btn" aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                            <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
+                        </div>
+                    </div>
+
+                    <div className="wrap">
+                        <div className="card stack-12" style={{ flex: '2 1 380px', padding: 20 }}>
+                            <span className="lbl">Terpakai dari total budget</span>
+                            <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
+                            <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
+                            <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">{totalPct}% terpakai · {daysLeft} hari lagi</span></div>
+                        </div>
+                        <div className="card stack" style={{ flex: '1 1 220px', padding: 20 }}>
+                            <span className="lbl">Aman dipakai per hari</span>
+                            <span className="num-l">± {rp(perDay)}</span>
+                            <span className="lbl">Untuk {daysLeft} hari tersisa</span>
+                        </div>
+                        <div className="card stack" style={{ flex: '1 1 220px', padding: 20 }}>
+                            <span className="lbl">Status</span>
+                            <div className="hstack" style={{ flexWrap: 'wrap', gap: 6 }}>
+                                {overCount > 0 && <span className="badge b-bad">{overCount} lewat batas</span>}
+                                {nearCount > 0 && <span className="badge b-warn">{nearCount} hampir habis</span>}
+                                {ranked.length - overCount - nearCount > 0 && <span className="badge b-ok">{ranked.length - overCount - nearCount} aman</span>}
+                                {ranked.length === 0 && <span className="lbl">Belum ada budget</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <SkeletonCards count={4} />
+                    ) : ranked.length === 0 ? (
+                        <EmptyState icon={<Calendar className="i" />} title="Belum ada budget periode ini" text="Batasi kategori yang paling boros dulu." actionLabel="Buat budget" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+                    ) : (
+                        <div className="bgrid">
+                            {ranked.map(({ b, spent, pct, over, near }) => {
+                                const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                                const cls = CAT_CLASS[b.category] || 'c-lain'
+                                const sisa = Math.max(b.amount - spent, 0)
+                                return (
+                                    <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
+                                        <div className="hstack" style={{ gap: 12 }}>
+                                            <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                            <div className="grow" style={{ minWidth: 0 }}>
+                                                <div className="t">{b.category}</div>
+                                                <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
+                                            </div>
+                                            <MoreHorizontal className="i i-s" style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                                        </div>
+                                        <div className={`bar ${over ? 'over' : ''}`}><div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} /></div>
+                                        {over ? <span className="badge b-bad" style={{ alignSelf: 'flex-start' }}>Lewat {shortRp(spent - b.amount)}</span>
+                                            : near ? <span className="badge b-warn" style={{ alignSelf: 'flex-start' }}>Sisa {shortRp(sisa)}</span>
+                                                : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
+                </main>
+                {overlays}
+            </div>
+        )
+    }
+
+
+    return (
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Budget</h1>
+                    </div>
+                    <button className="icon-btn" aria-label="Buat budget" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
+                </div>
+
+                {/* Period selector */}
+                <div className="hstack" style={{ gap: 4 }}>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                    <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowSettings(s => !s)}>
+                        <Calendar className="i i-s" />{getPeriodLabel()}
+                    </button>
+                    <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                </div>
+
+                {/* Total card */}
+                <div className="card stack-12">
+                    <div className="between"><span className="lbl">Terpakai dari total budget</span><span className="lbl">{daysLeft} hari lagi</span></div>
+                    <div className="hstack" style={{ alignItems: 'baseline', gap: 6 }}><span className="num-l">{rp(totalSpent)}</span><span className="sub">/ {rp(totalBudget)}</span></div>
+                    <div className={`bar thick ${totalSpent > totalBudget ? 'over' : ''}`}><div style={{ width: `${totalPct}%` }} /></div>
+                    <div className="between" style={{ fontSize: 13 }}><span>Sisa <b>{rp(totalSisa)}</b></span><span className="lbl">Aman dipakai ± {shortRp(perDay)} per hari</span></div>
+                </div>
+
+                {warnParts.length > 0 && (
+                    <div className="banner warn"><AlertTriangle className="i" />{warnParts.join(', ')}</div>
+                )}
+
+                {/* Budget list */}
+                {loading ? (
+                    <SkeletonCards count={4} />
+                ) : ranked.length === 0 ? (
+                    <div className="card" style={{ textAlign: 'center' }}>
+                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada budget periode ini</p>
+                        <p className="lbl" style={{ marginTop: 4 }}>Batasi kategori yang paling boros dulu.</p>
+                        <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Buat budget</button>
+                    </div>
+                ) : (
+                    ranked.map(({ b, spent, pct, over, near }) => {
+                        const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                        const cls = CAT_CLASS[b.category] || 'c-lain'
+                        const sisa = Math.max(b.amount - spent, 0)
+                        return (
+                            <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
+                                <div className="hstack" style={{ gap: 12 }}>
+                                    <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                    <div className="grow">
+                                        <div className="t">{b.category}</div>
+                                        <div className="meta">{rp(spent)} dari {rp(b.amount)}</div>
+                                    </div>
+                                    {over ? <span className="badge b-bad">Lewat {shortRp(spent - b.amount)}</span>
+                                        : near ? <span className="badge b-warn">Sisa {shortRp(sisa)}</span>
+                                            : <span className="lbl" style={{ fontWeight: 600 }}>Sisa {shortRp(sisa)}</span>}
+                                </div>
+                                <div className={`bar ${over ? 'over' : ''}`}>
+                                    <div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} />
+                                </div>
+                            </button>
+                        )
+                    })
+                )}
+
+                {!loading && ranked.length > 0 && (
+                    <button className="btn-2 btn-block" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Buat budget</button>
+                )}
+            </div>
+
+            {overlays}
         </div>
     )
 }

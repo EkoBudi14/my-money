@@ -10,6 +10,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonCards } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import FieldError from '@/components/FieldError'
 
 export default function GoalsPage() {
@@ -20,6 +21,7 @@ export default function GoalsPage() {
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
     const { showSuccess } = useSuccessModal()
+    const isWeb = useIsWeb()
 
     // Form State
     const [name, setName] = useState('')
@@ -192,58 +194,9 @@ export default function GoalsPage() {
     const quickGoal = goals.find(g => g.id === quickAddId)
     const quickAddNum = parseInt((quickAddAmountValue || '0').replace(/\D/g, '')) || 0
 
-    return (
-        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
-            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
-                {/* Header */}
-                <div className="top">
-                    <div className="top-l">
-                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
-                        <h1 className="h1">Goals</h1>
-                    </div>
-                    <button className="icon-btn" aria-label="Tambah goal" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
-                </div>
-
-                {/* Hero total */}
-                <div className="hero stack">
-                    <span className="lbl">Total terkumpul · {goals.length} goal</span>
-                    <span className="num-xl">{rp(totalTerkumpul)}</span>
-                    <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
-                    <span className="lbl">dari total target {rp(totalTarget)}</span>
-                </div>
-
-                {/* Goal list */}
-                {loading ? (
-                    <SkeletonCards count={2} />
-                ) : goals.length === 0 ? (
-                    <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
-                ) : (
-                    goals.map((g, idx) => {
-                        const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
-                        const done = g.current_amount >= g.target_amount && g.target_amount > 0
-                        const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
-                        return (
-                            <div className="card stack-12" key={g.id}>
-                                <div className="hstack" style={{ gap: 12 }}>
-                                    <div className={`ic ${cls}`}><Target className="i" /></div>
-                                    <div className="grow">
-                                        <div className="t">{g.name}</div>
-                                        <div className="meta">{deadlineLabel(g.deadline)}</div>
-                                    </div>
-                                    {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
-                                </div>
-                                <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
-                                <div className="between" style={{ fontSize: 13 }}><span><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></span></div>
-                                <div className="g2">
-                                    <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
-                                    <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
-                                </div>
-                            </div>
-                        )
-                    })
-                )}
-            </div>
-
+    // Sheets / dialogs shared by the mobile and web layouts.
+    const overlays = (
+        <>
             {/* Create / edit goal sheet */}
             {isModalOpen && (
                 <>
@@ -302,6 +255,121 @@ export default function GoalsPage() {
                     </div>
                 </>
             )}
+        </>
+    )
+
+    // ── Web (>=768px): GoalsWeb — hero strip + card grid; forms open as modals ──
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <h1 className="ptitle">Goals</h1>
+                        <button className="btn" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i i-s" />Tambah goal</button>
+                    </div>
+
+                    <div className="hero wrap" style={{ alignItems: 'center', gap: 24 }}>
+                        <div className="stack" style={{ flex: '1 1 260px', gap: 4 }}>
+                            <span className="lbl">Total terkumpul · {goals.length} goal</span>
+                            <span className="num-xl" style={{ fontSize: 34 }}>{rp(totalTerkumpul)}</span>
+                        </div>
+                        <div className="stack" style={{ flex: '2 1 320px' }}>
+                            <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
+                            <span className="lbl">{overallPct.toFixed(0)}% dari total target {rp(totalTarget)}</span>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <SkeletonCards count={2} />
+                    ) : goals.length === 0 ? (
+                        <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+                    ) : (
+                        <div className="gg">
+                            {goals.map((g, idx) => {
+                                const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
+                                const done = g.current_amount >= g.target_amount && g.target_amount > 0
+                                const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
+                                return (
+                                    <div className="card stack-12" key={g.id} style={{ padding: 20 }}>
+                                        <div className="hstack" style={{ gap: 12 }}>
+                                            <div className={`ic ${cls}`}><Target className="i" /></div>
+                                            <div className="grow" style={{ minWidth: 0 }}><div className="t">{g.name}</div><div className="meta">{deadlineLabel(g.deadline)}</div></div>
+                                            {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
+                                        </div>
+                                        <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
+                                        <div style={{ fontSize: 13 }}><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></div>
+                                        <div className="g2" style={{ marginTop: 'auto' }}>
+                                            <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
+                                            <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                            <button type="button" className="card" onClick={() => { resetForm(); setIsModalOpen(true) }} style={{ borderStyle: 'dashed', minHeight: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--text-2)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                                <Plus className="i" />Tambah goal
+                            </button>
+                        </div>
+                    )}
+                </main>
+                {overlays}
+            </div>
+        )
+    }
+
+
+    return (
+        <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
+            <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+                {/* Header */}
+                <div className="top">
+                    <div className="top-l">
+                        <Link href="/" className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></Link>
+                        <h1 className="h1">Goals</h1>
+                    </div>
+                    <button className="icon-btn" aria-label="Tambah goal" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
+                </div>
+
+                {/* Hero total */}
+                <div className="hero stack">
+                    <span className="lbl">Total terkumpul · {goals.length} goal</span>
+                    <span className="num-xl">{rp(totalTerkumpul)}</span>
+                    <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
+                    <span className="lbl">dari total target {rp(totalTarget)}</span>
+                </div>
+
+                {/* Goal list */}
+                {loading ? (
+                    <SkeletonCards count={2} />
+                ) : goals.length === 0 ? (
+                    <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
+                ) : (
+                    goals.map((g, idx) => {
+                        const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
+                        const done = g.current_amount >= g.target_amount && g.target_amount > 0
+                        const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
+                        return (
+                            <div className="card stack-12" key={g.id}>
+                                <div className="hstack" style={{ gap: 12 }}>
+                                    <div className={`ic ${cls}`}><Target className="i" /></div>
+                                    <div className="grow">
+                                        <div className="t">{g.name}</div>
+                                        <div className="meta">{deadlineLabel(g.deadline)}</div>
+                                    </div>
+                                    {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
+                                </div>
+                                <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
+                                <div className="between" style={{ fontSize: 13 }}><span><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></span></div>
+                                <div className="g2">
+                                    <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
+                                    <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
+                                </div>
+                            </div>
+                        )
+                    })
+                )}
+            </div>
+
+            {overlays}
         </div>
     )
 }
