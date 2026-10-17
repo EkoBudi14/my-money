@@ -1,0 +1,29 @@
+- generic [ref=f12e2]:
+  - navigation "Navigasi utama" [ref=f12e3]:
+    - link "Beranda" [ref=f12e4] [cursor=pointer]:
+      - /url: /
+    - link "Analitik" [ref=f12e10] [cursor=pointer]:
+      - /url: /analytics
+    - link "Tambah transaksi" [ref=f12e14] [cursor=pointer]:
+      - /url: /transaction
+    - link "Dompet" [ref=f12e17] [cursor=pointer]:
+      - /url: /wallets
+    - link "Lainnya" [ref=f12e21] [cursor=pointer]:
+      - /url: /more
+  - generic [ref=f12e28]:
+    - generic [ref=f12e29]:
+      - generic [ref=f12e30]:
+        - link "Kembali" [ref=f12e31] [cursor=pointer]:
+          - /url: /
+        - heading "Tagihan rutin" [level=1] [ref=f12e34]
+      - button "Tambah item rutin" [ref=f12e35] [cursor=pointer]
+    - tablist [ref=f12e37]:
+      - button "Tagihan" [ref=f12e38] [cursor=pointer]
+      - button "Pemasukan" [ref=f12e39] [cursor=pointer]
+    - generic [ref=f12e40]:
+      - generic [ref=f12e41]:
+        - generic [ref=f12e42]: Total per bulan
+        - generic [ref=f12e43]: Rp 0
+      - generic [ref=f12e44]:
+        - generic [ref=f12e45]: Belum dibayar
+        - generic [ref=f12e46]: "0"

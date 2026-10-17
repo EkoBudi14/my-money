@@ -1,0 +1,40 @@
+- generic [ref=f32e2]:
+  - complementary "Navigasi utama" [ref=f32e3]:
+    - generic [ref=f32e4]:
+      - generic [ref=f32e5]: C
+      - generic [ref=f32e6]: CatatDuit
+    - link "Beranda" [ref=f32e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f32e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f32e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f32e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f32e27]: Rencana
+    - link "Budget" [ref=f32e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f32e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f32e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f32e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f32e51]: Catat cepat
+    - link "Scan struk" [ref=f32e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f32e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f32e64]:
+      - button "Mode gelap" [ref=f32e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f32e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f32e74]: EB
+  - generic [ref=f32e79]:
+    - generic [ref=f32e80]:
+      - generic [ref=f32e81]:
+        - link "Kembali" [ref=f32e82] [cursor=pointer]:
+          - /url: /
+        - heading "Catatan" [level=1] [ref=f32e85]
+      - button "Tambah catatan" [ref=f32e86] [cursor=pointer]
+    - textbox [ref=f32e92]:
+      - /placeholder: Cari catatan

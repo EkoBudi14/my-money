@@ -1,0 +1,48 @@
+- generic [ref=f30e2]:
+  - complementary "Navigasi utama" [ref=f30e3]:
+    - generic [ref=f30e4]:
+      - generic [ref=f30e5]: C
+      - generic [ref=f30e6]: CatatDuit
+    - link "Beranda" [ref=f30e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f30e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f30e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f30e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f30e27]: Rencana
+    - link "Budget" [ref=f30e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f30e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f30e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f30e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f30e51]: Catat cepat
+    - link "Scan struk" [ref=f30e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f30e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f30e64]:
+      - button "Mode gelap" [ref=f30e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f30e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f30e74]: EB
+  - generic [ref=f30e79]:
+    - generic [ref=f30e80]:
+      - generic [ref=f30e81]:
+        - link "Kembali" [ref=f30e82] [cursor=pointer]:
+          - /url: /
+        - heading "Tagihan rutin" [level=1] [ref=f30e85]
+      - button "Tambah item rutin" [ref=f30e86] [cursor=pointer]
+    - tablist [ref=f30e88]:
+      - button "Tagihan" [ref=f30e89] [cursor=pointer]
+      - button "Pemasukan" [ref=f30e90] [cursor=pointer]
+    - generic [ref=f30e91]:
+      - generic [ref=f30e92]:
+        - generic [ref=f30e93]: Total per bulan
+        - generic [ref=f30e94]: Rp 0
+      - generic [ref=f30e95]:
+        - generic [ref=f30e96]: Belum dibayar
+        - generic [ref=f30e97]: "0"

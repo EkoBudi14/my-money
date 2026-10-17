@@ -1,0 +1,50 @@
+- generic [ref=f35e2]:
+  - complementary "Navigasi utama" [ref=f35e3]:
+    - generic [ref=f35e4]:
+      - generic [ref=f35e5]: C
+      - generic [ref=f35e6]: CatatDuit
+    - link "Beranda" [ref=f35e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f35e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f35e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f35e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f35e27]: Rencana
+    - link "Budget" [ref=f35e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f35e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f35e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f35e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f35e51]: Catat cepat
+    - link "Scan struk" [ref=f35e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f35e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f35e64]:
+      - button "Mode gelap" [ref=f35e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f35e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f35e74]: EB
+  - main [ref=f35e78]:
+    - generic [ref=f35e80]:
+      - button "Kembali" [ref=f35e81] [cursor=pointer]
+      - generic [ref=f35e84]:
+        - heading "Voice input" [level=1] [ref=f35e85]
+        - paragraph [ref=f35e86]: Catat transaksi dengan suara
+    - generic [ref=f35e87]:
+      - generic [ref=f35e88]:
+        - button [ref=f35e90] [cursor=pointer]
+        - generic [ref=f35e94]:
+          - paragraph [ref=f35e95]: Tekan mic & bicara
+          - paragraph [ref=f35e96]: "Contoh: \"tadi makan siang 35 ribu\" atau \"terima gaji 5 juta\""
+      - generic [ref=f35e97]:
+        - generic [ref=f35e98]: Contoh kalimat
+        - generic [ref=f35e99]:
+          - generic [ref=f35e100]: makan siang 35 ribu
+          - generic [ref=f35e101]: bensin 50 ribu
+          - generic [ref=f35e102]: terima gaji 5 juta
+          - generic [ref=f35e103]: transfer ke bibit 500 ribu

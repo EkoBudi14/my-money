@@ -1,0 +1,50 @@
+- generic [active] [ref=f12e1]:
+  - generic [ref=f12e2]:
+    - complementary "Navigasi utama" [ref=f12e3]:
+      - generic [ref=f12e4]:
+        - generic [ref=f12e5]: C
+        - generic [ref=f12e6]: CatatDuit
+      - link "Beranda" [ref=f12e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f12e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f12e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f12e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f12e27]: Rencana
+      - link "Budget" [ref=f12e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f12e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f12e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f12e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f12e51]: Catat cepat
+      - link "Scan struk" [ref=f12e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f12e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f12e64]:
+        - button "Mode gelap" [ref=f12e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f12e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f12e74]: EB
+    - main [ref=f12e78]:
+      - generic [ref=f12e81]:
+        - heading "Voice input" [level=1] [ref=f12e82]
+        - paragraph [ref=f12e83]: Catat transaksi pakai suara, cek, lalu simpan.
+      - generic [ref=f12e84]:
+        - generic [ref=f12e85]:
+          - button [ref=f12e87] [cursor=pointer]
+          - generic [ref=f12e91]:
+            - paragraph [ref=f12e92]: Klik mic lalu bicara
+            - paragraph [ref=f12e93]: Atau tahan tombol spasi selama bicara.
+        - generic [ref=f12e94]:
+          - generic [ref=f12e95]: Contoh kalimat
+          - generic [ref=f12e96]:
+            - generic [ref=f12e97]: makan siang 35 ribu
+            - generic [ref=f12e98]: bensin 50 ribu
+            - generic [ref=f12e99]: terima gaji 5 juta
+            - generic [ref=f12e100]: transfer ke bibit 500 ribu
+  - alert [ref=f12e101]

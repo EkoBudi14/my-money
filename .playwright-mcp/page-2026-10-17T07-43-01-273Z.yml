@@ -1,0 +1,97 @@
+- generic [ref=f36e2]:
+  - complementary "Navigasi utama" [ref=f36e3]:
+    - generic [ref=f36e4]:
+      - generic [ref=f36e5]: C
+      - generic [ref=f36e6]: CatatDuit
+    - link "Beranda" [ref=f36e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f36e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f36e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f36e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f36e27]: Rencana
+    - link "Budget" [ref=f36e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f36e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f36e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f36e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f36e51]: Catat cepat
+    - link "Scan struk" [ref=f36e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f36e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f36e64]:
+      - button "Mode gelap" [ref=f36e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f36e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f36e74]: EB
+  - generic [ref=f36e79]:
+    - generic [ref=f36e81]:
+      - button "Kembali" [ref=f36e82] [cursor=pointer]
+      - heading "Kelola kategori" [level=1] [ref=f36e85]
+    - tablist [ref=f36e86]:
+      - button "Pengeluaran" [ref=f36e87] [cursor=pointer]
+      - button "Pemasukan" [ref=f36e88] [cursor=pointer]
+    - generic [ref=f36e89]:
+      - generic [ref=f36e90]:
+        - generic [ref=f36e91]: Kategori buatan kamu
+        - generic [ref=f36e92]: "0"
+      - generic [ref=f36e112]: Kategori bawaan (Kebutuhan Dapur, Makan di Luar, dan lainnya) tidak bisa diubah atau dihapus.
+    - generic [ref=f36e113]:
+      - heading "Buat kategori baru" [level=2] [ref=f36e114]
+      - generic [ref=f36e115]:
+        - text: Nama kategori
+        - textbox "Nama kategori" [ref=f36e116]:
+          - /placeholder: Parkir
+      - generic [ref=f36e117]:
+        - text: Ikon
+        - generic [ref=f36e118]:
+          - button "Ikon Home" [ref=f36e119] [cursor=pointer]
+          - button "Ikon ShoppingBag" [ref=f36e123] [cursor=pointer]
+          - button "Ikon Utensils" [ref=f36e127] [cursor=pointer]
+          - button "Ikon Car" [ref=f36e131] [cursor=pointer]
+          - button "Ikon Zap" [ref=f36e136] [cursor=pointer]
+          - button "Ikon Package" [pressed] [ref=f36e139] [cursor=pointer]
+          - button "Ikon HeartPulse" [ref=f36e144] [cursor=pointer]
+          - button "Ikon CreditCard" [ref=f36e148] [cursor=pointer]
+          - button "Ikon Film" [ref=f36e151] [cursor=pointer]
+          - button "Ikon Gift" [ref=f36e154] [cursor=pointer]
+          - button "Ikon Briefcase" [ref=f36e159] [cursor=pointer]
+          - button "Ikon TrendingUp" [ref=f36e163] [cursor=pointer]
+          - button "Ikon Landmark" [ref=f36e167] [cursor=pointer]
+          - button "Ikon Coffee" [ref=f36e170] [cursor=pointer]
+          - button "Ikon Plane" [ref=f36e173] [cursor=pointer]
+          - button "Ikon Gamepad2" [ref=f36e176] [cursor=pointer]
+          - button "Ikon Tv" [ref=f36e179] [cursor=pointer]
+          - button "Ikon Smartphone" [ref=f36e183] [cursor=pointer]
+          - button "Ikon Book" [ref=f36e186] [cursor=pointer]
+          - button "Ikon Scissors" [ref=f36e189] [cursor=pointer]
+          - button "Ikon Music" [ref=f36e196] [cursor=pointer]
+          - button "Ikon Shirt" [ref=f36e201] [cursor=pointer]
+          - button "Ikon Smile" [ref=f36e204] [cursor=pointer]
+          - button "Ikon Globe" [ref=f36e208] [cursor=pointer]
+          - button "Ikon Dumbbell" [ref=f36e212] [cursor=pointer]
+          - button "Ikon GraduationCap" [ref=f36e219] [cursor=pointer]
+      - generic [ref=f36e223]:
+        - text: Warna
+        - generic [ref=f36e224]:
+          - button "Warna 1" [pressed] [ref=f36e225] [cursor=pointer]
+          - button "Warna 2" [ref=f36e226] [cursor=pointer]
+          - button "Warna 3" [ref=f36e227] [cursor=pointer]
+          - button "Warna 4" [ref=f36e228] [cursor=pointer]
+          - button "Warna 5" [ref=f36e229] [cursor=pointer]
+          - button "Warna 6" [ref=f36e230] [cursor=pointer]
+          - button "Warna 7" [ref=f36e231] [cursor=pointer]
+          - button "Warna 8" [ref=f36e232] [cursor=pointer]
+          - button "Warna 9" [ref=f36e233] [cursor=pointer]
+          - button "Warna 10" [ref=f36e234] [cursor=pointer]
+          - button "Warna 11" [ref=f36e235] [cursor=pointer]
+          - button "Warna 12" [ref=f36e236] [cursor=pointer]
+      - generic [ref=f36e243]:
+        - generic [ref=f36e244]: Pratinjau
+        - generic [ref=f36e245]: Nama kategori
+      - button "Simpan kategori" [disabled] [ref=f36e247]

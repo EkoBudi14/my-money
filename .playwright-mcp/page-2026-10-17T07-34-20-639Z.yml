@@ -1,0 +1,52 @@
+- generic [ref=f28e2]:
+  - complementary "Navigasi utama" [ref=f28e3]:
+    - generic [ref=f28e4]:
+      - generic [ref=f28e5]: C
+      - generic [ref=f28e6]: CatatDuit
+    - link "Beranda" [ref=f28e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f28e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f28e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f28e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f28e27]: Rencana
+    - link "Budget" [ref=f28e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f28e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f28e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f28e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f28e51]: Catat cepat
+    - link "Scan struk" [ref=f28e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f28e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f28e64]:
+      - button "Mode gelap" [ref=f28e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f28e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f28e74]: EB
+  - generic [ref=f28e79]:
+    - generic [ref=f28e80]:
+      - generic [ref=f28e81]:
+        - link "Kembali" [ref=f28e82] [cursor=pointer]:
+          - /url: /
+        - heading "Budget" [level=1] [ref=f28e85]
+      - button "Buat budget" [ref=f28e86] [cursor=pointer]
+    - generic [ref=f28e88]:
+      - button "Periode sebelumnya" [ref=f28e89] [cursor=pointer]
+      - button "Oktober 2026" [ref=f28e92] [cursor=pointer]
+      - button "Periode berikutnya" [ref=f28e95] [cursor=pointer]
+    - generic [ref=f28e98]:
+      - generic [ref=f28e99]:
+        - generic [ref=f28e100]: Terpakai dari total budget
+        - generic [ref=f28e101]: 15 hari lagi
+      - generic [ref=f28e102]:
+        - generic [ref=f28e103]: Rp 0
+        - generic [ref=f28e104]: / Rp 0
+      - generic [ref=f28e106]:
+        - generic [ref=f28e107]: Sisa Rp 0
+        - generic [ref=f28e108]: Aman dipakai ± Rp 0 per hari

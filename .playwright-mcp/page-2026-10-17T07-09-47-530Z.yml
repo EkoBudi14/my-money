@@ -1,0 +1,25 @@
+- generic [ref=f14e2]:
+  - navigation "Navigasi utama" [ref=f14e3]:
+    - link "Beranda" [ref=f14e4] [cursor=pointer]:
+      - /url: /
+    - link "Analitik" [ref=f14e10] [cursor=pointer]:
+      - /url: /analytics
+    - link "Tambah transaksi" [ref=f14e14] [cursor=pointer]:
+      - /url: /transaction
+    - link "Dompet" [ref=f14e17] [cursor=pointer]:
+      - /url: /wallets
+    - link "Lainnya" [ref=f14e21] [cursor=pointer]:
+      - /url: /more
+  - generic [ref=f14e28]:
+    - generic [ref=f14e29]:
+      - heading "Dompet" [level=1] [ref=f14e30]
+      - button "Tambah dompet" [ref=f14e31] [cursor=pointer]
+    - tablist [ref=f14e33]:
+      - button "Saldo aktif" [ref=f14e34] [cursor=pointer]
+      - button "Tabungan inti" [ref=f14e35] [cursor=pointer]
+    - generic [ref=f14e36]:
+      - generic [ref=f14e37]:
+        - generic [ref=f14e38]: Total saldo aktif · 0 dompet
+        - button "Tampilkan angka" [ref=f14e39] [cursor=pointer]
+      - generic [ref=f14e43]: Rp ••••••
+      - generic [ref=f14e44]: Uang siap pakai sehari-hari

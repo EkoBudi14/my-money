@@ -1,0 +1,42 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - complementary "Navigasi utama" [ref=f5e3]:
+      - generic [ref=f5e4]:
+        - generic [ref=f5e5]: C
+        - generic [ref=f5e6]: CatatDuit
+      - link "Beranda" [ref=f5e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f5e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f5e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f5e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f5e27]: Rencana
+      - link "Budget" [ref=f5e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f5e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f5e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f5e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f5e51]: Catat cepat
+      - link "Scan struk" [ref=f5e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f5e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f5e64]:
+        - button "Mode gelap" [ref=f5e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f5e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f5e74]: EB
+    - main [ref=f5e79]:
+      - generic [ref=f5e80]:
+        - heading "Goals" [level=1] [ref=f5e81]
+        - button "Tambah goal" [ref=f5e82] [cursor=pointer]
+      - generic [ref=f5e84]:
+        - generic [ref=f5e85]:
+          - generic [ref=f5e86]: Total terkumpul · 0 goal
+          - generic [ref=f5e87]: Rp 0
+        - generic [ref=f5e88]: 0% dari total target Rp 0
+  - alert [ref=f5e100]

@@ -1,0 +1,194 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - navigation "Navigasi utama" [ref=f2e3]:
+      - link "Beranda" [ref=f2e4] [cursor=pointer]:
+        - /url: /
+      - link "Analitik" [ref=f2e10] [cursor=pointer]:
+        - /url: /analytics
+      - link "Tambah transaksi" [ref=f2e14] [cursor=pointer]:
+        - /url: /transaction
+      - link "Dompet" [ref=f2e17] [cursor=pointer]:
+        - /url: /wallets
+      - link "Lainnya" [ref=f2e21] [cursor=pointer]:
+        - /url: /more
+    - generic [ref=f2e28]:
+      - generic [ref=f2e30]:
+        - generic [ref=f2e31]: EB
+        - generic [ref=f2e32]:
+          - paragraph [ref=f2e33]: Sab, 17 Okt
+          - heading "Halo, Eko" [level=1] [ref=f2e34]
+      - generic [ref=f2e35]:
+        - button "Periode sebelumnya" [disabled] [ref=f2e36] [cursor=pointer]
+        - button "25 Sep - 25 Okt 2026" [ref=f2e39] [cursor=pointer]
+        - button "Periode berikutnya" [disabled] [ref=f2e42] [cursor=pointer]
+      - generic [ref=f2e45]:
+        - generic [ref=f2e46]:
+          - generic [ref=f2e47]:
+            - generic [ref=f2e48]:
+              - text: Saldo aktif
+              - button "Info saldo aktif" [ref=f2e50] [cursor=pointer]
+            - generic [ref=f2e53]: Rp ••••••
+            - generic [ref=f2e54]: Siap dipakai dari 7 dompet
+          - button "Tampilkan angka" [ref=f2e55] [cursor=pointer]
+        - generic [ref=f2e59]:
+          - generic [ref=f2e65]:
+            - generic [ref=f2e66]:
+              - text: Pemasukan
+              - button "Info pemasukan" [ref=f2e68] [cursor=pointer]
+            - generic [ref=f2e71]: ••
+          - generic [ref=f2e77]:
+            - generic [ref=f2e78]:
+              - text: Pengeluaran
+              - button "Info pengeluaran" [ref=f2e80] [cursor=pointer]
+              - text: · turun 92%
+            - generic [ref=f2e83]: ••
+        - link [ref=f2e84] [cursor=pointer]:
+          - /url: /wallets?tab=tabungan
+          - generic [ref=f2e85]:
+            - text: Aset tersimpan (tabungan inti)
+            - button "Info aset tersimpan" [ref=f2e87]
+          - generic [ref=f2e90]: Rp ••••
+      - generic [ref=f2e93]:
+        - generic [ref=f2e94]:
+          - heading "Ringkasan arus kas" [level=2] [ref=f2e95]
+          - generic [ref=f2e96]: Masih terkendali
+        - generic [ref=f2e97]:
+          - text: Kamu sudah pakai
+          - generic [ref=f2e98]: 25%
+          - text: dari pemasukan periode ini.
+        - generic [ref=f2e101]:
+          - generic [ref=f2e102]:
+            - generic [ref=f2e103]: Pemasukan
+            - generic [ref=f2e104]: Rp 6.8jt
+            - generic [ref=f2e105]: Tanpa piutang
+          - generic [ref=f2e106]:
+            - generic [ref=f2e107]: Dipakai
+            - generic [ref=f2e108]: Rp 1.7jt
+            - generic [ref=f2e109]: Keluar + transfer
+          - generic [ref=f2e110]:
+            - generic [ref=f2e111]: Sisa
+            - generic [ref=f2e112]: Rp 5.1jt
+            - generic [ref=f2e113]: Belum terpakai
+      - generic [ref=f2e114]:
+        - generic [ref=f2e115]:
+          - heading "Tagihan rutin" [level=2] [ref=f2e116]
+          - link "Kelola" [ref=f2e117] [cursor=pointer]:
+            - /url: /recurring
+        - generic [ref=f2e118]: neflix jatuh tempo 1 hari lagi
+        - generic [ref=f2e121]:
+          - generic [ref=f2e122]:
+            - generic [ref=f2e126]: neflix
+            - generic [ref=f2e127]: Rp 65.000
+            - generic [ref=f2e128]: 1 hari
+          - generic [ref=f2e129]:
+            - generic [ref=f2e133]: youtube premium
+            - generic [ref=f2e134]: Rp 23.167
+            - generic [ref=f2e135]: Terlewat
+      - generic [ref=f2e136]:
+        - generic [ref=f2e137]:
+          - generic [ref=f2e138]: 14:04:43
+          - generic [ref=f2e139]: Sabtu, 17 Oktober 2026
+        - generic [ref=f2e140]:
+          - generic [ref=f2e145]:
+            - heading "Kalender" [level=2] [ref=f2e146]
+            - generic [ref=f2e147]: Oktober 2026
+          - generic [ref=f2e148]:
+            - button "Bulan sebelumnya" [ref=f2e149] [cursor=pointer]
+            - button "Bulan berikutnya" [ref=f2e152] [cursor=pointer]
+        - generic [ref=f2e155]:
+          - generic [ref=f2e156]:
+            - generic [ref=f2e157]: Min
+            - generic [ref=f2e158]: Sen
+            - generic [ref=f2e159]: Sel
+            - generic [ref=f2e160]: Rab
+            - generic [ref=f2e161]: Kam
+            - generic [ref=f2e162]: Jum
+            - generic [ref=f2e163]: Sab
+          - generic [ref=f2e164]:
+            - button "1" [ref=f2e169] [cursor=pointer]
+            - button "2" [ref=f2e170] [cursor=pointer]
+            - button "3" [ref=f2e171] [cursor=pointer]
+            - button "4" [ref=f2e172] [cursor=pointer]
+            - button [ref=f2e173] [cursor=pointer]
+            - button [ref=f2e176] [cursor=pointer]
+            - button "7" [ref=f2e179] [cursor=pointer]
+            - button "8" [ref=f2e180] [cursor=pointer]
+            - button "9" [ref=f2e181] [cursor=pointer]
+            - button "10" [ref=f2e182] [cursor=pointer]
+            - button "11" [ref=f2e183] [cursor=pointer]
+            - button "12" [ref=f2e184] [cursor=pointer]
+            - button "13" [ref=f2e185] [cursor=pointer]
+            - button "14" [ref=f2e186] [cursor=pointer]
+            - button "15" [ref=f2e187] [cursor=pointer]
+            - button "16" [ref=f2e188] [cursor=pointer]
+            - button "17" [ref=f2e189] [cursor=pointer]
+            - button [ref=f2e190] [cursor=pointer]
+            - button "19" [ref=f2e193] [cursor=pointer]
+            - button "20" [ref=f2e194] [cursor=pointer]
+            - button "21" [ref=f2e195] [cursor=pointer]
+            - button "22" [ref=f2e196] [cursor=pointer]
+            - button "23" [ref=f2e197] [cursor=pointer]
+            - button "24" [ref=f2e198] [cursor=pointer]
+            - button "25" [ref=f2e199] [cursor=pointer]
+            - button "26" [ref=f2e200] [cursor=pointer]
+            - button "27" [ref=f2e201] [cursor=pointer]
+            - button "28" [ref=f2e202] [cursor=pointer]
+            - button "29" [ref=f2e203] [cursor=pointer]
+            - button "30" [ref=f2e204] [cursor=pointer]
+            - button "31" [ref=f2e205] [cursor=pointer]
+        - generic [ref=f2e206]:
+          - generic [ref=f2e207]:
+            - generic [ref=f2e208]: 17 Oktober
+            - button "Agenda" [ref=f2e209] [cursor=pointer]
+          - generic [ref=f2e213]:
+            - generic [ref=f2e214]: Tidak ada agenda 17 Okt
+            - paragraph [ref=f2e215]: Tambah pengingat untuk tanggal ini.
+            - button "Tambah agenda" [ref=f2e216] [cursor=pointer]
+      - generic [ref=f2e217]:
+        - generic [ref=f2e218]:
+          - heading "Catatan terbaru" [level=2] [ref=f2e219]
+          - link "Semua catatan" [ref=f2e220] [cursor=pointer]:
+            - /url: /notes
+        - link "utang utang iyat 502.500 +1 catatan lain" [ref=f2e221] [cursor=pointer]:
+          - /url: /notes
+          - generic [ref=f2e226]:
+            - generic [ref=f2e227]: utang
+            - generic [ref=f2e228]: utang iyat 502.500
+            - generic [ref=f2e229]: +1 catatan lain
+      - generic [ref=f2e230]:
+        - generic [ref=f2e231]:
+          - heading "Transaksi terakhir" [level=2] [ref=f2e232]
+          - generic [ref=f2e233]:
+            - button "Export ke Excel" [ref=f2e234] [cursor=pointer]
+            - button "Muat ulang data" [ref=f2e238] [cursor=pointer]
+            - link "Lihat semua" [ref=f2e242] [cursor=pointer]:
+              - /url: /transactions
+        - generic [ref=f2e243]: Tap transaksi untuk ubah atau hapus.
+        - generic [ref=f2e244]:
+          - link "Ubah beli tempat es" [ref=f2e245] [cursor=pointer]:
+            - /url: /transaction?type=pengeluaran&edit=597
+            - generic [ref=f2e251]:
+              - generic [ref=f2e252]: beli tempat es
+              - generic [ref=f2e254]: Belanja · My Bca · 12.00
+            - generic [ref=f2e255]: Rp 21.600
+          - link "Ubah Makan di Luar" [ref=f2e256] [cursor=pointer]:
+            - /url: /transaction?type=pengeluaran&edit=596
+            - generic [ref=f2e261]:
+              - generic [ref=f2e262]: Makan di Luar
+              - generic [ref=f2e264]: Makan di Luar · My Bca · 12.00
+            - generic [ref=f2e265]: Rp 44.000
+          - link "Ubah kopi gess" [ref=f2e266] [cursor=pointer]:
+            - /url: /transaction?type=pengeluaran&edit=595
+            - generic [ref=f2e272]:
+              - generic [ref=f2e273]: kopi gess
+              - generic [ref=f2e275]: Belanja · Bank BCA · 12.00
+            - generic [ref=f2e276]: Rp 174.900
+          - link "Ubah piutang" [ref=f2e277] [cursor=pointer]:
+            - /url: /transaction?type=pemasukan&edit=594
+            - generic [ref=f2e282]:
+              - generic [ref=f2e283]:
+                - generic [ref=f2e284]: piutang
+                - generic [ref=f2e285]: Piutang
+              - generic [ref=f2e286]: piutang · Bank BCA · 12.00
+            - generic [ref=f2e287]: +Rp 10.000
+  - alert [ref=f2e288]

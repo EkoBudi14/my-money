@@ -1,0 +1,315 @@
+[  144766ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/api/holidays?year=2026:0
+[  144766ms] [ERROR] Error fetching calendar data: TypeError: Failed to fetch
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7739
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7996
+    at aI (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:72882)
+    at a3 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84323)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84961)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  144782ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/api/holidays?year=2026:0
+[  144782ms] [ERROR] Error fetching calendar data: TypeError: Failed to fetch
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7739
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7996
+    at aI (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:72882)
+    at a3 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84323)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84961)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  144795ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/wallets?tab=tabungan&_rsc=acgkz:0
+[  144795ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/wallets?tab=tabungan. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  144963ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transactions?_rsc=acgkz:0
+[  144963ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transactions. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  148050ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/recurring?_rsc=acgkz:0
+[  148050ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/recurring. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  148206ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/notes?_rsc=acgkz:0
+[  148206ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/notes. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  148378ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/scan-receipt?_rsc=acgkz:0
+[  148379ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/scan-receipt. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  148429ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/voice-transaction?_rsc=acgkz:0
+[  148429ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/voice-transaction. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  151997ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/api/holidays?year=2026:0
+[  151997ms] [ERROR] Error fetching calendar data: TypeError: Failed to fetch
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7739
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7996
+    at aI (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:72882)
+    at a3 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84323)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84961)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  152017ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?_rsc=acgkz:0
+[  152017ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  152018ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/more?_rsc=acgkz:0
+[  152018ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/more. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at i (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86761) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  159600ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?type=pengeluaran&edit=597&_rsc=acgkz:0
+[  159600ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction?type=pengeluaran&edit=597. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  159648ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?type=pengeluaran&edit=596&_rsc=acgkz:0
+[  159648ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction?type=pengeluaran&edit=596. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  159692ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?type=pengeluaran&edit=595&_rsc=acgkz:0
+[  159692ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction?type=pengeluaran&edit=595. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  159731ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?type=pemasukan&edit=594&_rsc=acgkz:0
+[  159731ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction?type=pemasukan&edit=594. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  163594ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/?_rsc=acgkz:0
+[  163595ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  164299ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/analytics?_rsc=acgkz:0
+[  164299ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/analytics. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  164557ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/wallets?_rsc=acgkz:0
+[  164558ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/wallets. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  164999ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?_rsc=h03xi:0
+[  164999ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at i (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86761) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  164999ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/more?_rsc=h03xi:0
+[  164999ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/more. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at i (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86761) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  165733ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/transaction?_rsc=j5x7n:0
+[  165733ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/transaction. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at i (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86761) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  165734ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/more?_rsc=j5x7n:0
+[  165734ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/more. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at i (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86761) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  279931ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/goals?select=archived_at&limit=1:0
+[  280969ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/budgets?select=is_recurring&limit=1:0
+[  281173ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/budgets?select=*&is_recurring=eq.true&end_date=lt.2026-09-30:0
+[  292982ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/api/holidays?year=2026:0
+[  292982ms] [ERROR] Error fetching calendar data: TypeError: Failed to fetch
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7739
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7996
+    at aI (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:72882)
+    at a3 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84323)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84961)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  292994ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/api/holidays?year=2026:0
+[  292994ms] [ERROR] Error fetching calendar data: TypeError: Failed to fetch
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7739
+    at http://localhost:3100/_next/static/chunks/app/page-f3ce1d5497afd5db.js:1:7996
+    at aI (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:72882)
+    at a3 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84323)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84961)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845)
+    at a5 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:85906)
+    at a8 (http://localhost:3100/_next/static/chunks/fd9d1056-ec2c24a2ffb73dc8.js:1:84845) @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  293002ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/wallets?tab=tabungan&_rsc=acgkz:0
+[  293002ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/wallets?tab=tabungan. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0
+[  309795ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:3100/notes?_rsc=acgkz:0
+[  309795ms] [ERROR] Failed to fetch RSC payload for http://localhost:3100/notes. Falling back to browser navigation. TypeError: Failed to fetch
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:43471)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62278
+    at Object.u [as task] (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31725)
+    at c.s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:32430)
+    at c.enqueue (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:31855)
+    at s (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:62241)
+    at f (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:70842)
+    at Object.action (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87948)
+    at c (http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:86973)
+    at http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:1:87582 @ http://localhost:3100/_next/static/chunks/468-88c05556d9c9dd9b.js:0

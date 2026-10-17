@@ -1,0 +1,3 @@
+[   16578ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/budgets?select=is_recurring&limit=1:0
+[   16718ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/budgets?select=*&is_recurring=eq.true&end_date=lt.2026-09-30:0
+[   18537ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cdbivrizcqkomukqhcwd.supabase.co/rest/v1/goals?select=archived_at&limit=1:0

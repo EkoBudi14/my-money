@@ -1,0 +1,21 @@
+- generic [ref=f13e2]:
+  - navigation "Navigasi utama" [ref=f13e3]:
+    - link "Beranda" [ref=f13e4] [cursor=pointer]:
+      - /url: /
+    - link "Analitik" [ref=f13e10] [cursor=pointer]:
+      - /url: /analytics
+    - link "Tambah transaksi" [ref=f13e14] [cursor=pointer]:
+      - /url: /transaction
+    - link "Dompet" [ref=f13e17] [cursor=pointer]:
+      - /url: /wallets
+    - link "Lainnya" [ref=f13e21] [cursor=pointer]:
+      - /url: /more
+  - generic [ref=f13e28]:
+    - generic [ref=f13e29]:
+      - generic [ref=f13e30]:
+        - link "Kembali" [ref=f13e31] [cursor=pointer]:
+          - /url: /
+        - heading "Catatan" [level=1] [ref=f13e34]
+      - button "Tambah catatan" [ref=f13e35] [cursor=pointer]
+    - textbox [ref=f13e41]:
+      - /placeholder: Cari catatan

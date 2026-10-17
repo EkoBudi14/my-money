@@ -1,0 +1,48 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e2]:
+    - complementary "Navigasi utama" [ref=f13e3]:
+      - generic [ref=f13e4]:
+        - generic [ref=f13e5]: C
+        - generic [ref=f13e6]: CatatDuit
+      - link "Beranda" [ref=f13e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f13e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f13e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f13e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f13e27]: Rencana
+      - link "Budget" [ref=f13e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f13e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f13e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f13e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f13e51]: Catat cepat
+      - link "Scan struk" [ref=f13e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f13e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f13e64]:
+        - button "Mode gelap" [ref=f13e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f13e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f13e74]: EB
+    - main [ref=f13e79]:
+      - generic [ref=f13e80]:
+        - heading "Dompet & tabungan" [level=1] [ref=f13e81]
+        - generic [ref=f13e82]:
+          - button "Tampilkan angka" [ref=f13e83] [cursor=pointer]
+          - button "Tambah dompet" [ref=f13e87] [cursor=pointer]
+      - generic [ref=f13e89]:
+        - generic [ref=f13e90]:
+          - generic [ref=f13e91]: Saldo aktif · 0 dompet
+          - generic [ref=f13e92]: Rp ••••••
+          - generic [ref=f13e93]: Uang siap pakai sehari-hari
+        - generic [ref=f13e94]:
+          - generic [ref=f13e95]: Aset tersimpan · 0 aset
+          - generic [ref=f13e96]: Rp ••••••
+          - generic [ref=f13e97]: Tidak dihitung di saldo aktif
+  - alert [ref=f13e129]

@@ -1,0 +1,57 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - complementary "Navigasi utama" [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - generic [ref=f4e5]: C
+        - generic [ref=f4e6]: CatatDuit
+      - link "Beranda" [ref=f4e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f4e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f4e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f4e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f4e27]: Rencana
+      - link "Budget" [ref=f4e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f4e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f4e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f4e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f4e51]: Catat cepat
+      - link "Scan struk" [ref=f4e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f4e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f4e64]:
+        - button "Mode gelap" [ref=f4e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f4e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f4e74]: EB
+    - main [ref=f4e79]:
+      - generic [ref=f4e80]:
+        - heading "Budget" [level=1] [ref=f4e81]
+        - generic [ref=f4e82]:
+          - button "Periode sebelumnya" [ref=f4e83] [cursor=pointer]
+          - button "Oktober 2026" [ref=f4e86] [cursor=pointer]
+          - button "Periode berikutnya" [ref=f4e89] [cursor=pointer]
+          - button "Buat budget" [ref=f4e92] [cursor=pointer]
+      - generic [ref=f4e94]:
+        - generic [ref=f4e95]:
+          - generic [ref=f4e96]: Terpakai dari total budget
+          - generic [ref=f4e97]:
+            - generic [ref=f4e98]: Rp 0
+            - generic [ref=f4e99]: / Rp 0
+          - generic [ref=f4e101]:
+            - generic [ref=f4e102]: Sisa Rp 0
+            - generic [ref=f4e103]: 0% terpakai · 15 hari lagi
+        - generic [ref=f4e104]:
+          - generic [ref=f4e105]: Aman dipakai per hari
+          - generic [ref=f4e106]: ± Rp 0
+          - generic [ref=f4e107]: Untuk 15 hari tersisa
+        - generic [ref=f4e108]:
+          - generic [ref=f4e109]: Status
+          - generic [ref=f4e110]: Belum ada budget
+  - alert [ref=f4e129]

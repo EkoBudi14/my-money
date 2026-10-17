@@ -1,0 +1,68 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary "Navigasi utama" [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]: C
+        - generic [ref=f1e6]: CatatDuit
+      - link "Beranda" [ref=f1e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f1e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f1e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f1e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f1e27]: Rencana
+      - link "Budget" [ref=f1e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f1e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f1e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f1e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f1e51]: Catat cepat
+      - link "Scan struk" [ref=f1e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f1e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f1e64]:
+        - button "Mode gelap" [ref=f1e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f1e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f1e74]: EB
+    - main [ref=f1e79]:
+      - generic [ref=f1e80]:
+        - heading "Riwayat transaksi" [level=1] [ref=f1e81]
+        - generic [ref=f1e82]:
+          - button "Periode sebelumnya" [ref=f1e83] [cursor=pointer]
+          - button "Oktober 2026" [ref=f1e86] [cursor=pointer]
+          - button "Periode berikutnya" [ref=f1e89] [cursor=pointer]
+          - button "Muat ulang data" [ref=f1e92] [cursor=pointer]
+          - button "Export" [ref=f1e96] [cursor=pointer]
+          - button "Tambah transaksi" [ref=f1e100] [cursor=pointer]
+      - generic [ref=f1e102]:
+        - generic [ref=f1e103]:
+          - generic [ref=f1e104]: Masuk
+          - generic [ref=f1e105]: +Rp 0
+        - generic [ref=f1e106]:
+          - generic [ref=f1e107]: Keluar
+          - generic [ref=f1e108]: Rp 0
+        - generic [ref=f1e109]:
+          - generic [ref=f1e110]: Selisih
+          - generic [ref=f1e111]: Rp 0
+        - generic [ref=f1e112]:
+          - generic [ref=f1e113]: Jumlah transaksi
+          - generic [ref=f1e114]: "0"
+      - generic [ref=f1e116]:
+        - textbox "Cari transaksi" [ref=f1e121]:
+          - /placeholder: Cari transaksi atau catatan
+        - generic [ref=f1e122]:
+          - button "Semua" [ref=f1e123] [cursor=pointer]
+          - button "Pengeluaran" [ref=f1e124] [cursor=pointer]
+          - button "Pemasukan" [ref=f1e125] [cursor=pointer]
+          - button "Transfer" [ref=f1e126] [cursor=pointer]
+          - button "Piutang" [ref=f1e127] [cursor=pointer]
+          - button "Talangan" [ref=f1e128] [cursor=pointer]
+        - button "Semua kategori" [ref=f1e131] [cursor=pointer]
+        - button "Semua dompet" [ref=f1e138] [cursor=pointer]
+  - alert [ref=f1e193]

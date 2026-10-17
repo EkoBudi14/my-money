@@ -1,0 +1,216 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - heading "CatatDuit" [level=1] [ref=e10]
+    - paragraph [ref=e11]: Menyiapkan data...
+  - generic [ref=e12]:
+    - complementary "Navigasi utama" [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: C
+        - generic [ref=e16]: CatatDuit
+      - link "Beranda" [ref=e17] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=e24] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=e27] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=e32] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=e37]: Rencana
+      - link "Budget" [ref=e38] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=e43] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=e49] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=e56] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=e61]: Catat cepat
+      - link "Scan struk" [ref=e62] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=e69] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=e74]:
+        - button "Mode gelap" [ref=e75] [cursor=pointer]
+        - button "Ringkas menu" [ref=e79] [cursor=pointer]
+        - generic "Eko Budi" [ref=e84]: EB
+    - main [ref=e89]:
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - paragraph [ref=e92]: Sabtu, 17 Oktober 2026
+          - heading "Halo, Eko" [level=1] [ref=e93]
+        - generic [ref=e94]:
+          - button "Periode sebelumnya" [ref=e95] [cursor=pointer]
+          - button "Oktober 2026" [ref=e98] [cursor=pointer]
+          - button "Periode berikutnya" [ref=e101] [cursor=pointer]
+          - button "Tampilkan angka" [ref=e104] [cursor=pointer]
+          - button "Notifikasi" [ref=e108] [cursor=pointer]
+          - button "Tambah transaksi" [ref=e112] [cursor=pointer]
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]:
+            - text: Saldo aktif · siap dipakai dari 0 dompet
+            - button "Info saldo aktif" [ref=e118] [cursor=pointer]
+          - generic [ref=e121]: Rp ••••••
+          - link [ref=e122] [cursor=pointer]:
+            - /url: /wallets?tab=tabungan
+            - generic [ref=e123]:
+              - text: Aset tersimpan (tabungan inti)
+              - button "Info aset tersimpan" [ref=e125]
+            - generic [ref=e128]: Rp ••••
+        - generic [ref=e131]:
+          - generic [ref=e136]:
+            - text: Pemasukan
+            - button "Info pemasukan" [ref=e138] [cursor=pointer]
+          - generic [ref=e141]: Rp ••••••
+          - generic [ref=e142]: Belum ada data periode lalu
+        - generic [ref=e143]:
+          - generic [ref=e148]:
+            - text: Pengeluaran
+            - button "Info pengeluaran" [ref=e150] [cursor=pointer]
+          - generic [ref=e153]: Rp ••••••
+          - generic [ref=e154]: Belum ada data periode lalu
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - heading "Ringkasan arus kas" [level=2] [ref=e158]
+          - generic [ref=e159]: Masih terkendali
+        - generic [ref=e160]:
+          - text: Kamu sudah pakai
+          - generic [ref=e161]: 0%
+          - text: dari pemasukan periode ini.
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - generic [ref=e165]: Pemasukan
+            - generic [ref=e166]: Rp 0
+            - generic [ref=e167]: Tidak termasuk piutang
+          - generic [ref=e168]:
+            - generic [ref=e169]: Uang dipakai
+            - generic [ref=e170]: Rp 0
+            - generic [ref=e171]: Pengeluaran + transfer
+          - generic [ref=e172]:
+            - generic [ref=e173]: Sisa belum terpakai
+            - generic [ref=e174]: Rp 0
+            - generic [ref=e175]: Pemasukan − dipakai
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - generic [ref=e179]:
+            - heading "Arus kas 6 periode" [level=2] [ref=e180]
+            - generic [ref=e181]:
+              - generic [ref=e182]: Pemasukan
+              - generic [ref=e184]: Pengeluaran
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - generic [ref=e188]: "1"
+              - generic [ref=e189]: "0.5"
+              - generic [ref=e190]: "0"
+            - generic [ref=e191]:
+              - generic "Pemasukan Rp 0" [ref=e192]
+              - generic "Pengeluaran Rp 0" [ref=e193]
+            - generic [ref=e194]:
+              - generic "Pemasukan Rp 0" [ref=e195]
+              - generic "Pengeluaran Rp 0" [ref=e196]
+            - generic [ref=e197]:
+              - generic "Pemasukan Rp 0" [ref=e198]
+              - generic "Pengeluaran Rp 0" [ref=e199]
+            - generic [ref=e200]:
+              - generic "Pemasukan Rp 0" [ref=e201]
+              - generic "Pengeluaran Rp 0" [ref=e202]
+            - generic [ref=e203]:
+              - generic "Pemasukan Rp 0" [ref=e204]
+              - generic "Pengeluaran Rp 0" [ref=e205]
+            - generic [ref=e206]:
+              - generic "Pemasukan Rp 0" [ref=e207]
+              - generic "Pengeluaran Rp 0" [ref=e208]
+          - generic [ref=e209]:
+            - generic [ref=e211]: Mei
+            - generic [ref=e212]: Jun
+            - generic [ref=e213]: Jul
+            - generic [ref=e214]: Agu
+            - generic [ref=e215]: Sep
+            - generic [ref=e216]: Okt
+        - generic [ref=e217]:
+          - generic [ref=e218]:
+            - heading "Budget periode ini" [level=2] [ref=e219]
+            - link "Atur" [ref=e220] [cursor=pointer]:
+              - /url: /budgets
+          - generic [ref=e221]:
+            - generic [ref=e225]: Belum ada budget periode ini
+            - paragraph [ref=e226]: Batasi kategori yang paling boros dulu.
+            - button "Buat budget" [ref=e227] [cursor=pointer]
+      - generic [ref=e228]:
+        - generic [ref=e230]:
+          - heading "Transaksi terakhir" [level=2] [ref=e231]
+          - generic [ref=e232]:
+            - button "Export ke Excel" [ref=e233] [cursor=pointer]
+            - button "Muat ulang data" [ref=e237] [cursor=pointer]
+            - link "Lihat semua" [ref=e241] [cursor=pointer]:
+              - /url: /transactions
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - heading "Catatan terbaru" [level=2] [ref=e269]
+            - link "Semua" [ref=e270] [cursor=pointer]:
+              - /url: /notes
+          - generic [ref=e271]:
+            - generic [ref=e276]: Tulis catatan pertama
+            - paragraph [ref=e277]: Utang, rencana belanja, atau apa pun soal uang.
+            - button "Tulis catatan" [ref=e278] [cursor=pointer]
+        - generic [ref=e280]:
+          - generic [ref=e281]:
+            - generic [ref=e282]: "--:--:--"
+            - generic [ref=e283]: Sabtu, 17 Oktober 2026
+          - generic [ref=e284]:
+            - generic [ref=e289]:
+              - heading "Kalender" [level=2] [ref=e290]
+              - generic [ref=e291]: Oktober 2026
+            - generic [ref=e292]:
+              - button "Bulan sebelumnya" [ref=e293] [cursor=pointer]
+              - button "Bulan berikutnya" [ref=e296] [cursor=pointer]
+          - generic [ref=e299]:
+            - generic [ref=e300]:
+              - generic [ref=e301]: Min
+              - generic [ref=e302]: Sen
+              - generic [ref=e303]: Sel
+              - generic [ref=e304]: Rab
+              - generic [ref=e305]: Kam
+              - generic [ref=e306]: Jum
+              - generic [ref=e307]: Sab
+            - generic [ref=e308]:
+              - button "1" [ref=e313] [cursor=pointer]
+              - button "2" [ref=e314] [cursor=pointer]
+              - button "3" [ref=e315] [cursor=pointer]
+              - button "4" [ref=e316] [cursor=pointer]
+              - button "5" [ref=e317] [cursor=pointer]
+              - button "6" [ref=e318] [cursor=pointer]
+              - button "7" [ref=e319] [cursor=pointer]
+              - button "8" [ref=e320] [cursor=pointer]
+              - button "9" [ref=e321] [cursor=pointer]
+              - button "10" [ref=e322] [cursor=pointer]
+              - button "11" [ref=e323] [cursor=pointer]
+              - button "12" [ref=e324] [cursor=pointer]
+              - button "13" [ref=e325] [cursor=pointer]
+              - button "14" [ref=e326] [cursor=pointer]
+              - button "15" [ref=e327] [cursor=pointer]
+              - button "16" [ref=e328] [cursor=pointer]
+              - button "17" [ref=e329] [cursor=pointer]
+              - button "18" [ref=e330] [cursor=pointer]
+              - button "19" [ref=e331] [cursor=pointer]
+              - button "20" [ref=e332] [cursor=pointer]
+              - button "21" [ref=e333] [cursor=pointer]
+              - button "22" [ref=e334] [cursor=pointer]
+              - button "23" [ref=e335] [cursor=pointer]
+              - button "24" [ref=e336] [cursor=pointer]
+              - button "25" [ref=e337] [cursor=pointer]
+              - button "26" [ref=e338] [cursor=pointer]
+              - button "27" [ref=e339] [cursor=pointer]
+              - button "28" [ref=e340] [cursor=pointer]
+              - button "29" [ref=e341] [cursor=pointer]
+              - button "30" [ref=e342] [cursor=pointer]
+              - button "31" [ref=e343] [cursor=pointer]
+          - generic [ref=e344]:
+            - generic [ref=e345]:
+              - generic [ref=e346]: 17 Oktober
+              - button "Agenda" [ref=e347] [cursor=pointer]
+            - generic [ref=e351]:
+              - generic [ref=e352]: Tidak ada agenda 17 Okt
+              - paragraph [ref=e353]: Tambah pengingat untuk tanggal ini.
+              - button "Tambah agenda" [ref=e354] [cursor=pointer]
+  - alert [ref=e355]

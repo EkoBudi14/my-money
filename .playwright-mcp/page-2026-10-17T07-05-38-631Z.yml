@@ -1,0 +1,33 @@
+- generic [ref=f4e2]:
+  - navigation "Navigasi utama" [ref=f4e3]:
+    - link "Beranda" [ref=f4e4] [cursor=pointer]:
+      - /url: /
+    - link "Analitik" [ref=f4e10] [cursor=pointer]:
+      - /url: /analytics
+    - link "Tambah transaksi" [ref=f4e14] [cursor=pointer]:
+      - /url: /transaction
+    - link "Dompet" [ref=f4e17] [cursor=pointer]:
+      - /url: /wallets
+    - link "Lainnya" [ref=f4e21] [cursor=pointer]:
+      - /url: /more
+  - generic [ref=f4e28]:
+    - generic [ref=f4e29]:
+      - generic [ref=f4e30]:
+        - link "Kembali" [ref=f4e31] [cursor=pointer]:
+          - /url: /
+        - heading "Budget" [level=1] [ref=f4e34]
+      - button "Buat budget" [ref=f4e35] [cursor=pointer]
+    - generic [ref=f4e37]:
+      - button "Periode sebelumnya" [ref=f4e38] [cursor=pointer]
+      - button "Oktober 2026" [ref=f4e41] [cursor=pointer]
+      - button "Periode berikutnya" [ref=f4e44] [cursor=pointer]
+    - generic [ref=f4e47]:
+      - generic [ref=f4e48]:
+        - generic [ref=f4e49]: Terpakai dari total budget
+        - generic [ref=f4e50]: 15 hari lagi
+      - generic [ref=f4e51]:
+        - generic [ref=f4e52]: Rp 0
+        - generic [ref=f4e53]: / Rp 0
+      - generic [ref=f4e55]:
+        - generic [ref=f4e56]: Sisa Rp 0
+        - generic [ref=f4e57]: Aman dipakai ± Rp 0 per hari

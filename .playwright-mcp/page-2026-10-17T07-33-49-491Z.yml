@@ -1,0 +1,44 @@
+- generic [ref=f26e2]:
+  - complementary "Navigasi utama" [ref=f26e3]:
+    - generic [ref=f26e4]:
+      - generic [ref=f26e5]: C
+      - generic [ref=f26e6]: CatatDuit
+    - link "Beranda" [ref=f26e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f26e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f26e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f26e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f26e27]: Rencana
+    - link "Budget" [ref=f26e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f26e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f26e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f26e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f26e51]: Catat cepat
+    - link "Scan struk" [ref=f26e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f26e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f26e64]:
+      - button "Mode gelap" [ref=f26e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f26e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f26e74]: EB
+  - generic [ref=f26e79]:
+    - generic [ref=f26e80]:
+      - heading "Dompet" [level=1] [ref=f26e81]
+      - button "Tambah dompet" [ref=f26e82] [cursor=pointer]
+    - tablist [ref=f26e84]:
+      - button "Saldo aktif" [ref=f26e85] [cursor=pointer]
+      - button "Tabungan inti" [ref=f26e86] [cursor=pointer]
+    - generic [ref=f26e87]:
+      - generic [ref=f26e88]:
+        - generic [ref=f26e89]: Total saldo aktif · 0 dompet
+        - button "Tampilkan angka" [ref=f26e90] [cursor=pointer]
+      - generic [ref=f26e94]: Rp ••••••
+      - generic [ref=f26e95]: Uang siap pakai sehari-hari

@@ -1,0 +1,48 @@
+- generic [active] [ref=f10e1]:
+  - generic [ref=f10e2]:
+    - complementary "Navigasi utama" [ref=f10e3]:
+      - generic [ref=f10e4]:
+        - generic [ref=f10e5]: C
+        - generic [ref=f10e6]: CatatDuit
+      - link "Beranda" [ref=f10e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f10e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f10e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f10e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f10e27]: Rencana
+      - link "Budget" [ref=f10e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f10e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f10e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f10e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f10e51]: Catat cepat
+      - link "Scan struk" [ref=f10e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f10e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f10e64]:
+        - button "Mode gelap" [ref=f10e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f10e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f10e74]: EB
+    - generic [ref=f10e78]:
+      - generic [ref=f10e79]:
+        - generic [ref=f10e80]:
+          - button "Tutup" [ref=f10e81] [cursor=pointer]
+          - heading "Pemasukan baru" [level=1] [ref=f10e85]
+        - generic [ref=f10e86]:
+          - link "Scan struk" [ref=f10e87] [cursor=pointer]:
+            - /url: /scan-receipt
+          - link "Input suara" [ref=f10e93] [cursor=pointer]:
+            - /url: /voice-transaction
+      - tablist [ref=f10e97]:
+        - button "Pengeluaran" [ref=f10e98] [cursor=pointer]
+        - button "Pemasukan" [ref=f10e99] [cursor=pointer]
+        - button "Transfer" [ref=f10e100] [cursor=pointer]
+      - paragraph [ref=f10e103]: Menyiapkan form…
+  - alert [ref=f10e104]

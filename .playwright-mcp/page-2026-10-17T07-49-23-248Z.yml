@@ -1,0 +1,155 @@
+- generic [ref=f62e2]:
+  - complementary "Navigasi utama" [ref=f62e3]:
+    - generic [ref=f62e4]:
+      - generic [ref=f62e5]: C
+      - generic [ref=f62e6]: CatatDuit
+    - link "Beranda" [ref=f62e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f62e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f62e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f62e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f62e27]: Rencana
+    - link "Budget" [ref=f62e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f62e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f62e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f62e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f62e51]: Catat cepat
+    - link "Scan struk" [ref=f62e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f62e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f62e64]:
+      - button "Mode gelap" [ref=f62e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f62e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f62e74]: EB
+  - generic [ref=f62e79]:
+    - generic [ref=f62e81]:
+      - generic [ref=f62e82]: EB
+      - generic [ref=f62e83]:
+        - paragraph [ref=f62e84]: Sab, 17 Okt
+        - heading "Halo, Eko" [level=1] [ref=f62e85]
+    - generic [ref=f62e86]:
+      - button "Periode sebelumnya" [ref=f62e87] [cursor=pointer]
+      - button "Oktober 2026" [ref=f62e90] [cursor=pointer]
+      - button "Periode berikutnya" [ref=f62e93] [cursor=pointer]
+    - generic [ref=f62e96]:
+      - generic [ref=f62e97]:
+        - generic [ref=f62e98]:
+          - generic [ref=f62e99]:
+            - text: Saldo aktif
+            - button "Info saldo aktif" [ref=f62e101] [cursor=pointer]
+          - generic [ref=f62e104]: Rp ••••••
+          - generic [ref=f62e105]: Siap dipakai dari 0 dompet
+        - button "Tampilkan angka" [ref=f62e106] [cursor=pointer]
+      - generic [ref=f62e110]:
+        - generic [ref=f62e116]:
+          - generic [ref=f62e117]:
+            - text: Pemasukan
+            - button "Info pemasukan" [ref=f62e119] [cursor=pointer]
+          - generic [ref=f62e122]: ••
+        - generic [ref=f62e128]:
+          - generic [ref=f62e129]:
+            - text: Pengeluaran
+            - button "Info pengeluaran" [ref=f62e131] [cursor=pointer]
+          - generic [ref=f62e134]: ••
+      - link [ref=f62e135] [cursor=pointer]:
+        - /url: /wallets?tab=tabungan
+        - generic [ref=f62e136]:
+          - text: Aset tersimpan (tabungan inti)
+          - button "Info aset tersimpan" [ref=f62e138]
+        - generic [ref=f62e141]: Rp ••••
+    - generic [ref=f62e144]:
+      - generic [ref=f62e145]:
+        - heading "Ringkasan arus kas" [level=2] [ref=f62e146]
+        - generic [ref=f62e147]: Masih terkendali
+      - generic [ref=f62e148]:
+        - text: Kamu sudah pakai
+        - generic [ref=f62e149]: 0%
+        - text: dari pemasukan periode ini.
+      - generic [ref=f62e151]:
+        - generic [ref=f62e152]:
+          - generic [ref=f62e153]: Pemasukan
+          - generic [ref=f62e154]: Rp 0
+          - generic [ref=f62e155]: Tanpa piutang
+        - generic [ref=f62e156]:
+          - generic [ref=f62e157]: Dipakai
+          - generic [ref=f62e158]: Rp 0
+          - generic [ref=f62e159]: Keluar + transfer
+        - generic [ref=f62e160]:
+          - generic [ref=f62e161]: Sisa
+          - generic [ref=f62e162]: Rp 0
+          - generic [ref=f62e163]: Belum terpakai
+    - generic [ref=f62e164]:
+      - generic [ref=f62e165]:
+        - generic [ref=f62e166]: "--:--:--"
+        - generic [ref=f62e167]: Sabtu, 17 Oktober 2026
+      - generic [ref=f62e168]:
+        - generic [ref=f62e173]:
+          - heading "Kalender" [level=2] [ref=f62e174]
+          - generic [ref=f62e175]: Oktober 2026
+        - generic [ref=f62e176]:
+          - button "Bulan sebelumnya" [ref=f62e177] [cursor=pointer]
+          - button "Bulan berikutnya" [ref=f62e180] [cursor=pointer]
+      - generic [ref=f62e183]:
+        - generic [ref=f62e184]:
+          - generic [ref=f62e185]: Min
+          - generic [ref=f62e186]: Sen
+          - generic [ref=f62e187]: Sel
+          - generic [ref=f62e188]: Rab
+          - generic [ref=f62e189]: Kam
+          - generic [ref=f62e190]: Jum
+          - generic [ref=f62e191]: Sab
+        - generic [ref=f62e192]:
+          - button "1" [ref=f62e197] [cursor=pointer]
+          - button "2" [ref=f62e198] [cursor=pointer]
+          - button "3" [ref=f62e199] [cursor=pointer]
+          - button "4" [ref=f62e200] [cursor=pointer]
+          - button "5" [ref=f62e201] [cursor=pointer]
+          - button "6" [ref=f62e202] [cursor=pointer]
+          - button "7" [ref=f62e203] [cursor=pointer]
+          - button "8" [ref=f62e204] [cursor=pointer]
+          - button "9" [ref=f62e205] [cursor=pointer]
+          - button "10" [ref=f62e206] [cursor=pointer]
+          - button "11" [ref=f62e207] [cursor=pointer]
+          - button "12" [ref=f62e208] [cursor=pointer]
+          - button "13" [ref=f62e209] [cursor=pointer]
+          - button "14" [ref=f62e210] [cursor=pointer]
+          - button "15" [ref=f62e211] [cursor=pointer]
+          - button "16" [ref=f62e212] [cursor=pointer]
+          - button "17" [ref=f62e213] [cursor=pointer]
+          - button "18" [ref=f62e214] [cursor=pointer]
+          - button "19" [ref=f62e215] [cursor=pointer]
+          - button "20" [ref=f62e216] [cursor=pointer]
+          - button "21" [ref=f62e217] [cursor=pointer]
+          - button "22" [ref=f62e218] [cursor=pointer]
+          - button "23" [ref=f62e219] [cursor=pointer]
+          - button "24" [ref=f62e220] [cursor=pointer]
+          - button "25" [ref=f62e221] [cursor=pointer]
+          - button "26" [ref=f62e222] [cursor=pointer]
+          - button "27" [ref=f62e223] [cursor=pointer]
+          - button "28" [ref=f62e224] [cursor=pointer]
+          - button "29" [ref=f62e225] [cursor=pointer]
+          - button "30" [ref=f62e226] [cursor=pointer]
+          - button "31" [ref=f62e227] [cursor=pointer]
+      - generic [ref=f62e228]:
+        - generic [ref=f62e229]:
+          - generic [ref=f62e230]: 17 Oktober
+          - button "Agenda" [ref=f62e231] [cursor=pointer]
+        - generic [ref=f62e235]:
+          - generic [ref=f62e236]: Tidak ada agenda 17 Okt
+          - paragraph [ref=f62e237]: Tambah pengingat untuk tanggal ini.
+          - button "Tambah agenda" [ref=f62e238] [cursor=pointer]
+    - generic [ref=f62e240]:
+      - heading "Transaksi terakhir" [level=2] [ref=f62e241]
+      - generic [ref=f62e242]:
+        - button "Export ke Excel" [ref=f62e243] [cursor=pointer]
+        - button "Muat ulang data" [ref=f62e247] [cursor=pointer]
+        - link "Lihat semua" [ref=f62e251] [cursor=pointer]:
+          - /url: /transactions

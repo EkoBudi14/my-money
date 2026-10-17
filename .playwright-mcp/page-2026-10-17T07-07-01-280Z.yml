@@ -1,0 +1,36 @@
+- generic [ref=f7e2]:
+  - navigation "Navigasi utama" [ref=f7e3]:
+    - link "Beranda" [ref=f7e4] [cursor=pointer]:
+      - /url: /
+    - link "Analitik" [ref=f7e10] [cursor=pointer]:
+      - /url: /analytics
+    - link "Tambah transaksi" [ref=f7e14] [cursor=pointer]:
+      - /url: /transaction
+    - link "Dompet" [ref=f7e17] [cursor=pointer]:
+      - /url: /wallets
+    - link "Lainnya" [ref=f7e21] [cursor=pointer]:
+      - /url: /more
+  - generic [ref=f7e28]:
+    - generic [ref=f7e29]:
+      - generic [ref=f7e30]:
+        - button "Kembali" [ref=f7e31] [cursor=pointer]
+        - heading "Riwayat" [level=1] [ref=f7e34]
+      - generic [ref=f7e35]:
+        - button "Muat ulang data" [ref=f7e36] [cursor=pointer]
+        - button "Export ke Excel" [ref=f7e40] [cursor=pointer]
+    - textbox [ref=f7e48]:
+      - /placeholder: Cari transaksi atau catatan
+    - generic [ref=f7e49]:
+      - button "Semua" [ref=f7e50] [cursor=pointer]
+      - button "Pengeluaran" [ref=f7e51] [cursor=pointer]
+      - button "Pemasukan" [ref=f7e52] [cursor=pointer]
+      - button "Transfer" [ref=f7e53] [cursor=pointer]
+      - button "Piutang" [ref=f7e54] [cursor=pointer]
+      - button "Talangan" [ref=f7e55] [cursor=pointer]
+    - generic [ref=f7e56]:
+      - generic [ref=f7e57]:
+        - generic [ref=f7e58]: Masuk
+        - generic [ref=f7e59]: +Rp 0
+      - generic [ref=f7e60]:
+        - generic [ref=f7e61]: Keluar
+        - generic [ref=f7e62]: Rp 0

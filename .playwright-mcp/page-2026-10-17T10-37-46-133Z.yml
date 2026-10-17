@@ -1,0 +1,68 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - complementary "Navigasi utama" [ref=f9e3]:
+      - generic [ref=f9e4]:
+        - generic [ref=f9e5]: C
+        - generic [ref=f9e6]: CatatDuit
+      - link "Beranda" [ref=f9e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f9e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f9e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f9e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f9e27]: Rencana
+      - link "Budget" [ref=f9e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f9e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f9e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f9e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f9e51]: Catat cepat
+      - link "Scan struk" [ref=f9e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f9e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f9e64]:
+        - button "Mode gelap" [ref=f9e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f9e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f9e74]: EB
+    - generic [ref=f9e79]:
+      - heading "Lainnya" [level=1] [ref=f9e80]
+      - generic [ref=f9e81]:
+        - generic [ref=f9e82]: EB
+        - generic [ref=f9e83]:
+          - generic [ref=f9e84]: Eko Budi
+          - generic [ref=f9e85]: CatatDuit
+      - generic [ref=f9e86]:
+        - generic [ref=f9e87]: Rencana
+        - generic [ref=f9e88]:
+          - link [ref=f9e89] [cursor=pointer]:
+            - /url: /budgets
+          - link [ref=f9e94] [cursor=pointer]:
+            - /url: /goals
+          - link [ref=f9e100] [cursor=pointer]:
+            - /url: /recurring
+      - generic [ref=f9e107]:
+        - generic [ref=f9e108]: Catat cepat
+        - generic [ref=f9e109]:
+          - link [ref=f9e110] [cursor=pointer]:
+            - /url: /scan-receipt
+          - link [ref=f9e117] [cursor=pointer]:
+            - /url: /voice-transaction
+          - link [ref=f9e122] [cursor=pointer]:
+            - /url: /notes
+      - generic [ref=f9e127]:
+        - link "Riwayat transaksi" [ref=f9e128] [cursor=pointer]:
+          - /url: /transactions
+        - link "Kelola kategori" [ref=f9e133] [cursor=pointer]:
+          - /url: /kategori
+        - link "Export ke Excel" [ref=f9e141] [cursor=pointer]:
+          - /url: /transactions?export=1
+        - generic [ref=f9e148]:
+          - generic [ref=f9e151]: Mode gelap
+          - button "Mode gelap" [ref=f9e152] [cursor=pointer]
+  - alert [ref=f9e153]

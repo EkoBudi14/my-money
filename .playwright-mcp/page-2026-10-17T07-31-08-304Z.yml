@@ -1,0 +1,55 @@
+- generic [ref=f25e2]:
+  - complementary "Navigasi utama" [ref=f25e3]:
+    - generic [ref=f25e4]:
+      - generic [ref=f25e5]: C
+      - generic [ref=f25e6]: CatatDuit
+    - link "Beranda" [ref=f25e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f25e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f25e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f25e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f25e27]: Rencana
+    - link "Budget" [ref=f25e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f25e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f25e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f25e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f25e51]: Catat cepat
+    - link "Scan struk" [ref=f25e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f25e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f25e64]:
+      - button "Mode gelap" [ref=f25e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f25e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f25e74]: EB
+  - generic [ref=f25e79]:
+    - generic [ref=f25e80]:
+      - generic [ref=f25e81]:
+        - button "Kembali" [ref=f25e82] [cursor=pointer]
+        - heading "Riwayat" [level=1] [ref=f25e85]
+      - generic [ref=f25e86]:
+        - button "Muat ulang data" [ref=f25e87] [cursor=pointer]
+        - button "Export ke Excel" [ref=f25e91] [cursor=pointer]
+    - textbox [ref=f25e99]:
+      - /placeholder: Cari transaksi atau catatan
+    - generic [ref=f25e100]:
+      - button "Semua" [ref=f25e101] [cursor=pointer]
+      - button "Pengeluaran" [ref=f25e102] [cursor=pointer]
+      - button "Pemasukan" [ref=f25e103] [cursor=pointer]
+      - button "Transfer" [ref=f25e104] [cursor=pointer]
+      - button "Piutang" [ref=f25e105] [cursor=pointer]
+      - button "Talangan" [ref=f25e106] [cursor=pointer]
+    - generic [ref=f25e107]:
+      - generic [ref=f25e108]:
+        - generic [ref=f25e109]: Masuk
+        - generic [ref=f25e110]: +Rp 0
+      - generic [ref=f25e111]:
+        - generic [ref=f25e112]: Keluar
+        - generic [ref=f25e113]: Rp 0

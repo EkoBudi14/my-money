@@ -1,0 +1,52 @@
+- generic [ref=f33e2]:
+  - complementary "Navigasi utama" [ref=f33e3]:
+    - generic [ref=f33e4]:
+      - generic [ref=f33e5]: C
+      - generic [ref=f33e6]: CatatDuit
+    - link "Beranda" [ref=f33e7] [cursor=pointer]:
+      - /url: /
+    - link "Riwayat" [ref=f33e14] [cursor=pointer]:
+      - /url: /transactions
+    - link "Analitik" [ref=f33e17] [cursor=pointer]:
+      - /url: /analytics
+    - link "Dompet & tabungan" [ref=f33e22] [cursor=pointer]:
+      - /url: /wallets
+    - generic [ref=f33e27]: Rencana
+    - link "Budget" [ref=f33e28] [cursor=pointer]:
+      - /url: /budgets
+    - link "Goals" [ref=f33e33] [cursor=pointer]:
+      - /url: /goals
+    - link "Tagihan rutin" [ref=f33e39] [cursor=pointer]:
+      - /url: /recurring
+    - link "Catatan" [ref=f33e46] [cursor=pointer]:
+      - /url: /notes
+    - generic [ref=f33e51]: Catat cepat
+    - link "Scan struk" [ref=f33e52] [cursor=pointer]:
+      - /url: /scan-receipt
+    - link "Voice input" [ref=f33e59] [cursor=pointer]:
+      - /url: /voice-transaction
+    - generic [ref=f33e64]:
+      - button "Mode gelap" [ref=f33e65] [cursor=pointer]
+      - button "Ringkas menu" [ref=f33e69] [cursor=pointer]
+      - generic "Eko Budi" [ref=f33e74]: EB
+  - main [ref=f33e78]:
+    - generic [ref=f33e80]:
+      - button "Kembali" [ref=f33e81] [cursor=pointer]
+      - generic [ref=f33e84]:
+        - heading "Scan struk" [level=1] [ref=f33e85]
+        - paragraph [ref=f33e86]: Catat pengeluaran dari foto struk
+    - generic [ref=f33e88]:
+      - generic [ref=f33e90]:
+        - generic [ref=f33e91]:
+          - generic [ref=f33e96]: Foto atau unggah struk
+          - generic [ref=f33e97]: Nominal, tanggal, dan kategori diisi otomatis pakai AI. Tinggal cek sebelum simpan.
+        - button "Ambil foto" [ref=f33e98] [cursor=pointer]
+        - generic [ref=f33e102]:
+          - button "Galeri" [ref=f33e103] [cursor=pointer]
+          - button "Tempel" [ref=f33e107] [cursor=pointer]
+        - generic [ref=f33e111]: "Tempel: salin foto dari galeri, lalu tekan Tempel."
+      - generic [ref=f33e114]:
+        - heading "Biar hasilnya akurat" [level=2] [ref=f33e115]
+        - generic [ref=f33e116]: Foto lurus dari atas, seluruh struk masuk frame
+        - generic [ref=f33e121]: Cahaya cukup, tidak ada bayangan di angka total
+        - generic [ref=f33e126]: Struk tidak terlipat di bagian total

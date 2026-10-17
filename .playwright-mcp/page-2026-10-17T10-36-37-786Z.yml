@@ -1,0 +1,123 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - complementary "Navigasi utama" [ref=f2e3]:
+      - generic [ref=f2e4]:
+        - generic [ref=f2e5]: C
+        - generic [ref=f2e6]: CatatDuit
+      - link "Beranda" [ref=f2e7] [cursor=pointer]:
+        - /url: /
+      - link "Riwayat" [ref=f2e14] [cursor=pointer]:
+        - /url: /transactions
+      - link "Analitik" [ref=f2e17] [cursor=pointer]:
+        - /url: /analytics
+      - link "Dompet & tabungan" [ref=f2e22] [cursor=pointer]:
+        - /url: /wallets
+      - generic [ref=f2e27]: Rencana
+      - link "Budget" [ref=f2e28] [cursor=pointer]:
+        - /url: /budgets
+      - link "Goals" [ref=f2e33] [cursor=pointer]:
+        - /url: /goals
+      - link "Tagihan rutin" [ref=f2e39] [cursor=pointer]:
+        - /url: /recurring
+      - link "Catatan" [ref=f2e46] [cursor=pointer]:
+        - /url: /notes
+      - generic [ref=f2e51]: Catat cepat
+      - link "Scan struk" [ref=f2e52] [cursor=pointer]:
+        - /url: /scan-receipt
+      - link "Voice input" [ref=f2e59] [cursor=pointer]:
+        - /url: /voice-transaction
+      - generic [ref=f2e64]:
+        - button "Mode gelap" [ref=f2e65] [cursor=pointer]
+        - button "Ringkas menu" [ref=f2e69] [cursor=pointer]
+        - generic "Eko Budi" [ref=f2e74]: EB
+    - main [ref=f2e79]:
+      - generic [ref=f2e80]:
+        - generic [ref=f2e81]:
+          - heading "Analitik" [level=1] [ref=f2e82]
+          - paragraph [ref=f2e83]: Oktober 2026
+        - generic [ref=f2e84]:
+          - button "Periode sebelumnya" [ref=f2e85] [cursor=pointer]
+          - button "Pilih periode" [ref=f2e88] [cursor=pointer]
+          - button "Periode berikutnya" [ref=f2e91] [cursor=pointer]
+      - generic [ref=f2e94]:
+        - generic [ref=f2e95]:
+          - generic [ref=f2e96]: Pemasukan
+          - generic [ref=f2e97]: Rp 0
+          - generic [ref=f2e98]: Belum ada data periode lalu
+        - generic [ref=f2e99]:
+          - generic [ref=f2e100]: Pengeluaran
+          - generic [ref=f2e101]: Rp 0
+          - generic [ref=f2e102]: Belum ada data periode lalu
+        - generic [ref=f2e103]:
+          - generic [ref=f2e104]: Sisa periode ini
+          - generic [ref=f2e105]: Rp 0
+          - generic [ref=f2e106]: Pemasukan − pengeluaran
+        - generic [ref=f2e107]:
+          - generic [ref=f2e108]: Saving rate
+          - generic [ref=f2e109]: 0%
+          - generic [ref=f2e110]: Batas sehat 20%
+      - generic [ref=f2e111]:
+        - generic [ref=f2e112]:
+          - generic [ref=f2e113]:
+            - heading "Arus kas 10 periode" [level=2] [ref=f2e114]
+            - generic [ref=f2e115]:
+              - generic [ref=f2e116]: Pemasukan
+              - generic [ref=f2e118]: Pengeluaran
+          - generic [ref=f2e120]:
+            - generic [ref=f2e121]:
+              - generic [ref=f2e122]: "1"
+              - generic [ref=f2e123]: "0.5"
+              - generic [ref=f2e124]: "0"
+            - generic [ref=f2e125]:
+              - generic "Pemasukan Rp 0" [ref=f2e126]
+              - generic "Pengeluaran Rp 0" [ref=f2e127]
+            - generic [ref=f2e128]:
+              - generic "Pemasukan Rp 0" [ref=f2e129]
+              - generic "Pengeluaran Rp 0" [ref=f2e130]
+            - generic [ref=f2e131]:
+              - generic "Pemasukan Rp 0" [ref=f2e132]
+              - generic "Pengeluaran Rp 0" [ref=f2e133]
+            - generic [ref=f2e134]:
+              - generic "Pemasukan Rp 0" [ref=f2e135]
+              - generic "Pengeluaran Rp 0" [ref=f2e136]
+            - generic [ref=f2e137]:
+              - generic "Pemasukan Rp 0" [ref=f2e138]
+              - generic "Pengeluaran Rp 0" [ref=f2e139]
+            - generic [ref=f2e140]:
+              - generic "Pemasukan Rp 0" [ref=f2e141]
+              - generic "Pengeluaran Rp 0" [ref=f2e142]
+            - generic [ref=f2e143]:
+              - generic "Pemasukan Rp 0" [ref=f2e144]
+              - generic "Pengeluaran Rp 0" [ref=f2e145]
+            - generic [ref=f2e146]:
+              - generic "Pemasukan Rp 0" [ref=f2e147]
+              - generic "Pengeluaran Rp 0" [ref=f2e148]
+            - generic [ref=f2e149]:
+              - generic "Pemasukan Rp 0" [ref=f2e150]
+              - generic "Pengeluaran Rp 0" [ref=f2e151]
+            - generic [ref=f2e152]:
+              - generic "Pemasukan Rp 0" [ref=f2e153]
+              - generic "Pengeluaran Rp 0" [ref=f2e154]
+          - generic [ref=f2e155]:
+            - generic [ref=f2e157]: Jan 26
+            - generic [ref=f2e158]: Feb 26
+            - generic [ref=f2e159]: Mar 26
+            - generic [ref=f2e160]: Apr 26
+            - generic [ref=f2e161]: Mei 26
+            - generic [ref=f2e162]: Jun 26
+            - generic [ref=f2e163]: Jul 26
+            - generic [ref=f2e164]: Agu 26
+            - generic [ref=f2e165]: Sep 26
+            - generic [ref=f2e166]: Okt 26
+        - generic [ref=f2e167]:
+          - heading "Pengeluaran per kategori" [level=2] [ref=f2e168]
+          - generic [ref=f2e169]: Belum ada pengeluaran.
+      - generic [ref=f2e170]:
+        - generic [ref=f2e171]:
+          - heading "Perbandingan periode" [level=2] [ref=f2e172]
+          - text: Belum ada data periode lalu untuk dibandingkan.
+        - generic [ref=f2e173]:
+          - heading "Pengeluaran terbesar" [level=2] [ref=f2e174]
+          - text: Belum ada pengeluaran.
+      - heading "Transaksi per dompet" [level=2] [ref=f2e177]
+  - alert [ref=f2e178]
