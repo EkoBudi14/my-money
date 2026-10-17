@@ -3,7 +3,9 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Transaction, Wallet } from '@/types'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Lightbulb } from 'lucide-react'
+import EmptyState from '@/components/EmptyState'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import PeriodSheet from '@/components/PeriodSheet'
 import { getCategoryIcon } from '@/lib/categories'
 
@@ -32,6 +34,7 @@ export default function AnalyticsPage() {
     // State for Filter & Persistence (Synced with Dashboard)
     const [currentDate, setCurrentDate] = useState(new Date())
     const [showSettings, setShowSettings] = useState(false)
+    const isWeb = useIsWeb()
     const [expandedWallet, setExpandedWallet] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [showTooltip, setShowTooltip] = useState(false) // Net balance tooltip
@@ -585,6 +588,214 @@ export default function AnalyticsPage() {
     const chartData = comparisonData.slice(-6)
     const chartMax = Math.max(1, ...chartData.map(d => Math.max(d.income, d.expense)))
 
+    // ── Web (>=768px): AnalitikWeb ──
+    const webChart = comparisonData.slice(-12)
+    const webChartMax = Math.max(1, ...webChart.map(d => Math.max(d.income, d.expense)))
+    const pctLabel = (curr: number, prev: number) => {
+        if (prev <= 0) return 'Belum ada data periode lalu'
+        const p = ((curr - prev) / prev) * 100
+        return `${p >= 0 ? 'Naik' : 'Turun'} ${Math.abs(p).toFixed(0)}% dari periode lalu`
+    }
+    const changeCell = (curr: number, prev: number, goodWhenUp: boolean) => {
+        if (prev <= 0) return <td className="r" style={{ color: 'var(--text-2)' }}>—</td>
+        const p = ((curr - prev) / prev) * 100
+        const good = goodWhenUp ? p >= 0 : p <= 0
+        return <td className={`r ${good ? 'pos' : 'bad'}`} style={{ fontWeight: 600 }}>{p >= 0 ? '+' : '−'}{Math.abs(p).toFixed(0)}%</td>
+    }
+    const topCats = categoryData.slice(0, 5)
+    const otherCats = categoryData.slice(5)
+    const otherTotal = otherCats.reduce((a, c) => a + c.value, 0)
+
+    if (isWeb) {
+        return (
+            <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+                <main className="main">
+                    <div className="ptop">
+                        <div>
+                            <h1 className="ptitle">Analitik</h1>
+                            <p className="sub">{getPeriodLabel()}{periodComparison.hasPrevData ? ` · dibanding ${periodComparison.prevLabel}` : ''}</p>
+                        </div>
+                        <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+                            <button className="icon-btn" aria-label="Periode sebelumnya" disabled={filterMode === 'custom'} onClick={prevMonth}><ChevronLeft className="i i-s" /></button>
+                            <button className="btn-2" onClick={() => setShowSettings(true)}><Calendar className="i i-s" />Pilih periode</button>
+                            <button className="icon-btn" aria-label="Periode berikutnya" disabled={filterMode === 'custom'} onClick={nextMonth}><ChevronRight className="i i-s" /></button>
+                        </div>
+                    </div>
+
+                    {!loading && income === 0 && expense === 0 ? (
+                        <EmptyState icon={<Calendar className="i" />} title="Belum ada data periode ini" text="Grafik muncul setelah ada transaksi." actionLabel="Pilih periode lain" actionVariant="secondary" onAction={() => setShowSettings(true)} />
+                    ) : (
+                        <>
+                            <div className="wrap">
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pemasukan</div><div className="num-l pos">{rpFull(income)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(income, periodComparison.prevIncome)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pengeluaran</div><div className="num-l">{rpFull(expense)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(expense, periodComparison.prevExpense)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Sisa periode ini</div><div className="num-l" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpFull(netBalance)}</div><div className="lbl" style={{ marginTop: 4 }}>Pemasukan − pengeluaran</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Saving rate</div><div className="num-l">{savingRate.toFixed(0)}%</div><div className="lbl" style={{ marginTop: 4 }}>Batas sehat 20%</div></div>
+                            </div>
+
+                            {insights.length > 0 && (
+                                <div className="wrap">
+                                    {insights.slice(0, 3).map((ins, i) => {
+                                        const cls = ins.type === 'positive' ? 'c-gaji' : ins.type === 'negative' ? 'c-cicilan' : ins.type === 'warning' ? 'c-makan' : 'c-transfer'
+                                        return (
+                                            <div className="card hstack" key={i} style={{ flex: '1 1 260px', gap: 12, alignItems: 'flex-start' }}>
+                                                <div className={`ic ${cls}`}><Lightbulb className="i" /></div>
+                                                <div className="grow"><div className="t" style={{ whiteSpace: 'normal' }}>{ins.title}</div><div className="meta" style={{ whiteSpace: 'normal' }}>{ins.desc}</div></div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+
+                            <div className="wrap">
+                                <section className="card stack-12" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <div className="between" style={{ flexWrap: 'wrap' }}>
+                                        <h2 className="h2">Arus kas {webChart.length} periode</h2>
+                                        <div className="hstack" style={{ gap: 14, fontSize: 12, color: 'var(--text-2)' }}>
+                                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--income-chart)' }} />Pemasukan</span>
+                                            <span className="hstack" style={{ gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--accent)' }} />Pengeluaran</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: `44px repeat(${Math.max(1, webChart.length)}, minmax(0, 1fr))`, gap: 8, alignItems: 'end', height: 220 }}>
+                                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-2)' }}><span>{rpShort(webChartMax).replace('Rp ', '')}</span><span>{rpShort(webChartMax / 2).replace('Rp ', '')}</span><span>0</span></div>
+                                        {webChart.map((d, i) => (
+                                            <div key={i} className="colb">
+                                                <div title={`Pemasukan ${rpFull(d.income)}`} style={{ height: `${(d.income / webChartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)' }} />
+                                                <div title={`Pengeluaran ${rpFull(d.expense)}`} style={{ height: `${(d.expense / webChartMax) * 100}%`, minHeight: 2, background: 'var(--accent)' }} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: `44px repeat(${Math.max(1, webChart.length)}, minmax(0, 1fr))`, gap: 8, textAlign: 'center', fontSize: 11, color: 'var(--text-2)' }}>
+                                        <span />
+                                        {webChart.map((d, i) => <span key={i} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', ...(i === webChart.length - 1 ? { color: 'var(--text)', fontWeight: 700 } : {}) }}>{d.label}</span>)}
+                                    </div>
+                                </section>
+                                <section className="card stack-12" style={{ flex: '2 1 320px', padding: 20 }}>
+                                    <h2 className="h2">Pengeluaran per kategori</h2>
+                                    {categoryData.length === 0 ? <span className="lbl">Belum ada pengeluaran.</span> : (
+                                        <>
+                                            {topCats.map(c => {
+                                                const share = expense > 0 ? (c.value / expense) * 100 : 0
+                                                return (
+                                                    <div className="stack" key={c.name} style={{ gap: 6 }}>
+                                                        <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{c.name}</b><span>{rpShort(c.value)} <span className="lbl">· {share.toFixed(0)}%</span></span></div>
+                                                        <div className="bar"><div style={{ width: `${(c.value / maxCat) * 100}%` }} /></div>
+                                                    </div>
+                                                )
+                                            })}
+                                            {otherCats.length > 0 && (
+                                                <div className="stack" style={{ gap: 6 }}>
+                                                    <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>Lainnya ({otherCats.length} kategori)</b><span>{rpShort(otherTotal)} <span className="lbl">· {expense > 0 ? ((otherTotal / expense) * 100).toFixed(0) : 0}%</span></span></div>
+                                                    <div className="bar"><div style={{ width: `${Math.min(100, (otherTotal / maxCat) * 100)}%`, background: 'var(--text-2)' }} /></div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </section>
+                            </div>
+
+                            <div className="wrap" style={{ alignItems: 'flex-start' }}>
+                                <section className="card" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <h2 className="h2" style={{ marginBottom: 8 }}>Perbandingan periode</h2>
+                                    {!periodComparison.hasPrevData ? <span className="lbl">Belum ada data periode lalu untuk dibandingkan.</span> : (
+                                        <div className="tbl-box">
+                                            <table className="tbl" style={{ minWidth: 520 }}>
+                                                <thead><tr><th>Item</th><th className="r">Periode ini</th><th className="r">Periode lalu</th><th className="r">Perubahan</th></tr></thead>
+                                                <tbody>
+                                                    <tr><td style={{ fontWeight: 600 }}>Pemasukan</td><td className="r">{rpFull(periodComparison.currIncome)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevIncome)}</td>{changeCell(periodComparison.currIncome, periodComparison.prevIncome, true)}</tr>
+                                                    <tr><td style={{ fontWeight: 600 }}>Pengeluaran</td><td className="r">{rpFull(periodComparison.currExpense)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevExpense)}</td>{changeCell(periodComparison.currExpense, periodComparison.prevExpense, false)}</tr>
+                                                    <tr><td style={{ fontWeight: 600 }}>Selisih</td><td className="r">{rpFull(periodComparison.currNet)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(periodComparison.prevNet)}</td>{changeCell(periodComparison.currNet, periodComparison.prevNet, true)}</tr>
+                                                    <tr>
+                                                        <td style={{ fontWeight: 600 }}>Saving rate</td>
+                                                        <td className="r">{periodComparison.currSavingRate.toFixed(0)}%</td>
+                                                        <td className="r" style={{ color: 'var(--text-2)' }}>{periodComparison.prevSavingRate.toFixed(0)}%</td>
+                                                        <td className={`r ${periodComparison.currSavingRate >= periodComparison.prevSavingRate ? 'pos' : 'bad'}`} style={{ fontWeight: 600 }}>{periodComparison.currSavingRate >= periodComparison.prevSavingRate ? '+' : '−'}{Math.abs(periodComparison.currSavingRate - periodComparison.prevSavingRate).toFixed(0)} poin</td>
+                                                    </tr>
+                                                    {periodComparison.categoryRows.length > 0 && (
+                                                        <tr><td colSpan={4} style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-2)', paddingTop: 18 }}>Per kategori pengeluaran</td></tr>
+                                                    )}
+                                                    {periodComparison.categoryRows.slice(0, 8).map(r => (
+                                                        <tr key={r.name}><td>{r.name}</td><td className="r">{rpFull(r.curr)}</td><td className="r" style={{ color: 'var(--text-2)' }}>{rpFull(r.prev)}</td>{changeCell(r.curr, r.prev, false)}</tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </section>
+                                <section className="card" style={{ flex: '2 1 320px', padding: 20 }}>
+                                    <h2 className="h2" style={{ marginBottom: 4 }}>Pengeluaran terbesar</h2>
+                                    {topExpenses.length === 0 ? <span className="lbl">Belum ada pengeluaran.</span> : topExpenses.map((t, i) => (
+                                        <div className="row" key={t.id}>
+                                            <span className="rank">{i + 1}</span>
+                                            <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                            <div className="amt">{rpFull(t.amount)}</div>
+                                        </div>
+                                    ))}
+                                </section>
+                            </div>
+
+                            <div className="wrap" style={{ alignItems: 'flex-start' }}>
+                                <section className="card stack-12" style={{ flex: '3 1 460px', padding: 20 }}>
+                                    <h2 className="h2">Transaksi per dompet</h2>
+                                    {walletTransactionBreakdown.map(w => {
+                                        const tot = w.totalIncome + w.totalExpense
+                                        return (
+                                            <div className="stack" key={w.walletName} style={{ gap: 6 }}>
+                                                <div className="between" style={{ fontSize: 13 }}>
+                                                    <b style={{ fontWeight: 600 }}>{w.walletName}</b>
+                                                    <span className="lbl">{w.transactions.length} transaksi · <span className="pos">+{rpShort(w.totalIncome)}</span> · {rpShort(w.totalExpense)}</span>
+                                                </div>
+                                                <div className="bar" style={{ display: 'flex' }}>
+                                                    <div style={{ width: `${tot > 0 ? (w.totalIncome / tot) * 100 : 0}%`, background: 'var(--income-chart)', borderRadius: 0 }} />
+                                                    <div style={{ width: `${tot > 0 ? (w.totalExpense / tot) * 100 : 0}%`, background: 'var(--accent)', borderRadius: 0 }} />
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </section>
+                                <div className="stack" style={{ flex: '2 1 320px', gap: 16 }}>
+                                    {walletData.length > 0 && (
+                                        <section className="card stack-12" style={{ padding: 20 }}>
+                                            <h2 className="h2">Pengeluaran per sumber dana</h2>
+                                            {[...walletData].sort((a, z) => z.value - a.value).map(w => (
+                                                <div className="stack" key={w.name} style={{ gap: 6 }}>
+                                                    <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{w.name}</b><span>{rpShort(w.value)} <span className="lbl">· {expense > 0 ? Math.round((w.value / expense) * 100) : 0}%</span></span></div>
+                                                    <div className="bar"><div style={{ width: `${expense > 0 ? Math.min(100, (w.value / expense) * 100) : 0}%` }} /></div>
+                                                </div>
+                                            ))}
+                                        </section>
+                                    )}
+                                    {recentActivity.length > 0 && (
+                                        <section className="card" style={{ padding: 20 }}>
+                                            <h2 className="h2" style={{ marginBottom: 4 }}>Aktivitas terakhir</h2>
+                                            {recentActivity.map(t => (
+                                                <div className="row" key={t.id}>
+                                                    <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                    <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                                </div>
+                                            ))}
+                                        </section>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </main>
+                <PeriodSheet
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    filterMode={filterMode}
+                    setFilterMode={setFilterMode}
+                    currentDate={currentDate}
+                    setCurrentDate={setCurrentDate}
+                    customRange={customRange}
+                    setCustomRange={setCustomRange}
+                />
+            </div>
+        )
+    }
+
+
     return (
         <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
             <div className="scroll" style={{ maxWidth: 900, margin: '0 auto', paddingBottom: 116 }}>
@@ -731,6 +942,39 @@ export default function AnalyticsPage() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Expense per funding source (old "per sumber dana") */}
+                {walletData.length > 0 && (
+                    <div className="card stack-12">
+                        <h2 className="h3">Pengeluaran per sumber dana</h2>
+                        {[...walletData].sort((a, z) => z.value - a.value).map(w => (
+                            <div className="stack" key={w.name} style={{ gap: 6 }}>
+                                <div className="between" style={{ fontSize: 13 }}><span style={{ fontWeight: 600 }}>{w.name}</span><span>{rpFull(w.value)} <span className="lbl">· {expense > 0 ? Math.round((w.value / expense) * 100) : 0}%</span></span></div>
+                                <div className="bar"><div style={{ width: `${expense > 0 ? Math.min(100, (w.value / expense) * 100) : 0}%` }} /></div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Recent activity this period */}
+                {recentActivity.length > 0 && (
+                    <div className="stack">
+                        <span className="lbl" style={{ fontWeight: 700 }}>Aktivitas terakhir</span>
+                        <div className="card-flush">
+                            {recentActivity.map(t => {
+                                const { Icon } = getCategoryIcon(t.category, t.type, EMPTY_CUSTOM)
+                                const cls = t.is_piutang ? 'c-piutang' : t.type === 'topup' ? 'c-transfer' : (CAT_CLASS[t.category] || 'c-lain')
+                                return (
+                                    <div className="row" key={t.id}>
+                                        <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                        <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                        <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 )}
 

@@ -342,3 +342,4 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .cd .ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 .cd .note-body{font-size:13px;color:var(--text-3);line-height:1.55;white-space:pre-line;margin:0}
+.cd .rank{width:22px;font-size:13px;font-weight:700;color:var(--text-2);flex:none}.cd .colb{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%;border-bottom:1px solid var(--border)}.cd .colb>div{width:16px;border-radius:6px 6px 0 0}
