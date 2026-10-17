@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import { useConfirm } from '@/hooks/useConfirm'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
 import FieldError from '@/components/FieldError'
@@ -90,6 +91,7 @@ export default function TransactionModal({
   const { showToast } = useToast()
   const { showSuccess } = useSuccessModal()
   const { showConfirm } = useConfirm()
+  const isWeb = useIsWeb()
 
   // Delete from inside the edit form (DESIGN-TAMBAHAN.md §8). Reuses the shared
   // rollback + section 3 dialog; on success the caller navigates away.
@@ -448,6 +450,14 @@ export default function TransactionModal({
     setSaving(false)
   }
 
+  // Esc closes the modal (DESIGN.md 5 / 8). Enter submits through the form.
+  useEffect(() => {
+    if (mode === 'page' || !isOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !saving) onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mode, isOpen, saving, onClose])
+
   if (!isOpen && mode !== 'page') return null
 
   // ── All category options combined ─────────────────────────────────────────
@@ -460,7 +470,8 @@ export default function TransactionModal({
   ] : []
 
   // ── Shared form body (same markup for page / mobile sheet / desktop modal) ──
-  const renderFields = () => (
+  // Field groups (shared by page, mobile sheet and the 2-column web modal).
+  const renderTop = () => (
     <>
       {/* Transfer wallet selectors */}
       {type === 'topup' && (
@@ -568,6 +579,12 @@ export default function TransactionModal({
           </>
         )}
 
+      </div>
+    </>
+  )
+
+  const renderCategory = () => (
+    <div className="stack-12">
         {/* Category Picker */}
         {type !== 'topup' && (
           <div className="field">
@@ -671,18 +688,30 @@ export default function TransactionModal({
           </div>
         )}
 
-        {/* Notes */}
-        <label className="field">Catatan (opsional)
-          <textarea
-            className="input"
-            placeholder={category ? `Contoh: ${category}` : 'Catatan transaksi…'}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </label>
-      </div>
+    </div>
+  )
+
+  const renderNotes = () => (
+      <label className="field">Catatan (opsional)
+        <textarea
+          className="input"
+          placeholder={category ? `Contoh: ${category}` : 'Catatan transaksi…'}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </label>
+  )
+
+  const renderFields = () => (
+    <>
+      {renderTop()}
+      {renderCategory()}
+      {renderNotes()}
     </>
   )
+
+  const submitLabel = saving ? 'Menyimpan…' : (editingTransaction ? 'Simpan perubahan' : type === 'pemasukan' ? 'Simpan pemasukan' : type === 'pengeluaran' ? 'Simpan pengeluaran' : 'Simpan transfer')
+
 
   const renderSubmit = () => (
     <div className="stack">
@@ -769,8 +798,8 @@ export default function TransactionModal({
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,20,18,.55)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
 
       {/* ===== MOBILE BOTTOM SHEET ===== */}
+      {!isWeb && (
       <div
-        className="md:hidden"
         style={{ position: 'relative', zIndex: 50, width: '100%', maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden' }}
       >
         {/* Drag handle */}
@@ -806,40 +835,59 @@ export default function TransactionModal({
           </form>
         )}
       </div>
+      )}
 
-      {/* ===== DESKTOP MODAL ===== */}
+      {/* ===== DESKTOP MODAL (TambahWeb: 760px, two columns) ===== */}
+      {isWeb && (
       <div
-        className="hidden md:flex"
-        style={{ position: 'relative', zIndex: 50, width: '100%', maxWidth: 560, maxHeight: '90vh', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, overflow: 'hidden', margin: 'auto' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tx-modal-title"
+        style={{ position: 'relative', zIndex: 50, width: 'calc(100% - 48px)', maxWidth: 760, maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, overflow: 'hidden', margin: 'auto' }}
       >
-        {/* Header */}
-        <div className="top" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-          <div className="top-l">
-            <h2 className="h2">{titleText}</h2>
-          </div>
+        <div className="between" style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <h2 className="h2" id="tx-modal-title" style={{ fontSize: 18 }}>{titleText}</h2>
           <div className="hstack" style={{ gap: 6 }}>
-            <Link href="/scan-receipt" className="icon-btn" aria-label="Scan struk"><ScanLine className="i" /></Link>
-            <Link href="/voice-transaction" className="icon-btn" aria-label="Input suara"><Mic className="i" /></Link>
-            <button type="button" onClick={onClose} className="icon-btn" aria-label="Tutup"><X className="i" /></button>
+            <Link href="/scan-receipt" className="btn-2" style={{ height: 40 }}><ScanLine className="i i-s" />Scan struk</Link>
+            <Link href="/voice-transaction" className="btn-2" style={{ height: 40 }}><Mic className="i i-s" />Suara</Link>
+            <button type="button" onClick={onClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div style={{ padding: '12px 20px 0', flexShrink: 0 }}>{typeTabs}</div>
-
         {isLoading ? (
-          <div style={{ padding: '0 20px' }}>{loadingState}</div>
+          <div style={{ padding: '0 24px' }}>{loadingState}</div>
         ) : (
           <form onSubmit={handleSaveTransaction} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div className="stack-12" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
-              {renderFields()}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+              <div className="stack-12" style={{ flex: '1 1 280px', minWidth: 0 }}>
+                {typeTabs}
+                {renderTop()}
+                {renderNotes()}
+              </div>
+              {type !== 'topup' && (
+                <div style={{ flex: '1.3 1 340px', minWidth: 0 }}>
+                  {renderCategory()}
+                </div>
+              )}
             </div>
-            <div style={{ flexShrink: 0, padding: '12px 20px 16px', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
-              {renderSubmit()}
+            <div className="between" style={{ flexShrink: 0, padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--surface)', gap: 12 }}>
+              <div className="hstack" style={{ gap: 16 }}>
+                {editingTransaction && (
+                  <button type="button" className="link" style={{ color: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: 6 }} disabled={saving} onClick={handleDeleteFromForm}>
+                    <Trash2 className="i i-s" />Hapus transaksi
+                  </button>
+                )}
+                <span className="lbl">Tekan Enter untuk simpan, Esc untuk tutup</span>
+              </div>
+              <div className="hstack" style={{ gap: 8 }}>
+                <button type="button" className="btn-2" onClick={onClose} disabled={saving}>Batal</button>
+                <button type="submit" className="btn" style={{ height: 44, fontSize: 14 }} disabled={saving || isLoading}>{submitLabel}</button>
+              </div>
             </div>
           </form>
         )}
       </div>
+      )}
     </div>
   )
 }
