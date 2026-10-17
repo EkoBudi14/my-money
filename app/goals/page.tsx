@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { restoreRow } from '@/lib/undo'
 import Link from 'next/link'
 import { Goal } from '@/types'
 import { Plus, Target, Trash2, Pencil, X, ChevronLeft } from 'lucide-react'
@@ -149,7 +150,15 @@ export default function GoalsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchGoals()
-            showToast('success', 'Goal dihapus')
+            showToast('success', 'Goal dihapus', 6000, {
+                action: {
+                    label: 'Urungkan',
+                    onClick: async () => {
+                        if (goal && await restoreRow('goals', { ...goal })) { showToast('success', 'Goal dikembalikan'); fetchGoals() }
+                        else showToast('error', 'Goal gagal dikembalikan.')
+                    },
+                },
+            })
         } else {
             // 4. Rollback jika gagal
             setGoals(previousGoals)

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, Plus, Trash2, X, Search, StickyNote } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { restoreRow } from '@/lib/undo'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
@@ -79,7 +80,18 @@ export default function NotesPage() {
     if (!confirmed) return
     const { error } = await supabase.from('notes').delete().eq('id', id)
     if (error) { showToast('error', 'Catatan gagal dihapus. Coba lagi.'); console.error(error) }
-    else { showToast('success', 'Catatan dihapus'); fetchNotes() }
+    else {
+      fetchNotes()
+      showToast('success', 'Catatan dihapus', 6000, {
+        action: {
+          label: 'Urungkan',
+          onClick: async () => {
+            if (note && await restoreRow('notes', { ...note })) { showToast('success', 'Catatan dikembalikan'); fetchNotes() }
+            else showToast('error', 'Catatan gagal dikembalikan.')
+          },
+        },
+      })
+    }
   }
 
   const handleEdit = (note: Note) => {

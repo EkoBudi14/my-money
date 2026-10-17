@@ -348,3 +348,9 @@ html.dark .cd,.cd[data-theme="dark"]{
 html.dark .cd .b-ok,.cd[data-theme="dark"] .b-ok{color:var(--income)}
 .cd .ptr{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;overflow:hidden;margin:-16px 0 0;flex:none}.cd .ptr-dot{width:32px;height:32px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--accent)}
 .cd .input.unsure{background:var(--warn-tint);border-color:var(--warn)}
+/* Onboarding (Onboarding1/2) */
+.cd.onb{position:fixed;inset:0;z-index:80;background:var(--surface);display:flex;justify-content:center;overflow-y:auto}
+.cd .onb-card{width:100%;max-width:480px;min-height:100%;box-sizing:border-box;padding:24px 20px 32px!important;gap:20px}
+@media(min-width:768px){.cd.onb{background:rgba(8,20,18,.55);align-items:center;padding:24px}.cd .onb-card{min-height:0;background:var(--surface);border-radius:24px;border:1px solid var(--border)}}
+.cd .dots{display:flex;gap:6px}.cd .dots span{width:24px;height:6px;border-radius:3px;background:var(--divider)}.cd .dots span.on{background:var(--accent)}
+.cd.offline-bar{position:fixed;top:0;left:0;right:0;justify-content:center;z-index:70;display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--warn-tint);color:var(--warn);font-size:13px;line-height:1.4;border-bottom:1px solid var(--border)}

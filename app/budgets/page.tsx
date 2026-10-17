@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { restoreRow } from '@/lib/undo'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
 import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle, MoreHorizontal } from 'lucide-react'
 import { useIsWeb } from '@/hooks/useIsWeb'
@@ -296,7 +297,15 @@ export default function BudgetsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchAllData()
-            showToast('success', 'Budget dihapus')
+            showToast('success', 'Budget dihapus', 6000, {
+                action: {
+                    label: 'Urungkan',
+                    onClick: async () => {
+                        if (budget && await restoreRow('budgets', { ...budget })) { showToast('success', 'Budget dikembalikan'); fetchAllData() }
+                        else showToast('error', 'Budget gagal dikembalikan.')
+                    },
+                },
+            })
         } else {
             // 4. Rollback jika gagal
             setBudgets(previousBudgets)

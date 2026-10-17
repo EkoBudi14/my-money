@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft, ChevronRight, Calendar, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
   AlertTriangle, X, StickyNote, HandCoins, Info, Download, RotateCw, Receipt, Plus, Trash2,
@@ -26,6 +26,7 @@ import PeriodSheet from '@/components/PeriodSheet'
 import CalendarCard from '@/components/CalendarCard'
 import EmptyState from '@/components/EmptyState'
 import PullToRefresh from '@/components/PullToRefresh'
+import Onboarding, { createDefaultWallets } from '@/components/Onboarding'
 import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -106,6 +107,8 @@ export default function HomePage() {
   const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [calendarKey, setCalendarKey] = useState(0)
+  const onboardingChecked = useRef(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   // Web (>=768px) layout + transaction modal (DESIGN.md 7.1 web, TambahWeb)
   const isWeb = useIsWeb()
   const [recentNotes, setRecentNotes] = useState<Note[]>([])
@@ -127,6 +130,16 @@ export default function HomePage() {
     ])
     if (txRes.data) setTransactions(txRes.data as Transaction[])
     if (wRes.data) setWallets(wRes.data as Wallet[])
+    // First run: no wallets yet -> create Tunai + Rekening Bank and show onboarding (old behaviour).
+    if (wRes.data && wRes.data.length === 0 && !onboardingChecked.current) {
+      onboardingChecked.current = true
+      const { error } = await createDefaultWallets()
+      if (!error) {
+        const fresh = await getWallets()
+        if (fresh.data) setWallets(fresh.data as Wallet[])
+        setShowOnboarding(true)
+      }
+    }
     if (bRes.data) setBudgets(bRes.data as Budget[])
     if (dRes.data) setDebts(dRes.data as Debt[])
     if (noteRes.data) setLatestNote(noteRes.data as Note)
@@ -426,6 +439,8 @@ export default function HomePage() {
           </div>
         </>
       )}
+      {showOnboarding && <Onboarding onDone={() => { setShowOnboarding(false); loadAll() }} />}
+
       {/* Transaction add / edit modal (web) */}
       {txModal && (
         <TransactionModal
