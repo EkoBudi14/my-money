@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Wallet } from '@/types'
-import { X, Save } from 'lucide-react'
-import MoneyInput from '@/components/MoneyInput'
+import { X, Trash2 } from 'lucide-react'
 import NeoSelect from '@/components/NeoSelect'
+import FieldError from '@/components/FieldError'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 
@@ -33,6 +33,8 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
     const [balance, setBalance] = useState('')
     const [sourceWalletId, setSourceWalletId] = useState('')
     const [linkToSource, setLinkToSource] = useState(true)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     useEffect(() => {
         const loadData = async () => {
@@ -66,9 +68,15 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
         loadData()
     }, [editId, defaultCategory])
 
+    const noun = category === 'savings' ? 'Aset' : 'Dompet'
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name || balance === '') return showToast('error', 'Mohon lengkapi data')
+        const ve: Record<string, string> = {}
+        if (!name.trim()) ve.name = `Isi nama ${noun.toLowerCase()}.`
+        if (balance === '' || isNaN(parseFloat(balance))) ve.balance = 'Isi nilai saldo.'
+        setErrors(ve)
+        if (Object.keys(ve).length > 0) return
 
         setSaving(true)
         const currentBalance = parseFloat(balance)
@@ -107,19 +115,19 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                             if (sourceWallet) {
                                 if (sourceWallet.id === editId) {
                                     setSaving(false)
-                                    return showToast('error', "Tidak bisa mengambil dana dari dompet yang sedang diedit!")
+                                    return setErrors({ source: 'Sumber dana tidak boleh dompet ini sendiri.' })
                                 }
 
                                 const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
                                 if (!freshSourceData) {
                                     setSaving(false)
-                                    return showToast('error', 'Sumber dana tidak ditemukan!')
+                                    return showToast('error', 'Sumber dana tidak ditemukan.')
                                 }
                                 const freshSourceBalance = freshSourceData.balance
 
                                 if (freshSourceBalance < diff) {
                                     setSaving(false)
-                                    return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${freshSourceBalance.toLocaleString('id-ID')}, Dibutuhkan: ${diff.toLocaleString('id-ID')})`)
+                                    return setErrors({ source: `Saldo ${sourceWallet.name} kurang Rp ${(diff - freshSourceBalance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
                                 }
                                 await supabase.from('wallets').update({ balance: freshSourceBalance - diff }).eq('id', sourceWallet.id)
 
@@ -138,7 +146,7 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                                 await supabase.from('transactions').insert([topupPayload])
                             } else {
                                 setSaving(false)
-                                return showToast('error', "Sumber dana tidak ditemukan. Mungkin sudah dihapus.")
+                                return showToast('error', 'Sumber dana tidak ditemukan. Mungkin sudah dihapus.')
                             }
                         }
                     } else if (diff < 0) {
@@ -149,14 +157,14 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                             if (sourceWallet) {
                                 if (sourceWallet.id === editId) {
                                     setSaving(false)
-                                    return showToast('error', "Tidak bisa mengembalikan dana ke dompet yang sedang diedit!")
+                                    return setErrors({ source: 'Sumber dana tidak boleh dompet ini sendiri.' })
                                 }
 
                                 const refundAmount = Math.abs(diff)
                                 const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
                                 if (!freshSourceData) {
                                     setSaving(false)
-                                    return showToast('error', 'Sumber dana tidak ditemukan!')
+                                    return showToast('error', 'Sumber dana tidak ditemukan.')
                                 }
                                 const freshSourceBalance = freshSourceData.balance
 
@@ -205,13 +213,13 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                     const { data: freshSourceData } = await supabase.from('wallets').select('balance').eq('id', sourceWallet.id).single()
                     if (!freshSourceData) {
                         setSaving(false)
-                        return showToast('error', 'Sumber dana tidak ditemukan!')
+                        return showToast('error', 'Sumber dana tidak ditemukan.')
                     }
                     const freshSourceBalance = freshSourceData.balance
 
                     if (freshSourceBalance < currentBalance) {
                         setSaving(false)
-                        return showToast('error', `Saldo sumber dana tidak mencukupi! (Sisa: ${freshSourceBalance.toLocaleString('id-ID')}, Dibutuhkan: ${currentBalance.toLocaleString('id-ID')})`)
+                        return setErrors({ source: `Saldo ${sourceWallet.name} kurang Rp ${(currentBalance - freshSourceBalance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
                     }
                     await supabase.from('wallets').update({ balance: freshSourceBalance - currentBalance }).eq('id', sourceWallet.id)
                     sourceWalletToDeduct = sourceWallet
@@ -243,248 +251,155 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
 
         if (error) {
             console.error(error)
-            showToast('error', 'Gagal menyimpan dompet')
+            showToast('error', `${noun} gagal disimpan. Coba lagi.`)
         } else {
-            showToast('success', editId ? 'Dompet berhasil diperbarui!' : 'Dompet baru berhasil ditambahkan!')
+            showToast('success', editId ? 'Perubahan tersimpan' : `${noun} ditambahkan`)
             onSaved()
         }
     }
 
+    const isPage = mode === 'page'
+    const title = editId ? `Ubah ${noun.toLowerCase()}` : (category === 'savings' ? 'Aset baru' : 'Tambah dompet')
+    const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+
+    const allWallets = [...activeWallets, ...savingsWallets]
+    const isRefundScenario: boolean = editId ? (() => {
+        const oldWallet = allWallets.find(w => w.id === editId)
+        if (!oldWallet) return false
+        const currentVal = parseFloat(balance || '0')
+        return currentVal < oldWallet.balance && !!oldWallet.source_wallet_id
+    })() : false
+
+    const form = (
+        <form onSubmit={handleSave} className="stack-12">
+            <label className="field">Nama {noun.toLowerCase()}
+                <input
+                    className={`input ${errors.name ? 'bad' : ''}`}
+                    type="text"
+                    placeholder="Contoh: BCA Utama"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); clearErr('name') }}
+                    autoFocus
+                />
+                <FieldError>{errors.name}</FieldError>
+            </label>
+
+            <div className="field">Tipe
+                <div className="seg">
+                    {([['bank', 'Bank'], ['ewallet', 'E-wallet'], ['cash', 'Tunai']] as const).map(([v, label]) => (
+                        <button key={v} type="button" className={type === v ? 'on' : ''} onClick={() => setType(v)}>{label}</button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="field">Kategori
+                <div className="seg">
+                    <button type="button" className={category === 'active' ? 'on' : ''} onClick={() => setCategory('active')}>Saldo aktif</button>
+                    <button type="button" className={category === 'savings' ? 'on' : ''} onClick={() => setCategory('savings')}>Tabungan inti</button>
+                </div>
+                <span className="lbl">{category === 'active' ? 'Dihitung sebagai saldo aktif di beranda.' : 'Tidak dihitung di saldo aktif.'}</span>
+            </div>
+
+            <label className="field">Nilai saat ini (Rp)
+                <input
+                    className={`input ${errors.balance ? 'bad' : ''}`}
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={balance !== '' && !isNaN(parseFloat(balance)) ? parseInt(balance.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
+                    onChange={(e) => { setBalance(e.target.value.replace(/\D/g, '')); clearErr('balance') }}
+                />
+                <FieldError>{errors.balance}</FieldError>
+            </label>
+
+            <div className="field">Sumber dana (opsional)
+                <span className="lbl" style={{ marginTop: -2, marginBottom: 2 }}>Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</span>
+                <NeoSelect
+                    value={sourceWalletId}
+                    onChange={(val) => { setSourceWalletId(val); clearErr('source') }}
+                    placeholder="Manual (tidak terhubung)"
+                    options={[
+                        { label: 'Manual (tidak terhubung)', value: '' },
+                        ...activeWallets.filter(w => w.id !== editId).map(w => ({ label: `[Aktif] ${w.name} (${rp(w.balance)})`, value: w.id.toString(), disabled: isRefundScenario })),
+                        ...savingsWallets.filter(w => w.id !== editId).map(w => ({ label: `[Tabungan] ${w.name} (${rp(w.balance)})`, value: w.id.toString(), disabled: isRefundScenario })),
+                    ]}
+                />
+                <FieldError>{errors.source}</FieldError>
+                {isRefundScenario && (
+                    <div className="banner warn" style={{ marginTop: 6 }}>Sumber terkunci — dana harus dikembalikan ke sumber asli.</div>
+                )}
+            </div>
+
+            {sourceWalletId && (
+                <div className="tile stack" style={{ gap: 8 }}>
+                    <button type="button" className="hstack" style={{ border: 0, background: 'none', padding: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)', textAlign: 'left' }} onClick={() => setLinkToSource(v => !v)} aria-pressed={linkToSource}>
+                        <span className={`switch ${linkToSource ? 'on' : ''}`} />
+                        Sesuaikan saldo dompet sumber?
+                    </button>
+                    {linkToSource && (() => {
+                        let targetWallet = allWallets.find(w => w.id === parseInt(sourceWalletId))
+                        const currentVal = parseFloat(balance || '0')
+                        let diff = currentVal
+                        if (editId) {
+                            const oldWallet = allWallets.find(w => w.id === editId)
+                            if (oldWallet) {
+                                diff = currentVal - oldWallet.balance
+                                if (diff < 0 && oldWallet.source_wallet_id) targetWallet = allWallets.find(w => w.id === oldWallet.source_wallet_id)
+                            }
+                        }
+                        if (!targetWallet) return null
+                        if (diff > 0) return <span className="lbl" style={{ color: 'var(--danger-text)', fontWeight: 600 }}>Memotong {rp(diff)} dari {targetWallet.name}.</span>
+                        if (diff < 0) return <span className="lbl" style={{ color: 'var(--income)', fontWeight: 600 }}>Mengembalikan {rp(Math.abs(diff))} ke {targetWallet.name} (sumber asli).</span>
+                        return <span className="lbl">Tidak ada perubahan saldo sumber.</span>
+                    })()}
+                </div>
+            )}
+
+            <div className="stack" style={{ marginTop: 4 }}>
+                <button disabled={saving} type="submit" className="btn btn-block">{saving ? 'Menyimpan…' : `Simpan ${noun.toLowerCase()}`}</button>
+                {editId && onDelete && (
+                    <button type="button" disabled={saving} onClick={onDelete} className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0' }}>
+                        <Trash2 className="i i-s" style={{ display: 'inline', verticalAlign: '-3px', marginRight: 4 }} />Hapus {noun.toLowerCase()}
+                    </button>
+                )}
+            </div>
+        </form>
+    )
+
     if (loadingData) {
         return (
-            <div className={`flex items-center justify-center p-10 ${mode === 'page' ? 'min-h-screen bg-[#F9FAFB] dark:bg-[var(--bg-page)]' : ''}`}>
-                <div className="w-8 h-8 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="cd">
+                <div className="scrim" onClick={onClose} />
+                <div className="sheet" style={{ alignItems: 'center', padding: '40px 20px' }}>
+                    <div className="w-8 h-8 border-[3px] border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                </div>
             </div>
         )
     }
 
-    const isPage = mode === 'page'
-    const title = editId ? (category === 'savings' ? 'Edit Aset' : 'Edit Dompet') : (category === 'savings' ? 'Aset Baru' : 'Tambah Dompet')
-
-    const FormContent = (
-        <form onSubmit={handleSave} className="space-y-5 flex flex-col flex-1 min-h-0">
-            <div className={`space-y-5 overflow-y-auto custom-scrollbar ${isPage ? 'flex-1 p-6 pb-32' : 'flex-1 p-1'}`}>
-                <div>
-                    <label className="neo-label mb-2 block">Nama {category === 'savings' ? 'Aset' : 'Dompet'}</label>
-                    <input
-                        type="text"
-                        placeholder="Contoh: BCA Utama"
-                        className="w-full px-[18px] py-[14px] bg-white border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] focus:outline-none font-[800] text-[var(--text-primary)]"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        autoFocus
-                    />
-                </div>
-                <div>
-                    <label className="neo-label mb-2 block">Tipe</label>
-                    <div className="grid grid-cols-3 gap-3">
-                        {['bank', 'ewallet', 'cash'].map((t) => (
-                            <button
-                                key={t}
-                                type="button"
-                                onClick={() => setType(t as any)}
-                                className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${type === t ? 'bg-[var(--neo-yellow)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
-                            >
-                                {t.toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div>
-                    <label className="neo-label mb-2 block">Kategori</label>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setCategory('active')}
-                            className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${category === 'active' ? 'bg-[var(--neo-sky)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
-                        >
-                            SALDO AKTIF
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setCategory('savings')}
-                            className={`py-3 px-3 rounded-[18px] text-sm font-black border-[3px] transition-all active:scale-95 ${category === 'savings' ? 'bg-[var(--neo-mint)] border-[var(--neo-ink)] text-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]' : 'border-transparent text-[var(--text-muted)] hover:border-[var(--neo-ink)]/30'}`}
-                        >
-                            TABUNGAN INTI
-                        </button>
-                    </div>
-                    <p className="text-xs text-[var(--text-muted)] font-semibold mt-2">
-                        {category === 'active' ? 'Dihitung sebagai saldo aktif di dashboard.' : 'Tidak dihitung di saldo aktif utama.'}
-                    </p>
-                </div>
-                <div>
-                    <label className="neo-label mb-2 block">Nilai Saat Ini (Rp)</label>
-                    <MoneyInput
-                        value={balance}
-                        onChange={setBalance}
-                    />
-                </div>
-
-                <div>
-                    <label className="neo-label mb-1 block">Sumber Dana (Opsional)</label>
-                    <p className="text-xs text-[var(--text-secondary)] font-semibold mb-3">Hubungkan dengan dompet lain untuk mencatat perpindahan dana otomatis.</p>
-                    {(() => {
-                        const allWallets = [...activeWallets, ...savingsWallets]
-                        const isRefundScenario: boolean = editId ? (() => {
-                            const oldWallet = allWallets.find(w => w.id === editId)
-                            if (!oldWallet) return false
-                            const currentVal = parseFloat(balance || '0')
-                            return currentVal < oldWallet.balance && !!oldWallet.source_wallet_id
-                        })() : false
-
-                        const isDisabled = isRefundScenario
-
-                        return (
-                            <>
-                                <NeoSelect
-                                    className={`w-full px-[18px] py-[14px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[18px] text-[14px] font-[800] transition-all ${isDisabled
-                                        ? 'bg-[var(--bg-hover)] cursor-not-allowed opacity-70 text-[var(--text-muted)]'
-                                        : 'bg-white text-[var(--text-primary)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_var(--neo-ink)]'
-                                        }`}
-                                    value={sourceWalletId}
-                                    onChange={(val) => setSourceWalletId(val)}
-                                    placeholder="Manual (Tidak terhubung)"
-                                    options={[
-                                        { label: "Manual (Tidak terhubung)", value: "" },
-                                        ...activeWallets.filter(w => w.id !== editId).map(w => ({
-                                            label: `[Aktif] ${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
-                                            value: w.id.toString(),
-                                            disabled: isDisabled
-                                        })),
-                                        ...savingsWallets.filter(w => w.id !== editId).map(w => ({
-                                            label: `[Tabungan] ${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`,
-                                            value: w.id.toString(),
-                                            disabled: isDisabled
-                                        }))
-                                    ]}
-                                />
-                                {isRefundScenario && (
-                                    <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-lg flex items-start gap-2">
-                                        <div className="text-xs">
-                                            <p className="font-bold text-amber-800">Sumber Terkunci</p>
-                                            <p className="text-amber-700 mt-0.5">Dana harus dikembalikan ke sumber asli.</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )
-                    })()}
-                </div>
-
-                {sourceWalletId && (
-                    <div className="bg-[var(--bg-card)] p-4 rounded-[18px] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)]">
-                        <label className="flex items-center gap-3 cursor-pointer mb-2">
-                            <input
-                                type="checkbox"
-                                checked={linkToSource}
-                                onChange={e => setLinkToSource(e.target.checked)}
-                                className="w-5 h-5 rounded-lg text-[var(--primary)] focus:ring-[var(--primary)] dark:focus:ring-blue-400 border-gray-300"
-                            />
-                            <span className="text-sm font-semibold text-[var(--text-primary)]">Sesuaikan saldo dompet sumber?</span>
-                        </label>
-
-                        {linkToSource && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400 pl-8">
-                                {(() => {
-                                    const allWallets = [...activeWallets, ...savingsWallets]
-                                    let targetWallet = allWallets.find(w => w.id === parseInt(sourceWalletId))
-
-                                    const currentVal = parseFloat(balance || '0')
-                                    let diff = currentVal
-                                    let oldWallet: Wallet | undefined = undefined
-
-                                    if (editId) {
-                                        oldWallet = allWallets.find(w => w.id === editId)
-                                        if (oldWallet) {
-                                            diff = currentVal - oldWallet.balance
-
-                                            if (diff < 0 && oldWallet.source_wallet_id) {
-                                                targetWallet = allWallets.find(w => w.id === oldWallet!.source_wallet_id)
-                                            }
-                                        }
-                                    }
-
-                                    if (!targetWallet) return null
-
-                                    if (diff > 0) {
-                                        return (
-                                            <span className="text-rose-500 font-bold block bg-rose-50 dark:bg-rose-950/30 p-2 rounded-lg border border-rose-100 dark:border-rose-800/30 mt-2">
-                                                Akan MEMOTONG Rp {diff.toLocaleString('id-ID')} dari {targetWallet.name}.
-                                            </span>
-                                        )
-                                    } else if (diff < 0) {
-                                        return (
-                                            <span className="text-emerald-600 font-bold block bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-800/30 mt-2">
-                                                Akan MENGEMBALIKAN Rp {Math.abs(diff).toLocaleString('id-ID')} ke {targetWallet.name} (sumber asli).
-                                            </span>
-                                        )
-                                    } else {
-                                        return <span>Tidak ada perubahan saldo sumber.</span>
-                                    }
-                                })()}
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {isPage ? (
-                <div className="fixed bottom-0 left-0 right-0 p-5 bg-[var(--bg-card)] border-t-[3px] border-[var(--neo-ink)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] md:relative md:shadow-none z-20">
-                    <button disabled={saving} type="submit" className="w-full brutal-btn !py-4 !text-base !bg-[var(--neo-yellow-vivid)]">
-                        {saving ? <div className="w-5 h-5 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
-                        Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
-                    </button>
-                    {editId && onDelete && (
-                        <button type="button" disabled={saving} onClick={onDelete} className="w-full mt-3 py-2 font-bold text-rose-600">
-                            Hapus {category === 'savings' ? 'Aset' : 'Dompet'}
-                        </button>
-                    )}
-                </div>
-            ) : (
-                <div className="shrink-0 pt-4 pb-1">
-                    <button disabled={saving} type="submit" className="w-full brutal-btn !py-3.5 !text-sm !bg-[var(--neo-yellow-vivid)]">
-                        {saving ? <div className="w-4 h-4 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                        Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
-                    </button>
-                    {editId && onDelete && (
-                        <button type="button" disabled={saving} onClick={onDelete} className="w-full mt-2 py-2 font-bold text-rose-600 text-sm">
-                            Hapus {category === 'savings' ? 'Aset' : 'Dompet'}
-                        </button>
-                    )}
-                </div>
-            )}
-        </form>
-    )
-
     if (isPage) {
         return (
-            <div className="fixed inset-0 z-[59] bg-[#F9FAFB] dark:bg-[var(--bg-page)] md:relative md:min-h-screen flex flex-col animate-in slide-in-from-bottom-full md:slide-in-from-bottom-0 duration-300">
-                <div className="flex items-center justify-between p-5 bg-white dark:bg-[var(--bg-card)] border-b border-[var(--border-default)] shrink-0 sticky top-0 z-20">
-                    <div className="flex items-center gap-3">
-                        <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
-                            <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
-                        </button>
-                        <h2 className="text-lg font-bold text-[var(--text-primary)]">{title}</h2>
+            <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 60 }}>
+                <div className="top">
+                    <div className="top-l">
+                        <button onClick={onClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
+                        <h1 className="h2">{title}</h1>
                     </div>
                 </div>
-                <div className="flex-1 md:max-w-2xl md:mx-auto md:w-full md:mt-8 md:bg-white md:dark:bg-[var(--bg-card)] md:border md:border-[var(--border-default)] md:rounded-3xl md:shadow-sm md:overflow-hidden relative flex flex-col min-h-0">
-                    {FormContent}
-                </div>
+                {form}
             </div>
         )
     }
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-            <div className="bg-[var(--bg-card)] w-full max-w-md rounded-[24px] border-[3px] border-[var(--neo-ink)] shadow-[8px_8px_0_var(--neo-ink)] z-50 p-6 relative animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-                <div className="flex justify-between items-center mb-6 shrink-0">
-                    <h3 className="text-xl font-black tracking-tight text-[var(--text-primary)]">{title}</h3>
-                    <button onClick={onClose} className="flex items-center justify-center p-2 rounded-xl bg-[#ffd84d] border-2 border-[#141414] shadow-[2px_2px_0_#141414] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_#141414] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
-                        <X className="w-5 h-5 text-[#141414]" strokeWidth={3} />
-                    </button>
+        <div className="cd">
+            <div className="scrim" onClick={onClose} />
+            <div className="sheet">
+                <div className="grabber" />
+                <div className="between">
+                    <h2 className="h2">{title}</h2>
+                    <button className="icon-btn ghost" aria-label="Tutup" onClick={onClose}><X className="i" /></button>
                 </div>
-                {FormContent}
+                {form}
             </div>
         </div>
     )
