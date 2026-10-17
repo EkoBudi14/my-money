@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
@@ -178,8 +178,31 @@ export default function TransactionModal({
       setSplitEntries([{ name: '', amount: '' }])
     }
     setDebouncedAmount('')
+    needBaseline.current = true
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingTransaction, transactions.length, wallets.length])
+
+  // ── "Buang perubahan?" (DESIGN-TAMBAHAN §10 / PolaDialog §4) ─────────────
+  const snapshot = JSON.stringify({ amount, title, category, type, selectedWalletId, sourceWalletId, adminFee, customDate, customTime, isPiutang, piutangPerson, isTalangan, talanganPerson, isSplitBill, splitEntries })
+  const needBaseline = useRef(false)
+  const baselineRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (needBaseline.current) { baselineRef.current = snapshot; needBaseline.current = false }
+  })
+  const requestClose = async () => {
+    if (saving) return
+    const dirty = baselineRef.current !== null && snapshot !== baselineRef.current
+    if (dirty) {
+      const ok = await showConfirm({
+        title: 'Buang perubahan?',
+        message: 'Isian form ini belum disimpan.',
+        confirmText: 'Buang',
+        cancelText: 'Lanjut isi',
+      })
+      if (!ok) return
+    }
+    onClose()
+  }
 
   // ── Budget awareness (only recalculates 300ms after typing stops) ─────────
   const budgetInfo = useMemo(() => {
@@ -460,10 +483,11 @@ export default function TransactionModal({
   // Esc closes the modal (DESIGN.md 5 / 8). Enter submits through the form.
   useEffect(() => {
     if (mode === 'page' || !isOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !saving) onClose() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !saving && !document.querySelector('.dlg')) requestClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, isOpen, saving, onClose])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, isOpen, saving, onClose, snapshot])
 
   if (!isOpen && mode !== 'page') return null
 
@@ -780,7 +804,7 @@ export default function TransactionModal({
         {/* Header */}
         <div className="top">
           <div className="top-l">
-            <button type="button" onClick={onClose} className="icon-btn ghost" aria-label="Tutup">
+            <button type="button" onClick={requestClose} className="icon-btn ghost" aria-label="Tutup">
               <X className="i" />
             </button>
             <h1 className="h2">
@@ -812,7 +836,7 @@ export default function TransactionModal({
   return (
     <div className="cd" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       {/* Backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,20,18,.55)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,20,18,.55)', backdropFilter: 'blur(4px)' }} onClick={requestClose} />
 
       {/* ===== MOBILE BOTTOM SHEET ===== */}
       {!isWeb && (
@@ -827,7 +851,7 @@ export default function TransactionModal({
         {/* Header */}
         <div className="top" style={{ padding: '4px 16px 8px', flexShrink: 0 }}>
           <div className="top-l">
-            <button type="button" onClick={onClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
+            <button type="button" onClick={requestClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
             <h2 className="h2">{titleText}</h2>
           </div>
           <div className="hstack" style={{ gap: 6 }}>
@@ -867,7 +891,7 @@ export default function TransactionModal({
           <div className="hstack" style={{ gap: 6 }}>
             <Link href="/scan-receipt" className="btn-2" style={{ height: 40 }}><ScanLine className="i i-s" />Scan struk</Link>
             <Link href="/voice-transaction" className="btn-2" style={{ height: 40 }}><Mic className="i i-s" />Suara</Link>
-            <button type="button" onClick={onClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
+            <button type="button" onClick={requestClose} className="icon-btn ghost" aria-label="Tutup"><X className="i" /></button>
           </div>
         </div>
 
@@ -897,7 +921,7 @@ export default function TransactionModal({
                 <span className="lbl">Tekan Enter untuk simpan, Esc untuk tutup</span>
               </div>
               <div className="hstack" style={{ gap: 8 }}>
-                <button type="button" className="btn-2" onClick={onClose} disabled={saving}>Batal</button>
+                <button type="button" className="btn-2" onClick={requestClose} disabled={saving}>Batal</button>
                 <button type="submit" className="btn" style={{ height: 44, fontSize: 14 }} disabled={saving || isLoading}>{submitLabel}</button>
               </div>
             </div>

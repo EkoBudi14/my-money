@@ -51,6 +51,13 @@ export default function NotesPage() {
 
   const resetForm = () => { setTitle(''); setContent(''); setEditingNote(null); setFormError(''); setIsModalOpen(false) }
 
+  // Closing a filled form asks first (DESIGN-TAMBAHAN §10 / PolaDialog §4).
+  const requestCloseForm = async () => {
+    const dirty = editingNote ? (title !== editingNote.title || content !== editingNote.content) : (title.trim() !== '' || content.trim() !== '')
+    if (dirty && !(await showConfirm({ title: 'Buang perubahan?', message: 'Isian form ini belum disimpan.', confirmText: 'Buang', cancelText: 'Lanjut isi' }))) return
+    resetForm()
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim() && !content.trim()) { setFormError('Isi judul atau isi catatan.'); return }
@@ -110,12 +117,12 @@ export default function NotesPage() {
       {/* Create / edit sheet */}
       {isModalOpen && (
         <>
-          <div className="scrim" onClick={resetForm} />
+          <div className="scrim" onClick={requestCloseForm} />
           <div className="sheet">
             <div className="grabber" />
             <div className="between">
               <h2 className="h2">{editingNote ? 'Ubah catatan' : 'Tulis catatan'}</h2>
-              <button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={requestCloseForm}><X className="i" /></button>
             </div>
             <form onSubmit={handleSave} className="stack-12">
               <label className="field">Judul (opsional)

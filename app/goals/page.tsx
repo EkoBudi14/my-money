@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { restoreRow } from '@/lib/undo'
 import Link from 'next/link'
-import { Goal } from '@/types'
+import { Goal, Wallet } from '@/types'
 import { Plus, Target, Trash2, Pencil, X, ChevronLeft } from 'lucide-react'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import NeoSelect from '@/components/NeoSelect'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
@@ -39,6 +40,15 @@ export default function GoalsPage() {
     // Inline validation (DESIGN-TAMBAHAN.md §5)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [qaError, setQaError] = useState('')
+    // Nabung from a wallet (optional, DESIGN.md 0.5) + archive support (needs goals.archived_at)
+    const [wallets, setWallets] = useState<Wallet[]>([])
+    const [qaWalletId, setQaWalletId] = useState('')
+    const [canArchive, setCanArchive] = useState(false)
+    const [showArchived, setShowArchived] = useState(false)
+    useEffect(() => {
+        supabase.from('wallets').select('*').eq('category', 'active').then(({ data }) => setWallets((data || []) as Wallet[]))
+        supabase.from('goals').select('archived_at').limit(1).then(({ error }) => setCanArchive(!error))
+    }, [])
     const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     useEffect(() => {
@@ -67,6 +77,7 @@ export default function GoalsPage() {
         setQuickAddId(null)
         setQuickAddAmountValue('')
         setQaError('')
+        setQaWalletId('')
         setIsQuickAddModalOpen(false)
     }
 
@@ -113,6 +124,21 @@ export default function GoalsPage() {
         if (!goalToUpdate) return
 
         const newAmount = goalToUpdate.current_amount + parseFloat(quickAddAmountValue)
+        const addAmount = parseFloat(quickAddAmountValue)
+
+        // Optional: take the money from a wallet (recorded as an expense so the balance stays consistent).
+        if (qaWalletId) {
+            const { data: w } = await supabase.from('wallets').select('balance, name').eq('id', parseInt(qaWalletId)).single()
+            if (!w) { setQaError('Dompet tidak ditemukan.'); return }
+            if (w.balance < addAmount) { setQaError(`Saldo ${w.name} kurang Rp ${(addAmount - w.balance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.`); return }
+            const now = new Date().toISOString()
+            const { error: txErr } = await supabase.from('transactions').insert({
+                title: `Nabung ke ${goalToUpdate.name}`, amount: addAmount, type: 'pengeluaran', category: 'Lainnya',
+                wallet_id: parseInt(qaWalletId), date: now, created_at: now, is_piutang: false, is_talangan: false,
+            })
+            if (txErr) { showToast('error', 'Tabungan gagal disimpan. Coba lagi.'); return }
+            await supabase.from('wallets').update({ balance: w.balance - addAmount }).eq('id', parseInt(qaWalletId))
+        }
 
         const { error } = await supabase
             .from('goals')
@@ -175,6 +201,59 @@ export default function GoalsPage() {
         setIsModalOpen(true)
     }
 
+    const archiveGoal = async (g: Goal) => {
+        const { error } = await supabase.from('goals').update({ archived_at: new Date().toISOString() }).eq('id', g.id)
+        if (error) { showToast('error', 'Goal gagal diarsipkan. Coba lagi.'); return }
+        showToast('success', `${g.name} selesai dan diarsipkan`, 6000, {
+            action: { label: 'Urungkan', onClick: async () => { await supabase.from('goals').update({ archived_at: null }).eq('id', g.id); fetchGoals() } },
+        })
+        fetchGoals()
+    }
+
+    // Saving suggestion (DESIGN.md 7.7): per month until the deadline, or what is still missing.
+    const goalHint = (g: Goal) => {
+        const left = g.target_amount - g.current_amount
+        if (left <= 0) return null
+        if (g.deadline) {
+            const d = new Date(g.deadline)
+            const now = new Date()
+            if (d > now) {
+                const months = Math.max(1, (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth()))
+                const per = Math.ceil(left / months)
+                const short = per >= 1_000_000 ? `${(per / 1_000_000).toFixed(1).replace('.0', '').replace('.', ',')}jt` : per >= 1000 ? `${Math.round(per / 1000)}rb` : String(per)
+                return `Nabung ± Rp ${short} per bulan supaya tepat waktu.`
+            }
+        }
+        return `Kurang Rp ${left.toLocaleString('id-ID')} lagi.`
+    }
+
+    const unarchiveGoal = async (g: Goal) => {
+        const { error } = await supabase.from('goals').update({ archived_at: null }).eq('id', g.id)
+        if (error) { showToast('error', 'Goal gagal dikembalikan. Coba lagi.'); return }
+        showToast('success', `${g.name} aktif lagi`)
+        fetchGoals()
+    }
+
+    // Archived (finished) goals, collapsed by default.
+    const renderArchived = () => archivedGoals.length > 0 ? (
+        <section className="stack-12">
+            <button type="button" className="link" style={{ alignSelf: 'flex-start' }} aria-expanded={showArchived} onClick={() => setShowArchived(v => !v)}>
+                {showArchived ? 'Sembunyikan' : 'Lihat'} goal selesai ({archivedGoals.length})
+            </button>
+            {showArchived && (
+                <div className="card-flush">
+                    {archivedGoals.map(g => (
+                        <div className="row" key={g.id}>
+                            <div className="ic c-gaji"><Target className="i" /></div>
+                            <div className="grow"><div className="t">{g.name}</div><div className="meta">{rp(g.current_amount)} / {rp(g.target_amount)}</div></div>
+                            <button className="btn-2" style={{ height: 36, fontSize: 13 }} onClick={() => unarchiveGoal(g)}>Kembalikan</button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </section>
+    ) : null
+
     const openQuickAdd = (g: Goal) => {
         setQuickAddId(g.id)
         setQuickAddAmountValue('')
@@ -197,8 +276,10 @@ export default function GoalsPage() {
         return `Target ${mLabel} · ${days} hari lagi`
     }
 
-    const totalTarget = goals.reduce((a, g) => a + g.target_amount, 0)
-    const totalTerkumpul = goals.reduce((a, g) => a + g.current_amount, 0)
+    const archivedGoals = goals.filter(g => (g as Goal & { archived_at?: string | null }).archived_at)
+    const activeGoals = goals.filter(g => !(g as Goal & { archived_at?: string | null }).archived_at)
+    const totalTarget = activeGoals.reduce((a, g) => a + g.target_amount, 0)
+    const totalTerkumpul = activeGoals.reduce((a, g) => a + g.current_amount, 0)
     const overallPct = totalTarget > 0 ? Math.min(100, (totalTerkumpul / totalTarget) * 100) : 0
     const quickGoal = goals.find(g => g.id === quickAddId)
     const quickAddNum = parseInt((quickAddAmountValue || '0').replace(/\D/g, '')) || 0
@@ -255,6 +336,15 @@ export default function GoalsPage() {
                                 ))}
                                 <button type="button" className="chip" style={{ color: 'var(--text-2)' }} onClick={() => setQuickAddAmountValue('')}>Reset</button>
                             </div>
+                            <div className="field">Ambil dari dompet (opsional)
+                                <NeoSelect
+                                    value={qaWalletId}
+                                    onChange={(v) => { setQaWalletId(v); setQaError('') }}
+                                    placeholder="Tidak memotong saldo"
+                                    options={[{ label: 'Tidak memotong saldo', value: '' }, ...wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))]}
+                                />
+                                <span className="lbl" style={{ fontWeight: 500 }}>Kalau dipilih, saldo dompet berkurang dan tercatat sebagai pengeluaran.</span>
+                            </div>
                             <div className="tile">
                                 <div className="lbl">Setelah nabung</div>
                                 <div className="t">{rp(quickGoal.current_amount + quickAddNum)} · {quickGoal.target_amount > 0 ? Math.min(100, Math.round(((quickGoal.current_amount + quickAddNum) / quickGoal.target_amount) * 100)) : 0}%</div>
@@ -279,7 +369,7 @@ export default function GoalsPage() {
 
                     <div className="hero wrap" style={{ alignItems: 'center', gap: 24 }}>
                         <div className="stack" style={{ flex: '1 1 260px', gap: 4 }}>
-                            <span className="lbl">Total terkumpul · {goals.length} goal</span>
+                            <span className="lbl">Total terkumpul · {activeGoals.length} goal</span>
                             <span className="num-xl" style={{ fontSize: 34 }}>{rp(totalTerkumpul)}</span>
                         </div>
                         <div className="stack" style={{ flex: '2 1 320px' }}>
@@ -290,11 +380,11 @@ export default function GoalsPage() {
 
                     {loading ? (
                         <SkeletonCards count={2} />
-                    ) : goals.length === 0 ? (
+                    ) : activeGoals.length === 0 && archivedGoals.length === 0 ? (
                         <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
                     ) : (
                         <div className="gg">
-                            {goals.map((g, idx) => {
+                            {activeGoals.map((g, idx) => {
                                 const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
                                 const done = g.current_amount >= g.target_amount && g.target_amount > 0
                                 const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
@@ -307,6 +397,8 @@ export default function GoalsPage() {
                                         </div>
                                         <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
                                         <div style={{ fontSize: 13 }}><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></div>
+                                        {goalHint(g) && <div className="banner info" style={{ padding: '10px 12px', fontSize: 12 }}>{goalHint(g)}</div>}
+                                        {done && canArchive && <button className="btn-2 btn-block" onClick={() => archiveGoal(g)}>Tandai selesai dan arsipkan</button>}
                                         <div className="g2" style={{ marginTop: 'auto' }}>
                                             <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
                                             <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
@@ -319,6 +411,7 @@ export default function GoalsPage() {
                             </button>
                         </div>
                     )}
+                    {renderArchived()}
                 </main>
                 {overlays}
             </div>
@@ -340,7 +433,7 @@ export default function GoalsPage() {
 
                 {/* Hero total */}
                 <div className="hero stack">
-                    <span className="lbl">Total terkumpul · {goals.length} goal</span>
+                    <span className="lbl">Total terkumpul · {activeGoals.length} goal</span>
                     <span className="num-xl">{rp(totalTerkumpul)}</span>
                     <div className="bar thick"><div style={{ width: `${overallPct}%` }} /></div>
                     <span className="lbl">dari total target {rp(totalTarget)}</span>
@@ -349,10 +442,10 @@ export default function GoalsPage() {
                 {/* Goal list */}
                 {loading ? (
                     <SkeletonCards count={2} />
-                ) : goals.length === 0 ? (
+                ) : activeGoals.length === 0 && archivedGoals.length === 0 ? (
                     <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
                 ) : (
-                    goals.map((g, idx) => {
+                    activeGoals.map((g, idx) => {
                         const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
                         const done = g.current_amount >= g.target_amount && g.target_amount > 0
                         const cls = GOAL_CLASSES[idx % GOAL_CLASSES.length]
@@ -368,6 +461,8 @@ export default function GoalsPage() {
                                 </div>
                                 <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
                                 <div className="between" style={{ fontSize: 13 }}><span><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></span></div>
+                                {goalHint(g) && <div className="banner info" style={{ padding: '10px 12px', fontSize: 12 }}>{goalHint(g)}</div>}
+                                {done && canArchive && <button className="btn-2 btn-block" onClick={() => archiveGoal(g)}>Tandai selesai dan arsipkan</button>}
                                 <div className="g2">
                                     <button className="btn" style={{ height: 44, fontSize: 14 }} onClick={() => openQuickAdd(g)}>Nabung</button>
                                     <button className="btn-2" onClick={() => handleEdit(g)}><Pencil className="i i-s" />Ubah</button>
@@ -376,6 +471,7 @@ export default function GoalsPage() {
                         )
                     })
                 )}
+                {renderArchived()}
             </div>
 
             {overlays}

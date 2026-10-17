@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { restoreRow } from '@/lib/undo'
 import { Budget, Transaction, CATEGORIES, Wallet, CustomCategoryDef } from '@/types'
-import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle, MoreHorizontal } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, Calendar, AlertTriangle, MoreHorizontal, List } from 'lucide-react'
 import { useIsWeb } from '@/hooks/useIsWeb'
+import { useRouter } from 'next/navigation'
 import EmptyState from '@/components/EmptyState'
 import Link from 'next/link'
 import { useToast } from '@/hooks/useToast'
@@ -64,6 +65,15 @@ export default function BudgetsPage() {
     })
     const [showSettings, setShowSettings] = useState(false)
     const isWeb = useIsWeb()
+    const router = useRouter()
+    // "Rata-rata 3 periode terakhir" for the chosen category (DESIGN-TAMBAHAN §10)
+    const [avg3, setAvg3] = useState<number | null>(null)
+    // "Ulangi tiap periode" (needs budgets.is_recurring — see supabase/migrations)
+    const [canRecur, setCanRecur] = useState(false)
+    const [isRecurring, setIsRecurring] = useState(false)
+    useEffect(() => {
+        supabase.from('budgets').select('is_recurring').limit(1).then(({ error }) => setCanRecur(!error))
+    }, [])
     // Budget action sheet (DESIGN-TAMBAHAN §7 / AksiBudget)
     const [actionBudget, setActionBudget] = useState<{ b: Budget; spent: number; pct: number; over: boolean; near: boolean } | null>(null)
 
@@ -151,7 +161,30 @@ export default function BudgetsPage() {
         if (walletsRes.data) setWallets(walletsRes.data)
         
         if (budgetsRes.error) showToast('error', 'Gagal memuat budget')
-        if (budgetsRes.data) setBudgets(budgetsRes.data)
+        let periodBudgets = budgetsRes.data || []
+        // Copy recurring budgets from earlier periods into this one when missing.
+        const localDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+        const recurCheck = await supabase.from('budgets').select('*').eq('is_recurring', true).lt('end_date', targetStartDateStr)
+        if (!recurCheck.error && recurCheck.data && recurCheck.data.length > 0) {
+            const have = new Set(periodBudgets.map((b: Budget) => b.category))
+            const latest = new Map<string, Budget & { is_recurring?: boolean }>()
+            for (const b of recurCheck.data as (Budget & { is_recurring?: boolean })[]) {
+                const prev = latest.get(b.category)
+                if (!prev || b.end_date > prev.end_date) latest.set(b.category, b)
+            }
+            const toCreate = [...latest.values()].filter(b => !have.has(b.category))
+            if (toCreate.length > 0) {
+                const { data: created } = await supabase.from('budgets').insert(toCreate.map(b => ({
+                    category: b.category, amount: b.amount, start_date: localDay(new Date(startIso)), end_date: localDay(new Date(endIso)), is_recurring: true,
+                }))).select()
+                if (created) {
+                    // The chain continues from the new copy only.
+                    await supabase.from('budgets').update({ is_recurring: false }).in('id', toCreate.map(b => b.id))
+                    periodBudgets = [...periodBudgets, ...created]
+                }
+            }
+        }
+        setBudgets(periodBudgets)
         
         if (transactionsRes.data) setTransactions(transactionsRes.data as unknown as Transaction[])
 
@@ -159,6 +192,7 @@ export default function BudgetsPage() {
     }
 
     const resetForm = () => {
+        setIsRecurring(false)
         setCategory('')
         setAmount('')
         setEditingId(null)
@@ -195,11 +229,12 @@ export default function BudgetsPage() {
         setErrors(err)
         if (Object.keys(err).length > 0) return
 
-        const payload = {
+        const payload: Record<string, unknown> = {
             category,
             amount: parseFloat(amount),
             start_date: budgetStartDate,
-            end_date: budgetEndDate
+            end_date: budgetEndDate,
+            ...(canRecur ? { is_recurring: isRecurring } : {}),
         }
 
         let error
@@ -314,6 +349,7 @@ export default function BudgetsPage() {
     }
 
     const handleEdit = (b: Budget) => {
+        setIsRecurring(!!(b as Budget & { is_recurring?: boolean }).is_recurring)
         setEditingId(b.id)
         setCategory(b.category)
         setAmount(b.amount.toString())
@@ -346,6 +382,24 @@ export default function BudgetsPage() {
             return `${start.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
         }
     }
+
+    useEffect(() => {
+        if (!isModalOpen || !category || !budgetStartDate) { setAvg3(null); return }
+        let cancelled = false
+        const run = async () => {
+            const start = new Date(budgetStartDate)
+            const from = new Date(start.getFullYear(), start.getMonth() - 3, 1)
+            const to = new Date(start.getFullYear(), start.getMonth(), 0, 23, 59, 59)
+            const { data } = await supabase.from('transactions').select('amount, is_talangan')
+                .eq('type', 'pengeluaran').eq('category', category)
+                .gte('date', from.toISOString()).lte('date', to.toISOString())
+            if (cancelled) return
+            const total = (data || []).filter(t => !t.is_talangan).reduce((a, t) => a + t.amount, 0)
+            setAvg3(Math.round(total / 3))
+        }
+        run()
+        return () => { cancelled = true }
+    }, [isModalOpen, category, budgetStartDate])
 
     // ── Derived values for the redesigned view ──────────────────────────────
     const totalBudget = budgets.reduce((a, b) => a + b.amount, 0)
@@ -395,6 +449,7 @@ export default function BudgetsPage() {
                             <div className={`bar ${over ? 'over' : ''}`}><div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} /></div>
                             <div className="stack" style={{ gap: 0, marginTop: 4 }}>
                                 <button className="act" onClick={() => { close(); openQuickExp(b.category) }}><span className="ic-s" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Plus className="i i-s" /></span><span className="grow">Catat pengeluaran</span></button>
+                                <button className="act" onClick={() => { close(); router.push(`/transactions?category=${encodeURIComponent(b.category)}`) }}><span className="ic-s c-lain"><List className="i i-s" /></span><span className="grow">Lihat transaksi kategori ini</span></button>
                                 <button className="act" onClick={() => { close(); handleEdit(b) }}><span className="ic-s c-lain"><Pencil className="i i-s" /></span><span className="grow">Ubah budget</span></button>
                                 <button className="act" style={{ color: 'var(--danger)' }} onClick={() => { close(); handleDelete(b.id) }}><span className="ic-s" style={{ background: 'var(--danger-tint)', color: 'var(--danger)' }}><Trash2 className="i i-s" /></span><span className="grow">Hapus budget</span></button>
                             </div>
@@ -441,12 +496,27 @@ export default function BudgetsPage() {
                             <label className="field">Batas (Rp)
                                 <input className={`input ${errors.amount ? 'bad' : ''}`} inputMode="numeric" placeholder="0" value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setAmount(e.target.value.replace(/\D/g, '')); clearErr('amount') }} />
                                 <FieldError>{errors.amount}</FieldError>
+                                {avg3 !== null && category && (
+                                    <span className="lbl hstack" style={{ fontWeight: 500, gap: 6, flexWrap: 'wrap' }}>
+                                        Rata-rata 3 periode terakhir: <b style={{ color: 'var(--text)' }}>{rp(avg3)}</b>
+                                        {avg3 > 0 && <button type="button" className="link" onClick={() => { setAmount(String(avg3)); clearErr('amount') }}>Pakai angka ini</button>}
+                                    </span>
+                                )}
                             </label>
                             <div className="g2">
                                 <label className="field">Tanggal mulai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetStartDate} onChange={(e) => { setBudgetStartDate(e.target.value); clearErr('dates') }} required /></label>
                                 <label className="field">Tanggal selesai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetEndDate} onChange={(e) => { setBudgetEndDate(e.target.value); clearErr('dates') }} required /></label>
                             </div>
                             <FieldError>{errors.dates}</FieldError>
+                            {canRecur && (
+                                <div className="toggle-row">
+                                    <div className="grow">
+                                        <div className="t">Ulangi tiap periode</div>
+                                        <div className="meta" style={{ whiteSpace: 'normal' }}>Budget ini dibuat lagi otomatis untuk periode berikutnya.</div>
+                                    </div>
+                                    <button type="button" className={`switch ${isRecurring ? 'on' : ''}`} aria-label="Ulangi tiap periode" aria-pressed={isRecurring} onClick={() => setIsRecurring(v => !v)} />
+                                </div>
+                            )}
                             <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan budget'}</button>
                             {editingId && (
                                 <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingId; resetForm(); handleDelete(id) }}>
