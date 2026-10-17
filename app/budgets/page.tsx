@@ -11,6 +11,7 @@ import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { getCategoryIcon } from '@/lib/categories'
 import { SkeletonCards } from '@/components/Skeleton'
+import FieldError from '@/components/FieldError'
 
 // Built-in category -> catatduit color class (DESIGN.md section 6).
 const CAT_CLASS: Record<string, string> = {
@@ -79,6 +80,12 @@ export default function BudgetsPage() {
     const [quickExpCategory, setQuickExpCategory] = useState('')
     const [quickExpAmount, setQuickExpAmount] = useState('')
     const [quickExpWalletId, setQuickExpWalletId] = useState('')
+
+    // Inline validation errors (DESIGN-TAMBAHAN.md §5)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const [qErrors, setQErrors] = useState<Record<string, string>>({})
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
+    const clearQErr = (k: string) => setQErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
     // Persist filter settings to localStorage whenever they change
     useEffect(() => {
@@ -160,6 +167,7 @@ export default function BudgetsPage() {
         setBudgetStartDate(startD)
         setBudgetEndDate(endD)
 
+        setErrors({})
         setIsModalOpen(false)
     }
 
@@ -167,16 +175,18 @@ export default function BudgetsPage() {
         setQuickExpCategory('')
         setQuickExpAmount('')
         setQuickExpWalletId('')
+        setQErrors({})
         setIsQuickExpModalOpen(false)
     }
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!category || !amount || !budgetStartDate || !budgetEndDate) return showToast('error', "Mohon lengkapi data")
-
-        if (new Date(budgetStartDate) > new Date(budgetEndDate)) {
-            return showToast('error', "Tanggal mulai tidak boleh lebih dari tanggal selesai")
-        }
+        const err: Record<string, string> = {}
+        if (!category) err.category = 'Pilih satu kategori.'
+        if (!amount || parseFloat(amount) <= 0) err.amount = 'Isi jumlah lebih dari Rp 0.'
+        if (budgetStartDate && budgetEndDate && new Date(budgetStartDate) > new Date(budgetEndDate)) err.dates = 'Tanggal mulai harus sebelum tanggal selesai.'
+        setErrors(err)
+        if (Object.keys(err).length > 0) return
 
         const payload = {
             category,
@@ -199,7 +209,7 @@ export default function BudgetsPage() {
                 .gte('end_date', budgetStartDate)
                 .limit(1)
             if (existingBudgets && existingBudgets.length > 0) {
-                return showToast('error', `Budget ${category} untuk tanggal ini sudah ada. Ubah budget yang lama atau pilih tanggal lain.`)
+                return setErrors({ category: `Budget ${category} untuk tanggal ini sudah ada. Ubah budget yang lama atau pilih tanggal lain.` })
             }
 
             const res = await supabase.from('budgets').insert([payload])
@@ -218,14 +228,15 @@ export default function BudgetsPage() {
 
     const handleQuickExpenseSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickExpAmount || !quickExpWalletId) return showToast('error', "Mohon lengkapi data")
-
+        const qe: Record<string, string> = {}
+        if (!quickExpAmount || parseFloat(quickExpAmount) <= 0) qe.amount = 'Isi jumlah lebih dari Rp 0.'
+        if (!quickExpWalletId) qe.wallet = 'Pilih dompet.'
         const wallet = wallets.find(w => w.id === parseInt(quickExpWalletId))
-        if (!wallet) return showToast('error', "Dompet tidak ditemukan")
-
-        if (wallet.balance < parseFloat(quickExpAmount)) {
-            return showToast('error', "Saldo dompet tidak mencukupi")
+        if (quickExpWalletId && wallet && !qe.amount && wallet.balance < parseFloat(quickExpAmount)) {
+            qe.wallet = `Saldo ${wallet.name} kurang Rp ${(parseFloat(quickExpAmount) - wallet.balance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.`
         }
+        setQErrors(qe)
+        if (Object.keys(qe).length > 0 || !wallet) return
 
         // 1. Insert Transaction
         // Fix timezone bug: pakai T12:00:00 agar tidak shift 1 hari di WIB (sama dengan pattern di handleSaveTransaction)
@@ -463,21 +474,24 @@ export default function BudgetsPage() {
                                         const { Icon } = getCategoryIcon(name, 'pengeluaran', customCategories)
                                         const cls = CAT_CLASS[name] || 'c-lain'
                                         return (
-                                            <button key={name} type="button" className={`catb ${category === name ? 'on' : ''}`} style={{ minHeight: 56, flexDirection: 'row', justifyContent: 'flex-start', gap: 8, padding: '0 10px' }} onClick={() => setCategory(name)}>
+                                            <button key={name} type="button" className={`catb ${category === name ? 'on' : ''} ${errors.category ? 'bad' : ''}`} style={{ minHeight: 56, flexDirection: 'row', justifyContent: 'flex-start', gap: 8, padding: '0 10px' }} onClick={() => { setCategory(name); clearErr('category') }}>
                                                 <span className={`ic-s ${cls}`}><Icon className="i i-s" /></span>
                                                 <span style={{ textAlign: 'left' }}>{name}</span>
                                             </button>
                                         )
                                     })}
                                 </div>
+                                <FieldError>{errors.category}</FieldError>
                             </div>
                             <label className="field">Batas (Rp)
-                                <input className="input" inputMode="numeric" placeholder="0" value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} />
+                                <input className={`input ${errors.amount ? 'bad' : ''}`} inputMode="numeric" placeholder="0" value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setAmount(e.target.value.replace(/\D/g, '')); clearErr('amount') }} />
+                                <FieldError>{errors.amount}</FieldError>
                             </label>
                             <div className="g2">
-                                <label className="field">Tanggal mulai<DatePickerNeo className="input" value={budgetStartDate} onChange={(e) => setBudgetStartDate(e.target.value)} required /></label>
-                                <label className="field">Tanggal selesai<DatePickerNeo className="input" value={budgetEndDate} onChange={(e) => setBudgetEndDate(e.target.value)} required /></label>
+                                <label className="field">Tanggal mulai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetStartDate} onChange={(e) => { setBudgetStartDate(e.target.value); clearErr('dates') }} required /></label>
+                                <label className="field">Tanggal selesai<DatePickerNeo className={`input ${errors.dates ? 'bad' : ''}`} value={budgetEndDate} onChange={(e) => { setBudgetEndDate(e.target.value); clearErr('dates') }} required /></label>
                             </div>
+                            <FieldError>{errors.dates}</FieldError>
                             <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan budget'}</button>
                         </form>
                     </div>
@@ -493,10 +507,12 @@ export default function BudgetsPage() {
                         <div className="between"><div><h2 className="h2">Catat pengeluaran</h2><div className="lbl">Kategori: {quickExpCategory}</div></div><button className="icon-btn ghost" aria-label="Tutup" onClick={resetQuickExpForm}><X className="i" /></button></div>
                         <form onSubmit={handleQuickExpenseSave} className="stack-12">
                             <label className="field">Jumlah (Rp)
-                                <input className="input" inputMode="numeric" autoFocus placeholder="0" value={quickExpAmount ? parseInt(quickExpAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setQuickExpAmount(e.target.value.replace(/\D/g, ''))} />
+                                <input className={`input ${qErrors.amount ? 'bad' : ''}`} inputMode="numeric" autoFocus placeholder="0" value={quickExpAmount ? parseInt(quickExpAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setQuickExpAmount(e.target.value.replace(/\D/g, '')); clearQErr('amount'); clearQErr('wallet') }} />
+                                <FieldError>{qErrors.amount}</FieldError>
                             </label>
                             <div className="field">Ambil dari dompet
-                                <NeoSelect value={quickExpWalletId} onChange={setQuickExpWalletId} options={wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))} placeholder="Pilih dompet" />
+                                <NeoSelect value={quickExpWalletId} onChange={(v) => { setQuickExpWalletId(v); clearQErr('wallet') }} options={wallets.map(w => ({ label: `${w.name} (${rp(w.balance)})`, value: w.id.toString() }))} placeholder="Pilih dompet" />
+                                <FieldError>{qErrors.wallet}</FieldError>
                             </div>
                             <button type="submit" className="btn btn-block">Simpan pengeluaran</button>
                         </form>

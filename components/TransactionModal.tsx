@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/useToast'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { useConfirm } from '@/hooks/useConfirm'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
+import FieldError from '@/components/FieldError'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
@@ -97,6 +98,10 @@ export default function TransactionModal({
     const res = await deleteTransactionWithRollback(editingTransaction.id, { confirm: showConfirm, toast: showToast })
     if (res.deleted) onSaved()
   }
+
+  // Inline field validation (DESIGN-TAMBAHAN.md §5)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
 
   // ── Form State (ALL of this lives here, NOT in page.tsx) ──────────────────
   const [title, setTitle] = useState('')
@@ -203,21 +208,20 @@ export default function TransactionModal({
     const adminFeeNum = type === 'topup' && adminFee ? parseFloat(adminFee) : 0
     const newWalletId = parseInt(selectedWalletId)
 
-    if (!finalTitle || !amountNum || amountNum <= 0 || isNaN(amountNum) || !category || !selectedWalletId || !customDate || (type === 'topup' && !sourceWalletId)) {
-      showToast('warning', 'Mohon lengkapi data dengan benar! Jumlah harus lebih dari 0.')
-      return
-    }
-
-    if (type === 'topup' && sourceWalletId === selectedWalletId) {
-      showToast('warning', 'Sumber dana dan dompet tujuan tidak boleh sama!')
-      return
-    }
+    const ve: Record<string, string> = {}
+    if (!amountNum || amountNum <= 0 || isNaN(amountNum)) ve.amount = 'Isi jumlah lebih dari Rp 0.'
+    if (!category) ve.category = 'Pilih satu kategori.'
+    if (!selectedWalletId) ve[type === 'topup' ? 'destWallet' : 'wallet'] = 'Pilih dompet.'
+    if (type === 'topup' && !sourceWalletId) ve.sourceWallet = 'Pilih dompet.'
+    if (type === 'topup' && sourceWalletId && sourceWalletId === selectedWalletId) ve.destWallet = 'Dompet tujuan harus beda dengan dompet asal.'
+    setErrors(ve)
+    if (Object.keys(ve).length > 0) return
 
     setSaving(true)
 
     const freshNewWalletBalance = await fetchFreshWalletBalance(newWalletId)
     if (freshNewWalletBalance === null) {
-      showToast('error', 'Dompet tidak ditemukan!')
+      showToast('error', 'Dompet tidak ditemukan.')
       setSaving(false)
       return
     }
@@ -226,12 +230,13 @@ export default function TransactionModal({
     if (type === 'topup') {
       freshSourceWalletBalance = await fetchFreshWalletBalance(parseInt(sourceWalletId))
       if (freshSourceWalletBalance === null) {
-        showToast('error', 'Sumber dana tidak ditemukan!')
+        showToast('error', 'Sumber dana tidak ditemukan.')
         setSaving(false)
         return
       }
       if (freshSourceWalletBalance < (amountNum + adminFeeNum)) {
-        showToast('error', `Saldo sumber dana tidak mencukupi!`)
+        const src = wallets.find(w => w.id === parseInt(sourceWalletId))
+        setErrors({ sourceWallet: `Saldo ${src?.name || 'dompet'} kurang Rp ${((amountNum + adminFeeNum) - freshSourceWalletBalance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
         setSaving(false)
         return
       }
@@ -294,7 +299,8 @@ export default function TransactionModal({
         }
 
         if (type === 'pengeluaran' && balanceAfterRollback < amountNum) {
-          showToast('error', `Saldo tidak mencukupi setelah perubahan! Saldo tersedia: Rp ${balanceAfterRollback.toLocaleString('id-ID')}`)
+          const w = wallets.find(x => x.id === newWalletId)
+          setErrors({ wallet: `Saldo ${w?.name || 'dompet'} kurang Rp ${(amountNum - balanceAfterRollback).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
           setSaving(false)
           return
         }
@@ -330,8 +336,8 @@ export default function TransactionModal({
         }
 
         if (type === 'pengeluaran' && freshNewWalletBalance < amountNum) {
-          const walletName = wallets.find(w => w.id === newWalletId)?.name || 'Dompet baru'
-          showToast('error', `Saldo tidak mencukupi! Saldo ${walletName}: Rp ${freshNewWalletBalance.toLocaleString('id-ID')}`)
+          const walletName = wallets.find(w => w.id === newWalletId)?.name || 'dompet'
+          setErrors({ wallet: `Saldo ${walletName} kurang Rp ${(amountNum - freshNewWalletBalance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
           setSaving(false)
           return
         }
@@ -374,8 +380,8 @@ export default function TransactionModal({
     } else {
       // Insert Mode
       if (type === 'pengeluaran' && freshNewWalletBalance < amountNum) {
-        const walletName = wallets.find(w => w.id === newWalletId)?.name || 'Dompet'
-        showToast('error', `Saldo tidak mencukupi! Saldo ${walletName}: Rp ${freshNewWalletBalance.toLocaleString('id-ID')}`)
+        const walletName = wallets.find(w => w.id === newWalletId)?.name || 'dompet'
+        setErrors({ wallet: `Saldo ${walletName} kurang Rp ${(amountNum - freshNewWalletBalance).toLocaleString('id-ID')}. Pilih dompet lain atau ubah jumlah.` })
         setSaving(false)
         return
       }
@@ -457,11 +463,12 @@ export default function TransactionModal({
           <div className="field">Dari dompet
             <NeoSelect
               value={sourceWalletId}
-              onChange={setSourceWalletId}
+              onChange={(v) => { setSourceWalletId(v); clearErr('sourceWallet'); clearErr('destWallet') }}
               options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: selectedWalletId === w.id.toString() }))}
               placeholder="Pilih sumber"
               required
             />
+            <FieldError>{errors.sourceWallet}</FieldError>
           </div>
           <button
             type="button"
@@ -475,11 +482,12 @@ export default function TransactionModal({
           <div className="field">Ke dompet
             <NeoSelect
               value={selectedWalletId}
-              onChange={setSelectedWalletId}
+              onChange={(v) => { setSelectedWalletId(v); clearErr('destWallet') }}
               options={wallets.map(w => ({ label: w.name, value: w.id.toString(), disabled: sourceWalletId === w.id.toString() }))}
               placeholder="Pilih tujuan"
               required
             />
+            <FieldError>{errors.destWallet}</FieldError>
           </div>
         </div>
       )}
@@ -487,7 +495,7 @@ export default function TransactionModal({
       {/* Amount */}
       <div className="stack">
         <div className="lbl" style={{ fontWeight: 600 }}>{type === 'topup' ? 'Nominal transfer' : 'Jumlah'}</div>
-        <div className="amount-box">
+        <div className={`amount-box ${errors.amount ? 'bad' : ''}`}>
           <span className="cur">Rp</span>
           <input
             type="text"
@@ -496,10 +504,11 @@ export default function TransactionModal({
             className="val"
             style={{ color: type === 'pemasukan' ? 'var(--income)' : 'var(--text)' }}
             value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
-            onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw) }}
+            onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw); clearErr('amount') }}
             autoFocus={!editingTransaction}
           />
         </div>
+        <FieldError>{errors.amount}</FieldError>
         <div className="chips">
           <button type="button" className="chip" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }}>+000</button>
           {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
@@ -524,13 +533,14 @@ export default function TransactionModal({
                   <button
                     key={w.id}
                     type="button"
-                    className={`chip ${selectedWalletId === w.id.toString() ? 'on' : ''}`}
-                    onClick={() => setSelectedWalletId(w.id.toString())}
+                    className={`chip ${selectedWalletId === w.id.toString() ? 'on' : ''} ${errors.wallet ? 'bad' : ''}`}
+                    onClick={() => { setSelectedWalletId(w.id.toString()); clearErr('wallet') }}
                   >
                     {w.name}<span className="lbl" style={{ fontWeight: 500 }}>Rp {w.balance.toLocaleString('id-ID')}</span>
                   </button>
                 ))}
               </div>
+              <FieldError>{errors.wallet}</FieldError>
             </div>
           </>
         ) : (
@@ -623,7 +633,7 @@ export default function TransactionModal({
                 const isSelected = category === cat.name
                 const cls = CAT_CLASS[cat.name] || (cat.isCustom ? cat.color : 'c-lain')
                 return (
-                  <button key={cat.name} type="button" className={`catb ${isSelected ? 'on' : ''}`} onClick={() => setCategory(cat.name)}>
+                  <button key={cat.name} type="button" className={`catb ${isSelected ? 'on' : ''} ${errors.category ? 'bad' : ''}`} onClick={() => { setCategory(cat.name); clearErr('category') }}>
                     <span className={`ic-s ${cls}`}><cat.icon className="i i-s" /></span>
                     {cat.name}
                   </button>
@@ -634,6 +644,7 @@ export default function TransactionModal({
                 Kelola kategori
               </Link>
             </div>
+            <FieldError>{errors.category}</FieldError>
           </div>
         )}
 

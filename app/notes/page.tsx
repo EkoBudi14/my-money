@@ -9,6 +9,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import CalendarCard from '@/components/CalendarCard'
 import { SkeletonCards } from '@/components/Skeleton'
+import FieldError from '@/components/FieldError'
 
 interface Note {
   id: number
@@ -33,6 +34,7 @@ export default function NotesPage() {
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [formError, setFormError] = useState('')
 
   const fetchNotes = async () => {
     setLoading(true)
@@ -44,11 +46,11 @@ export default function NotesPage() {
 
   useEffect(() => { fetchNotes() }, [])
 
-  const resetForm = () => { setTitle(''); setContent(''); setEditingNote(null); setIsModalOpen(false) }
+  const resetForm = () => { setTitle(''); setContent(''); setEditingNote(null); setFormError(''); setIsModalOpen(false) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() && !content.trim()) { showToast('warning', 'Catatan tidak boleh kosong'); return }
+    if (!title.trim() && !content.trim()) { setFormError('Isi judul catatan.'); return }
     const now = new Date().toISOString()
 
     if (editingNote) {
@@ -149,10 +151,11 @@ export default function NotesPage() {
             </div>
             <form onSubmit={handleSave} className="stack-12">
               <label className="field">Judul
-                <input className="input" type="text" placeholder="Judul catatan" value={title} onChange={e => setTitle(e.target.value)} autoFocus />
+                <input className={`input ${formError ? 'bad' : ''}`} type="text" placeholder="Judul catatan" value={title} onChange={e => { setTitle(e.target.value); setFormError('') }} autoFocus />
               </label>
               <label className="field">Isi
-                <textarea className="input" style={{ minHeight: 160 }} placeholder="Ketik catatanmu di sini…" value={content} onChange={e => setContent(e.target.value)} />
+                <textarea className="input" style={{ minHeight: 160 }} placeholder="Ketik catatanmu di sini…" value={content} onChange={e => { setContent(e.target.value); setFormError('') }} />
+                <FieldError>{formError}</FieldError>
               </label>
               <div className="between">
                 <span className="lbl">{content.length} karakter</span>

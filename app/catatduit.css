@@ -226,6 +226,7 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .input.bad{border-color:var(--danger)}
 .cd .amount-box.bad{border-bottom-color:var(--danger)}
 .cd .catb.bad{border-color:var(--danger)}
+.cd .chip.bad{border-color:var(--danger)}
 
 /* Empty state + load error (PolaState §1, §3) */
 .cd .es{border:1px solid var(--border);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;background:var(--surface)}

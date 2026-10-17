@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonCards } from '@/components/Skeleton'
+import FieldError from '@/components/FieldError'
 
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([])
@@ -31,6 +32,11 @@ export default function GoalsPage() {
     const [quickAddAmountValue, setQuickAddAmountValue] = useState('')
     const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false)
 
+    // Inline validation (DESIGN-TAMBAHAN.md §5)
+    const [errors, setErrors] = useState<Record<string, string>>({})
+    const [qaError, setQaError] = useState('')
+    const clearErr = (k: string) => setErrors(prev => { const n = { ...prev }; delete n[k]; return n })
+
     useEffect(() => {
         fetchGoals()
     }, [])
@@ -49,18 +55,24 @@ export default function GoalsPage() {
         setCurrentAmount('')
         setDeadline('')
         setEditingId(null)
+        setErrors({})
         setIsModalOpen(false)
     }
 
     const resetQuickAddForm = () => {
         setQuickAddId(null)
         setQuickAddAmountValue('')
+        setQaError('')
         setIsQuickAddModalOpen(false)
     }
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!name || !targetAmount) return showToast('error', "Mohon lengkapi nama dan target!")
+        const err: Record<string, string> = {}
+        if (!name.trim()) err.name = 'Isi nama goal.'
+        if (!targetAmount || parseFloat(targetAmount) <= 0) err.target = 'Isi target lebih dari Rp 0.'
+        setErrors(err)
+        if (Object.keys(err).length > 0) return
 
         const payload = {
             name,
@@ -90,7 +102,8 @@ export default function GoalsPage() {
 
     const handleQuickAddSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!quickAddId || !quickAddAmountValue) return showToast('error', "Mohon masukkan jumlah!")
+        if (!quickAddAmountValue || parseFloat(quickAddAmountValue) <= 0) { setQaError('Isi jumlah lebih dari Rp 0.'); return }
+        if (!quickAddId) return
 
         const goalToUpdate = goals.find(g => g.id === quickAddId)
         if (!goalToUpdate) return
@@ -244,10 +257,12 @@ export default function GoalsPage() {
                         <div className="between"><h2 className="h2">{editingId ? 'Ubah goal' : 'Tambah goal'}</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button></div>
                         <form onSubmit={handleSave} className="stack-12">
                             <label className="field">Nama goal
-                                <input className="input" type="text" placeholder="Dana darurat" value={name} onChange={(e) => setName(e.target.value)} />
+                                <input className={`input ${errors.name ? 'bad' : ''}`} type="text" placeholder="Dana darurat" value={name} onChange={(e) => { setName(e.target.value); clearErr('name') }} />
+                                <FieldError>{errors.name}</FieldError>
                             </label>
                             <label className="field">Target dana (Rp)
-                                <input className="input" inputMode="numeric" placeholder="0" value={targetAmount ? parseInt(targetAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setTargetAmount(e.target.value.replace(/\D/g, ''))} />
+                                <input className={`input ${errors.target ? 'bad' : ''}`} inputMode="numeric" placeholder="0" value={targetAmount ? parseInt(targetAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setTargetAmount(e.target.value.replace(/\D/g, '')); clearErr('target') }} />
+                                <FieldError>{errors.target}</FieldError>
                             </label>
                             <label className="field">Sudah terkumpul (Rp)
                                 <input className="input" inputMode="numeric" placeholder="0" value={currentAmount ? parseInt(currentAmount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setCurrentAmount(e.target.value.replace(/\D/g, ''))} />
@@ -273,7 +288,8 @@ export default function GoalsPage() {
                         <div className="between"><div><h2 className="h2">Nabung</h2><div className="lbl">{quickGoal.name}</div></div><button className="icon-btn ghost" aria-label="Tutup" onClick={resetQuickAddForm}><X className="i" /></button></div>
                         <form onSubmit={handleQuickAddSave} className="stack-12">
                             <label className="field">Jumlah (Rp)
-                                <input className="input" inputMode="numeric" autoFocus placeholder="0" value={quickAddAmountValue ? parseInt(quickAddAmountValue.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => setQuickAddAmountValue(e.target.value.replace(/\D/g, ''))} />
+                                <input className={`input ${qaError ? 'bad' : ''}`} inputMode="numeric" autoFocus placeholder="0" value={quickAddAmountValue ? parseInt(quickAddAmountValue.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''} onChange={(e) => { setQuickAddAmountValue(e.target.value.replace(/\D/g, '')); setQaError('') }} />
+                                <FieldError>{qaError}</FieldError>
                             </label>
                             <div className="chips">
                                 {[50000, 100000, 250000, 500000].map(v => (

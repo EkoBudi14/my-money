@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { AVAILABLE_ICONS, COLOR_PALETTES, CATEGORIES, getCategoryIcon } from '@/lib/categories'
 import { CustomCategoryDef } from '@/types'
+import FieldError from '@/components/FieldError'
 
 type TxType = 'pengeluaran' | 'pemasukan'
 type CustomList = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -29,6 +30,7 @@ export default function KategoriPage() {
   const [iconName, setIconName] = useState('Package')
   const [color, setColor] = useState(COLOR_PALETTES[0])
   const [editingName, setEditingName] = useState<string | null>(null)
+  const [nameError, setNameError] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -44,17 +46,18 @@ export default function KategoriPage() {
     setIconName('Package')
     setColor(COLOR_PALETTES[0])
     setEditingName(null)
+    setNameError('')
   }
 
   // Business logic mirrors app/page.tsx handleSaveCustomCategory (unchanged behavior).
   const handleSave = async () => {
     const finalName = name.trim()
-    if (!finalName) return
+    if (!finalName) { setNameError('Isi nama kategori.'); return }
     setSaving(true)
 
     const oldName = editingName
     if (!oldName && customCategories[type].map(getName).map(n => n.toLowerCase()).includes(finalName.toLowerCase())) {
-      showToast('warning', `Kategori “${finalName}” sudah ada.`)
+      setNameError(`Kategori “${finalName}” sudah ada.`)
       setSaving(false)
       return
     }
@@ -191,13 +194,14 @@ export default function KategoriPage() {
           <label className="field">
             Nama kategori
             <input
-              className="input"
+              className={`input ${nameError ? 'bad' : ''}`}
               type="text"
               placeholder="Parkir"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => { setName(e.target.value); setNameError('') }}
               style={{ background: 'var(--surface)' }}
             />
+            <FieldError>{nameError}</FieldError>
           </label>
 
           <div className="field">
