@@ -731,16 +731,27 @@ export default function AnalyticsPage() {
                                     <h2 className="h2">Transaksi per dompet</h2>
                                     {walletTransactionBreakdown.map(w => {
                                         const tot = w.totalIncome + w.totalExpense
+                                        const open = expandedWallet === w.walletName
                                         return (
                                             <div className="stack" key={w.walletName} style={{ gap: 6 }}>
-                                                <div className="between" style={{ fontSize: 13 }}>
-                                                    <b style={{ fontWeight: 600 }}>{w.walletName}</b>
+                                                <button type="button" className="between" aria-expanded={open} onClick={() => setExpandedWallet(open ? null : w.walletName)} style={{ background: 'none', border: 0, padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer', fontSize: 13, alignItems: 'center' }}>
+                                                    <b style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><ChevronRight className="i i-s" style={{ color: 'var(--text-2)', transition: 'transform .15s', transform: open ? 'rotate(90deg)' : 'none' }} />{w.walletName}</b>
                                                     <span className="lbl">{w.transactions.length} transaksi · <span className="pos">+{rpShort(w.totalIncome)}</span> · {rpShort(w.totalExpense)}</span>
-                                                </div>
+                                                </button>
                                                 <div className="bar" style={{ display: 'flex' }}>
                                                     <div style={{ width: `${tot > 0 ? (w.totalIncome / tot) * 100 : 0}%`, background: 'var(--income-chart)', borderRadius: 0 }} />
                                                     <div style={{ width: `${tot > 0 ? (w.totalExpense / tot) * 100 : 0}%`, background: 'var(--accent)', borderRadius: 0 }} />
                                                 </div>
+                                                {open && (
+                                                    <div className="card-flush" style={{ marginTop: 2 }}>
+                                                        {w.transactions.map(t => (
+                                                            <div className="row" key={t.id}>
+                                                                <div className="grow" style={{ minWidth: 0 }}><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                                <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         )
                                     })}
@@ -925,15 +936,36 @@ export default function AnalyticsPage() {
                 {walletTransactionBreakdown.length > 0 && (
                     <div className="stack">
                         <span className="lbl" style={{ fontWeight: 700 }}>Transaksi per dompet</span>
-                        {walletTransactionBreakdown.map(w => (
+                        {walletTransactionBreakdown.map(w => {
+                            const open = expandedWallet === w.walletName
+                            return (
                             <div className="card stack" key={w.walletName} style={{ gap: 8 }}>
-                                <div className="between"><span className="t">{w.walletName}</span><span className="lbl">{w.transactions.length} transaksi</span></div>
+                                <button type="button" className="between" aria-expanded={open} onClick={() => setExpandedWallet(open ? null : w.walletName)} style={{ background: 'none', border: 0, padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer', alignItems: 'center' }}>
+                                    <span className="t" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ChevronRight className="i i-s" style={{ color: 'var(--text-2)', transition: 'transform .15s', transform: open ? 'rotate(90deg)' : 'none' }} />{w.walletName}</span>
+                                    <span className="lbl">{w.transactions.length} transaksi</span>
+                                </button>
                                 <div className="g2">
                                     <div><div className="lbl">Masuk</div><div className="num-m pos">+{rpShort(w.totalIncome)}</div></div>
                                     <div><div className="lbl">Keluar</div><div className="num-m">{rpShort(w.totalExpense)}</div></div>
                                 </div>
+                                {open && (
+                                    <div className="card-flush">
+                                        {w.transactions.map(t => {
+                                            const { Icon } = getCategoryIcon(t.category, t.type, EMPTY_CUSTOM)
+                                            const cls = t.is_piutang ? 'c-piutang' : t.type === 'topup' ? 'c-transfer' : (CAT_CLASS[t.category] || 'c-lain')
+                                            return (
+                                                <div className="row" key={t.id}>
+                                                    <div className={`ic ${cls}`}><Icon className="i" /></div>
+                                                    <div className="grow" style={{ minWidth: 0 }}><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {new Date(t.date || t.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                    <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rpFull(t.amount)}</div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
 
