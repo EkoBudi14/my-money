@@ -68,10 +68,10 @@ export default function RootLayout({
         className={`antialiased bg-[var(--bg-page)] font-sans`}
       >
         <NextTopLoader
-          color="#ffd84d"
+          color="#0F766E"
           initialPosition={0.08}
           crawlSpeed={200}
-          height={5}
+          height={3}
           crawl={true}
           showSpinner={false}
           easing="ease"

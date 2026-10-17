@@ -44,51 +44,48 @@ export default function Sidebar() {
   const renderLink = (item: { name: string; icon: any; href: string }) => {
     const Icon = item.icon
     return (
-      <Link key={item.href} href={item.href} className={isActive(item.href) ? 'on' : ''}>
-        <Icon className="i i-s" />{item.name}
+      <Link key={item.href} href={item.href} className={isActive(item.href) ? 'on' : ''} title={item.name} aria-label={item.name} aria-current={isActive(item.href) ? 'page' : undefined}>
+        <Icon className="i i-s" /><span className="side-label">{item.name}</span>
       </Link>
     )
   }
 
   return (
     <>
-      {/* ── Desktop sidebar ── */}
-      {isSidebarOpen && (
-        <aside className="cd side">
-          <div className="brand">
-            <div className="brand-mark">CD</div>
-            <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-.02em' }}>CatatDuit</span>
-            <button className="icon-btn ghost" style={{ marginLeft: 'auto', width: 36, height: 36 }} aria-label="Sembunyikan menu" onClick={() => setIsSidebarOpen(false)}>
-              <PanelLeftClose className="i i-s" />
-            </button>
+      {/* ── Sidebar: full 248px on desktop, compact 72px on tablet or when collapsed (DESIGN.md 3) ── */}
+      <aside className={`cd side ${isSidebarOpen ? '' : 'compact'}`} aria-label="Navigasi utama">
+        <div className="brand">
+          <div className="brand-mark">C</div>
+          <span className="side-label" style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-.02em' }}>CatatDuit</span>
+        </div>
+
+        {mainItems.map(renderLink)}
+        <div className="grp"><span className="side-label">Rencana</span></div>
+        {rencanaItems.map(renderLink)}
+        <div className="grp"><span className="side-label">Catat cepat</span></div>
+        {cepatItems.map(renderLink)}
+
+        <div className="stack side-foot">
+          <button type="button" className="side-btn" onClick={toggleTheme} title={isDark ? 'Mode terang' : 'Mode gelap'} aria-label={isDark ? 'Mode terang' : 'Mode gelap'}>
+            {isDark ? <Sun className="i i-s" /> : <Moon className="i i-s" />}
+            <span className="side-label">{isDark ? 'Mode terang' : 'Mode gelap'}</span>
+          </button>
+          <button
+            type="button"
+            className="side-btn side-collapse"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            title={isSidebarOpen ? 'Ringkas menu' : 'Lebarkan menu'}
+            aria-label={isSidebarOpen ? 'Ringkas menu' : 'Lebarkan menu'}
+          >
+            {isSidebarOpen ? <PanelLeftClose className="i i-s" /> : <PanelLeft className="i i-s" />}
+            <span className="side-label">Ringkas menu</span>
+          </button>
+          <div className="side-profile" title="Eko Budi">
+            <div className="avatar" style={{ width: 34, height: 34, fontSize: 13, borderRadius: 10 }}>EB</div>
+            <span className="side-label" style={{ fontSize: 13, fontWeight: 600 }}>Eko Budi</span>
           </div>
-
-          {mainItems.map(renderLink)}
-          <div className="grp">Rencana</div>
-          {rencanaItems.map(renderLink)}
-          <div className="grp">Catat cepat</div>
-          {cepatItems.map(renderLink)}
-
-          <div style={{ marginTop: 'auto', paddingTop: 12 }}>
-            <button onClick={toggleTheme} className="" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 12px', height: 42, width: '100%', borderRadius: 12, border: 0, background: 'transparent', color: 'var(--text-3)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-              {isDark ? <Sun className="i i-s" /> : <Moon className="i i-s" />}
-              {isDark ? 'Mode terang' : 'Mode gelap'}
-            </button>
-          </div>
-        </aside>
-      )}
-
-      {/* ── Desktop reopen button when collapsed ── */}
-      {!isSidebarOpen && (
-        <button
-          className="cd side-reopen"
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="Tampilkan menu"
-          style={{ display: 'flex', position: 'fixed', left: 16, top: 16, zIndex: 50, width: 44, height: 44, borderRadius: 14, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <PanelLeft className="i" />
-        </button>
-      )}
+        </div>
+      </aside>
 
       {/* ── Mobile bottom nav ── */}
       {/* Full-page transaction form has its own sticky save button (DESIGN.md 3) */}

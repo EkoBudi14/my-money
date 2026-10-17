@@ -290,3 +290,35 @@ html.dark .cd,.cd[data-theme="dark"]{
 .nsel-opt:hover{background:var(--surface-2)}
 .nsel-opt.on{background:var(--accent-tint);color:var(--accent-hover);font-weight:600}
 .nsel-opt.off{opacity:.5;cursor:not-allowed}
+/* ── Web shell: sidebar full / compact + content offset (DESIGN.md 3) ── */
+.cd.side .side-foot{margin-top:auto;padding-top:20px;gap:4px}
+.cd.side .side-btn{display:flex;align-items:center;gap:12px;padding:0 12px;height:42px;width:100%;border:0;border-radius:12px;background:transparent;color:var(--text-3);font:inherit;font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.cd.side .side-btn:hover{background:var(--surface-2);color:var(--text)}
+.cd.side .side-profile{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--surface-2);margin-top:4px}
+.cd.side a,.cd.side .side-btn{transition:background 150ms cubic-bezier(.2,.8,.2,1),color 150ms cubic-bezier(.2,.8,.2,1)}
+.cd-content{transition:margin-left 220ms cubic-bezier(.2,.8,.2,1)}
+@media(min-width:768px){.cd-content{margin-left:72px}}
+@media(min-width:1024px){.cd-content{margin-left:248px}.cd-content.collapsed{margin-left:72px}}
+@media(min-width:768px) and (max-width:1023px){
+  .cd.side{width:72px;padding:20px 12px;align-items:center}
+  .cd.side .side-label,.cd.side .side-collapse{display:none}
+  .cd.side .grp{padding:0!important}
+}
+@media(min-width:1024px){
+  .cd.side.compact{width:72px;padding:20px 12px;align-items:center}
+  .cd.side.compact .side-label{display:none}
+}
+@media(min-width:768px) and (max-width:1023px){.cd.side a,.cd.side .side-btn{width:44px;height:44px;padding:0;justify-content:center}.cd.side .side-profile{padding:6px;background:transparent}.cd.side .grp{padding:0;height:1px;width:24px;background:var(--divider);margin:8px 0}.cd.side .brand{padding:4px 0 16px}}
+@media(min-width:1024px){.cd.side.compact a,.cd.side.compact .side-btn{width:44px;height:44px;padding:0;justify-content:center}.cd.side.compact .side-profile{padding:6px;background:transparent}.cd.side.compact .grp{padding:0;height:1px;width:24px;background:var(--divider);margin:12px 0}.cd.side.compact .brand{padding:4px 0 16px}}
+@media (prefers-reduced-motion:reduce){.cd-content{transition:none}}
+/* Web: small forms open as a centered 480px modal instead of a bottom sheet (DESIGN.md 7.14) */
+@keyframes cdSheetUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes cdModalIn{from{transform:translate(-50%,-48%) scale(.98);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}
+@keyframes cdFade{from{opacity:0}to{opacity:1}}
+.cd .scrim{animation:cdFade 220ms cubic-bezier(.2,.8,.2,1)}
+.cd .sheet{animation:cdSheetUp 220ms cubic-bezier(.2,.8,.2,1)}
+@media(min-width:768px){
+  .cd .sheet{top:50%;bottom:auto;left:50%;right:auto;width:calc(100% - 48px);max-width:480px;max-height:86vh;transform:translate(-50%,-50%);border-radius:24px;border:1px solid var(--border);padding:20px 24px 24px;animation:cdModalIn 220ms cubic-bezier(.2,.8,.2,1)}
+  .cd .sheet>.grabber{display:none}
+}
+@media (prefers-reduced-motion:reduce){.cd .sheet,.cd .scrim{animation:cdFade 150ms linear}}

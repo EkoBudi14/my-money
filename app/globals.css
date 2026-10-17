@@ -34,7 +34,7 @@
   --neo-lav: #C2A3FF;
 
   /* ── Background Layers — warm neobrutalism palette ── */
-  --bg-page: #f8f4ec;
+  --bg-page: #FFFFFF; /* catatduit --surface (was #f8f4ec) */
   --bg-card: #fffdf8;
   --bg-elevated: #ffffff;
   --bg-hover: rgba(255, 216, 77, 0.15);
@@ -90,7 +90,7 @@
   --neo-lav: rgba(217, 200, 255, 0.10);
 
   /* Background layers — dark warm neobrutalism */
-  --bg-page: #1d1a14;
+  --bg-page: #0F1E1B; /* catatduit dark --surface (was #1d1a14) */
   --bg-card: #252118;
   --bg-elevated: #2e2a20;
   --bg-hover: rgba(255, 216, 77, 0.08);
