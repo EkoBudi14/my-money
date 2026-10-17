@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Eye, EyeOff, Info, CreditCard, Wallet as WalletIcon, Banknote, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Eye, EyeOff, Info, CreditCard, Wallet as WalletIcon, Banknote, ChevronRight, PiggyBank } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Wallet, Transaction } from '@/types'
 import { useToast } from '@/hooks/useToast'
@@ -9,6 +9,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import WalletModal from '@/components/WalletModal'
 import { SkeletonRows } from '@/components/Skeleton'
+import EmptyState from '@/components/EmptyState'
 
 type Tab = 'active' | 'savings'
 type WalletType = 'bank' | 'ewallet' | 'cash'
@@ -43,7 +44,7 @@ export default function WalletsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('active')
-  const [showBalance, setShowBalance] = useState(true)
+  const [showBalance, setShowBalance] = useState(false)
 
   // Open the Tabungan inti tab when arriving from /main-savings?tab=tabungan.
   useEffect(() => {
@@ -180,8 +181,8 @@ export default function WalletsPage() {
             <span className="lbl">
               {tab === 'active' ? `Total saldo aktif · ${activeWallets.length} dompet` : `Total tabungan inti · ${savingsWallets.length} aset`}
             </span>
-            <button className="icon-btn" aria-label="Sembunyikan nominal" style={{ width: 40, height: 40 }} onClick={() => setShowBalance(v => !v)}>
-              {showBalance ? <Eye className="i i-s" /> : <EyeOff className="i i-s" />}
+            <button className="icon-btn" aria-label={showBalance ? 'Sembunyikan angka' : 'Tampilkan angka'} aria-pressed={showBalance} style={{ width: 40, height: 40 }} onClick={() => setShowBalance(v => !v)}>
+              {showBalance ? <EyeOff className="i i-s" /> : <Eye className="i i-s" />}
             </button>
           </div>
           <div className="num-xl">{showBalance ? rp(total) : 'Rp ••••••'}</div>
@@ -192,11 +193,11 @@ export default function WalletsPage() {
         {loading ? (
           <SkeletonRows count={5} />
         ) : shown.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p className="t" style={{ whiteSpace: 'normal' }}>{tab === 'active' ? 'Belum ada dompet aktif' : 'Belum ada aset tabungan'}</p>
-            <p className="lbl" style={{ marginTop: 4 }}>{tab === 'active' ? 'Tambahkan dompet untuk mulai mencatat saldo harian.' : 'Catat tabungan inti seperti emas, deposito, atau arisan.'}</p>
-            <button className="btn btn-block" style={{ marginTop: 12 }} onClick={openAdd}>{tab === 'active' ? 'Tambah dompet' : 'Tambah aset'}</button>
-          </div>
+          tab === 'active' ? (
+            <EmptyState icon={<WalletIcon className="i" />} title="Tambah dompet pertama" text="Bank, e-wallet, atau tunai yang kamu pakai harian." actionLabel="Tambah dompet" onAction={openAdd} />
+          ) : (
+            <EmptyState icon={<PiggyBank className="i" />} title="Catat aset pertama" text="Tabungan, emas, reksadana. Tidak dihitung di saldo aktif." actionLabel="Tambah aset" onAction={openAdd} />
+          )
         ) : (
           groups.map(group => {
             const meta = TYPE_META[group.type]
@@ -207,20 +208,15 @@ export default function WalletsPage() {
                   {group.items.map(w => {
                     const Icon = meta.Icon
                     return (
-                      <div className="row" key={w.id}>
+                      <button type="button" className="row rowbtn" key={w.id} aria-label={`Ubah ${w.name}`} onClick={() => openEdit(w)}>
                         <div className={`ic ${meta.cls}`}><Icon className="i" /></div>
                         <div className="grow">
                           <div className="t">{w.name}</div>
                           <div className="meta">{usedLabel(lastUsedMap.get(w.id))}</div>
                         </div>
                         <div className="amt">{showBalance ? rp(w.balance) : 'Rp ••••'}</div>
-                        <button className="icon-btn ghost" aria-label={`Ubah ${w.name}`} style={{ width: 36, height: 36 }} onClick={() => openEdit(w)}>
-                          <Pencil className="i i-s" />
-                        </button>
-                        <button className="icon-btn ghost" aria-label={`Hapus ${w.name}`} style={{ width: 36, height: 36, color: 'var(--danger)' }} onClick={() => handleDelete(w)}>
-                          <Trash2 className="i i-s" />
-                        </button>
-                      </div>
+                        <ChevronRight className="i i-s" style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                      </button>
                     )
                   })}
                 </div>

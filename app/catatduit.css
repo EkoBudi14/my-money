@@ -30,7 +30,7 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .cd .i-s{width:16px;height:16px}.cd .i-l{width:26px;height:26px}
 
-.cd .scroll{padding:16px 20px 116px;display:flex;flex-direction:column;gap:16px}
+.cd .scroll,.cd.scroll{padding:16px 20px 116px;display:flex;flex-direction:column;gap:16px}
 .cd .top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
 .cd .top-l{display:flex;align-items:center;gap:10px;min-width:0}
 .cd .h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.2px}
@@ -261,3 +261,32 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .c-ewallet{background:#DBEAFE;color:#1D4ED8}
 .cd .c-cash{background:#ECFCCB;color:#4D7C0F}
 .cd .c-aset{background:#FEF3C7;color:#B45309}
+/* Period sheet month grid (screens/Periode) */
+.cd .mo{height:44px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer}
+.cd .mo.on{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-hover)}
+/* Metric info popover (DESIGN.md 7.1) */
+.cd .tip-anchor{position:relative;display:inline-flex}
+.cd .tip-btn{width:24px;height:24px;margin:-4px 0;border:0;background:transparent;color:inherit;opacity:.8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;padding:0}
+.cd .tip-btn .i{width:14px;height:14px}
+.cd .tip-scrim{position:fixed;inset:0;z-index:60}
+.cd .tip-pop{position:fixed;z-index:61;width:240px;padding:10px 12px;border-radius:12px;background:var(--text);color:var(--surface);font-size:12px;font-weight:500;line-height:1.45;white-space:normal;text-align:left}
+.cd .rowlink{text-decoration:none;color:inherit;cursor:pointer}
+.cd .rowlink:hover{color:inherit}
+.cd .note-card{width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer}
+.cd .rowbtn{width:100%;border:0;border-bottom:1px solid var(--divider);background:transparent;font:inherit;color:var(--text);text-align:left;cursor:pointer}.cd .rowbtn:last-child{border-bottom:0}
+.cd .act{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;border:0;background:none;padding:0 4px;font:inherit;font-size:15px;font-weight:600;color:var(--text);text-align:left;cursor:pointer;border-bottom:1px solid var(--divider)}.cd .act:last-child{border-bottom:0}
+/* Swipe row (Riwayat HP, DESIGN.md 7.3) */
+.cd .swipe{position:relative;overflow:hidden;border-bottom:1px solid var(--divider)}
+.cd .swipe:last-child{border-bottom:0}
+.cd .swipe .swipe-front{position:relative;z-index:1;background:var(--surface);border-bottom:0;touch-action:pan-y}
+.cd .swipe-actions{position:absolute;top:0;right:0;bottom:0;display:flex;width:144px}
+.cd .swipe-actions button{flex:1;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.cd .swipe-edit{background:var(--accent-tint);color:var(--accent-hover)}
+.cd .swipe-del{background:var(--danger);color:#fff}
+@media (prefers-reduced-motion:reduce){.cd .swipe .swipe-front{transition:none!important}}
+/* NeoSelect dropdown in catatduit style */
+.nsel-pop{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(15,31,28,.12)}
+.nsel-opt{min-height:44px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:var(--text);font-size:14px;font-weight:500;cursor:pointer}
+.nsel-opt:hover{background:var(--surface-2)}
+.nsel-opt.on{background:var(--accent-tint);color:var(--accent-hover);font-weight:600}
+.nsel-opt.off{opacity:.5;cursor:not-allowed}

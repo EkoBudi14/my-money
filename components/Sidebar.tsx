@@ -91,13 +91,14 @@ export default function Sidebar() {
       )}
 
       {/* ── Mobile bottom nav ── */}
-      <nav className="cd nav" aria-label="Navigasi utama" data-mobile-nav>
+      {/* Full-page transaction form has its own sticky save button (DESIGN.md 3) */}
+      {pathname !== '/transaction' && <nav className="cd nav" aria-label="Navigasi utama" data-mobile-nav>
         {renderLink(mobileItems[0])}
         {renderLink(mobileItems[1])}
         <Link href="/transaction" aria-label="Tambah transaksi"><span className="fab"><Plus className="i i-l" /></span></Link>
         {renderLink(mobileItems[2])}
         {renderLink(mobileItems[3])}
-      </nav>
+      </nav>}
     </>
   )
 }

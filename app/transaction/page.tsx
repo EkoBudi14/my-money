@@ -75,9 +75,10 @@ function TransactionPageContent() {
   }
 
   const handleSaved = () => {
-    // Navigate back to home, data will refresh there
+    // Return to the page the form was opened from (DESIGN.md 7.2); home if there is none.
     navigatedRef.current = true
-    router.push('/')
+    if (window.history.length > 1) router.back()
+    else router.push('/')
   }
 
   const handleCustomCategoriesChange = (updated: { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }) => {

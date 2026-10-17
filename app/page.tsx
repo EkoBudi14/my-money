@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ChevronLeft, ChevronRight, Calendar, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  AlertTriangle, X, TrendingDown, ArrowLeftRight, StickyNote, HandCoins,
+  AlertTriangle, X, StickyNote, HandCoins, Info, Download, RotateCw, Receipt,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
@@ -17,7 +18,10 @@ import { getRecurringBills } from '@/lib/recurring-bills'
 import { getCategoryIcon } from '@/lib/categories'
 import { getPercentageChange, formatPeriodLabel } from '@/lib/format'
 import { Wallet, Transaction, Budget, Debt, Note, RecurringBill, CustomCategoryDef } from '@/types'
-import DatePickerNeo from '@/components/DatePickerNeo'
+import PeriodSheet from '@/components/PeriodSheet'
+import CalendarCard from '@/components/CalendarCard'
+import EmptyState from '@/components/EmptyState'
+import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
 
@@ -39,7 +43,40 @@ const rpShort = (n: number) => {
 const timeLabel = (t: Transaction) =>
   new Date(t.date || t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.')
 
+// Small info icon next to a metric label; tap toggles the definition (DESIGN.md 7.1).
+function InfoTip({ label, children }: { label: string; children: React.ReactNode }) {
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
+  useEffect(() => {
+    if (!pos) return
+    const close = () => setPos(null)
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => { window.removeEventListener('scroll', close, true); window.removeEventListener('resize', close) }
+  }, [pos])
+  const toggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); e.stopPropagation()
+    if (pos) { setPos(null); return }
+    // Fixed position, clamped so the 240px popover stays inside the viewport.
+    const r = e.currentTarget.getBoundingClientRect()
+    setPos({ left: Math.max(16, Math.min(r.left - 8, window.innerWidth - 256)), top: r.bottom + 6 })
+  }
+  return (
+    <span className="tip-anchor">
+      <button type="button" className="tip-btn" aria-label={`Info ${label}`} aria-expanded={!!pos} onClick={toggle}>
+        <Info className="i" />
+      </button>
+      {pos && (
+        <>
+          <span className="tip-scrim" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPos(null) }} />
+          <span className="tip-pop" role="tooltip" style={{ left: pos.left, top: pos.top }}>{children}</span>
+        </>
+      )}
+    </span>
+  )
+}
+
 export default function HomePage() {
+  const router = useRouter()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [wallets, setWallets] = useState<Wallet[]>([])
   const [budgets, setBudgets] = useState<Budget[]>([])
@@ -58,7 +95,12 @@ export default function HomePage() {
     end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0],
   })
   const [showSettings, setShowSettings] = useState(false)
-  const [showBalance, setShowBalance] = useState(true)
+  // Nominal is hidden every time the app opens (old behaviour, DESIGN.md 6).
+  const [showBalance, setShowBalance] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
+  const [refreshing, setRefreshing] = useState(false)
+  const [calendarKey, setCalendarKey] = useState(0)
 
   const { showToast } = useToast()
   const [lunasiDebt, setLunasiDebt] = useState<Debt | null>(null)
@@ -87,6 +129,82 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => { loadAll() }, [loadAll])
+
+  // Filter settings sync with user_settings + filter_history (restored from the old dashboard).
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data: settings } = await supabase.from('user_settings').select('*').eq('id', 1).single()
+      if (settings) {
+        if (settings.filter_mode) setFilterMode(settings.filter_mode as 'monthly' | 'custom')
+        if (settings.custom_start_date && settings.custom_end_date) {
+          setCustomRange({ start: settings.custom_start_date, end: settings.custom_end_date })
+        }
+      } else {
+        await supabase.from('user_settings').insert({
+          id: 1,
+          filter_mode: 'monthly',
+          custom_start_date: customRange.start,
+          custom_end_date: customRange.end,
+          updated_at: new Date().toISOString(),
+        })
+      }
+      const { data: historyData } = await supabase.from('filter_history').select('*').order('start_date', { ascending: true })
+      if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
+      setIsInitialized(true)
+    }
+    loadSettings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!isInitialized) return
+    const timeoutId = setTimeout(async () => {
+      await supabase.from('user_settings').update({
+        filter_mode: filterMode,
+        custom_start_date: customRange.start,
+        custom_end_date: customRange.end,
+        updated_at: new Date().toISOString(),
+      }).eq('id', 1)
+
+      // Custom ranges of 2+ days are kept for the "Rekap per rentang" Excel sheet.
+      if (filterMode === 'custom') {
+        const durationMs = new Date(customRange.end).getTime() - new Date(customRange.start).getTime()
+        if (durationMs >= 2 * 24 * 60 * 60 * 1000) {
+          const fmt = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+          await supabase.from('filter_history').upsert(
+            { start_date: customRange.start, end_date: customRange.end, label: `${fmt(customRange.start)} – ${fmt(customRange.end)}` },
+            { onConflict: 'start_date,end_date' },
+          )
+          const { data: historyData } = await supabase.from('filter_history').select('*').order('start_date', { ascending: true })
+          if (historyData) setFilterHistory(historyData as FilterHistoryEntry[])
+        }
+      }
+    }, 500)
+    return () => clearTimeout(timeoutId)
+  }, [filterMode, customRange, isInitialized])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await loadAll()
+    setCalendarKey(k => k + 1)
+    setRefreshing(false)
+    showToast('success', 'Data diperbarui')
+  }
+
+  const handleExport = () => {
+    let periodLabel: string
+    let fileNamePeriod: string
+    if (filterMode === 'monthly') {
+      periodLabel = currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+      fileNamePeriod = currentDate.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }).replace(/ /g, '_')
+    } else {
+      const s = new Date(customRange.start).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+      const e = new Date(customRange.end).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+      periodLabel = `${s} - ${e}`
+      fileNamePeriod = `${customRange.start}_sd_${customRange.end}`
+    }
+    exportTransactionsExcel({ periodLabel, fileNamePeriod, filteredTransactions, transactions, wallets, filterHistory, showToast })
+  }
 
   // Mark a piutang as paid: create the income transaction, flag the debt paid,
   // and credit the receiving wallet (fresh balance). Mirrors the old dashboard.
@@ -270,33 +388,26 @@ export default function HomePage() {
         <div className="hero stack-12">
           <div className="between" style={{ alignItems: 'flex-start' }}>
             <div>
-              <div className="lbl">Saldo aktif</div>
+              <div className="lbl hstack" style={{ gap: 4 }}>Saldo aktif<InfoTip label="saldo aktif">Total sisa saldo dari dompet bertipe Aktif. Uang yang siap digunakan untuk transaksi sehari-hari.</InfoTip></div>
               <div className="num-xl" style={{ marginTop: 4 }}>{showBalance ? rp(activeBalance) : 'Rp ••••••'}</div>
               <div className="lbl" style={{ marginTop: 2 }}>Siap dipakai dari {activeWallets.length} dompet</div>
             </div>
-            <button className="icon-btn" aria-label="Sembunyikan nominal" onClick={() => setShowBalance(v => !v)}>{showBalance ? <Eye className="i" /> : <EyeOff className="i" />}</button>
+            <button className="icon-btn" aria-label={showBalance ? 'Sembunyikan angka' : 'Tampilkan angka'} aria-pressed={showBalance} onClick={() => setShowBalance(v => !v)}>{showBalance ? <EyeOff className="i" /> : <Eye className="i" />}</button>
           </div>
           <div className="g2">
             <div className="hero-pill">
               <div className="ic-s" style={{ background: '#FFFFFF', color: 'var(--income)' }}><ArrowDownLeft className="i i-s" /></div>
-              <div><div className="lbl">Pemasukan{prevIncome > 0 ? ` · ${incomeChange >= 0 ? 'naik' : 'turun'} ${Math.abs(incomeChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentIncome) : '••'}</div></div>
+              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pemasukan<InfoTip label="pemasukan">Semua transaksi masuk pada periode ini. Pembayaran piutang tidak dihitung sebagai pemasukan.</InfoTip>{prevIncome > 0 ? ` · ${incomeChange >= 0 ? 'naik' : 'turun'} ${Math.abs(incomeChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentIncome) : '••'}</div></div>
             </div>
             <div className="hero-pill">
               <div className="ic-s" style={{ background: '#FFFFFF', color: 'var(--accent)' }}><ArrowUpRight className="i i-s" /></div>
-              <div><div className="lbl">Pengeluaran{prevExpense > 0 ? ` · ${expenseChange >= 0 ? 'naik' : 'turun'} ${Math.abs(expenseChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentExpense) : '••'}</div></div>
+              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pengeluaran<InfoTip label="pengeluaran">Semua transaksi keluar pada periode ini. Transaksi talangan tidak dihitung sebagai pengeluaran.</InfoTip>{prevExpense > 0 ? ` · ${expenseChange >= 0 ? 'naik' : 'turun'} ${Math.abs(expenseChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentExpense) : '••'}</div></div>
             </div>
           </div>
           <Link href="/wallets?tab=tabungan" className="between" style={{ color: '#FFFFFF', textDecoration: 'none', borderTop: '1px solid rgba(255,255,255,.18)', paddingTop: 12, minHeight: 32 }}>
-            <span className="lbl">Aset tersimpan (tabungan inti)</span>
+            <span className="lbl hstack" style={{ gap: 4 }}>Aset tersimpan (tabungan inti)<InfoTip label="aset tersimpan">Total saldo dari semua dompet bertipe Tabungan. Uang yang disimpan dan tidak untuk pengeluaran harian.</InfoTip></span>
             <span className="hstack" style={{ fontSize: 14, fontWeight: 700 }}>{showBalance ? rp(savingsTotal) : 'Rp ••••'} <ChevronRight className="i i-s" /></span>
           </Link>
-        </div>
-
-        {/* Quick add */}
-        <div className="g3">
-          <Link href="/transaction?type=pemasukan" className="btn-2" style={{ flexDirection: 'column', height: 'auto', padding: '12px 4px', gap: 6 }}><ArrowDownLeft className="i" style={{ color: 'var(--income)' }} />Pemasukan</Link>
-          <Link href="/transaction?type=pengeluaran" className="btn-2" style={{ flexDirection: 'column', height: 'auto', padding: '12px 4px', gap: 6 }}><TrendingDown className="i" />Pengeluaran</Link>
-          <Link href="/transaction?type=topup" className="btn-2" style={{ flexDirection: 'column', height: 'auto', padding: '12px 4px', gap: 6 }}><ArrowLeftRight className="i" style={{ color: 'var(--text-2)' }} />Transfer</Link>
         </div>
 
         {/* Cash flow summary */}
@@ -376,6 +487,9 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Kalender (stays on Beranda, DESIGN-TAMBAHAN §1) */}
+        <CalendarCard refreshTrigger={calendarKey} onUpdate={loadAll} />
+
         {/* Catatan terbaru */}
         {latestNote && (
           <div className="stack-12">
@@ -393,53 +507,64 @@ export default function HomePage() {
 
         {/* Transaksi terakhir */}
         <div className="stack-12">
-          <div className="between"><h2 className="h2">Transaksi terakhir</h2><Link className="link" href="/transactions">Lihat semua</Link></div>
+          <div className="between">
+            <h2 className="h2">Transaksi terakhir</h2>
+            <div className="hstack" style={{ gap: 4 }}>
+              <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Export ke Excel" onClick={handleExport}><Download className="i i-s" /></button>
+              <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
+              <Link className="link" href="/transactions">Lihat semua</Link>
+            </div>
+          </div>
           {loading ? (
             <SkeletonRows count={4} />
           ) : recentTx.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center' }}>
-              <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada transaksi periode ini</p>
-              <Link href="/transaction" className="btn btn-block" style={{ marginTop: 12 }}>Tambah transaksi</Link>
-            </div>
+            <EmptyState
+              icon={<Receipt className="i" />}
+              title="Catat transaksi pertama"
+              text="Pengeluaran dan pemasukan periode ini muncul di sini."
+              actionLabel="Tambah transaksi"
+              onAction={() => router.push('/transaction')}
+            />
           ) : (
-            <div className="card-flush">
-              {recentTx.map(t => {
-                const { Icon, cls } = txIcon(t)
-                return (
-                  <div className="row" key={t.id}>
-                    <div className={`ic ${cls}`}><Icon className="i" /></div>
-                    <div className="grow"><div className="t">{t.title || t.category}</div><div className="meta">{t.category} · {walletName(t.wallet_id)} · {timeLabel(t)}</div></div>
-                    <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rp(t.amount)}</div>
-                  </div>
-                )
-              })}
-            </div>
+            <>
+              <span className="lbl" style={{ marginTop: -6 }}>Tap transaksi untuk ubah atau hapus.</span>
+              <div className="card-flush">
+                {recentTx.map(t => {
+                  const { Icon, cls } = txIcon(t)
+                  const isSplit = debts.some(d => d.original_transaction_id === t.id)
+                  return (
+                    <Link className="row rowlink" key={t.id} href={`/transaction?type=${t.type}&edit=${t.id}`} aria-label={`Ubah ${t.title || t.category}`}>
+                      <div className={`ic ${cls}`}><Icon className="i" /></div>
+                      <div className="grow">
+                        <div className="hstack" style={{ gap: 6, minWidth: 0 }}>
+                          <span className="t">{t.title || t.category}</span>
+                          {t.is_piutang && <span className="badge b-neutral">Piutang</span>}
+                          {t.is_talangan && <span className="badge b-neutral">Talangan</span>}
+                          {isSplit && <span className="badge b-neutral">Split Bill</span>}
+                        </div>
+                        <div className="meta">{t.category} · {walletName(t.wallet_id)} · {timeLabel(t)}</div>
+                      </div>
+                      <div className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`} style={t.type === 'topup' ? { color: 'var(--text-2)' } : undefined}>{t.type === 'pemasukan' ? '+' : ''}{rp(t.amount)}</div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* Filter & period sheet */}
-      {showSettings && (
-        <>
-          <div className="scrim" onClick={() => setShowSettings(false)} />
-          <div className="sheet">
-            <div className="grabber" />
-            <div className="between"><h2 className="h2">Filter & periode</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowSettings(false)}><X className="i" /></button></div>
-            <div className="seg">
-              <button className={filterMode === 'monthly' ? 'on' : ''} onClick={() => setFilterMode('monthly')}>Bulanan</button>
-              <button className={filterMode === 'custom' ? 'on' : ''} onClick={() => setFilterMode('custom')}>Custom</button>
-            </div>
-            {filterMode === 'custom' && (
-              <div className="stack-12">
-                <label className="field">Dari tanggal<DatePickerNeo className="input" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} /></label>
-                <label className="field">Sampai tanggal<DatePickerNeo className="input" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} /></label>
-              </div>
-            )}
-            <button className="btn-2 btn-block" onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false) }}>Reset ke periode ini</button>
-            <button className="btn btn-block" onClick={() => setShowSettings(false)}>Terapkan</button>
-          </div>
-        </>
-      )}
+      <PeriodSheet
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        filterMode={filterMode}
+        setFilterMode={setFilterMode}
+        currentDate={currentDate}
+        setCurrentDate={setCurrentDate}
+        customRange={customRange}
+        setCustomRange={setCustomRange}
+      />
 
       {/* Lunasi piutang sheet */}
       {lunasiDebt && (

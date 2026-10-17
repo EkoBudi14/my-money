@@ -3,8 +3,8 @@ import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Transaction, Wallet } from '@/types'
-import { ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react'
-import DatePickerNeo from '@/components/DatePickerNeo'
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import PeriodSheet from '@/components/PeriodSheet'
 import { getCategoryIcon } from '@/lib/categories'
 
 // Built-in category -> catatduit color class (DESIGN.md section 6).
@@ -743,27 +743,16 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Filter & period sheet */}
-            {showSettings && (
-                <>
-                    <div className="scrim" onClick={() => setShowSettings(false)} />
-                    <div className="sheet">
-                        <div className="grabber" />
-                        <div className="between"><h2 className="h2">Filter & periode</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowSettings(false)}><X className="i" /></button></div>
-                        <div className="seg">
-                            <button className={filterMode === 'monthly' ? 'on' : ''} onClick={() => setFilterMode('monthly')}>Bulanan</button>
-                            <button className={filterMode === 'custom' ? 'on' : ''} onClick={() => setFilterMode('custom')}>Custom</button>
-                        </div>
-                        {filterMode === 'custom' && (
-                            <div className="stack-12">
-                                <label className="field">Dari tanggal<DatePickerNeo className="input" value={customRange.start} onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })} /></label>
-                                <label className="field">Sampai tanggal<DatePickerNeo className="input" value={customRange.end} onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })} /></label>
-                            </div>
-                        )}
-                        <button className="btn-2 btn-block" onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false) }}>Reset ke periode ini</button>
-                        <button className="btn btn-block" onClick={() => setShowSettings(false)}>Terapkan</button>
-                    </div>
-                </>
-            )}
+            <PeriodSheet
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+                customRange={customRange}
+                setCustomRange={setCustomRange}
+            />
         </div>
     )
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Calendar, TrendingUp, Pencil, Trash2, X, CheckCircle2, Undo2 } from 'lucide-react'
+import { ChevronLeft, Plus, Calendar, TrendingUp, Pencil, Trash2, X, CheckCircle2, Undo2, MoreHorizontal, Wallet as WalletIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getRecurringBills, deleteRecurringBill } from '@/lib/recurring-bills'
 import { RecurringBill, Wallet } from '@/types'
@@ -12,6 +12,8 @@ import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import AddBillModal from '@/components/AddBillModal'
 import { SkeletonRows } from '@/components/Skeleton'
+import EmptyState from '@/components/EmptyState'
+import { ActionSheet } from '@/components/ActionMenu'
 
 type Tab = 'pengeluaran' | 'pemasukan'
 const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
@@ -26,6 +28,8 @@ export default function RecurringPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('pengeluaran')
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  // Action sheet per item (DESIGN-TAMBAHAN §7 / AksiTagihan)
+  const [menuBill, setMenuBill] = useState<RecurringBill | null>(null)
 
   // Add / edit modal
   const [addOpen, setAddOpen] = useState(false)
@@ -181,7 +185,8 @@ export default function RecurringPage() {
   const activeBills = bills.filter(b => (b.type ?? 'pengeluaran') === tab)
   const unpaid = activeBills.filter(b => !billPayments[b.id]).sort((a, z) => {
     const today = new Date().getDate()
-    const eff = (d: number) => (d < today ? d + 31 : d)
+    // Overdue (Terlewat) first, then the nearest due date (DESIGN.md 7.8).
+    const eff = (d: number) => (d < today ? d - 31 : d)
     return eff(a.due_date) - eff(z.due_date)
   })
   const paid = activeBills.filter(b => billPayments[b.id])
@@ -216,11 +221,11 @@ export default function RecurringPage() {
         {loading ? (
           <SkeletonRows count={3} />
         ) : activeBills.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p className="t" style={{ whiteSpace: 'normal' }}>{tab === 'pemasukan' ? 'Belum ada pemasukan rutin' : 'Belum ada tagihan rutin'}</p>
-            <p className="lbl" style={{ marginTop: 4 }}>Tambahkan item yang berulang tiap bulan agar tidak terlewat.</p>
-            <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { setEditId(null); setAddOpen(true) }}>Tambah {tab === 'pemasukan' ? 'pemasukan rutin' : 'tagihan'}</button>
-          </div>
+          tab === 'pemasukan' ? (
+            <EmptyState icon={<TrendingUp className="i" />} title="Belum ada pemasukan rutin" text="Gaji atau uang bulanan yang datang di tanggal sama." actionLabel="Tambah pemasukan" onAction={() => { setEditId(null); setAddOpen(true) }} />
+          ) : (
+            <EmptyState icon={<Calendar className="i" />} title="Belum ada tagihan rutin" text="Netflix, internet, listrik. Diingatkan tiap bulan." actionLabel="Tambah tagihan" onAction={() => { setEditId(null); setAddOpen(true) }} />
+          )
         ) : (
           <>
             {/* Needs action */}
@@ -243,8 +248,7 @@ export default function RecurringPage() {
                         </div>
                         <div className="hstack" style={{ gap: 8 }}>
                           <button className="btn" style={{ flex: 1, height: 44, fontSize: 14 }} onClick={() => openPay(b)}>{income ? 'Terima dana' : 'Bayar'}</button>
-                          <button className="btn-2" aria-label={`Ubah ${b.name}`} onClick={() => { setEditId(b.id); setAddOpen(true) }}><Pencil className="i i-s" /></button>
-                          <button className="icon-btn ghost" aria-label={`Hapus ${b.name}`} style={{ color: 'var(--danger)' }} disabled={deletingId === b.id} onClick={() => handleDelete(b.id)}><Trash2 className="i i-s" /></button>
+                          <button className="icon-btn" aria-label={`Opsi ${b.name}`} disabled={deletingId === b.id} onClick={() => setMenuBill(b)}><MoreHorizontal className="i" /></button>
                         </div>
                       </div>
                     )
@@ -259,13 +263,12 @@ export default function RecurringPage() {
                 <div className="date-h">{tab === 'pemasukan' ? 'Sudah diterima bulan ini' : 'Sudah dibayar bulan ini'}</div>
                 <div className="card-flush">
                   {paid.map(b => (
-                    <div className="row" key={b.id}>
+                    <button type="button" className="row rowbtn" key={b.id} aria-label={`Opsi ${b.name}`} onClick={() => setMenuBill(b)}>
                       <div className="ic c-investasi"><CheckCircle2 className="i" /></div>
                       <div className="grow"><div className="t">{b.name}</div><div className="meta">{rp(b.amount)}</div></div>
-                      <button className="btn-2" style={{ height: 36, fontSize: 13 }} onClick={() => handleCancelPayment(b)}>
-                        <Undo2 className="i i-s" />Batalkan
-                      </button>
-                    </div>
+                      <span className="badge b-ok">{isPemasukan(b) ? 'Sudah diterima' : 'Lunas'}</span>
+                      <MoreHorizontal className="i i-s" style={{ color: 'var(--text-2)', flexShrink: 0 }} />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -298,12 +301,33 @@ export default function RecurringPage() {
               <NeoSelect value={payWalletId ? payWalletId.toString() : ''} onChange={v => setPayWalletId(Number(v))} placeholder="Pilih dompet"
                 options={wallets.map(w => ({ label: `${w.name} — ${rp(w.balance)}`, value: w.id.toString() }))} />
             </div>
-            <button className="btn btn-block" disabled={!payWalletId || !payAmount || paying} onClick={confirmPayment}>
-              {paying ? 'Menyimpan…' : isPemasukan(paySheet) ? 'Terima' : 'Bayar'}
-            </button>
+            <div className="g2">
+              <button className="btn-2" disabled={paying} onClick={() => setPaySheet(null)}>Batal</button>
+              <button className="btn" style={{ height: 44, fontSize: 14 }} disabled={!payWalletId || !payAmount || paying} onClick={confirmPayment}>
+                {paying ? 'Menyimpan…' : `${isPemasukan(paySheet) ? 'Terima' : 'Bayar'} ${rp(parseInt(payAmount.replace(/D/g, '') || '0'))}`}
+              </button>
+            </div>
           </div>
         </>
       )}
+
+      {/* Item action sheet */}
+      <ActionSheet
+        isOpen={!!menuBill}
+        onClose={() => setMenuBill(null)}
+        header={menuBill ? { title: menuBill.name, subtitle: `${rp(menuBill.amount)} · tiap tanggal ${menuBill.due_date}` } : undefined}
+        items={menuBill ? (billPayments[menuBill.id]
+          ? [
+            { key: 'cancel', label: isPemasukan(menuBill) ? 'Batalkan penerimaan bulan ini' : 'Batalkan pembayaran bulan ini', icon: <Undo2 className="i i-s" />, onClick: () => handleCancelPayment(menuBill) },
+            { key: 'edit', label: isPemasukan(menuBill) ? 'Ubah pemasukan rutin' : 'Ubah tagihan', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
+            { key: 'del', label: isPemasukan(menuBill) ? 'Hapus pemasukan rutin' : 'Hapus tagihan rutin', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
+          ]
+          : [
+            { key: 'pay', label: isPemasukan(menuBill) ? 'Catat diterima' : 'Bayar tagihan', icon: <WalletIcon className="i i-s" />, onClick: () => openPay(menuBill) },
+            { key: 'edit', label: 'Ubah', icon: <Pencil className="i i-s" />, onClick: () => { setEditId(menuBill.id); setAddOpen(true) } },
+            { key: 'del', label: 'Hapus', icon: <Trash2 className="i i-s" />, danger: true, onClick: () => handleDelete(menuBill.id) },
+          ]) : []}
+      />
 
       {/* Add / edit recurring item */}
       {addOpen && (

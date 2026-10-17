@@ -9,6 +9,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { AVAILABLE_ICONS, COLOR_PALETTES, CATEGORIES, getCategoryIcon } from '@/lib/categories'
 import { CustomCategoryDef } from '@/types'
 import FieldError from '@/components/FieldError'
+import { SkeletonRows } from '@/components/Skeleton'
 
 type TxType = 'pengeluaran' | 'pemasukan'
 type CustomList = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -149,18 +150,11 @@ export default function KategoriPage() {
           </div>
 
           {loading ? (
-            <div className="card-flush">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="row">
-                  <div className="ic c-lain" style={{ opacity: 0.4 }}><Package className="i" /></div>
-                  <span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span>
-                </div>
-              ))}
-            </div>
+            <SkeletonRows count={3} />
           ) : customList.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada kategori buatan</p>
-              <p className="lbl" style={{ marginTop: 4 }}>Buat kategori baru di bawah untuk mengelompokkan transaksimu.</p>
+              <p className="lbl" style={{ marginTop: 4 }}>Buat kategori untuk pengeluaran yang sering kamu catat.</p>
             </div>
           ) : (
             <div className="card-flush">

@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Pencil, Trash2, X, Search, StickyNote } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, X, Search, StickyNote } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
-import CalendarCard from '@/components/CalendarCard'
+import EmptyState from '@/components/EmptyState'
 import { SkeletonCards } from '@/components/Skeleton'
 import FieldError from '@/components/FieldError'
 
@@ -50,7 +50,7 @@ export default function NotesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() && !content.trim()) { setFormError('Isi judul catatan.'); return }
+    if (!title.trim() && !content.trim()) { setFormError('Isi judul atau isi catatan.'); return }
     const now = new Date().toISOString()
 
     if (editingNote) {
@@ -102,9 +102,6 @@ export default function NotesPage() {
           <button className="icon-btn" aria-label="Tambah catatan" onClick={() => { resetForm(); setIsModalOpen(true) }}><Plus className="i" /></button>
         </div>
 
-        {/* Calendar (KalenderTanggal) */}
-        <CalendarCard />
-
         {/* Search */}
         <label className="input search" style={{ cursor: 'text' }}>
           <Search className="i i-s" style={{ color: 'var(--text-2)' }} />
@@ -116,25 +113,31 @@ export default function NotesPage() {
         {loading ? (
           <SkeletonCards count={3} />
         ) : filtered.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div className="ic c-lain" style={{ margin: '0 auto 8px' }}><StickyNote className="i" /></div>
-            <p className="t" style={{ whiteSpace: 'normal' }}>{query ? 'Tidak ada catatan yang cocok' : 'Belum ada catatan'}</p>
-            <p className="lbl" style={{ marginTop: 4 }}>Catat pengingat tagihan, rencana belanja, atau tips keuangan.</p>
-            {!query && <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Tulis catatan</button>}
-          </div>
+          query ? (
+            <EmptyState
+              icon={<Search className="i" />}
+              title={`Tidak ada yang cocok dengan “${query.trim()}”`}
+              text="Coba kata lain."
+              actionLabel="Hapus pencarian"
+              actionVariant="secondary"
+              onAction={() => setQuery('')}
+            />
+          ) : (
+            <EmptyState
+              icon={<StickyNote className="i" />}
+              title="Tulis catatan pertama"
+              text="Utang, rencana belanja, atau apa pun soal uang."
+              actionLabel="Tulis catatan"
+              onAction={() => { resetForm(); setIsModalOpen(true) }}
+            />
+          )
         ) : (
           filtered.map(note => (
-            <div className="card stack" key={note.id}>
-              <div className="between">
-                <div className="t" style={{ flex: 1 }}>{note.title}</div>
-                <div className="hstack" style={{ gap: 4 }}>
-                  <button className="icon-btn ghost" aria-label={`Ubah ${note.title}`} style={{ width: 36, height: 36 }} onClick={() => handleEdit(note)}><Pencil className="i i-s" /></button>
-                  <button className="icon-btn ghost" aria-label={`Hapus ${note.title}`} style={{ width: 36, height: 36, color: 'var(--danger)' }} onClick={() => handleDelete(note.id)}><Trash2 className="i i-s" /></button>
-                </div>
-              </div>
+            <button type="button" className="card stack note-card" key={note.id} aria-label={`Ubah catatan ${note.title}`} onClick={() => handleEdit(note)}>
+              <div className="t">{note.title}</div>
               {note.content && <p className="sub" style={{ whiteSpace: 'pre-line', margin: 0 }}>{note.content}</p>}
               <div className="lbl">{formatDate(note.updated_at)}</div>
-            </div>
+            </button>
           ))
         )}
       </div>
@@ -150,7 +153,7 @@ export default function NotesPage() {
               <button className="icon-btn ghost" aria-label="Tutup" onClick={resetForm}><X className="i" /></button>
             </div>
             <form onSubmit={handleSave} className="stack-12">
-              <label className="field">Judul
+              <label className="field">Judul (opsional)
                 <input className={`input ${formError ? 'bad' : ''}`} type="text" placeholder="Judul catatan" value={title} onChange={e => { setTitle(e.target.value); setFormError('') }} autoFocus />
               </label>
               <label className="field">Isi
@@ -161,6 +164,11 @@ export default function NotesPage() {
                 <span className="lbl">{content.length} karakter</span>
                 <button type="submit" className="btn" style={{ minWidth: 140 }}>{editingNote ? 'Simpan perubahan' : 'Simpan catatan'}</button>
               </div>
+              {editingNote && (
+                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingNote.id; resetForm(); handleDelete(id) }}>
+                  <Trash2 className="i i-s" />Hapus catatan
+                </button>
+              )}
             </form>
           </div>
         </>

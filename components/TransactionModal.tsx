@@ -154,7 +154,11 @@ export default function TransactionModal({
       setAdminFee('')
       setCategory(initialType === 'topup' ? 'Topup' : '')
       setType(initialType || 'pemasukan')
-      setSelectedWalletId('')
+      // Default wallet = the one used by the most recent transaction (DESIGN.md 7.2).
+      const lastUsed = [...transactions]
+        .filter(t => t.type !== 'topup' && t.wallet_id != null && wallets.some(w => w.id === t.wallet_id))
+        .sort((a, z) => new Date(z.created_at).getTime() - new Date(a.created_at).getTime())[0]
+      setSelectedWalletId(initialType !== 'topup' && lastUsed?.wallet_id ? lastUsed.wallet_id.toString() : '')
       setSourceWalletId('')
       setCustomDate(new Date().toISOString().split('T')[0])
       setIsPiutang(false)
@@ -165,7 +169,8 @@ export default function TransactionModal({
       setSplitEntries([{ name: '', amount: '' }])
     }
     setDebouncedAmount('')
-  }, [isOpen, editingTransaction])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editingTransaction, transactions.length, wallets.length])
 
   // ── Budget awareness (only recalculates 300ms after typing stops) ─────────
   const budgetInfo = useMemo(() => {
@@ -511,7 +516,7 @@ export default function TransactionModal({
         <FieldError>{errors.amount}</FieldError>
         <div className="chips">
           <button type="button" className="chip" onClick={() => { const raw = amount.replace(/\D/g, ''); if (!raw) { setAmount('1000') } else { setAmount(raw + '000') } }}>+000</button>
-          {(type === 'pengeluaran' ? [10000, 50000, 100000, 500000] : [50000, 100000, 500000, 1000000]).map(val => (
+          {[10000, 50000, 100000, 500000, 1000000].map(val => (
             <button key={val} type="button" className="chip" onClick={() => setAmount(String((parseInt(amount.replace(/\D/g, '') || '0') + val)))}>
               +{val >= 1000000 ? `${val / 1000000}jt` : `${val / 1000}rb`}
             </button>
@@ -561,6 +566,48 @@ export default function TransactionModal({
               <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
             </div>
           </>
+        )}
+
+        {/* Category Picker */}
+        {type !== 'topup' && (
+          <div className="field">
+            <div className="between"><span>Kategori</span><span className="lbl" style={{ fontWeight: 500 }}>Wajib dipilih</span></div>
+            <div className="g4">
+              {allCategories.map((cat) => {
+                const isSelected = category === cat.name
+                const cls = CAT_CLASS[cat.name] || (cat.isCustom ? cat.color : 'c-lain')
+                return (
+                  <button key={cat.name} type="button" className={`catb ${isSelected ? 'on' : ''} ${errors.category ? 'bad' : ''}`} onClick={() => { setCategory(cat.name); clearErr('category') }}>
+                    <span className={`ic-s ${cls}`}><cat.icon className="i i-s" /></span>
+                    {cat.name}
+                  </button>
+                )
+              })}
+              <Link href="/kategori" className="catb add" style={{ textDecoration: 'none' }}>
+                <span className="ic-s" style={{ border: '1.5px dashed var(--border-strong)' }}><Settings2 className="i i-s" /></span>
+                Kelola kategori
+              </Link>
+            </div>
+            <FieldError>{errors.category}</FieldError>
+          </div>
+        )}
+
+        {/* Budget Indicator */}
+        {budgetInfo && (
+          <div className="card stack">
+            <div className="between">
+              <span className="lbl">Budget {budgetInfo.budget.category}</span>
+              <span className="badge" style={{ background: budgetInfo.isOver ? 'var(--danger-tint)' : 'var(--accent-tint)', color: budgetInfo.isOver ? 'var(--danger-text)' : 'var(--accent-hover)' }}>{budgetInfo.isOver ? 'Limit terlampaui' : 'Dalam batas'}</span>
+            </div>
+            <div className="between" style={{ fontSize: 13 }}>
+              <span className="lbl">Terpakai + baru</span>
+              <span style={{ fontWeight: 600 }}>Rp {budgetInfo.totalProjected.toLocaleString('id-ID')} / Rp {budgetInfo.budget.amount.toLocaleString('id-ID')}</span>
+            </div>
+            <div className={`bar ${budgetInfo.isOver ? 'over' : ''}`}>
+              <div style={{ width: `${budgetInfo.percent}%`, ...(!budgetInfo.isOver && budgetInfo.percent > 80 ? { background: '#F59E0B' } : {}) }} />
+            </div>
+            <p className="lbl">Sisa: <strong style={{ color: 'var(--text)', fontWeight: 700 }}>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
+          </div>
         )}
 
         {/* Piutang Toggle */}
@@ -624,44 +671,6 @@ export default function TransactionModal({
           </div>
         )}
 
-        {/* Category Picker */}
-        {type !== 'topup' && (
-          <div className="field">
-            <div className="between"><span>Kategori</span><span className="lbl" style={{ fontWeight: 500 }}>Wajib dipilih</span></div>
-            <div className="g4">
-              {allCategories.map((cat) => {
-                const isSelected = category === cat.name
-                const cls = CAT_CLASS[cat.name] || (cat.isCustom ? cat.color : 'c-lain')
-                return (
-                  <button key={cat.name} type="button" className={`catb ${isSelected ? 'on' : ''} ${errors.category ? 'bad' : ''}`} onClick={() => { setCategory(cat.name); clearErr('category') }}>
-                    <span className={`ic-s ${cls}`}><cat.icon className="i i-s" /></span>
-                    {cat.name}
-                  </button>
-                )
-              })}
-              <Link href="/kategori" className="catb add" style={{ textDecoration: 'none' }}>
-                <span className="ic-s" style={{ border: '1.5px dashed var(--border-strong)' }}><Settings2 className="i i-s" /></span>
-                Kelola kategori
-              </Link>
-            </div>
-            <FieldError>{errors.category}</FieldError>
-          </div>
-        )}
-
-        {/* Budget Indicator */}
-        {budgetInfo && (
-          <div className="card stack">
-            <div className="between">
-              <span className="lbl">Budget {budgetInfo.budget.category}</span>
-              <span className="badge" style={{ background: budgetInfo.isOver ? 'var(--danger-tint)' : 'var(--accent-tint)', color: budgetInfo.isOver ? 'var(--danger-text)' : 'var(--accent-hover)' }}>{budgetInfo.isOver ? 'Limit terlampaui' : 'Dalam batas'}</span>
-            </div>
-            <div className={`bar ${budgetInfo.isOver ? 'over' : ''}`}>
-              <div style={{ width: `${budgetInfo.percent}%` }} />
-            </div>
-            <p className="lbl">Sisa: <strong style={{ color: 'var(--text)', fontWeight: 700 }}>Rp {budgetInfo.remaining.toLocaleString('id-ID')}</strong></p>
-          </div>
-        )}
-
         {/* Notes */}
         <label className="field">Catatan (opsional)
           <textarea
@@ -721,7 +730,7 @@ export default function TransactionModal({
   // ── Page Mode (full screen, no overlay) ────────────────────────────────────
   if (mode === 'page') {
     return (
-      <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 140 }}>
+      <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 0 }}>
         {/* Header */}
         <div className="top">
           <div className="top-l">
@@ -744,7 +753,9 @@ export default function TransactionModal({
         {isLoading ? loadingState : (
           <form onSubmit={handleSaveTransaction} className="stack-12">
             {renderFields()}
-            {renderSubmit()}
+            <div className="sticky-foot" style={{ borderTop: '1px solid var(--border)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}>
+              {renderSubmit()}
+            </div>
           </form>
         )}
       </div>

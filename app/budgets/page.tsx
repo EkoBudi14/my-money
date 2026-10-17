@@ -9,6 +9,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import PeriodSheet from '@/components/PeriodSheet'
 import { getCategoryIcon } from '@/lib/categories'
 import { SkeletonCards } from '@/components/Skeleton'
 import FieldError from '@/components/FieldError'
@@ -59,6 +60,8 @@ export default function BudgetsPage() {
         }
     })
     const [showSettings, setShowSettings] = useState(false)
+    // Budget action sheet (DESIGN-TAMBAHAN §7 / AksiBudget)
+    const [actionBudget, setActionBudget] = useState<{ b: Budget; spent: number; pct: number; over: boolean; near: boolean } | null>(null)
 
     const { showToast } = useToast()
     const { showConfirm } = useConfirm()
@@ -408,7 +411,7 @@ export default function BudgetsPage() {
                         const cls = CAT_CLASS[b.category] || 'c-lain'
                         const sisa = Math.max(b.amount - spent, 0)
                         return (
-                            <div className="card stack" key={b.id}>
+                            <button type="button" className="card stack note-card" key={b.id} aria-label={`Aksi budget ${b.category}`} onClick={() => setActionBudget({ b, spent, pct, over, near })}>
                                 <div className="hstack" style={{ gap: 12 }}>
                                     <div className={`ic ${cls}`}><Icon className="i" /></div>
                                     <div className="grow">
@@ -422,12 +425,7 @@ export default function BudgetsPage() {
                                 <div className={`bar ${over ? 'over' : ''}`}>
                                     <div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} />
                                 </div>
-                                <div className="hstack" style={{ gap: 8 }}>
-                                    <button className="btn-2" style={{ flex: 1 }} onClick={() => handleEdit(b)}><Pencil className="i i-s" />Ubah</button>
-                                    <button className="btn-2" style={{ flex: 1 }} onClick={() => openQuickExp(b.category)}><Plus className="i i-s" />Catat</button>
-                                    <button className="icon-btn ghost" aria-label={`Hapus budget ${b.category}`} style={{ color: 'var(--danger)' }} onClick={() => handleDelete(b.id)}><Trash2 className="i i-s" /></button>
-                                </div>
-                            </div>
+                            </button>
                         )
                     })
                 )}
@@ -437,28 +435,43 @@ export default function BudgetsPage() {
                 )}
             </div>
 
-            {/* Filter & period sheet */}
-            {showSettings && (
-                <>
-                    <div className="scrim" onClick={() => setShowSettings(false)} />
-                    <div className="sheet">
-                        <div className="grabber" />
-                        <div className="between"><h2 className="h2">Filter & periode</h2><button className="icon-btn ghost" aria-label="Tutup" onClick={() => setShowSettings(false)}><X className="i" /></button></div>
-                        <div className="seg">
-                            <button className={filterMode === 'monthly' ? 'on' : ''} onClick={() => setFilterMode('monthly')}>Bulanan</button>
-                            <button className={filterMode === 'custom' ? 'on' : ''} onClick={() => setFilterMode('custom')}>Custom</button>
-                        </div>
-                        {filterMode === 'custom' && (
-                            <div className="stack-12">
-                                <label className="field">Dari tanggal<DatePickerNeo className="input" value={customRange.start} onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, start: e.target.value }))} /></label>
-                                <label className="field">Sampai tanggal<DatePickerNeo className="input" value={customRange.end} onChange={(e) => setCustomRange((prev: { start: string; end: string }) => ({ ...prev, end: e.target.value }))} /></label>
+            {/* Budget action sheet (AksiBudget) */}
+            {actionBudget && (() => {
+                const { b, spent, pct, over, near } = actionBudget
+                const { Icon } = getCategoryIcon(b.category, 'pengeluaran', customCategories)
+                const fmt = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                const close = () => setActionBudget(null)
+                return (
+                    <>
+                        <div className="scrim" onClick={close} />
+                        <div className="sheet" role="dialog" aria-labelledby="ab-title" style={{ gap: 12 }}>
+                            <div className="grabber" />
+                            <div className="hstack" style={{ gap: 12 }}>
+                                <div className={`ic ${CAT_CLASS[b.category] || 'c-lain'}`}><Icon className="i" /></div>
+                                <div className="grow"><h2 className="h2" id="ab-title">{b.category}</h2><div className="meta">{rp(spent)} dari {rp(b.amount)} · {fmt(b.start_date)} – {fmt(b.end_date)}</div></div>
                             </div>
-                        )}
-                        <button className="btn-2 btn-block" onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false) }}>Reset ke periode ini</button>
-                        <button className="btn btn-block" onClick={() => setShowSettings(false)}>Terapkan</button>
-                    </div>
-                </>
-            )}
+                            <div className={`bar ${over ? 'over' : ''}`}><div style={{ width: `${Math.min(pct, 100)}%`, ...(over ? {} : near ? { background: '#F59E0B' } : {}) }} /></div>
+                            <div className="stack" style={{ gap: 0, marginTop: 4 }}>
+                                <button className="act" onClick={() => { close(); openQuickExp(b.category) }}><span className="ic-s" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Plus className="i i-s" /></span><span className="grow">Catat pengeluaran</span></button>
+                                <button className="act" onClick={() => { close(); handleEdit(b) }}><span className="ic-s c-lain"><Pencil className="i i-s" /></span><span className="grow">Ubah budget</span></button>
+                                <button className="act" style={{ color: 'var(--danger)' }} onClick={() => { close(); handleDelete(b.id) }}><span className="ic-s" style={{ background: 'var(--danger-tint)', color: 'var(--danger)' }}><Trash2 className="i i-s" /></span><span className="grow">Hapus budget</span></button>
+                            </div>
+                        </div>
+                    </>
+                )
+            })()}
+
+            {/* Filter & period sheet */}
+            <PeriodSheet
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                currentDate={currentDate}
+                setCurrentDate={setCurrentDate}
+                customRange={customRange}
+                setCustomRange={setCustomRange}
+            />
 
             {/* Create / edit budget sheet */}
             {isModalOpen && (
@@ -493,6 +506,11 @@ export default function BudgetsPage() {
                             </div>
                             <FieldError>{errors.dates}</FieldError>
                             <button type="submit" className="btn btn-block">{editingId ? 'Simpan perubahan' : 'Simpan budget'}</button>
+                            {editingId && (
+                                <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => { const id = editingId; resetForm(); handleDelete(id) }}>
+                                    <Trash2 className="i i-s" />Hapus budget
+                                </button>
+                            )}
                         </form>
                     </div>
                 </>

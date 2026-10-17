@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonCards } from '@/components/Skeleton'
+import EmptyState from '@/components/EmptyState'
 import FieldError from '@/components/FieldError'
 
 export default function GoalsPage() {
@@ -215,11 +216,7 @@ export default function GoalsPage() {
                 {loading ? (
                     <SkeletonCards count={2} />
                 ) : goals.length === 0 ? (
-                    <div className="card" style={{ textAlign: 'center' }}>
-                        <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada goal</p>
-                        <p className="lbl" style={{ marginTop: 4 }}>Buat target tabungan pertamamu, misalnya dana darurat.</p>
-                        <button className="btn btn-block" style={{ marginTop: 12 }} onClick={() => { resetForm(); setIsModalOpen(true) }}>Tambah goal</button>
-                    </div>
+                    <EmptyState icon={<Target className="i" />} title="Mulai goal pertama" text="Contoh: dana darurat, laptop baru, liburan." actionLabel="Tambah goal" onAction={() => { resetForm(); setIsModalOpen(true) }} />
                 ) : (
                     goals.map((g, idx) => {
                         const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
@@ -234,7 +231,6 @@ export default function GoalsPage() {
                                         <div className="meta">{deadlineLabel(g.deadline)}</div>
                                     </div>
                                     {done ? <span className="badge b-ok">Tercapai</span> : <span className="num-m">{pct.toFixed(0)}%</span>}
-                                    <button className="icon-btn ghost" aria-label={`Hapus ${g.name}`} style={{ width: 36, height: 36, color: 'var(--danger)' }} onClick={() => handleDelete(g.id)}><Trash2 className="i i-s" /></button>
                                 </div>
                                 <div className="bar thick"><div style={{ width: `${pct}%`, ...(done ? { background: 'var(--income)' } : {}) }} /></div>
                                 <div className="between" style={{ fontSize: 13 }}><span><b>{rp(g.current_amount)}</b> <span className="lbl">/ {rp(g.target_amount)}</span></span></div>

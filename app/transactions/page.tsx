@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Search, Trash2, Download } from 'lucide-react'
+import { ChevronLeft, Search, Download, RotateCw, Receipt } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTransactions, getWallets, getDebts } from '@/lib/queries'
 import { getCategoryIcon } from '@/lib/categories'
@@ -14,6 +14,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
+import SwipeRow from '@/components/SwipeRow'
 import { Transaction, Wallet, Debt, CustomCategoryDef } from '@/types'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -71,6 +72,7 @@ export default function TransactionsPage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterKey>('semua')
   const [visible, setVisible] = useState(PAGE_SIZE)
+  const [refreshing, setRefreshing] = useState(false)
 
   const loadAll = async () => {
     const [txRes, wRes, dRes, csRes, fhRes] = await Promise.all([
@@ -89,6 +91,13 @@ export default function TransactionsPage() {
   }
 
   useEffect(() => { loadAll() }, [])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await loadAll()
+    setRefreshing(false)
+    showToast('success', 'Data diperbarui')
+  }
 
   const walletName = (id: number | null | undefined) => wallets.find(w => w.id === id)?.name || '—'
 
@@ -179,7 +188,10 @@ export default function TransactionsPage() {
             </button>
             <h1 className="h1">Riwayat</h1>
           </div>
-          <button className="icon-btn" aria-label="Export ke Excel" onClick={handleExport}><Download className="i" /></button>
+          <div className="hstack" style={{ gap: 6 }}>
+            <button className="icon-btn" aria-label="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i ${refreshing ? 'animate-spin' : ''}`} /></button>
+            <button className="icon-btn" aria-label="Export ke Excel" onClick={handleExport}><Download className="i" /></button>
+          </div>
         </div>
 
         {/* Search */}
@@ -224,7 +236,7 @@ export default function TransactionsPage() {
             />
           ) : (
             <EmptyState
-              icon={<Search className="i" />}
+              icon={<Receipt className="i" />}
               title="Catat transaksi pertama"
               text="Pengeluaran dan pemasukan periode ini muncul di sini."
               actionLabel="Tambah transaksi"
@@ -243,7 +255,12 @@ export default function TransactionsPage() {
                   {group.items.map(t => {
                     const { Icon, cls } = iconFor(t)
                     return (
-                      <div className="row" key={t.id}>
+                      <SwipeRow
+                        key={t.id}
+                        label={t.title || t.category}
+                        onEdit={() => router.push(`/transaction?type=${t.type}&edit=${t.id}`)}
+                        onDelete={() => handleDelete(t.id)}
+                      >
                         <div className={`ic ${cls}`}><Icon className="i" /></div>
                         <div className="grow">
                           <div className="t">{t.title || t.category}</div>
@@ -255,15 +272,7 @@ export default function TransactionsPage() {
                         >
                           {t.type === 'pemasukan' ? '+' : ''}{rp(t.amount)}
                         </div>
-                        <button
-                          className="icon-btn ghost"
-                          aria-label={`Hapus ${t.title || t.category}`}
-                          style={{ color: 'var(--danger)', width: 36, height: 36 }}
-                          onClick={() => handleDelete(t.id)}
-                        >
-                          <Trash2 className="i i-s" />
-                        </button>
-                      </div>
+                      </SwipeRow>
                     )
                   })}
                 </div>
