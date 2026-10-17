@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard, ChevronLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import { Wallet, CATEGORIES } from '@/types'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
@@ -12,6 +13,7 @@ import DatePickerNeo from '@/components/DatePickerNeo'
 export default function ScanReceiptPage() {
     const router = useRouter()
     const { showToast } = useToast()
+    const isWeb = useIsWeb()
     
     const [image, setImage] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false)
@@ -403,6 +405,21 @@ export default function ScanReceiptPage() {
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
+        loadImageFile(file)
+    }
+
+    // Drag-and-drop on web (DESIGN.md 7.10).
+    const [isDragging, setIsDragging] = useState(false)
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragging(false)
+        const file = e.dataTransfer.files?.[0]
+        if (!file) return
+        if (!file.type.startsWith('image/')) { showToast('error', 'Pilih file gambar (JPG atau PNG).'); return }
+        loadImageFile(file)
+    }
+
+    const loadImageFile = (file: File) => {
         const objectUrl = URL.createObjectURL(file)
         const img = new Image()
         img.onload = () => {
@@ -636,17 +653,17 @@ export default function ScanReceiptPage() {
             )}
 
             {/* ── HEADER ───────────────────────────────────────────────────── */}
-            <div className="top" style={{ padding: '16px 20px' }}>
+            <div className={isWeb ? 'main' : 'top'} style={isWeb ? { paddingBottom: 0 } : { padding: '16px 20px' }}>
                 <div className="top-l">
-                    <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>
+                    {!isWeb && <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>}
                     <div>
-                        <h1 className="h1" style={{ fontSize: 20 }}>Scan struk</h1>
-                        <p className="sub">Catat pengeluaran dari foto struk</p>
+                        <h1 className={isWeb ? 'ptitle' : 'h1'} style={isWeb ? undefined : { fontSize: 20 }}>Scan struk</h1>
+                        <p className="sub">{isWeb ? 'Catat pengeluaran dari foto struk, lalu cek sebelum simpan.' : 'Catat pengeluaran dari foto struk'}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="scroll" style={{ maxWidth: 640, margin: '0 auto', paddingTop: 0 }}>
+            <div className="scroll" style={isWeb ? { maxWidth: 1240, margin: '0 auto', padding: '20px clamp(16px,3vw,40px) 40px' } : { maxWidth: 640, margin: '0 auto', paddingTop: 0 }}>
 
                 {/* ── SUCCESS ──────────────────────────────────────────────── */}
                 {isSuccess ? (
@@ -661,25 +678,49 @@ export default function ScanReceiptPage() {
                     </div>
                 ) : (
                     <>
+                        <div className="scan-cols">
+                        <div className="stack-12" style={{ minWidth: 0 }}>
                         {/* ── UPLOAD AREA ──────────────────────────────────── */}
                         {!image && (
                             <div className="stack-12">
-                                <div className="card stack" style={{ border: '2px dashed var(--border-strong)', alignItems: 'center', textAlign: 'center', padding: '28px 20px' }}>
+                                <div
+                                    className="card stack"
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                                    onDragLeave={() => setIsDragging(false)}
+                                    onDrop={handleDrop}
+                                    style={{ border: `2px dashed ${isDragging ? 'var(--accent)' : 'var(--border-strong)'}`, background: isDragging ? 'var(--accent-tint)' : undefined, alignItems: 'center', textAlign: 'center', padding: isWeb ? '32px 20px' : '28px 20px' }}
+                                >
                                     <div className="ic-l" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Camera className="i i-l" /></div>
-                                    <div className="h2" style={{ marginTop: 4 }}>Foto atau unggah struk</div>
+                                    <div className="h2" style={{ marginTop: 4 }}>{isWeb ? 'Seret foto struk ke sini' : 'Foto atau unggah struk'}</div>
                                     <div className="sub">Nominal, tanggal, dan kategori diisi otomatis pakai AI. Tinggal cek sebelum simpan.</div>
                                 </div>
 
-                                <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn btn-block"><Camera className="i i-s" />Ambil foto</button>
-                                <div className="g2">
-                                    <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
-                                    <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn-2"><Upload className="i i-s" />Galeri</button>
-                                    <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
-                                        {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
-                                        {isConverting ? 'Memproses…' : 'Tempel'}
-                                    </button>
-                                </div>
-                                <span className="lbl" style={{ textAlign: 'center' }}>Tempel: salin foto dari galeri, lalu tekan Tempel.</span>
+                                <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
+                                {isWeb ? (
+                                    <>
+                                        <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn btn-block"><Upload className="i i-s" />Pilih file</button>
+                                        <div className="g2">
+                                            <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
+                                                {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
+                                                {isConverting ? 'Memproses…' : 'Tempel (Ctrl+V)'}
+                                            </button>
+                                            <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn-2"><Camera className="i i-s" />Kamera</button>
+                                        </div>
+                                        <span className="lbl" style={{ textAlign: 'center' }}>JPG atau PNG. Bisa juga salin gambar lalu tekan Ctrl+V di halaman ini.</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn btn-block"><Camera className="i i-s" />Ambil foto</button>
+                                        <div className="g2">
+                                            <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn-2"><Upload className="i i-s" />Galeri</button>
+                                            <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
+                                                {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
+                                                {isConverting ? 'Memproses…' : 'Tempel'}
+                                            </button>
+                                        </div>
+                                        <span className="lbl" style={{ textAlign: 'center' }}>Tempel: salin foto dari galeri, lalu tekan Tempel.</span>
+                                    </>
+                                )}
 
                                 {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
                                 {showManualPaste && (
@@ -689,16 +730,6 @@ export default function ScanReceiptPage() {
                                     </div>
                                 )}
 
-                                {/* Tips */}
-                                <div className="card stack">
-                                    <h2 className="h3">Biar hasilnya akurat</h2>
-                                    {['Foto lurus dari atas, seluruh struk masuk frame', 'Cahaya cukup, tidak ada bayangan di angka total', 'Struk tidak terlipat di bagian total'].map((tip, i) => (
-                                        <div className="hstack" key={i} style={{ alignItems: 'flex-start', fontSize: 13 }}>
-                                            <CheckCircle2 className="i i-s" style={{ color: 'var(--accent)', marginTop: 2 }} />
-                                            <span className="grow" style={{ whiteSpace: 'normal' }}>{tip}</span>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         )}
 
@@ -745,6 +776,31 @@ export default function ScanReceiptPage() {
                             </div>
                         )}
 
+                        {/* Web: keep the photo visible next to the result (ScanWeb) */}
+                        {isWeb && image && scanResult && (
+                            <div className="card stack-12" style={{ padding: 0, overflow: 'hidden' }}>
+                                <div style={{ width: '100%', aspectRatio: '3 / 4', background: 'var(--surface-2)' }}>
+                                    <img src={image} alt="Struk" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
+                                <div style={{ padding: '0 16px 16px' }}><button className="btn-2 btn-block" onClick={resetState} disabled={isSaving}>Scan ulang</button></div>
+                            </div>
+                        )}
+                        </div>
+                        <div className="stack-12" style={{ minWidth: 0 }}>
+                        {!image && (
+                            <div className="stack-12">
+                        {/* Tips */}
+                        <div className="card stack">
+                            <h2 className="h3">Biar hasilnya akurat</h2>
+                            {['Foto lurus dari atas, seluruh struk masuk frame', 'Cahaya cukup, tidak ada bayangan di angka total', 'Struk tidak terlipat di bagian total'].map((tip, i) => (
+                                <div className="hstack" key={i} style={{ alignItems: 'flex-start', fontSize: 13 }}>
+                                    <CheckCircle2 className="i i-s" style={{ color: 'var(--accent)', marginTop: 2 }} />
+                                    <span className="grow" style={{ whiteSpace: 'normal' }}>{tip}</span>
+                                </div>
+                            ))}
+                        </div>
+                            </div>
+                        )}
                         {/* ── SCAN RESULT (ScanCek — editable) ──────────────── */}
                         {scanResult && !isSuccess && (
                             <div className="stack-12" style={{ paddingBottom: 24 }}>
@@ -871,6 +927,8 @@ export default function ScanReceiptPage() {
                                 </div>
                             </div>
                         )}
+                        </div>
+                        </div>
                     </>
                 )}
             </div>

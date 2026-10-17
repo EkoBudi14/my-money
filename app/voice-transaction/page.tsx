@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
+import { useIsWeb } from '@/hooks/useIsWeb'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, CATEGORIES } from '@/types'
@@ -45,6 +46,7 @@ function formatRupiah(n: number) {
 export default function VoiceTransactionPage() {
   const router = useRouter()
   const { showToast } = useToast()
+  const isWeb = useIsWeb()
 
   // State machine
   const [state, setState] = useState<RecordingState>('idle')
@@ -383,20 +385,41 @@ export default function VoiceTransactionPage() {
 
   const activeWallets = wallets.filter(w => w.category === 'active')
 
+  // Web: hold Space to talk (DESIGN.md 7.11). Ignored while typing in a field.
+  useEffect(() => {
+    if (!isWeb) return
+    const typing = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)
+    }
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || typing(e)) return
+      if (state === 'idle') { e.preventDefault(); startRecording() }
+    }
+    const up = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || typing(e)) return
+      if (state === 'listening') { e.preventDefault(); stopRecording() }
+    }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWeb, state])
+
   return (
     <main className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="top" style={{ padding: '16px 20px' }}>
+      <div className={isWeb ? 'main' : 'top'} style={isWeb ? { paddingBottom: 0, maxWidth: 760 } : { padding: '16px 20px' }}>
         <div className="top-l">
-          <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>
+          {!isWeb && <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>}
           <div>
-            <h1 className="h1" style={{ fontSize: 20 }}>Voice input</h1>
-            <p className="sub">Catat transaksi dengan suara</p>
+            <h1 className={isWeb ? 'ptitle' : 'h1'} style={isWeb ? undefined : { fontSize: 20 }}>Voice input</h1>
+            <p className="sub">{isWeb ? 'Catat transaksi pakai suara, cek, lalu simpan.' : 'Catat transaksi dengan suara'}</p>
           </div>
         </div>
       </div>
 
-      <div className="scroll" style={{ maxWidth: 560, margin: '0 auto', paddingTop: 0 }}>
+      <div className="scroll" style={isWeb ? { maxWidth: 760, margin: '0 auto', padding: '20px clamp(16px,3vw,40px) 40px' } : { maxWidth: 560, margin: '0 auto', paddingTop: 0 }}>
         {/* ── SUCCESS STATE ────────────────────────────────────────────────── */}
         {state === 'success' && (
           <div className="card stack" style={{ textAlign: 'center', alignItems: 'center', padding: '28px 20px' }}>
@@ -438,8 +461,8 @@ export default function VoiceTransactionPage() {
 
               <div className="stack" style={{ textAlign: 'center', gap: 4 }}>
                 {state === 'idle' && (<>
-                  <p className="t" style={{ fontSize: 16 }}>Tekan mic &amp; bicara</p>
-                  <p className="sub" style={{ whiteSpace: 'normal' }}>Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"</p>
+                  <p className="t" style={{ fontSize: 16 }}>{isWeb ? 'Klik mic lalu bicara' : 'Tekan mic & bicara'}</p>
+                  <p className="sub" style={{ whiteSpace: 'normal' }}>{isWeb ? 'Atau tahan tombol spasi selama bicara.' : 'Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"'}</p>
                 </>)}
                 {state === 'listening' && (<>
                   <p className="t" style={{ fontSize: 16, color: 'var(--danger)' }}>Sedang mendengarkan…</p>
@@ -454,10 +477,13 @@ export default function VoiceTransactionPage() {
 
             {/* Example chips */}
             {state === 'idle' && (
+              <div className="stack">
+              <span className="lbl" style={{ fontWeight: 600 }}>Contoh kalimat</span>
               <div className="chips">
                 {['makan siang 35 ribu', 'bensin 50 ribu', 'terima gaji 5 juta', 'transfer ke bibit 500 ribu'].map(ex => (
                   <span key={ex} className="chip">{ex}</span>
                 ))}
+              </div>
               </div>
             )}
 
