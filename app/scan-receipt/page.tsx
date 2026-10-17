@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard, ChevronLeft } from 'lucide-react'
+import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard, ChevronLeft, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useIsWeb } from '@/hooks/useIsWeb'
@@ -14,6 +14,14 @@ export default function ScanReceiptPage() {
     const router = useRouter()
     const { showToast } = useToast()
     const isWeb = useIsWeb()
+    // Jam (optional time) + fields the AI could not read (ScanWeb "perlu dicek") + recent scans
+    const [scanTime, setScanTime] = useState('')
+    const [unsure, setUnsure] = useState<Record<string, boolean>>({})
+    const [recentScans, setRecentScans] = useState<{ title: string; total: number; date: string; type: string }[]>([])
+    useEffect(() => {
+        try { setRecentScans(JSON.parse(localStorage.getItem('scan_recent') || '[]')) } catch { setRecentScans([]) }
+    }, [])
+    const clearUnsure = (k: string) => setUnsure(prev => { const n = { ...prev }; delete n[k]; return n })
     
     const [image, setImage] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false)
@@ -481,6 +489,16 @@ export default function ScanReceiptPage() {
             
             // Format result to ensure properties exist
             const data = result.data
+            // Mark fields the AI left empty so the user checks them before saving.
+            setUnsure({
+                ...(data.store_name ? {} : { store_name: true }),
+                ...(data.date ? {} : { date: true }),
+                ...(data.total ? {} : { total: true }),
+            })
+            const now = new Date()
+            setScanTime(typeof data.time === 'string' && /^\d{1,2}[:.]\d{2}$/.test(data.time)
+                ? data.time.replace('.', ':').padStart(5, '0')
+                : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
             setScanResult({
                 document_type: data.document_type || 'struk_belanja',
                 store_name: data.store_name || '',
@@ -565,7 +583,7 @@ export default function ScanReceiptPage() {
                 title = `Belanja di ${scanResult.store_name}`
             }
 
-            const safeDate = new Date(`${scanResult.date}T12:00:00`).toISOString()
+            const safeDate = new Date(`${scanResult.date}T${scanTime || '12:00'}:00`).toISOString()
             const payload = {
                 title,
                 amount: scanResult.total,
@@ -588,6 +606,12 @@ export default function ScanReceiptPage() {
 
             setIsSuccess(true)
             showToast('success', txType === 'pemasukan' ? 'Pemasukan tersimpan' : 'Pengeluaran tersimpan')
+            // Remember the last scans on this device (shown on the upload screen).
+            try {
+                const next = [{ title, total: scanResult.total, date: safeDate, type: txType }, ...recentScans].slice(0, 5)
+                localStorage.setItem('scan_recent', JSON.stringify(next))
+                setRecentScans(next)
+            } catch { /* storage unavailable: list just stays empty */ }
         } catch (error: any) {
             showToast('error', error.message || 'Transaksi gagal disimpan. Coba lagi.')
         } finally {
@@ -599,6 +623,7 @@ export default function ScanReceiptPage() {
     const resetState = () => {
         setImage(null)
         setScanResult(null)
+        setUnsure({})
         setIsSuccess(false)
         if (fileInputRef.current) fileInputRef.current.value = ''
     }
@@ -722,6 +747,19 @@ export default function ScanReceiptPage() {
                                     </>
                                 )}
 
+                                {recentScans.length > 0 && (
+                                    <div className="card-flush">
+                                        <div className="lbl" style={{ fontWeight: 700, padding: '12px 0 4px' }}>Scan terakhir</div>
+                                        {recentScans.map((r, i) => (
+                                            <div className="row" key={i}>
+                                                <div className="ic-s c-belanja"><ScanLine className="i i-s" /></div>
+                                                <div className="grow"><div className="t">{r.title}</div><div className="meta">{new Date(r.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div></div>
+                                                <div className={`amt ${r.type === 'pemasukan' ? 'pos' : ''}`}>{r.type === 'pemasukan' ? '+' : ''}Rp {r.total.toLocaleString('id-ID')}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
                                 {showManualPaste && (
                                     <div className="card" style={{ border: '2px dashed var(--border-strong)', background: 'var(--accent-tint)' }}>
@@ -824,20 +862,28 @@ export default function ScanReceiptPage() {
                                         </div>
                                     )}
 
+                                    {Object.keys(unsure).length > 0 && (
+                                        <div className="banner warn"><AlertTriangle className="i" />{Object.keys(unsure).length} kolom perlu dicek. Kolom kuning tidak terbaca jelas.</div>
+                                    )}
                                     <label className="field">Nama toko
-                                        <input className="input" value={scanResult.store_name} onChange={(e) => handleResultChange('store_name', e.target.value)} />
+                                        <input className={`input ${unsure.store_name ? 'unsure' : ''}`} value={scanResult.store_name} onChange={(e) => { handleResultChange('store_name', e.target.value); clearUnsure('store_name') }} />
                                     </label>
                                     <div className="g2">
                                         <label className="field">Tanggal
-                                            <DatePickerNeo className="input" value={scanResult.date} onChange={(e) => handleResultChange('date', e.target.value)} />
+                                            <DatePickerNeo className={`input ${unsure.date ? 'unsure' : ''}`} value={scanResult.date} onChange={(e) => { handleResultChange('date', e.target.value); clearUnsure('date') }} />
                                         </label>
+                                        <label className="field">Jam
+                                            <input type="time" className="input" value={scanTime} onChange={(e) => setScanTime(e.target.value)} />
+                                        </label>
+                                    </div>
+                                    <div className="g2" style={{ gridTemplateColumns: '1fr' }}>
                                         <div className="field">Total
-                                            <div className="input" style={{ gap: 4 }}>
+                                            <div className={`input ${unsure.total ? 'unsure' : ''}`} style={{ gap: 4 }}>
                                                 <span className="cur" style={{ color: 'var(--text-2)', fontWeight: 600 }}>Rp</span>
                                                 <input
                                                     inputMode="numeric"
                                                     value={scanResult.total.toLocaleString('id-ID')}
-                                                    onChange={(e) => handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0)}
+                                                    onChange={(e) => { handleResultChange('total', parseInt(e.target.value.replace(/\./g, '')) || 0); clearUnsure('total') }}
                                                     style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', width: '100%', fontWeight: 700 }}
                                                 />
                                             </div>
