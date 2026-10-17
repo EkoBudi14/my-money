@@ -13,6 +13,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   ArrowLeftRight,
+  ChevronLeft,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
@@ -383,54 +384,27 @@ export default function VoiceTransactionPage() {
   const activeWallets = wallets.filter(w => w.category === 'active')
 
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] pb-32 md:pb-10">
+    <main className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] sticky top-0 z-40 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 brutal-card-sm bg-[var(--neo-sky)] flex items-center justify-center border-[2px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] !p-0">
-            <Mic className="w-5 h-5 text-[var(--neo-ink)]" />
-          </div>
+      <div className="top" style={{ padding: '16px 20px' }}>
+        <div className="top-l">
+          <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>
           <div>
-            <h1 className="font-black text-[var(--text-primary)] text-lg leading-tight">
-              Voice Input
-            </h1>
-            <p className="text-xs text-[var(--text-secondary)] font-bold">
-              Catat transaksi dengan suara
-            </p>
+            <h1 className="h1" style={{ fontSize: 20 }}>Voice input</h1>
+            <p className="sub">Catat transaksi dengan suara</p>
           </div>
         </div>
-        <button
-          onClick={() => router.push('/')}
-          className="w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </header>
+      </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+      <div className="scroll" style={{ maxWidth: 560, margin: '0 auto', paddingTop: 0 }}>
         {/* ── SUCCESS STATE ────────────────────────────────────────────────── */}
         {state === 'success' && (
-          <div className="brutal-card p-8 text-center animate-in zoom-in-95 duration-300 bg-[var(--bg-card)]">
-            <div className="w-20 h-20 bg-[var(--neo-mint)] rounded-full border-4 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-[var(--neo-ink)]" />
-            </div>
-            <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2">
-              Berhasil Disimpan!
-            </h2>
-            <div className="flex flex-col gap-3 mt-8">
-              <button
-                onClick={handleReset}
-                className="w-full brutal-btn !py-3.5 !bg-[var(--neo-sky)] text-white flex items-center justify-center gap-2"
-              >
-                <Mic className="w-4 h-4" />
-                Catat Transaksi Lagi
-              </button>
-              <button
-                onClick={() => router.push('/')}
-                className="w-full brutal-btn !py-3.5 !bg-white text-[var(--text-primary)]"
-              >
-                Kembali ke Dashboard
-              </button>
+          <div className="card stack" style={{ textAlign: 'center', alignItems: 'center', padding: '28px 20px' }}>
+            <div className="ic-l" style={{ background: 'var(--income-tint)', color: 'var(--income)' }}><CheckCircle2 className="i i-l" /></div>
+            <h2 className="h2" style={{ marginTop: 4 }}>Berhasil disimpan!</h2>
+            <div className="stack" style={{ width: '100%', marginTop: 8 }}>
+              <button onClick={handleReset} className="btn btn-block"><Mic className="i i-s" />Catat lagi</button>
+              <button onClick={() => router.push('/')} className="btn-2 btn-block">Kembali ke beranda</button>
             </div>
           </div>
         )}
@@ -439,78 +413,58 @@ export default function VoiceTransactionPage() {
         {(state === 'idle' || state === 'listening' || state === 'processing') && (
           <>
             {/* Mic Button Area */}
-            <div className="brutal-card p-8 bg-[var(--bg-card)] flex flex-col items-center gap-6">
-              <div className="relative flex items-center justify-center">
+            <div className="card stack" style={{ alignItems: 'center', gap: 20, padding: '32px 20px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {state === 'listening' && (
                   <>
-                    <div className="absolute rounded-full bg-[var(--neo-peach)]/30 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '120px', height: '120px', animationDuration: '2s' }} />
-                    <div className="absolute rounded-full bg-[var(--neo-peach)]/20 animate-ping border-2 border-[var(--neo-ink)]" style={{ width: '140px', height: '140px', animationDuration: '3s', animationDelay: '0.5s' }} />
+                    <div className="animate-ping" style={{ position: 'absolute', borderRadius: '50%', background: 'var(--danger-tint)', width: 120, height: 120, animationDuration: '2s' }} />
+                    <div className="animate-ping" style={{ position: 'absolute', borderRadius: '50%', background: 'var(--danger-tint)', width: 140, height: 140, animationDuration: '3s', animationDelay: '0.5s' }} />
                   </>
                 )}
-
                 <button
                   id="voice-mic-btn"
                   onClick={state === 'idle' ? startRecording : stopRecording}
                   disabled={state === 'processing'}
-                  className={`relative z-10 w-28 h-28 rounded-[32px] border-[4px] border-[var(--neo-ink)] flex items-center justify-center transition-all duration-200 shadow-[8px_8px_0_var(--neo-ink)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[6px_6px_0_var(--neo-ink)] active:translate-x-[8px] active:translate-y-[8px] active:shadow-none ${
-                    state === 'listening'
-                      ? 'bg-[var(--neo-peach)]'
-                      : state === 'processing'
-                      ? 'bg-slate-200 cursor-wait'
-                      : 'bg-[var(--neo-lav)]'
-                  }`}
+                  style={{
+                    position: 'relative', zIndex: 10, width: 112, height: 112, borderRadius: 32, border: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--on-accent)',
+                    background: state === 'listening' ? 'var(--danger)' : state === 'processing' ? 'var(--border-strong)' : 'var(--accent)',
+                    cursor: state === 'processing' ? 'wait' : 'pointer',
+                  }}
                 >
-                  {state === 'processing' ? (
-                    <Loader2 className="w-10 h-10 text-[var(--neo-ink)] animate-spin" />
-                  ) : state === 'listening' ? (
-                    <MicOff className="w-10 h-10 text-[var(--neo-ink)]" />
-                  ) : (
-                    <Mic className="w-10 h-10 text-[var(--neo-ink)]" />
-                  )}
+                  {state === 'processing' ? <Loader2 className="i i-l animate-spin" /> : state === 'listening' ? <MicOff className="i i-l" /> : <Mic className="i i-l" />}
                 </button>
               </div>
 
-              <div className="text-center space-y-1.5 mt-4">
-                {state === 'idle' && (
-                  <>
-                    <p className="font-black text-[var(--text-primary)] text-lg">
-                      Tekan mic & bicara
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">
-                      Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"
-                    </p>
-                  </>
-                )}
-                {state === 'listening' && (
-                  <>
-                    <p className="font-black text-[var(--neo-ink)] text-lg animate-pulse">
-                      🎙️ Sedang mendengarkan...
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">
-                      Otomatis berhenti saat Anda selesai bicara ({30 - recordingTime}s)
-                    </p>
-                  </>
-                )}
-                {state === 'processing' && (
-                  <>
-                    <p className="font-black text-[var(--text-primary)] text-lg">
-                      AI sedang menganalisa...
-                    </p>
-                    <p className="text-sm font-bold text-[var(--text-secondary)]">Mohon tunggu sebentar</p>
-                  </>
-                )}
+              <div className="stack" style={{ textAlign: 'center', gap: 4 }}>
+                {state === 'idle' && (<>
+                  <p className="t" style={{ fontSize: 16 }}>Tekan mic &amp; bicara</p>
+                  <p className="sub" style={{ whiteSpace: 'normal' }}>Contoh: "tadi makan siang 35 ribu" atau "terima gaji 5 juta"</p>
+                </>)}
+                {state === 'listening' && (<>
+                  <p className="t" style={{ fontSize: 16, color: 'var(--danger)' }}>Sedang mendengarkan…</p>
+                  <p className="sub">Otomatis berhenti saat selesai ({30 - recordingTime}s)</p>
+                </>)}
+                {state === 'processing' && (<>
+                  <p className="t" style={{ fontSize: 16 }}>AI sedang menganalisa…</p>
+                  <p className="sub">Mohon tunggu sebentar</p>
+                </>)}
               </div>
             </div>
 
+            {/* Example chips */}
+            {state === 'idle' && (
+              <div className="chips">
+                {['makan siang 35 ribu', 'bensin 50 ribu', 'terima gaji 5 juta', 'transfer ke bibit 500 ribu'].map(ex => (
+                  <span key={ex} className="chip">{ex}</span>
+                ))}
+              </div>
+            )}
+
             {error && (
-              <div className="brutal-card-sm p-4 animate-in fade-in bg-[var(--neo-peach)]">
-                <p className="text-sm font-black text-[var(--text-primary)]">{error}</p>
-                <button
-                  onClick={handleReset}
-                  className="mt-2 text-xs font-bold text-[var(--text-primary)] underline decoration-[var(--neo-ink)] decoration-2"
-                >
-                  Coba lagi
-                </button>
+              <div className="banner warn" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span style={{ whiteSpace: 'normal' }}>{error}</span>
+                <button onClick={handleReset} className="link" style={{ color: 'var(--warn)' }}>Coba lagi</button>
               </div>
             )}
           </>
