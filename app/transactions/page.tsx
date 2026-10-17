@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Search, Download, RotateCw, Receipt } from 'lucide-react'
+import { ChevronLeft, Search, Download, RotateCw, Receipt, Plus, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { getTransactions, getWallets, getDebts } from '@/lib/queries'
+import { getTransactions, getWallets, getDebts, getBudgets } from '@/lib/queries'
 import { getCategoryIcon } from '@/lib/categories'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
 import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
@@ -15,7 +15,10 @@ import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
 import SwipeRow from '@/components/SwipeRow'
-import { Transaction, Wallet, Debt, CustomCategoryDef } from '@/types'
+import NeoSelect from '@/components/NeoSelect'
+import TransactionModal from '@/components/TransactionModal'
+import { useIsWeb } from '@/hooks/useIsWeb'
+import { Transaction, Wallet, Debt, Budget, CustomCategoryDef } from '@/types'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
 type FilterKey = 'semua' | 'pengeluaran' | 'pemasukan' | 'transfer' | 'piutang' | 'talangan'
@@ -39,6 +42,7 @@ const CAT_CLASS: Record<string, string> = {
 }
 
 const PAGE_SIZE = 50
+const WEB_PAGE = 20
 const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 
 const dayKey = (t: Transaction) => new Date(t.date || t.created_at).toISOString().slice(0, 10)
@@ -73,15 +77,24 @@ export default function TransactionsPage() {
   const [filter, setFilter] = useState<FilterKey>('semua')
   const [visible, setVisible] = useState(PAGE_SIZE)
   const [refreshing, setRefreshing] = useState(false)
+  // Web table state (RiwayatWeb)
+  const isWeb = useIsWeb()
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [catFilter, setCatFilter] = useState('')
+  const [walletFilter, setWalletFilter] = useState('')
+  const [webPage, setWebPage] = useState(0)
+  const [txModal, setTxModal] = useState<{ editing: Transaction | null } | null>(null)
 
   const loadAll = async () => {
-    const [txRes, wRes, dRes, csRes, fhRes] = await Promise.all([
+    const [txRes, wRes, dRes, csRes, fhRes, bRes] = await Promise.all([
       getTransactions(),
       getWallets(),
       getDebts(),
       supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
       supabase.from('filter_history').select('*'),
+      getBudgets(),
     ])
+    if (bRes.data) setBudgets(bRes.data as Budget[])
     if (txRes.data) setTransactions(txRes.data as Transaction[])
     if (wRes.data) setWallets(wRes.data as Wallet[])
     if (dRes.data) setDebts(dRes.data as Debt[])
@@ -176,6 +189,158 @@ export default function TransactionsPage() {
     const cls = t.is_piutang ? 'c-piutang' : t.type === 'topup' ? 'c-transfer' : (CAT_CLASS[t.category] || 'c-lain')
     return { Icon, cls }
   }
+
+  // ── Web (>=768px): RiwayatWeb — summary cards, filter bar, table, pagination ──
+  const categoryOptions = useMemo(() => {
+    const set = new Set(transactions.filter(t => t.type !== 'topup').map(t => t.category).filter(Boolean))
+    return [{ label: 'Semua kategori', value: '' }, ...[...set].sort().map(c => ({ label: c, value: c }))]
+  }, [transactions])
+  const walletOptions = [{ label: 'Semua dompet', value: '' }, ...wallets.map(w => ({ label: w.name, value: String(w.id) }))]
+  const webRows = useMemo(() => filtered.filter(t =>
+    (!catFilter || t.category === catFilter) &&
+    (!walletFilter || String(t.wallet_id) === walletFilter || String(t.source_wallet_id) === walletFilter)
+  ), [filtered, catFilter, walletFilter])
+  const webSummary = useMemo(() => {
+    let masuk = 0, keluar = 0
+    for (const t of webRows) {
+      if (t.type === 'pemasukan') masuk += t.amount
+      else if (t.type === 'pengeluaran') keluar += t.amount
+    }
+    return { masuk, keluar }
+  }, [webRows])
+  const pageCount = Math.max(1, Math.ceil(webRows.length / WEB_PAGE))
+  const pageSafe = Math.min(webPage, pageCount - 1)
+  const pageRows = webRows.slice(pageSafe * WEB_PAGE, pageSafe * WEB_PAGE + WEB_PAGE)
+  const resetWebFilters = () => { setQuery(''); setFilter('semua'); setCatFilter(''); setWalletFilter(''); setWebPage(0) }
+
+  if (isWeb) {
+    return (
+      <div className="cd" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <main className="main">
+          <div className="ptop">
+            <h1 className="ptitle">Riwayat transaksi</h1>
+            <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <button className="btn-2" aria-label="Muat ulang data" title="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
+              <button className="btn-2" onClick={handleExport}><Download className="i i-s" />Export</button>
+              <button className="btn" onClick={() => setTxModal({ editing: null })}><Plus className="i i-s" />Tambah transaksi</button>
+            </div>
+          </div>
+
+          <div className="wrap">
+            <div className="card" style={{ flex: '1 1 200px' }}><div className="lbl">Masuk</div><div className="num-l pos">+{rp(webSummary.masuk)}</div></div>
+            <div className="card" style={{ flex: '1 1 200px' }}><div className="lbl">Keluar</div><div className="num-l">{rp(webSummary.keluar)}</div></div>
+            <div className="card" style={{ flex: '1 1 200px' }}><div className="lbl">Selisih</div><div className="num-l" style={{ color: webSummary.masuk - webSummary.keluar >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rp(webSummary.masuk - webSummary.keluar)}</div></div>
+            <div className="card" style={{ flex: '1 1 200px' }}><div className="lbl">Jumlah transaksi</div><div className="num-l">{webRows.length.toLocaleString('id-ID')}</div></div>
+          </div>
+
+          <section className="card" style={{ padding: 0 }}>
+            <div style={{ padding: '16px 20px', display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+              <label className="input search" style={{ flex: '1 1 260px', width: 'auto', cursor: 'text' }}>
+                <Search className="i i-s" style={{ color: 'var(--text-2)' }} />
+                <input
+                  type="text"
+                  placeholder="Cari transaksi atau catatan"
+                  aria-label="Cari transaksi"
+                  value={query}
+                  onChange={e => { setQuery(e.target.value); setWebPage(0) }}
+                  style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }}
+                />
+              </label>
+              <div className="chips">
+                {FILTERS.map(f => (
+                  <button key={f.key} className={`chip ${filter === f.key ? 'on' : ''}`} onClick={() => { setFilter(f.key); setWebPage(0) }}>{f.label}</button>
+                ))}
+              </div>
+              <div style={{ width: 180 }}><NeoSelect value={catFilter} onChange={v => { setCatFilter(v); setWebPage(0) }} options={categoryOptions} placeholder="Kategori" className="btn-2 sel-btn" /></div>
+              <div style={{ width: 180 }}><NeoSelect value={walletFilter} onChange={v => { setWalletFilter(v); setWebPage(0) }} options={walletOptions} placeholder="Dompet" className="btn-2 sel-btn" /></div>
+            </div>
+
+            {loading ? (
+              <div style={{ padding: 20 }}><SkeletonRows count={8} /></div>
+            ) : webRows.length === 0 ? (
+              <div style={{ padding: 20 }}>
+                {query.trim() || filter !== 'semua' || catFilter || walletFilter ? (
+                  <EmptyState icon={<Search className="i" />} title={query.trim() ? `Tidak ada yang cocok dengan “${query.trim()}”` : 'Tidak ada yang cocok'} text="Coba kata lain atau hapus filter." actionLabel="Hapus filter" actionVariant="secondary" onAction={resetWebFilters} style={{ border: 0 }} />
+                ) : (
+                  <EmptyState icon={<Receipt className="i" />} title="Catat transaksi pertama" text="Pengeluaran dan pemasukan periode ini muncul di sini." actionLabel="Tambah transaksi" onAction={() => setTxModal({ editing: null })} style={{ border: 0 }} />
+                )}
+              </div>
+            ) : (
+              <div className="tbl-box">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th style={{ paddingLeft: 20 }}>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Dompet</th><th className="r">Nominal</th>
+                      <th className="r" style={{ paddingRight: 20 }}><span className="sr-only">Aksi</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageRows.map(t => {
+                      const { Icon, cls } = iconFor(t)
+                      const d = new Date(t.date || t.created_at)
+                      return (
+                        <tr key={t.id} className="tbl-row" onClick={() => setTxModal({ editing: t })} style={{ cursor: 'pointer' }}>
+                          <td style={{ paddingLeft: 20 }}><div style={{ fontWeight: 600 }}>{d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined })}</div><div className="lbl">{timeLabel(t)}</div></td>
+                          <td>
+                            <div className="hstack" style={{ gap: 10 }}>
+                              <div className={`ic-s ${cls}`}><Icon className="i i-s" /></div>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontWeight: 600 }}>{t.title || t.category}</div>
+                                {(t.is_piutang || t.is_talangan || debts.some(x => x.original_transaction_id === t.id)) && (
+                                  <div className="hstack" style={{ gap: 4, marginTop: 2 }}>
+                                    {t.is_piutang && <span className="badge b-neutral">Piutang</span>}
+                                    {t.is_talangan && <span className="badge b-neutral">Talangan</span>}
+                                    {debts.some(x => x.original_transaction_id === t.id) && <span className="badge b-neutral">Split Bill</span>}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td>{t.type === 'topup' ? 'Transfer' : t.category}</td>
+                          <td>{t.type === 'topup' && t.source_wallet_id ? `${walletName(t.source_wallet_id)} → ${walletName(t.wallet_id)}` : walletName(t.wallet_id)}</td>
+                          <td className="r" style={{ fontWeight: 700, whiteSpace: 'nowrap', color: t.type === 'pemasukan' ? 'var(--income)' : t.type === 'topup' ? 'var(--text-2)' : 'var(--text)' }}>{t.type === 'pemasukan' ? '+' : ''}{rp(t.amount)}</td>
+                          <td className="r" style={{ paddingRight: 20, whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
+                            <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label={`Ubah ${t.title || t.category}`} title="Ubah" onClick={() => setTxModal({ editing: t })}><Pencil className="i i-s" /></button>
+                            <button className="icon-btn ghost" style={{ width: 36, height: 36, color: 'var(--danger)' }} aria-label={`Hapus ${t.title || t.category}`} title="Hapus" onClick={() => handleDelete(t.id)}><Trash2 className="i i-s" /></button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {!loading && webRows.length > 0 && (
+              <div className="between" style={{ padding: '14px 20px', borderTop: '1px solid var(--border)', flexWrap: 'wrap', gap: 8 }}>
+                <span className="lbl">Menampilkan {(pageSafe * WEB_PAGE + 1).toLocaleString('id-ID')}–{Math.min(webRows.length, (pageSafe + 1) * WEB_PAGE).toLocaleString('id-ID')} dari {webRows.length.toLocaleString('id-ID')} transaksi</span>
+                <div className="hstack" style={{ gap: 8 }}>
+                  <button className="btn-2" style={{ height: 36 }} disabled={pageSafe === 0} onClick={() => setWebPage(p => Math.max(0, p - 1))}>Sebelumnya</button>
+                  <button className="btn-2" style={{ height: 36 }} disabled={pageSafe >= pageCount - 1} onClick={() => setWebPage(p => p + 1)}>Berikutnya</button>
+                </div>
+              </div>
+            )}
+          </section>
+        </main>
+        {txModal && (
+          <TransactionModal
+            isOpen
+            mode="modal"
+            editingTransaction={txModal.editing}
+            initialType={txModal.editing ? undefined : 'pengeluaran'}
+            wallets={wallets}
+            transactions={transactions}
+            budgets={budgets}
+            customCategories={customCategories}
+            onCustomCategoriesChange={(c) => setCustomCategories(c)}
+            onClose={() => setTxModal(null)}
+            onSaved={() => { setTxModal(null); loadAll() }}
+          />
+        )}
+      </div>
+    )
+  }
+
 
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>

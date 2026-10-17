@@ -331,3 +331,6 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .web-row:hover .del,.cd .web-row .del:focus-visible{opacity:1}
 .cd .web-row:hover{background:var(--surface-2);margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:12px}
 .cd .amount-box .val:focus,.cd .amount-box input:focus{outline:none}
+/* Web filter dropdown trigger + clickable table rows (RiwayatWeb) */
+.cd .sel-btn{height:36px;width:100%;justify-content:space-between;font-size:13px;padding:0 12px;gap:6px}
+.cd .tbl-row:hover td{background:var(--surface-2)}
