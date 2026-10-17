@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard } from 'lucide-react'
+import { Camera, Upload, X, Loader2, ScanLine, Save, CheckCircle2, FlipHorizontal, Trash2, Clipboard, ChevronLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { Wallet, CATEGORIES } from '@/types'
@@ -582,7 +582,7 @@ export default function ScanReceiptPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[var(--bg-page)] pb-24 md:pb-8">
+        <main className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
 
             {/* ── CAMERA MODAL ─────────────────────────────────────────────── */}
             {showCamera && (
@@ -631,110 +631,69 @@ export default function ScanReceiptPage() {
             )}
 
             {/* ── HEADER ───────────────────────────────────────────────────── */}
-            <header className="bg-[var(--bg-card)] px-5 py-4 flex items-center justify-between border-b-4 border-[var(--neo-ink)] shadow-[0_4px_0_var(--neo-ink)] sticky top-0 z-40 mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 brutal-card-sm bg-[var(--neo-sky)] flex items-center justify-center border-[2px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] !p-0">
-                        <ScanLine className="w-5 h-5 text-[var(--neo-ink)]" />
-                    </div>
+            <div className="top" style={{ padding: '16px 20px' }}>
+                <div className="top-l">
+                    <button onClick={() => router.push('/')} className="icon-btn ghost" aria-label="Kembali"><ChevronLeft className="i" /></button>
                     <div>
-                        <h1 className="font-black text-[var(--text-primary)] text-lg leading-tight">Scan Struk</h1>
-                        <p className="text-xs text-[var(--text-secondary)] font-bold">Catat pengeluaran otomatis pakai AI</p>
+                        <h1 className="h1" style={{ fontSize: 20 }}>Scan struk</h1>
+                        <p className="sub">Catat pengeluaran dari foto struk</p>
                     </div>
                 </div>
-                <button onClick={() => router.push('/')} className="w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all text-[var(--text-primary)]">
-                    <X className="w-4 h-4" />
-                </button>
-            </header>
+            </div>
 
-            <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
+            <div className="scroll" style={{ maxWidth: 640, margin: '0 auto', paddingTop: 0 }}>
 
                 {/* ── SUCCESS ──────────────────────────────────────────────── */}
                 {isSuccess ? (
-                    <div className="brutal-card p-8 text-center animate-in zoom-in-95 duration-300 bg-[var(--bg-card)]">
-                        <div className="w-20 h-20 bg-[var(--neo-mint)] rounded-full border-4 border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle2 className="w-10 h-10 text-[var(--neo-ink)]" />
-                        </div>
-                        <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2">Berhasil Disimpan!</h2>
-                        <p className="text-[var(--text-muted)] font-bold mb-8">Transaksi telah ditambahkan ke pengeluaran Anda.</p>
-                        <div className="flex flex-col gap-3">
-                            <button onClick={resetState} className="w-full brutal-btn !py-3.5 !bg-[var(--neo-sky)] text-white">
-                                Scan Struk Lagi
-                            </button>
-                            <button onClick={() => router.push('/')} className="w-full brutal-btn !py-3.5 !bg-white text-[var(--text-primary)]">
-                                Kembali ke Dashboard
-                            </button>
+                    <div className="card stack" style={{ textAlign: 'center', alignItems: 'center', padding: '28px 20px' }}>
+                        <div className="ic-l" style={{ background: 'var(--income-tint)', color: 'var(--income)' }}><CheckCircle2 className="i i-l" /></div>
+                        <h2 className="h2" style={{ marginTop: 4 }}>Berhasil disimpan!</h2>
+                        <p className="sub">Transaksi telah ditambahkan ke pengeluaranmu.</p>
+                        <div className="stack" style={{ width: '100%', marginTop: 8 }}>
+                            <button onClick={resetState} className="btn btn-block">Scan struk lagi</button>
+                            <button onClick={() => router.push('/')} className="btn-2 btn-block">Kembali ke beranda</button>
                         </div>
                     </div>
                 ) : (
                     <>
                         {/* ── UPLOAD AREA ──────────────────────────────────── */}
                         {!image && (
-                            <div className="brutal-card p-6 space-y-4 bg-[var(--bg-card)]">
-                                <div className="aspect-[4/3] w-full rounded-[16px] border-[3px] border-dashed border-[var(--neo-ink)] flex flex-col items-center justify-center gap-4 bg-[var(--bg-elevated)]">
-                                    <div className="w-16 h-16 bg-white rounded-[16px] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] flex items-center justify-center">
-                                        <Camera className="w-8 h-8 text-[var(--neo-ink)]" />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-black text-[var(--text-primary)]">Ambil Foto / Upload Struk</p>
-                                        <p className="text-sm font-bold text-[var(--text-secondary)] mt-1">Pastikan tulisan terbaca jelas</p>
-                                    </div>
+                            <div className="stack-12">
+                                <div className="card stack" style={{ border: '2px dashed var(--border-strong)', alignItems: 'center', textAlign: 'center', padding: '28px 20px' }}>
+                                    <div className="ic-l" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}><Camera className="i i-l" /></div>
+                                    <div className="h2" style={{ marginTop: 4 }}>Foto atau unggah struk</div>
+                                    <div className="sub">Nominal, tanggal, dan kategori diisi otomatis pakai AI. Tinggal cek sebelum simpan.</div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => openCamera('environment')}
-                                        disabled={isConverting}
-                                        className="flex items-center justify-center gap-2 brutal-btn !py-3.5 !bg-[var(--neo-mint)] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Camera className="w-4 h-4" /> Foto
-                                    </button>
 
+                                <button onClick={() => openCamera('environment')} disabled={isConverting} className="btn btn-block"><Camera className="i i-s" />Ambil foto</button>
+                                <div className="g2">
                                     <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={isConverting}
-                                        className="flex items-center justify-center gap-2 brutal-btn !py-3.5 !bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Upload className="w-4 h-4" /> Galeri
+                                    <button onClick={() => fileInputRef.current?.click()} disabled={isConverting} className="btn-2"><Upload className="i i-s" />Galeri</button>
+                                    <button onClick={handlePasteFromClipboard} disabled={isConverting} className="btn-2">
+                                        {isConverting ? <Loader2 className="i i-s animate-spin" /> : <Clipboard className="i i-s" />}
+                                        {isConverting ? 'Memproses…' : 'Tempel'}
                                     </button>
                                 </div>
-
-                                {/* ── CLIPBOARD BUTTON ───────────────────────── */}
-                                <button
-                                    onClick={handlePasteFromClipboard}
-                                    disabled={isConverting}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-[12px] bg-[var(--neo-lav)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                                >
-                                    <div className="w-8 h-8 bg-white border-2 border-[var(--neo-ink)] rounded-[8px] flex items-center justify-center flex-shrink-0">
-                                        {isConverting
-                                            ? <Loader2 className="w-4 h-4 text-[var(--neo-ink)] animate-spin" />
-                                            : <Clipboard className="w-4 h-4 text-[var(--neo-ink)]" />
-                                        }
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <p className="text-sm font-black text-[var(--text-primary)]">
-                                            {isConverting ? 'Memproses foto...' : 'Paste dari Clipboard'}
-                                        </p>
-                                        <p className="text-xs font-bold text-[var(--text-muted)]">
-                                            {isConverting ? 'Mohon tunggu sebentar' : 'Gunakan foto yang di-copy dari Galeri'}
-                                        </p>
-                                    </div>
-                                    {!isConverting && <span className="text-[var(--text-primary)] font-black text-lg">→</span>}
-                                </button>
+                                <span className="lbl" style={{ textAlign: 'center' }}>Tempel: salin foto dari galeri, lalu tekan Tempel.</span>
 
                                 {/* ── MANUAL PASTE FALLBACK (iOS PWA) ────────── */}
                                 {showManualPaste && (
-                                    <div className="mt-4 p-4 border-[3px] border-dashed border-[var(--neo-ink)] bg-[var(--neo-sky)] rounded-[16px] animate-in fade-in slide-in-from-top-2">
-                                        <p className="text-sm text-[var(--neo-ink)] font-black mb-3 text-center">
-                                            iOS memblokir tombol paste. <br/>Gunakan cara manual:
-                                        </p>
-                                        <input 
-                                            type="text" 
-                                            inputMode="none" 
-                                            placeholder="Tap sekali, lalu pilih 'Paste'" 
-                                            className="w-full text-center py-3.5 bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] text-[var(--text-primary)] outline-none font-black"
-                                        />
+                                    <div className="card" style={{ border: '2px dashed var(--border-strong)', background: 'var(--accent-tint)' }}>
+                                        <p className="t" style={{ whiteSpace: 'normal', textAlign: 'center', marginBottom: 10 }}>iOS memblokir tombol paste. Gunakan cara manual:</p>
+                                        <input type="text" inputMode="none" placeholder="Tap sekali, lalu pilih 'Paste'" className="input" style={{ textAlign: 'center' }} />
                                     </div>
                                 )}
+
+                                {/* Tips */}
+                                <div className="card stack">
+                                    <h2 className="h3">Biar hasilnya akurat</h2>
+                                    {['Foto lurus dari atas, seluruh struk masuk frame', 'Cahaya cukup, tidak ada bayangan di angka total', 'Struk tidak terlipat di bagian total'].map((tip, i) => (
+                                        <div className="hstack" key={i} style={{ alignItems: 'flex-start', fontSize: 13 }}>
+                                            <CheckCircle2 className="i i-s" style={{ color: 'var(--accent)', marginTop: 2 }} />
+                                            <span className="grow" style={{ whiteSpace: 'normal' }}>{tip}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -780,24 +739,14 @@ export default function ScanReceiptPage() {
 
                         {/* ── IMAGE PREVIEW ─────────────────────────────────── */}
                         {image && !scanResult && (
-                            <div className="brutal-card overflow-hidden animate-in fade-in !p-0 bg-[var(--bg-card)]">
-                                <div className="relative aspect-[3/4] w-full bg-[var(--neo-ink)] border-b-[3px] border-[var(--neo-ink)]">
-                                    <img src={image} alt="Struk" className="w-full h-full object-contain" />
-                                    <button onClick={resetState} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-[8px] bg-white border-2 border-[var(--neo-ink)] text-[var(--text-primary)] hover:bg-[var(--neo-peach)] hover:scale-105 active:scale-95 transition-all shadow-[2px_2px_0_var(--neo-ink)]">
-                                        <X className="w-4 h-4" />
-                                    </button>
+                            <div className="card stack-12" style={{ padding: 0, overflow: 'hidden' }}>
+                                <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 4', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+                                    <img src={image} alt="Struk" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <button onClick={resetState} className="icon-btn" aria-label="Hapus foto" style={{ position: 'absolute', top: 12, right: 12 }}><X className="i" /></button>
                                 </div>
-                                <div className="p-5">
-                                    <button
-                                        onClick={handleScan}
-                                        disabled={isScanning || rateLimitCountdown > 0}
-                                        className="w-full py-4 bg-[var(--primary)] hover:bg-blue-600 disabled:bg-slate-300 dark:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200 disabled:shadow-none"
-                                    >
-                                        {isScanning ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> Menganalisa Struk...</>
-                                        ) : (
-                                            <><ScanLine className="w-5 h-5" /> Proses dengan AI</>
-                                        )}
+                                <div style={{ padding: 16 }}>
+                                    <button onClick={handleScan} disabled={isScanning || rateLimitCountdown > 0} className="btn btn-block">
+                                        {isScanning ? <><Loader2 className="i animate-spin" /> Menganalisa struk…</> : <><ScanLine className="i" /> Proses dengan AI</>}
                                     </button>
                                 </div>
                             </div>
