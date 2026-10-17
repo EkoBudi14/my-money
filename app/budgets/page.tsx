@@ -198,7 +198,7 @@ export default function BudgetsPage() {
                 .gte('end_date', budgetStartDate)
                 .limit(1)
             if (existingBudgets && existingBudgets.length > 0) {
-                return showToast('error', `Budget untuk kategori ${category} sudah ada dan bertabrakan di tanggal ini.`)
+                return showToast('error', `Budget ${category} untuk tanggal ini sudah ada. Ubah budget yang lama atau pilih tanggal lain.`)
             }
 
             const res = await supabase.from('budgets').insert([payload])
@@ -207,14 +207,11 @@ export default function BudgetsPage() {
 
         if (error) {
             console.error(error)
-            showToast('error', "Gagal menyimpan budget")
+            showToast('error', 'Budget gagal disimpan. Coba lagi.')
         } else {
             fetchAllData()
             resetForm()
-            showSuccess({
-                type: editingId ? 'edit' : 'create',
-                message: editingId ? 'Budget berhasil diperbarui!' : 'Budget baru berhasil ditambahkan!'
-            })
+            showToast('success', editingId ? 'Perubahan tersimpan' : 'Budget ditambahkan')
         }
     }
 
@@ -247,7 +244,7 @@ export default function BudgetsPage() {
 
         if (txError) {
             console.error(txError)
-            return showToast('error', "Gagal menyimpan pengeluaran")
+            return showToast('error', 'Pengeluaran gagal disimpan. Coba lagi.')
         }
 
         // 2. Update Wallet Balance
@@ -256,17 +253,16 @@ export default function BudgetsPage() {
 
         fetchAllData()
         resetQuickExpForm()
-        showSuccess({
-            type: 'create',
-            title: 'Pengeluaran Dicatat!',
-            message: 'Pengeluaran cepat berhasil dicatat dan saldo dompet diperbarui.'
-        })
+        showToast('success', 'Pengeluaran tersimpan')
     }
 
     const handleDelete = async (id: number) => {
+        const budget = budgets.find(b => b.id === id)
         const confirm = await showConfirm({
-            title: 'Hapus Budget?',
-            message: 'Yakin ingin menghapus budget ini?'
+            title: `Hapus budget “${budget?.category ?? ''}”?`,
+            message: 'Transaksi yang sudah tercatat tidak ikut terhapus.',
+            confirmText: 'Hapus budget',
+            cancelText: 'Batal',
         })
         if (!confirm) return
 
@@ -282,14 +278,11 @@ export default function BudgetsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchAllData()
-            showSuccess({
-                type: 'delete',
-                message: 'Budget berhasil dihapus dari daftar.'
-            })
+            showToast('success', 'Budget dihapus')
         } else {
             // 4. Rollback jika gagal
             setBudgets(previousBudgets)
-            showToast('error', 'Gagal menghapus budget')
+            showToast('error', 'Budget gagal dihapus. Coba lagi.')
         }
     }
 

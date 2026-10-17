@@ -12,6 +12,8 @@ import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import { SkeletonRows } from '@/components/Skeleton'
+import EmptyState from '@/components/EmptyState'
 import { Transaction, Wallet, Debt, CustomCategoryDef } from '@/types'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -209,20 +211,26 @@ export default function TransactionsPage() {
 
         {/* List */}
         {loading ? (
-          <div className="card-flush">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="row">
-                <div className="ic c-lain" style={{ opacity: 0.4 }} />
-                <span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span>
-              </div>
-            ))}
-          </div>
+          <SkeletonRows count={8} />
         ) : filtered.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada transaksi</p>
-            <p className="lbl" style={{ marginTop: 4 }}>Transaksi yang cocok dengan pencarian atau filter akan muncul di sini.</p>
-            <Link href="/transaction" className="btn btn-block" style={{ marginTop: 12 }}>Tambah transaksi</Link>
-          </div>
+          query.trim() || filter !== 'semua' ? (
+            <EmptyState
+              icon={<Search className="i" />}
+              title={query.trim() ? `Tidak ada yang cocok dengan “${query.trim()}”` : 'Tidak ada yang cocok'}
+              text="Coba kata lain atau hapus filter."
+              actionLabel="Hapus filter"
+              actionVariant="secondary"
+              onAction={() => { setQuery(''); setFilter('semua'); setVisible(PAGE_SIZE) }}
+            />
+          ) : (
+            <EmptyState
+              icon={<Search className="i" />}
+              title="Catat transaksi pertama"
+              text="Pengeluaran dan pemasukan periode ini muncul di sini."
+              actionLabel="Tambah transaksi"
+              onAction={() => router.push('/transaction')}
+            />
+          )
         ) : (
           <>
             {groups.map(group => (

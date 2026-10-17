@@ -54,7 +54,7 @@ export default function KategoriPage() {
 
     const oldName = editingName
     if (!oldName && customCategories[type].map(getName).map(n => n.toLowerCase()).includes(finalName.toLowerCase())) {
-      showToast('warning', 'Kategori ini sudah ada!')
+      showToast('warning', `Kategori “${finalName}” sudah ada.`)
       setSaving(false)
       return
     }
@@ -77,9 +77,9 @@ export default function KategoriPage() {
     if (!error) {
       setCustomCategories(updated)
       resetForm()
-      showToast('success', oldName ? 'Kategori diperbarui!' : 'Kategori ditambahkan!')
+      showToast('success', oldName ? 'Perubahan tersimpan' : 'Kategori ditambahkan')
     } else {
-      showToast('error', 'Gagal menyimpan kategori')
+      showToast('error', 'Kategori gagal disimpan. Coba lagi.')
     }
     setSaving(false)
   }
@@ -87,8 +87,8 @@ export default function KategoriPage() {
   // Mirrors app/page.tsx handleDeleteCustomCategory (unchanged behavior).
   const handleDelete = async (catName: string) => {
     const confirmed = await showConfirm({
-      title: 'Hapus kategori?',
-      message: `Hapus kategori "${catName}"? Histori asli di database tetap aman, hanya logonya tereset ke default.`,
+      title: `Hapus kategori “${catName}”?`,
+      message: 'Transaksi lama tetap tersimpan dengan nama kategori ini, tapi ikon dan warnanya kembali ke bawaan.',
       confirmText: 'Hapus kategori',
       cancelText: 'Batal',
     })
@@ -103,7 +103,7 @@ export default function KategoriPage() {
       if (editingName === catName) resetForm()
       showToast('success', 'Kategori dihapus')
     } else {
-      showToast('error', 'Gagal menghapus kategori')
+      showToast('error', 'Kategori gagal dihapus. Coba lagi.')
     }
   }
 

@@ -198,8 +198,8 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
                 transaction_id: txData.id
             })
             
-            showToast('success', isIncome ? 'Pemasukan berhasil dicatat! 🎉' : 'Tagihan berhasil dibayar!')
-            
+            showToast('success', isIncome ? `Pemasukan ${selectedPaymentBill.name} dicatat` : `Tagihan ${selectedPaymentBill.name} dibayar`)
+
             // Refresh data
             const { data: walletsData } = await supabase.from('wallets').select('*')
             setWallets(walletsData || [])
@@ -209,20 +209,23 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             setShowPaymentModal(false)
         } catch (error) {
             console.error(error)
-            showToast('error', isIncome ? 'Gagal mencatat pemasukan' : 'Gagal membayar tagihan')
+            showToast('error', isIncome ? 'Pemasukan gagal dicatat. Coba lagi.' : 'Tagihan gagal dibayar. Coba lagi.')
         } finally {
             setPayingBillId(null)
         }
     }
 
     const handleDeleteBillPayment = async (billId: number) => {
+        const billRef = recurringBills.find(b => b.id === billId)
+        const billLabel = billRef?.name ?? 'tagihan'
         const confirmed = await showConfirm({
-            title: 'Batalkan Pembayaran?',
-            message: 'Pembayaran akan dihapus dan dana akan dikembalikan ke dompet (jika data transaksi ditemukan).',
-            confirmText: 'Batalkan Bayar',
-            cancelText: 'Kembali'
+            title: `Batalkan pembayaran ${billLabel}?`,
+            message: 'Transaksi pembayaran dihapus dan saldonya dikembalikan ke dompet. Tagihan kembali berstatus belum dibayar.',
+            confirmText: 'Batalkan bayar',
+            cancelText: 'Kembali',
+            tone: 'warn',
         })
-        
+
         if (!confirmed) return
 
         try {
@@ -272,17 +275,17 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
 
             if (error) throw error
             
-            showToast('success', 'Pembayaran dibatalkan')
-            
+            showToast('success', `Pembayaran ${billLabel} dibatalkan`)
+
             // Refresh data
             const { data: walletsData } = await supabase.from('wallets').select('*')
             setWallets(walletsData || [])
             await checkBillPayments()
             if (onUpdate) onUpdate()
-            
+
         } catch (error) {
             console.error('Error deleting bill payment:', error)
-            showToast('error', 'Gagal membatalkan pembayaran')
+            showToast('error', 'Pembayaran gagal dibatalkan. Coba lagi.')
         }
     }
 
@@ -332,13 +335,15 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
     }
 
     const handleDeleteEvent = async (id: number) => {
+        const event = events.find(e => e.id === id)
+        const tgl = event ? new Date(`${event.date}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : ''
         const confirmed = await showConfirm({
-            title: 'Hapus Catatan?',
-            message: 'Catatan akan dihapus permanen.',
-            confirmText: 'Hapus',
+            title: `Hapus agenda “${event?.title ?? ''}”?`,
+            message: `Agenda tanggal ${tgl} dihapus permanen.`,
+            confirmText: 'Hapus agenda',
             cancelText: 'Batal'
         })
-        
+
         if (!confirmed) return
 
         const { error } = await supabase
@@ -347,10 +352,10 @@ export default function CalendarCard({ refreshTrigger = 0, onUpdate }: CalendarC
             .eq('id', id)
 
         if (!error) {
-            showToast('success', 'Catatan dihapus')
+            showToast('success', 'Agenda dihapus')
             fetchEvents()
         } else {
-            showToast('error', 'Gagal menghapus catatan')
+            showToast('error', 'Agenda gagal dihapus. Coba lagi.')
         }
     }
 

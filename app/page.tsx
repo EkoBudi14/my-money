@@ -1,15 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ChevronLeft, ChevronRight, Calendar, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  AlertTriangle, X, TrendingDown, ArrowLeftRight, StickyNote,
+  AlertTriangle, X, TrendingDown, ArrowLeftRight, StickyNote, HandCoins,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import {
   getTransactions, getWallets, getBudgets, getDebts, getLatestNote, getNotesCount,
+  getFreshWalletBalance,
 } from '@/lib/queries'
+import { useToast } from '@/hooks/useToast'
+import { SkeletonRows } from '@/components/Skeleton'
 import { getRecurringBills } from '@/lib/recurring-bills'
 import { getCategoryIcon } from '@/lib/categories'
 import { getPercentageChange, formatPeriodLabel } from '@/lib/format'
@@ -57,30 +60,85 @@ export default function HomePage() {
   const [showSettings, setShowSettings] = useState(false)
   const [showBalance, setShowBalance] = useState(true)
 
-  useEffect(() => {
-    const load = async () => {
-      const month = new Date().toISOString().slice(0, 7)
-      const [txRes, wRes, bRes, dRes, noteRes, noteCountRes, billsData, bpRes, csRes] = await Promise.all([
-        getTransactions(), getWallets(), getBudgets(), getDebts(),
-        getLatestNote(), getNotesCount(), getRecurringBills(),
-        supabase.from('bill_payments').select('bill_id').eq('month', month),
-        supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
-      ])
-      if (txRes.data) setTransactions(txRes.data as Transaction[])
-      if (wRes.data) setWallets(wRes.data as Wallet[])
-      if (bRes.data) setBudgets(bRes.data as Budget[])
-      if (dRes.data) setDebts(dRes.data as Debt[])
-      if (noteRes.data) setLatestNote(noteRes.data as Note)
-      if (typeof noteCountRes.count === 'number') setNoteCount(noteCountRes.count)
-      setBills(billsData || [])
-      const bp: Record<number, boolean> = {}
-      bpRes.data?.forEach(p => { bp[p.bill_id] = true })
-      setBillPayments(bp)
-      if (csRes.data?.custom_categories) setCustomCategories(csRes.data.custom_categories as CustomMap)
-      setLoading(false)
-    }
-    load()
+  const { showToast } = useToast()
+  const [lunasiDebt, setLunasiDebt] = useState<Debt | null>(null)
+  const [repayingWalletId, setRepayingWalletId] = useState<number | null>(null)
+
+  const loadAll = useCallback(async () => {
+    const month = new Date().toISOString().slice(0, 7)
+    const [txRes, wRes, bRes, dRes, noteRes, noteCountRes, billsData, bpRes, csRes] = await Promise.all([
+      getTransactions(), getWallets(), getBudgets(), getDebts(),
+      getLatestNote(), getNotesCount(), getRecurringBills(),
+      supabase.from('bill_payments').select('bill_id').eq('month', month),
+      supabase.from('user_settings').select('custom_categories').eq('id', 1).single(),
+    ])
+    if (txRes.data) setTransactions(txRes.data as Transaction[])
+    if (wRes.data) setWallets(wRes.data as Wallet[])
+    if (bRes.data) setBudgets(bRes.data as Budget[])
+    if (dRes.data) setDebts(dRes.data as Debt[])
+    if (noteRes.data) setLatestNote(noteRes.data as Note)
+    if (typeof noteCountRes.count === 'number') setNoteCount(noteCountRes.count)
+    setBills(billsData || [])
+    const bp: Record<number, boolean> = {}
+    bpRes.data?.forEach(p => { bp[p.bill_id] = true })
+    setBillPayments(bp)
+    if (csRes.data?.custom_categories) setCustomCategories(csRes.data.custom_categories as CustomMap)
+    setLoading(false)
   }, [])
+
+  useEffect(() => { loadAll() }, [loadAll])
+
+  // Mark a piutang as paid: create the income transaction, flag the debt paid,
+  // and credit the receiving wallet (fresh balance). Mirrors the old dashboard.
+  const markDebtAsPaid = async (debt: Debt, targetWalletId: number) => {
+    setRepayingWalletId(targetWalletId)
+    const { data: trx, error: trxError } = await supabase.from('transactions').insert({
+      title: `Pelunasan Piutang: ${debt.person_name}`,
+      amount: debt.amount,
+      type: 'pemasukan',
+      category: 'Lainnya',
+      wallet_id: targetWalletId,
+      date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      is_piutang: true,
+      piutang_person: debt.person_name,
+    }).select()
+
+    if (trxError || !trx) {
+      showToast('error', 'Pelunasan gagal disimpan. Coba lagi.')
+      setRepayingWalletId(null)
+      return
+    }
+
+    const { error: debtError } = await supabase.from('debts').update({
+      status: 'paid',
+      payment_wallet_id: targetWalletId,
+      payment_transaction_id: trx[0].id,
+      paid_at: new Date().toISOString(),
+    }).eq('id', debt.id)
+
+    const freshBalance = await getFreshWalletBalance(targetWalletId)
+    if (freshBalance !== null) {
+      await supabase.from('wallets').update({ balance: freshBalance + debt.amount }).eq('id', targetWalletId)
+    }
+
+    if (!debtError) {
+      showToast('success', `Piutang ${debt.person_name} lunas`)
+      setLunasiDebt(null)
+      await loadAll()
+    } else {
+      showToast('error', 'Pelunasan gagal disimpan. Coba lagi.')
+    }
+    setRepayingWalletId(null)
+  }
+
+  const activeDebts = useMemo(() => debts.filter(d => d.status === 'pending'), [debts])
+  const totalPiutang = useMemo(() => activeDebts.reduce((a, d) => a + d.amount, 0), [activeDebts])
+  const debtSource = (d: Debt) => {
+    const src = transactions.find(t => t.id === d.original_transaction_id)
+    const date = new Date(d.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    return src?.title ? `Dari “${src.title}” · ${date}` : `Piutang · ${date}`
+  }
 
   const getPeriodLabel = () => formatPeriodLabel(filterMode, currentDate, customRange)
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -280,6 +338,28 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Piutang aktif */}
+        {activeDebts.length > 0 && (
+          <section className="card stack" style={{ gap: 4 }} aria-labelledby="pa-title">
+            <div className="between" style={{ paddingBottom: 8 }}>
+              <div><h2 className="h2" id="pa-title">Piutang aktif</h2><p className="sub">Uang kamu yang masih di orang lain</p></div>
+              <div style={{ textAlign: 'right' }}><div className="lbl">Total</div><div className="num-m">{rp(totalPiutang)}</div></div>
+            </div>
+            {activeDebts.map(d => (
+              <div className="row" key={d.id}>
+                <div className="avatar" style={{ width: 40, height: 40, fontSize: 13, borderRadius: 12, background: 'var(--income-tint)', color: 'var(--income)' }}>
+                  {d.person_name.charAt(0).toUpperCase()}
+                </div>
+                <div className="grow"><div className="t">{d.person_name}</div><div className="meta">{debtSource(d)}</div></div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="amt" style={{ marginBottom: 6 }}>{rp(d.amount)}</div>
+                  <button className="chip" style={{ height: 32, color: 'var(--accent)', borderColor: 'var(--accent)' }} onClick={() => setLunasiDebt(d)}>Lunas</button>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
         {/* Budget bulan ini */}
         {topBudgets.length > 0 && (
           <div className="card stack-12">
@@ -315,7 +395,7 @@ export default function HomePage() {
         <div className="stack-12">
           <div className="between"><h2 className="h2">Transaksi terakhir</h2><Link className="link" href="/transactions">Lihat semua</Link></div>
           {loading ? (
-            <div className="card-flush">{[0, 1, 2].map(i => <div key={i} className="row"><div className="ic c-lain" style={{ opacity: 0.4 }} /><span className="grow t" style={{ opacity: 0.4 }}>Memuat…</span></div>)}</div>
+            <SkeletonRows count={4} />
           ) : recentTx.length === 0 ? (
             <div className="card" style={{ textAlign: 'center' }}>
               <p className="t" style={{ whiteSpace: 'normal' }}>Belum ada transaksi periode ini</p>
@@ -357,6 +437,43 @@ export default function HomePage() {
             )}
             <button className="btn-2 btn-block" onClick={() => { setFilterMode('monthly'); setCurrentDate(new Date()); setShowSettings(false) }}>Reset ke periode ini</button>
             <button className="btn btn-block" onClick={() => setShowSettings(false)}>Terapkan</button>
+          </div>
+        </>
+      )}
+
+      {/* Lunasi piutang sheet */}
+      {lunasiDebt && (
+        <>
+          <div className="scrim" onClick={() => repayingWalletId === null && setLunasiDebt(null)} />
+          <div className="sheet">
+            <div className="grabber" />
+            <div className="between">
+              <h2 className="h2">Lunasi piutang</h2>
+              <button className="icon-btn ghost" aria-label="Tutup" onClick={() => setLunasiDebt(null)} disabled={repayingWalletId !== null}><X className="i" /></button>
+            </div>
+            <div className="hstack" style={{ gap: 12 }}>
+              <div className="ic c-piutang"><HandCoins className="i" /></div>
+              <div>
+                <div className="t">{lunasiDebt.person_name}</div>
+                <div className="meta">Terima {rp(lunasiDebt.amount)} ke dompet</div>
+              </div>
+            </div>
+            <div className="field">Masuk ke dompet
+              <div className="stack" style={{ gap: 8 }}>
+                {activeWallets.map(w => (
+                  <button
+                    key={w.id}
+                    className="input"
+                    style={{ justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}
+                    disabled={repayingWalletId !== null}
+                    onClick={() => markDebtAsPaid(lunasiDebt, w.id)}
+                  >
+                    <span style={{ fontWeight: 600 }}>{w.name}</span>
+                    <span className="lbl">{repayingWalletId === w.id ? 'Menyimpan…' : rp(w.balance)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </>
       )}

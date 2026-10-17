@@ -51,23 +51,29 @@ export default function NotesPage() {
 
     if (editingNote) {
       const { error } = await supabase.from('notes').update({ title, content, updated_at: now }).eq('id', editingNote.id)
-      if (error) { showToast('error', 'Gagal mengupdate catatan'); console.error(error) }
-      else showSuccess({ type: 'edit', message: 'Catatan berhasil diperbarui!' })
+      if (error) { showToast('error', 'Catatan gagal disimpan. Coba lagi.'); console.error(error) }
+      else showToast('success', 'Perubahan tersimpan')
     } else {
       const { error } = await supabase.from('notes').insert([{ title: title || 'Catatan Baru', content, created_at: now, updated_at: now }])
-      if (error) { showToast('error', 'Gagal menyimpan catatan'); console.error(error) }
-      else showSuccess({ type: 'create', message: 'Catatan baru berhasil disimpan!' })
+      if (error) { showToast('error', 'Catatan gagal disimpan. Coba lagi.'); console.error(error) }
+      else showToast('success', 'Catatan tersimpan')
     }
     fetchNotes()
     resetForm()
   }
 
   const handleDelete = async (id: number) => {
-    const confirmed = await showConfirm({ title: 'Hapus Catatan?', message: 'Tindakan ini tidak dapat dibatalkan.', confirmText: 'Ya, Hapus', cancelText: 'Batal' })
+    const note = notes.find(n => n.id === id)
+    const confirmed = await showConfirm({
+      title: `Hapus catatan “${note?.title || 'Catatan Baru'}”?`,
+      message: 'Catatan dihapus permanen.',
+      confirmText: 'Hapus catatan',
+      cancelText: 'Batal',
+    })
     if (!confirmed) return
     const { error } = await supabase.from('notes').delete().eq('id', id)
-    if (error) { showToast('error', 'Gagal menghapus catatan'); console.error(error) }
-    else { showSuccess({ type: 'delete', message: 'Catatan berhasil dihapus.' }); fetchNotes() }
+    if (error) { showToast('error', 'Catatan gagal dihapus. Coba lagi.'); console.error(error) }
+    else { showToast('success', 'Catatan dihapus'); fetchNotes() }
   }
 
   const handleEdit = (note: Note) => {

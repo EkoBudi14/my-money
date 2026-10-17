@@ -176,8 +176,11 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                                 }
                             } else {
                                 const confirm = await showConfirm({
-                                    title: 'Sumber Dana Hilang',
-                                    message: `Sumber dana asli (ID: ${oldWallet.source_wallet_id}) sudah tidak ada. Dana Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak akan dikembalikan. Lanjutkan?`
+                                    title: 'Sumber dana sudah dihapus',
+                                    message: `Selisih Rp ${Math.abs(diff).toLocaleString('id-ID')} tidak bisa dikembalikan ke mana pun. Lanjut simpan?`,
+                                    confirmText: 'Simpan',
+                                    cancelText: 'Batal',
+                                    tone: 'warn',
                                 })
                                 if (!confirm) {
                                     setSaving(false)

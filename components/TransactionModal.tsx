@@ -413,10 +413,12 @@ export default function TransactionModal({
         }
       }
 
-      showSuccess({
-        type: editingTransaction ? 'edit' : 'create',
-        message: editingTransaction ? 'Transaksi berhasil diperbarui!' : 'Transaksi baru berhasil dicatat!'
-      })
+      const savedMsg = editingTransaction
+        ? 'Perubahan tersimpan'
+        : type === 'topup' ? 'Transfer tersimpan'
+          : type === 'pemasukan' ? 'Pemasukan tersimpan'
+            : 'Pengeluaran tersimpan'
+      showToast('success', savedMsg)
       onSaved()
       onClose()
     }

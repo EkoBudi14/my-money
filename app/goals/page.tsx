@@ -81,12 +81,9 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetForm()
-            showSuccess({
-                type: editingId ? 'edit' : 'create',
-                message: editingId ? 'Target tabungan berhasil diperbarui!' : 'Target tabungan baru berhasil ditambahkan!'
-            })
+            showToast('success', editingId ? 'Perubahan tersimpan' : 'Goal ditambahkan')
         } else {
-            showToast('error', "Gagal menyimpan target")
+            showToast('error', 'Goal gagal disimpan. Coba lagi.')
         }
     }
 
@@ -107,20 +104,19 @@ export default function GoalsPage() {
         if (!error) {
             fetchGoals()
             resetQuickAddForm()
-            showSuccess({
-                type: 'edit',
-                title: 'Tabungan Bertambah!',
-                message: `Dana berhasil ditambahkan ke tabungan kamu 🎉`
-            })
+            showToast('success', `Rp ${parseFloat(quickAddAmountValue).toLocaleString('id-ID')} masuk ke ${goalToUpdate.name}`)
         } else {
-            showToast('error', "Gagal mengupdate saldo")
+            showToast('error', 'Saldo goal gagal diperbarui. Coba lagi.')
         }
     }
 
     const handleDelete = async (id: number) => {
+        const goal = goals.find(g => g.id === id)
         const confirm = await showConfirm({
-            title: 'Hapus Target?',
-            message: 'Yakin ingin menghapus target ini?'
+            title: `Hapus goal “${goal?.name ?? ''}”?`,
+            message: `Catatan terkumpul Rp ${(goal?.current_amount ?? 0).toLocaleString('id-ID')} ikut hilang. Saldo dompet tidak berubah.`,
+            confirmText: 'Hapus goal',
+            cancelText: 'Batal',
         })
         if (!confirm) return
 
@@ -136,14 +132,11 @@ export default function GoalsPage() {
         if (!error) {
             // Fetch di background untuk memastikan sync
             fetchGoals()
-            showSuccess({
-                type: 'delete',
-                message: 'Target tabungan berhasil dihapus.'
-            })
+            showToast('success', 'Goal dihapus')
         } else {
             // 4. Rollback jika gagal
             setGoals(previousGoals)
-            showToast('error', 'Gagal menghapus target')
+            showToast('error', 'Goal gagal dihapus. Coba lagi.')
         }
     }
 

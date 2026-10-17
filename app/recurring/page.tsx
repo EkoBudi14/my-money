@@ -74,10 +74,23 @@ export default function RecurringPage() {
   }
 
   const handleDelete = async (id: number) => {
-    const ok = await showConfirm({ title: 'Hapus', message: 'Yakin ingin menghapus item rutin ini?', confirmText: 'Hapus', cancelText: 'Batal' })
+    const bill = bills.find(b => b.id === id)
+    const isIncome = bill?.type === 'pemasukan'
+    const ok = await showConfirm({
+      title: `Hapus ${isIncome ? 'pemasukan' : 'tagihan'} rutin “${bill?.name ?? ''}”?`,
+      message: `Pengingat bulanan berhenti. Transaksi ${isIncome ? 'pemasukan' : 'pembayaran'} yang sudah tercatat tidak ikut terhapus.`,
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+    })
     if (!ok) return
     setDeletingId(id)
-    try { await deleteRecurringBill(id); refreshAll() } catch { showToast('error', 'Gagal menghapus') } finally { setDeletingId(null) }
+    try {
+      await deleteRecurringBill(id)
+      refreshAll()
+      showToast('success', `${isIncome ? 'Pemasukan' : 'Tagihan'} rutin dihapus`)
+    } catch {
+      showToast('error', `${isIncome ? 'Pemasukan' : 'Tagihan'} rutin gagal dihapus. Coba lagi.`)
+    } finally { setDeletingId(null) }
   }
 
   const openPay = (b: RecurringBill) => {

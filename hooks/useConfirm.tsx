@@ -1,12 +1,16 @@
 'use client'
 import React, { createContext, useContext, useState, useCallback } from 'react'
-import ConfirmDialog from '@/components/ConfirmDialog'
+import ConfirmDialog, { ConfirmVariant, ConfirmTone } from '@/components/ConfirmDialog'
 
 interface ConfirmOptions {
     title: string
     message: string
     confirmText?: string
     cancelText?: string
+    variant?: ConfirmVariant
+    tone?: ConfirmTone
+    details?: string[]
+    checkLabel?: string
 }
 
 interface ConfirmContextType {
@@ -17,35 +21,23 @@ const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined)
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false)
-    const [options, setOptions] = useState<ConfirmOptions>({
-        title: '',
-        message: ''
-    })
+    const [options, setOptions] = useState<ConfirmOptions>({ title: '', message: '' })
     const [resolver, setResolver] = useState<((value: boolean) => void) | null>(null)
 
     const showConfirm = useCallback((opts: ConfirmOptions): Promise<boolean> => {
         setOptions(opts)
         setIsOpen(true)
-
-        return new Promise<boolean>((resolve) => {
-            setResolver(() => resolve)
-        })
+        return new Promise<boolean>((resolve) => setResolver(() => resolve))
     }, [])
 
     const handleConfirm = useCallback(() => {
         setIsOpen(false)
-        if (resolver) {
-            resolver(true)
-            setResolver(null)
-        }
+        if (resolver) { resolver(true); setResolver(null) }
     }, [resolver])
 
     const handleCancel = useCallback(() => {
         setIsOpen(false)
-        if (resolver) {
-            resolver(false)
-            setResolver(null)
-        }
+        if (resolver) { resolver(false); setResolver(null) }
     }, [resolver])
 
     return (
@@ -57,6 +49,10 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
                 message={options.message}
                 confirmText={options.confirmText}
                 cancelText={options.cancelText}
+                variant={options.variant}
+                tone={options.tone}
+                details={options.details}
+                checkLabel={options.checkLabel}
                 onConfirm={handleConfirm}
                 onCancel={handleCancel}
             />

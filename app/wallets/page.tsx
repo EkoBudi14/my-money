@@ -101,17 +101,23 @@ export default function WalletsPage() {
   // Active wallet delete: refund topup source + cascade-delete transactions.
   const deleteActive = async (id: number) => {
     const { data: wallet } = await supabase.from('wallets').select('*').eq('id', id).single()
-    if (!wallet) return showToast('error', 'Dompet tidak ditemukan')
+    if (!wallet) return showToast('error', 'Dompet tidak ditemukan.')
 
-    let refundMessage = ''
+    const { count } = await supabase.from('transactions').select('id', { count: 'exact', head: true }).eq('wallet_id', id)
+    const txCount = count || 0
+
+    const details = [`${txCount} transaksi dari dompet ini`]
     if (wallet.source_wallet_id && wallet.balance > 0) {
-      const { data: src } = await supabase.from('wallets').select('*').eq('id', wallet.source_wallet_id).single()
-      if (src) refundMessage = `Sisa saldo ${rp(wallet.balance)} akan dikembalikan ke ${src.name}.`
+      const { data: src } = await supabase.from('wallets').select('name').eq('id', wallet.source_wallet_id).single()
+      if (src) details.push(`Saldo ${rp(wallet.balance)} dikembalikan ke ${src.name}`)
     }
 
     const ok = await showConfirm({
-      title: 'Hapus Dompet?',
-      message: `Hapus dompet "${wallet.name}"? SEMUA RIWAYAT TRANSAKSI terkait akan TERHAPUS. ${refundMessage}`,
+      title: `Hapus dompet “${wallet.name}”?`,
+      message: 'Semua riwayat transaksi dompet ini ikut terhapus. Laporan periode lalu ikut berubah. Kalau cuma tidak dipakai lagi, ubah saldonya jadi Rp 0 saja.',
+      details,
+      variant: 'B',
+      checkLabel: `Saya paham ${txCount} transaksi akan hilang`,
       confirmText: 'Hapus dompet',
       cancelText: 'Batal',
     })
@@ -121,31 +127,33 @@ export default function WalletsPage() {
       const { data: src } = await supabase.from('wallets').select('*').eq('id', wallet.source_wallet_id).single()
       if (src) {
         await supabase.from('wallets').update({ balance: src.balance + wallet.balance }).eq('id', src.id)
-        showToast('success', `Saldo ${rp(wallet.balance)} dikembalikan ke ${src.name}`)
       }
     }
 
     const { error: txErr } = await supabase.from('transactions').delete().eq('wallet_id', id)
-    if (txErr) return showToast('error', 'Gagal menghapus riwayat transaksi terkait')
+    if (txErr) return showToast('error', 'Riwayat transaksi gagal dihapus. Coba lagi.')
 
     const { error } = await supabase.from('wallets').delete().eq('id', id)
-    if (error) return showToast('error', 'Gagal menghapus dompet')
+    if (error) return showToast('error', 'Dompet gagal dihapus. Coba lagi.')
     await fetchAll()
-    showSuccess({ type: 'delete', message: 'Dompet berhasil dihapus beserta seluruh riwayat transaksinya.' })
+    showToast('success', `Dompet ${wallet.name} dan ${txCount} transaksi dihapus`)
   }
 
-  // Savings wallet delete: simple removal.
+  // Savings wallet delete: simple removal (keeps old behaviour — transactions stay).
   const deleteSavings = async (id: number) => {
+    const { data: wallet } = await supabase.from('wallets').select('*').eq('id', id).single()
+    if (!wallet) return showToast('error', 'Aset tidak ditemukan.')
     const ok = await showConfirm({
-      title: 'Hapus Aset?',
-      message: 'Yakin ingin menghapus aset tabungan ini?',
+      title: `Hapus aset “${wallet.name}”?`,
+      message: `Nilai ${rp(wallet.balance)} tidak lagi dihitung di aset tersimpan.`,
       confirmText: 'Hapus aset',
       cancelText: 'Batal',
     })
     if (!ok) return
-    await supabase.from('wallets').delete().eq('id', id)
+    const { error } = await supabase.from('wallets').delete().eq('id', id)
+    if (error) return showToast('error', 'Aset gagal dihapus. Coba lagi.')
     await fetchAll()
-    showSuccess({ type: 'delete', message: 'Aset tabungan berhasil dihapus.' })
+    showToast('success', `Aset ${wallet.name} dihapus`)
   }
 
   const handleDelete = (w: Wallet) => (w.category === 'active' ? deleteActive(w.id) : deleteSavings(w.id))

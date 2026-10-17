@@ -8,6 +8,7 @@ import MoneyInput from './MoneyInput'
 import NeoSelect from './NeoSelect'
 import DatePickerNeo from './DatePickerNeo'
 import { supabase } from '@/lib/supabase'
+import { useToast } from '@/hooks/useToast'
 
 interface AddBillModalProps {
     isOpen?: boolean
@@ -19,6 +20,7 @@ interface AddBillModalProps {
 }
 
 export default function AddBillModal({ isOpen = true, onClose, onSuccess, initialData, mode = 'modal', editId }: AddBillModalProps) {
+    const { showToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [billType, setBillType] = useState<'pengeluaran' | 'pemasukan'>('pengeluaran')
     const [formData, setFormData] = useState({
@@ -111,7 +113,7 @@ export default function AddBillModal({ isOpen = true, onClose, onSuccess, initia
             onClose()
         } catch (error) {
             console.error(error)
-            alert('Gagal menyimpan')
+            showToast('error', 'Tagihan rutin gagal disimpan. Coba lagi.')
         } finally {
             setLoading(false)
         }
