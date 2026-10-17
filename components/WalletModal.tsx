@@ -13,10 +13,11 @@ interface WalletModalProps {
     defaultCategory?: 'active' | 'savings'
     onClose: () => void
     onSaved: () => void
+    onDelete?: () => void
     mode?: 'page' | 'modal'
 }
 
-export default function WalletModal({ editId, defaultCategory = 'active', onClose, onSaved, mode = 'modal' }: WalletModalProps) {
+export default function WalletModal({ editId, defaultCategory = 'active', onClose, onSaved, onDelete, mode = 'modal' }: WalletModalProps) {
     const [activeWallets, setActiveWallets] = useState<Wallet[]>([])
     const [savingsWallets, setSavingsWallets] = useState<Wallet[]>([])
     const [loadingData, setLoadingData] = useState(true)
@@ -433,6 +434,11 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                         {saving ? <div className="w-5 h-5 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
                         Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
                     </button>
+                    {editId && onDelete && (
+                        <button type="button" disabled={saving} onClick={onDelete} className="w-full mt-3 py-2 font-bold text-rose-600">
+                            Hapus {category === 'savings' ? 'Aset' : 'Dompet'}
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="shrink-0 pt-4 pb-1">
@@ -440,6 +446,11 @@ export default function WalletModal({ editId, defaultCategory = 'active', onClos
                         {saving ? <div className="w-4 h-4 border-2 border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
                         Simpan {category === 'savings' ? 'Aset' : 'Dompet'}
                     </button>
+                    {editId && onDelete && (
+                        <button type="button" disabled={saving} onClick={onDelete} className="w-full mt-2 py-2 font-bold text-rose-600 text-sm">
+                            Hapus {category === 'savings' ? 'Aset' : 'Dompet'}
+                        </button>
+                    )}
                 </div>
             )}
         </form>

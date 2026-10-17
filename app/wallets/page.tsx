@@ -253,6 +253,10 @@ export default function WalletsPage() {
           defaultCategory={tab}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); fetchAll() }}
+          onDelete={() => {
+            const w = wallets.find(x => x.id === editingId)
+            if (w) { setModalOpen(false); handleDelete(w) }
+          }}
           mode="modal"
         />
       )}

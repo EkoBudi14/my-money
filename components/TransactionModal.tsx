@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/useToast'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
+import { useConfirm } from '@/hooks/useConfirm'
+import { deleteTransactionWithRollback } from '@/lib/transactions'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
@@ -86,6 +88,15 @@ export default function TransactionModal({
 }: Props) {
   const { showToast } = useToast()
   const { showSuccess } = useSuccessModal()
+  const { showConfirm } = useConfirm()
+
+  // Delete from inside the edit form (DESIGN-TAMBAHAN.md §8). Reuses the shared
+  // rollback + section 3 dialog; on success the caller navigates away.
+  const handleDeleteFromForm = async () => {
+    if (!editingTransaction) return
+    const res = await deleteTransactionWithRollback(editingTransaction.id, { confirm: showConfirm, toast: showToast })
+    if (res.deleted) onSaved()
+  }
 
   // ── Form State (ALL of this lives here, NOT in page.tsx) ──────────────────
   const [title, setTitle] = useState('')
@@ -654,9 +665,16 @@ export default function TransactionModal({
   )
 
   const renderSubmit = () => (
-    <button type="submit" disabled={saving || isLoading} className="btn btn-block">
-      {saving ? 'Menyimpan…' : (editingTransaction ? 'Simpan perubahan' : type === 'pemasukan' ? 'Simpan pemasukan' : type === 'pengeluaran' ? 'Simpan pengeluaran' : 'Simpan transfer')}
-    </button>
+    <div className="stack">
+      <button type="submit" disabled={saving || isLoading} className="btn btn-block">
+        {saving ? 'Menyimpan…' : (editingTransaction ? 'Simpan perubahan' : type === 'pemasukan' ? 'Simpan pemasukan' : type === 'pengeluaran' ? 'Simpan pengeluaran' : 'Simpan transfer')}
+      </button>
+      {editingTransaction && (
+        <button type="button" className="link" style={{ color: 'var(--danger)', alignSelf: 'center', padding: '8px 0' }} disabled={saving} onClick={handleDeleteFromForm}>
+          Hapus transaksi
+        </button>
+      )}
+    </div>
   )
 
   const loadingState = (
