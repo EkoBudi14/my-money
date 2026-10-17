@@ -158,6 +158,24 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .wrap{display:flex;flex-wrap:wrap;gap:16px}
 .cd .wrap>*{box-sizing:border-box}
 
+/* Bottom nav + FAB (mobile) */
+.cd.nav{position:fixed;left:0;right:0;bottom:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;z-index:50}
+@media(min-width:768px){.cd.nav{display:none}}
+.cd.side-reopen{align-items:center;justify-content:center}
+@media(max-width:767px){.cd.side,.cd.side-reopen{display:none!important}}
+.cd.nav a{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-2);text-decoration:none;font-size:11px;font-weight:500;min-height:44px;justify-content:center}
+.cd.nav a.on{color:var(--accent);font-weight:700}
+.cd.nav .fab{width:52px;height:52px;border-radius:18px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;margin:-18px auto 0}
+
+/* Sidebar (web) */
+.cd.side{position:fixed;left:0;top:0;height:100dvh;width:248px;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow-y:auto;z-index:50}
+.cd.side a{display:flex;align-items:center;gap:12px;padding:0 12px;height:42px;border-radius:12px;color:var(--text-3);text-decoration:none;font-size:14px;font-weight:500;flex:none}
+.cd.side a:hover{background:var(--surface-2);color:var(--text)}
+.cd.side a.on{background:var(--accent-tint);color:var(--accent);font-weight:700}
+.cd.side .grp{font-size:12px;font-weight:700;color:var(--text-2);padding:16px 12px 6px}
+.cd .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
+.cd .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none}
+
 /* Web modal + panel */
 .cd.modal-scrim,.cd .modal-scrim{position:fixed;inset:0;background:rgba(8,20,18,.55);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}
 .cd .modal{background:var(--surface);border-radius:24px;border:1px solid var(--border);width:100%;max-width:760px;box-sizing:border-box;max-height:90vh;overflow-y:auto}
