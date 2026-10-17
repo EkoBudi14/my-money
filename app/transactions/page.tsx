@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Search, Download, RotateCw, Receipt, Plus, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, X, Search, Download, RotateCw, Receipt, Plus, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTransactions, getWallets, getDebts, getBudgets } from '@/lib/queries'
 import { getCategoryIcon } from '@/lib/categories'
@@ -14,10 +14,14 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useSuccessModal } from '@/hooks/useSuccessModal'
 import { SkeletonRows } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
+import PullToRefresh from '@/components/PullToRefresh'
 import SwipeRow from '@/components/SwipeRow'
 import NeoSelect from '@/components/NeoSelect'
 import TransactionModal from '@/components/TransactionModal'
 import { useIsWeb } from '@/hooks/useIsWeb'
+import { usePeriodSettings } from '@/hooks/usePeriodSettings'
+import PeriodSheet from '@/components/PeriodSheet'
+import { formatPeriodLabel } from '@/lib/format'
 import { Transaction, Wallet, Debt, Budget, CustomCategoryDef } from '@/types'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -84,6 +88,16 @@ export default function TransactionsPage() {
   const [walletFilter, setWalletFilter] = useState('')
   const [webPage, setWebPage] = useState(0)
   const [txModal, setTxModal] = useState<{ editing: Transaction | null } | null>(null)
+  // Period filter shared with Beranda / Analitik (DESIGN.md 7.14)
+  const period = usePeriodSettings()
+  const [showPeriod, setShowPeriod] = useState(false)
+  const periodLabel = formatPeriodLabel(period.filterMode, period.currentDate, period.customRange)
+
+  // "Lihat transaksi kategori ini" from Budget opens /transactions?category=…
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get('category')
+    if (c) setCatFilter(c)
+  }, [])
 
   const loadAll = async () => {
     const [txRes, wRes, dRes, csRes, fhRes, bRes] = await Promise.all([
@@ -130,10 +144,13 @@ export default function TransactionsPage() {
     const q = query.trim().toLowerCase()
     return transactions.filter(t => {
       if (!matchesFilter(t)) return false
+      if (!period.inPeriod(new Date(t.date || t.created_at))) return false
+      if (catFilter && t.category !== catFilter) return false
       if (!q) return true
       return (t.title || '').toLowerCase().includes(q) || (t.category || '').toLowerCase().includes(q)
     })
-  }, [transactions, query, filter])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, query, filter, catFilter, period.filterMode, period.currentDate, period.customRange])
 
   const summary = useMemo(() => {
     let masuk = 0, keluar = 0
@@ -165,8 +182,8 @@ export default function TransactionsPage() {
       transfer: 'Transfer', piutang: 'Piutang', talangan: 'Talangan',
     }
     exportTransactionsExcel({
-      periodLabel: labelMap[filter],
-      fileNamePeriod: filter === 'semua' ? 'semua' : filter,
+      periodLabel: filter === 'semua' ? periodLabel : `${labelMap[filter]} · ${periodLabel}`,
+      fileNamePeriod: (filter === 'semua' ? periodLabel : `${filter}_${periodLabel}`).replace(/[^\w-]+/g, '_'),
       filteredTransactions: filtered,
       transactions,
       wallets,
@@ -197,9 +214,8 @@ export default function TransactionsPage() {
   }, [transactions])
   const walletOptions = [{ label: 'Semua dompet', value: '' }, ...wallets.map(w => ({ label: w.name, value: String(w.id) }))]
   const webRows = useMemo(() => filtered.filter(t =>
-    (!catFilter || t.category === catFilter) &&
-    (!walletFilter || String(t.wallet_id) === walletFilter || String(t.source_wallet_id) === walletFilter)
-  ), [filtered, catFilter, walletFilter])
+    !walletFilter || String(t.wallet_id) === walletFilter || String(t.source_wallet_id) === walletFilter
+  ), [filtered, walletFilter])
   const webSummary = useMemo(() => {
     let masuk = 0, keluar = 0
     for (const t of webRows) {
@@ -220,6 +236,9 @@ export default function TransactionsPage() {
           <div className="ptop">
             <h1 className="ptitle">Riwayat transaksi</h1>
             <div className="hstack" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <button className="icon-btn" aria-label="Periode sebelumnya" disabled={period.filterMode === 'custom'} onClick={() => { period.prevMonth(); setWebPage(0) }}><ChevronLeft className="i i-s" /></button>
+              <button className="btn-2" onClick={() => setShowPeriod(true)}><Calendar className="i i-s" />{periodLabel}</button>
+              <button className="icon-btn" aria-label="Periode berikutnya" disabled={period.filterMode === 'custom'} onClick={() => { period.nextMonth(); setWebPage(0) }}><ChevronRight className="i i-s" /></button>
               <button className="btn-2" aria-label="Muat ulang data" title="Muat ulang data" disabled={refreshing} onClick={handleRefresh}><RotateCw className={`i i-s ${refreshing ? 'animate-spin' : ''}`} /></button>
               <button className="btn-2" onClick={handleExport}><Download className="i i-s" />Export</button>
               <button className="btn" onClick={() => setTxModal({ editing: null })}><Plus className="i i-s" />Tambah transaksi</button>
@@ -322,6 +341,16 @@ export default function TransactionsPage() {
             )}
           </section>
         </main>
+        <PeriodSheet
+          isOpen={showPeriod}
+          onClose={() => setShowPeriod(false)}
+          filterMode={period.filterMode}
+          setFilterMode={period.setFilterMode}
+          currentDate={period.currentDate}
+          setCurrentDate={(d) => { period.setCurrentDate(d); setWebPage(0); setVisible(PAGE_SIZE) }}
+          customRange={period.customRange}
+          setCustomRange={period.setCustomRange}
+        />
         {txModal && (
           <TransactionModal
             isOpen
@@ -345,6 +374,8 @@ export default function TransactionsPage() {
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       <div className="scroll" style={{ maxWidth: 560, margin: '0 auto', paddingBottom: 116 }}>
+        <PullToRefresh onRefresh={handleRefresh} />
+
         {/* Header */}
         <div className="top">
           <div className="top-l">
@@ -371,6 +402,19 @@ export default function TransactionsPage() {
           />
         </label>
 
+        {/* Period (shared with Beranda / Analitik) */}
+        <div className="hstack" style={{ gap: 4 }}>
+          <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode sebelumnya" disabled={period.filterMode === 'custom'} onClick={() => { period.prevMonth(); setVisible(PAGE_SIZE) }}><ChevronLeft className="i i-s" /></button>
+          <button className="chip" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setShowPeriod(true)}><Calendar className="i i-s" />{periodLabel}</button>
+          <button className="icon-btn ghost" style={{ width: 36, height: 36 }} aria-label="Periode berikutnya" disabled={period.filterMode === 'custom'} onClick={() => { period.nextMonth(); setVisible(PAGE_SIZE) }}><ChevronRight className="i i-s" /></button>
+        </div>
+
+        {catFilter && (
+          <button className="chip on" style={{ alignSelf: 'flex-start' }} onClick={() => setCatFilter('')} aria-label={`Hapus filter kategori ${catFilter}`}>
+            Kategori: {catFilter}<X className="i i-s" />
+          </button>
+        )}
+
         {/* Type filters */}
         <div className="chips scrollx">
           {FILTERS.map(f => (
@@ -390,14 +434,14 @@ export default function TransactionsPage() {
         {loading ? (
           <SkeletonRows count={8} />
         ) : filtered.length === 0 ? (
-          query.trim() || filter !== 'semua' ? (
+          query.trim() || filter !== 'semua' || catFilter ? (
             <EmptyState
               icon={<Search className="i" />}
               title={query.trim() ? `Tidak ada yang cocok dengan “${query.trim()}”` : 'Tidak ada yang cocok'}
               text="Coba kata lain atau hapus filter."
               actionLabel="Hapus filter"
               actionVariant="secondary"
-              onAction={() => { setQuery(''); setFilter('semua'); setVisible(PAGE_SIZE) }}
+              onAction={() => { setQuery(''); setFilter('semua'); setCatFilter(''); setVisible(PAGE_SIZE) }}
             />
           ) : (
             <EmptyState
@@ -452,6 +496,16 @@ export default function TransactionsPage() {
           </>
         )}
       </div>
+        <PeriodSheet
+          isOpen={showPeriod}
+          onClose={() => setShowPeriod(false)}
+          filterMode={period.filterMode}
+          setFilterMode={period.setFilterMode}
+          currentDate={period.currentDate}
+          setCurrentDate={(d) => { period.setCurrentDate(d); setWebPage(0); setVisible(PAGE_SIZE) }}
+          customRange={period.customRange}
+          setCustomRange={period.setCustomRange}
+        />
     </div>
   )
 }

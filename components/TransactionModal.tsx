@@ -76,6 +76,9 @@ interface Props {
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────
+const pad2 = (n: number) => String(n).padStart(2, '0')
+const localDate = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+const localTime = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 const fetchFreshWalletBalance = async (walletId: number): Promise<number | null> => {
   const { data, error } = await supabase.from('wallets').select('balance').eq('id', walletId).single()
   if (error || !data) return null
@@ -113,7 +116,9 @@ export default function TransactionModal({
   const [category, setCategory] = useState('')
   const [selectedWalletId, setSelectedWalletId] = useState('')
   const [sourceWalletId, setSourceWalletId] = useState('')
-  const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0])
+  const [customDate, setCustomDate] = useState(localDate(new Date()))
+  // Jam (DESIGN-TAMBAHAN §10: optional time field). Stored inside transactions.date.
+  const [customTime, setCustomTime] = useState(localTime(new Date()))
   const [saving, setSaving] = useState(false)
 
   // Piutang
@@ -144,7 +149,8 @@ export default function TransactionModal({
       setType(editingTransaction.type)
       setSelectedWalletId(editingTransaction.wallet_id?.toString() || '')
       setSourceWalletId(editingTransaction.source_wallet_id?.toString() || '')
-      setCustomDate(new Date(editingTransaction.date || editingTransaction.created_at).toISOString().split('T')[0])
+      setCustomDate(localDate(new Date(editingTransaction.date || editingTransaction.created_at)))
+      setCustomTime(localTime(new Date(editingTransaction.date || editingTransaction.created_at)))
       setIsPiutang(editingTransaction.is_piutang || false)
       setPiutangPerson(editingTransaction.piutang_person || '')
       setIsTalangan(editingTransaction.is_talangan || false)
@@ -162,7 +168,8 @@ export default function TransactionModal({
         .sort((a, z) => new Date(z.created_at).getTime() - new Date(a.created_at).getTime())[0]
       setSelectedWalletId(initialType !== 'topup' && lastUsed?.wallet_id ? lastUsed.wallet_id.toString() : '')
       setSourceWalletId('')
-      setCustomDate(new Date().toISOString().split('T')[0])
+      setCustomDate(localDate(new Date()))
+      setCustomTime(localTime(new Date()))
       setIsPiutang(false)
       setPiutangPerson('')
       setIsTalangan(false)
@@ -249,7 +256,7 @@ export default function TransactionModal({
       }
     }
 
-    const safeDate = new Date(`${customDate}T12:00:00`).toISOString()
+    const safeDate = new Date(`${customDate}T${customTime || '12:00'}:00`).toISOString()
     const payload = {
       title: finalTitle,
       amount: amountNum,
@@ -540,8 +547,13 @@ export default function TransactionModal({
         {/* Date & Wallet */}
         {type !== 'topup' ? (
           <>
-            <div className="field">Tanggal
-              <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+            <div className="g2">
+              <div className="field">Tanggal
+                <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              </div>
+              <label className="field">Jam
+                <input type="time" className="input" value={customTime} onChange={(e) => setCustomTime(e.target.value)} />
+              </label>
             </div>
             <div className="field">Dompet
               <div className="chips scrollx">
@@ -573,8 +585,13 @@ export default function TransactionModal({
               <div className="between" style={{ fontSize: 13 }}><span className="lbl">Biaya admin</span><span style={{ fontWeight: 600 }}>Rp {adminFee ? parseInt(adminFee.replace(/\D/g, '') || '0').toLocaleString('id-ID') : '0'}</span></div>
               <div className="between" style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}><span style={{ fontWeight: 700, fontSize: 14 }}>Total keluar</span><span style={{ fontWeight: 700, fontSize: 15 }}>Rp {((parseInt(amount.replace(/\D/g, '') || '0')) + (parseInt(adminFee.replace(/\D/g, '') || '0'))).toLocaleString('id-ID')}</span></div>
             </div>
-            <div className="field">Tanggal
-              <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+            <div className="g2">
+              <div className="field">Tanggal
+                <DatePickerNeo className="input" value={customDate} onChange={(e) => setCustomDate(e.target.value)} required />
+              </div>
+              <label className="field">Jam
+                <input type="time" className="input" value={customTime} onChange={(e) => setCustomTime(e.target.value)} />
+              </label>
             </div>
           </>
         )}

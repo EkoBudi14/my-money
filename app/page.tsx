@@ -25,6 +25,7 @@ import { Wallet, Transaction, Budget, Debt, Note, RecurringBill, CustomCategoryD
 import PeriodSheet from '@/components/PeriodSheet'
 import CalendarCard from '@/components/CalendarCard'
 import EmptyState from '@/components/EmptyState'
+import PullToRefresh from '@/components/PullToRefresh'
 import { exportTransactionsExcel, FilterHistoryEntry } from '@/lib/exportExcel'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -680,6 +681,8 @@ export default function HomePage() {
   return (
     <div className="cd" style={{ minHeight: '100vh', background: 'var(--surface)' }}>
       <div className="scroll" style={{ maxWidth: 720, margin: '0 auto', paddingBottom: 116 }}>
+        <PullToRefresh onRefresh={handleRefresh} />
+
         {/* Header */}
         <div className="top">
           <div className="top-l">
