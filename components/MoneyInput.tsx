@@ -65,29 +65,27 @@ export default function MoneyInput({ value, onChange, placeholder = '0', autoFoc
     }
 
     return (
-        <div className="relative">
-            <div className="relative">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    inputMode="numeric"
-                    placeholder={placeholder}
-                    className={`w-full px-[16px] py-[14px] pr-[96px] bg-white dark:bg-[var(--bg-elevated)] border-[3px] border-[var(--neo-ink)] rounded-[18px] shadow-[4px_4px_0_var(--neo-ink)] focus:outline-none transition-all font-[800] text-xl tracking-wide ${className}`}
-                    value={formatDisplay(value)}
-                    onChange={handleChange}
-                    autoFocus={autoFocus}
-                />
-                <div className="absolute right-2 top-2 bottom-2">
-                    <button
-                        type="button"
-                        onClick={addThousands}
-                        className="h-full px-3 bg-[var(--neo-yellow-vivid)] text-[var(--neo-ink)] border-[3px] border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[12px] font-[800] text-sm transition-transform flex items-center gap-1 active:translate-y-[2px] active:translate-x-[2px] active:shadow-[0px_0px_0_var(--neo-ink)]"
-                        tabIndex={-1} // prevent auto focus on this button
-                    >
-                        +000
-                    </button>
-                </div>
-            </div>
+        <div style={{ position: 'relative' }}>
+            <input
+                ref={inputRef}
+                type="text"
+                inputMode="numeric"
+                placeholder={placeholder}
+                className={`input ${className}`}
+                style={{ fontWeight: 700, fontSize: 18, paddingRight: 68, letterSpacing: '.2px' }}
+                value={formatDisplay(value)}
+                onChange={handleChange}
+                autoFocus={autoFocus}
+            />
+            <button
+                type="button"
+                onClick={addThousands}
+                className="chip"
+                style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', height: 32, gap: 2 }}
+                tabIndex={-1} // prevent auto focus on this button
+            >
+                <Plus className="i i-s" />000
+            </button>
         </div>
     )
 }

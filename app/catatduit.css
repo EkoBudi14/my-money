@@ -376,4 +376,4 @@ html.dark .cd .bc-paid{color:var(--income)}
 .cd .wal.on .wal-n{color:var(--accent-hover)}
 .cd .wal.bad{border-color:var(--danger)}
 /* Mobile: 16px form controls stop iOS Safari auto-zoom on focus (visual size unchanged on desktop) */
-@media(max-width:767px){.cd input,.cd select,.cd textarea{font-size:16px}.cd .amount-box .val{font-size:36px}}
+@media(max-width:767px){.cd input,.cd select,.cd textarea,.cd .input,.cd input.input,.cd textarea.input{font-size:16px}.cd .amount-box .val{font-size:36px}}

@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 /* ============================================================
-   NEOBRUTALISM DESIGN SYSTEM — CatatDuit
-   Referensi: prototype.html + redesign.md
+   CatatDuit — global base tokens & element styles
+   (UI design system lives in catatduit.css, scoped under .cd)
    ============================================================ */
 
 /* ── LIGHT MODE ── */
@@ -14,26 +14,7 @@
   --primary: #165DFF;
   --primary-hover: #0E4BD9;
 
-  /* ── Neobrutalism Core Tokens ── */
-  --neo-ink: #141414;
-  --neo-shadow: 6px 6px 0 #141414;
-  --neo-shadow-sm: 4px 4px 0 #141414;
-  --neo-shadow-xs: 3px 3px 0 #141414;
-  --neo-radius: 28px;
-  --neo-radius-md: 22px;
-  --neo-radius-sm: 16px;
-  --neo-border: 3px solid #141414;
-
-  /* ── Neobrutalism Color Swatches ── */
-  --neo-yellow: #FFDE59;
-  --neo-yellow-vivid: #FFC000;
-  --neo-mint: #87E885;
-  --neo-sky: #70D1FF;
-  --neo-peach: #FF9E9E;
-  --neo-pink: #FFB3FF;
-  --neo-lav: #C2A3FF;
-
-  /* ── Background Layers — warm neobrutalism palette ── */
+  /* ── Background Layers ── */
   --bg-page: #FFFFFF; /* catatduit --surface (was #f8f4ec) */
   --bg-card: #fffdf8;
   --bg-elevated: #ffffff;
@@ -68,28 +49,12 @@
   --card-grey: #f5f0e8;
 }
 
-/* ── DARK MODE — Neobrutalism dark variant ── */
+/* ── DARK MODE ── */
 .dark {
   --primary: #ffd84d;
   --primary-hover: #ffce1a;
 
-  /* Dark neobrutalism shadows */
-  --neo-ink: #f2f2ee;
-  --neo-shadow: 5px 5px 0 rgba(242, 242, 238, 0.20);
-  --neo-shadow-sm: 3px 3px 0 rgba(242, 242, 238, 0.15);
-  --neo-shadow-xs: 2px 2px 0 rgba(242, 242, 238, 0.10);
-  --neo-border: 3px solid rgba(242, 242, 238, 0.30);
-
-  /* Dark swatches */
-  --neo-yellow: rgba(255, 216, 77, 0.12);
-  --neo-yellow-vivid: #ffd84d;
-  --neo-mint: rgba(187, 247, 208, 0.10);
-  --neo-sky: rgba(182, 227, 255, 0.10);
-  --neo-peach: rgba(255, 199, 166, 0.10);
-  --neo-pink: rgba(255, 183, 216, 0.10);
-  --neo-lav: rgba(217, 200, 255, 0.10);
-
-  /* Background layers — dark warm neobrutalism */
+  /* Background layers — dark */
   --bg-page: #0A0A0B; /* neutral black dark mode (was green #0F1E1B) */
   --bg-card: #252118;
   --bg-elevated: #2e2a20;
@@ -140,213 +105,6 @@ h6 {
 }
 
 /* ============================================================
-   NEOBRUTALISM UTILITY CLASSES
-   ============================================================ */
-
-/* ── Cards ── */
-.brutal-card {
-  background: var(--bg-card);
-  border: 3px solid var(--neo-ink);
-  border-radius: var(--neo-radius);
-  box-shadow: var(--neo-shadow);
-}
-
-.brutal-card-md {
-  background: var(--bg-card);
-  border: 3px solid var(--neo-ink);
-  border-radius: var(--neo-radius-md);
-  box-shadow: var(--neo-shadow-sm);
-}
-
-.brutal-card-sm {
-  background: var(--bg-card);
-  border: 3px solid var(--neo-ink);
-  border-radius: var(--neo-radius-sm);
-  box-shadow: var(--neo-shadow-sm);
-}
-
-/* Color-tinted card variants */
-.brutal-card-yellow { background: var(--neo-yellow) !important; }
-.brutal-card-mint   { background: var(--neo-mint) !important; }
-.brutal-card-sky    { background: var(--neo-sky) !important; }
-.brutal-card-peach  { background: var(--neo-peach) !important; }
-.brutal-card-pink   { background: var(--neo-pink) !important; }
-.brutal-card-lav    { background: var(--neo-lav) !important; }
-
-/* ── Buttons ── */
-.brutal-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--neo-yellow-vivid);
-  border: 3px solid var(--neo-ink);
-  border-radius: 18px;
-  box-shadow: var(--neo-shadow-sm);
-  padding: 12px 20px;
-  font-weight: 800;
-  font-size: 14px;
-  color: var(--neo-ink);
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  letter-spacing: -0.01em;
-}
-
-.brutal-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--neo-ink);
-}
-
-.brutal-btn:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 var(--neo-ink);
-}
-
-.brutal-btn-ghost {
-  background: var(--bg-elevated);
-  box-shadow: var(--neo-shadow-sm);
-  border: 3px solid var(--neo-ink);
-  border-radius: 18px;
-  padding: 12px 20px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-
-.brutal-btn-ghost:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 var(--neo-ink);
-}
-
-/* ── Shadow utilities ── */
-.neo-shadow    { box-shadow: var(--neo-shadow); }
-.neo-shadow-sm { box-shadow: var(--neo-shadow-sm); }
-.neo-shadow-xs { box-shadow: var(--neo-shadow-xs); }
-
-/* ── Border utilities ── */
-.neo-border   { border: 3px solid var(--neo-ink); }
-.neo-border-2 { border: 2px solid var(--neo-ink); }
-
-/* ── Pill / Badge ── */
-.neo-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 3px solid var(--neo-ink);
-  border-radius: 999px;
-  padding: 6px 14px;
-  background: var(--bg-elevated);
-  box-shadow: var(--neo-shadow-sm);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--text-primary);
-}
-
-/* ── Small uppercase label ── */
-.neo-label {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-
-/* ── Money / amount display ── */
-.neo-amount {
-  font-size: clamp(24px, 3vw, 40px);
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  color: var(--text-primary);
-}
-
-/* ── Section header ── */
-.neo-section-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.neo-section-header h2 {
-  font-size: 22px;
-  letter-spacing: -0.04em;
-  font-weight: 800;
-}
-
-/* ── Transaction row ── */
-.neo-transaction-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 14px 0;
-  border-top: 2px dashed rgba(20, 20, 20, 0.18);
-}
-
-.neo-transaction-row:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-.dark .neo-transaction-row {
-  border-top-color: rgba(242, 242, 238, 0.12);
-}
-
-/* ── Icon box ── */
-.neo-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 2px solid var(--neo-ink);
-  border-radius: 14px;
-  background: var(--bg-elevated);
-  font-size: 20px;
-}
-
-/* ── Amount colors ── */
-.neo-amount-pos { color: var(--success); font-weight: 900; }
-.neo-amount-neg { color: var(--error); font-weight: 900; }
-
-/* ============================================================
-   COMPONENT STYLES (updated for neobrutalism)
-   ============================================================ */
-.glass {
-  background: var(--bg-card);
-  border: 2px solid var(--border-default);
-  box-shadow: var(--neo-shadow-sm);
-}
-
-.dark .glass {
-  border-color: var(--border-default);
-  box-shadow: var(--neo-shadow-sm);
-}
-
-.shadow-premium-lg {
-  box-shadow: var(--neo-shadow);
-}
-
-.dark .shadow-premium-lg {
-  box-shadow: var(--neo-shadow);
-}
-
-.card-hover {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card-hover:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--neo-ink);
-}
-
-.dark .card-hover:hover {
-  box-shadow: 8px 8px 0 rgba(242, 242, 238, 0.20);
-}
-
-/* ============================================================
    SCROLLBAR
    ============================================================ */
 ::-webkit-scrollbar {
@@ -384,40 +142,19 @@ textarea {
   border-radius: 14px;
 }
 
-input:not([data-no-ring]):focus,
+input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--neo-ink);
-  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.10);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.08);
   outline: none;
 }
 
-.dark input:not([data-no-ring]):focus,
+.dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(255, 216, 77, 0.15);
-}
-
-/* Search input */
-input[data-no-ring] {
-  color: var(--text-primary) !important;
-  caret-color: var(--text-primary) !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  border-radius: 0 !important;
-}
-
-input[data-no-ring]::placeholder {
-  -webkit-text-fill-color: var(--text-muted) !important;
-  color: var(--text-muted) !important;
-  opacity: 1;
-}
-
-input[data-no-ring]:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  caret-color: var(--text-primary) !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
 }
 
 /* Button radius */
@@ -451,106 +188,13 @@ button {
 }
 
 /* Ensure all form inputs respect dark theme */
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-no-ring]) {
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   color: var(--text-primary);
 }
 
 /* Calendar/date picker icon color */
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
-}
-
-/* ============================================================
-   QUICK ACTION BUTTONS — Mobile Dashboard
-   ============================================================ */
-@keyframes qa-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes qa-glow-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
-}
-
-.qa-btn {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.qa-btn:active {
-  transform: scale(0.92) !important;
-}
-
-/* Shimmer sweep overlay */
-.qa-btn .qa-icon::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.25) 45%,
-    rgba(255, 255, 255, 0.35) 50%,
-    rgba(255, 255, 255, 0.25) 55%,
-    transparent 70%
-  );
-  background-size: 200% 100%;
-  animation: qa-shimmer 3.5s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.dark .qa-btn .qa-icon::after {
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.08) 45%,
-    rgba(255, 255, 255, 0.14) 50%,
-    rgba(255, 255, 255, 0.08) 55%,
-    transparent 70%
-  );
-  background-size: 200% 100%;
-  animation: qa-shimmer 3.5s ease-in-out infinite;
-}
-
-/* Glow ring behind the icon */
-.qa-btn .qa-glow {
-  position: absolute;
-  inset: -3px;
-  border-radius: 1.1rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  animation: qa-glow-pulse 3s ease-in-out infinite;
-  pointer-events: none;
-  filter: blur(6px);
-}
-
-.qa-btn:hover .qa-glow,
-.qa-btn:active .qa-glow {
-  opacity: 1;
-}
-
-/* Always show subtle glow on mobile (no hover) */
-@media (hover: none) {
-  .qa-btn .qa-glow {
-    opacity: 0.4;
-  }
-}
-
-/* ============================================================
-   FAB SPEED DIAL ANIMATION
-   ============================================================ */
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 /* ============================================================

@@ -265,7 +265,7 @@ export default function TransactionsPage() {
                   aria-label="Cari transaksi"
                   value={query}
                   onChange={e => { setQuery(e.target.value); setWebPage(0) }}
-                  style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }}
+                  style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 16, height: '100%' }}
                 />
               </label>
               <div className="chips">
@@ -402,7 +402,7 @@ export default function TransactionsPage() {
             placeholder="Cari transaksi atau catatan"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 14, height: '100%' }}
+            style={{ border: 0, outline: 0, background: 'transparent', color: 'var(--text)', flex: 1, fontSize: 16, height: '100%' }}
           />
         </label>
 
@@ -420,7 +420,7 @@ export default function TransactionsPage() {
         )}
 
         {/* Type filters */}
-        <div className="chips scrollx">
+        <div className="chips">
           {FILTERS.map(f => (
             <button key={f.key} className={`chip ${filter === f.key ? 'on' : ''}`} onClick={() => { setFilter(f.key); setVisible(PAGE_SIZE) }}>
               {f.label}

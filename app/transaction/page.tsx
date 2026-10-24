@@ -117,8 +117,8 @@ export default function TransactionPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-[3px] border-[var(--neo-ink)] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[var(--text-muted)] font-black">Memuat...</p>
+          <div className="w-8 h-8 border-[3px] border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[var(--text-muted)] font-semibold">Memuat…</p>
         </div>
       </div>
     }>
