@@ -181,33 +181,35 @@ export default function DatePickerNeo({
         />
       )}
 
-      {/* Dropdown Calendar — rendered with fixed position to escape parent overflow */}
+      {/* Dropdown Calendar — catatduit style, fixed position to escape parent overflow */}
       {isOpen && (
         <div
-          className="fixed z-[9999] w-[280px] bg-[var(--bg-card)] border-[3px] border-[var(--neo-ink)] shadow-[4px_4px_0_var(--neo-ink)] rounded-[16px] overflow-hidden"
-          style={{ top: dropdownPos.top, left: dropdownPos.left }}
+          className="cd"
+          style={{
+            position: 'fixed', zIndex: 9999, width: 280,
+            top: dropdownPos.top, left: dropdownPos.left,
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 16, boxShadow: '0 8px 24px rgba(15,31,28,.12)',
+            overflow: 'hidden',
+          }}
         >
-          
           {/* Header */}
-          <div className="flex items-center justify-between p-3 bg-[var(--neo-yellow)] border-b-[3px] border-[var(--neo-ink)]">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              className="p-1.5 rounded-xl border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-white hover:-translate-y-[1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-            >
-              <ChevronLeft className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={3} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: 10, borderBottom: '1px solid var(--divider)' }}>
+            <button type="button" onClick={handlePrevMonth} className="icon-btn" style={{ width: 34, height: 34, borderRadius: 10 }} aria-label="Bulan sebelumnya">
+              <ChevronLeft className="i i-s" />
             </button>
-            <div className="flex items-center gap-1.5">
-              <select 
-                className="bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] px-1.5 py-1 font-black text-[var(--neo-ink)] text-xs cursor-pointer outline-none hover:-translate-y-[1px] hover:shadow-[3px_3px_0_var(--neo-ink)] transition-all"
+            <div style={{ display: 'flex', gap: 6 }}>
+              <select
+                className="input"
+                style={{ height: 34, width: 'auto', padding: '0 8px', fontSize: 13, fontWeight: 600 }}
                 value={currentDate.getMonth()}
                 onChange={(e) => setCurrentDate(new Date(currentDate.getFullYear(), parseInt(e.target.value), 1))}
               >
                 {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
               </select>
-              
-              <select 
-                className="bg-white border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] px-1.5 py-1 font-black text-[var(--neo-ink)] text-xs cursor-pointer outline-none hover:-translate-y-[1px] hover:shadow-[3px_3px_0_var(--neo-ink)] transition-all"
+              <select
+                className="input"
+                style={{ height: 34, width: 'auto', padding: '0 8px', fontSize: 13, fontWeight: 600 }}
                 value={currentDate.getFullYear()}
                 onChange={(e) => setCurrentDate(new Date(parseInt(e.target.value), currentDate.getMonth(), 1))}
               >
@@ -216,37 +218,33 @@ export default function DatePickerNeo({
                 ))}
               </select>
             </div>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="p-1.5 rounded-xl border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] bg-white hover:-translate-y-[1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-            >
-              <ChevronRight className="w-4 h-4 text-[var(--neo-ink)]" strokeWidth={3} />
+            <button type="button" onClick={handleNextMonth} className="icon-btn" style={{ width: 34, height: 34, borderRadius: 10 }} aria-label="Bulan berikutnya">
+              <ChevronRight className="i i-s" />
             </button>
           </div>
 
           {/* Grid */}
-          <div className="p-3 bg-white dark:bg-[var(--bg-card)]">
-            <div className="grid grid-cols-7 gap-1 mb-2">
+          <div style={{ padding: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(0,1fr))', gap: 4, marginBottom: 6 }}>
               {DAYS.map(day => (
-                <div key={day} className="text-center text-[10px] font-black uppercase text-[var(--text-muted)]">
+                <div key={day} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-2)' }}>
                   {day}
                 </div>
               ))}
             </div>
-            
-            <div className="grid grid-cols-7 gap-1">
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(0,1fr))', gap: 4 }}>
               {calendarGrid.map((day, idx) => {
                 if (day === null) {
-                  return <div key={`empty-${idx}`} className="h-8" />
+                  return <div key={`empty-${idx}`} style={{ height: 34 }} />
                 }
 
-                const isSelected = selectedDateObj && 
-                  selectedDateObj.getDate() === day && 
+                const isSelected = selectedDateObj &&
+                  selectedDateObj.getDate() === day &&
                   selectedDateObj.getMonth() === currentDate.getMonth() &&
                   selectedDateObj.getFullYear() === currentDate.getFullYear()
 
-                const isToday = day === today.getDate() && 
+                const isToday = day === today.getDate() &&
                   currentDate.getMonth() === today.getMonth() &&
                   currentDate.getFullYear() === today.getFullYear()
 
@@ -255,33 +253,25 @@ export default function DatePickerNeo({
                     key={`day-${day}`}
                     type="button"
                     onClick={() => handleDateClick(day)}
-                    className={`
-                      h-8 w-8 flex items-center justify-center rounded-[8px] text-xs font-black transition-all
-                      ${isSelected 
-                        ? 'bg-[var(--neo-ink)] text-[var(--neo-yellow)] scale-110 shadow-[2px_2px_0_var(--neo-ink)] border-2 border-[var(--neo-ink)] z-10' 
-                        : isToday 
-                          ? 'bg-[var(--neo-peach)] border-2 border-[var(--neo-ink)] text-[var(--neo-ink)]'
-                          : 'text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-2 hover:border-[var(--neo-ink)]'
-                      }
-                    `}
+                    style={{
+                      height: 34, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      border: `1px solid ${isSelected || isToday ? 'var(--accent)' : 'transparent'}`,
+                      background: isSelected ? 'var(--accent)' : isToday ? 'var(--accent-tint)' : 'transparent',
+                      color: isSelected ? 'var(--on-accent)' : isToday ? 'var(--accent-hover)' : 'var(--text)',
+                    }}
                   >
                     {day}
                   </button>
                 )
               })}
             </div>
-            
-            <div className="mt-3 pt-3 border-t-2 border-dashed border-[var(--border-default)]">
-              <button
-                type="button"
-                onClick={handleTodayClick}
-                className="w-full py-2 text-center text-xs font-black uppercase tracking-wider text-[var(--text-primary)] bg-[var(--bg-elevated)] border-2 border-[var(--neo-ink)] shadow-[2px_2px_0_var(--neo-ink)] rounded-[8px] hover:-translate-y-[1px] hover:shadow-[3px_3px_0_var(--neo-ink)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none transition-all"
-              >
+
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--divider)' }}>
+              <button type="button" onClick={handleTodayClick} className="btn-2" style={{ width: '100%', height: 40 }}>
                 Hari Ini
               </button>
             </div>
           </div>
-
         </div>
       )}
     </div>

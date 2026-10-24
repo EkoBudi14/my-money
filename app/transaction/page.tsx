@@ -6,9 +6,11 @@ import { supabase } from '@/lib/supabase'
 import TransactionModal from '@/components/TransactionModal'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
 import { Suspense } from 'react'
+import { useInvalidate, qk } from '@/hooks/useAppData'
 
 function TransactionPageContent() {
   const router = useRouter()
+  const invalidate = useInvalidate()
   const searchParams = useSearchParams()
   const typeParam = searchParams.get('type') as 'pemasukan' | 'pengeluaran' | 'topup' | null
   const editId = searchParams.get('edit')
@@ -75,6 +77,13 @@ function TransactionPageContent() {
   }
 
   const handleSaved = () => {
+    // Revalidate cached tables so the origin page (home history, wallets, budgets,
+    // debts, bills) shows the new/edited transaction without a manual refresh.
+    const month = new Date().toISOString().slice(0, 7)
+    invalidate([
+      qk.transactions, qk.wallets, qk.budgets, qk.debts, qk.bills,
+      qk.billPayments(month), qk.notes, qk.settings,
+    ])
     // Return to the page the form was opened from (DESIGN.md 7.2); home if there is none.
     navigatedRef.current = true
     if (window.history.length > 1) router.back()

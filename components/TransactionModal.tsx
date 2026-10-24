@@ -580,15 +580,16 @@ export default function TransactionModal({
               </label>
             </div>
             <div className="field">Dompet
-              <div className="chips scrollx">
+              <div className="walgrid">
                 {wallets.map(w => (
                   <button
                     key={w.id}
                     type="button"
-                    className={`chip ${selectedWalletId === w.id.toString() ? 'on' : ''} ${errors.wallet ? 'bad' : ''}`}
+                    className={`wal ${selectedWalletId === w.id.toString() ? 'on' : ''} ${errors.wallet ? 'bad' : ''}`}
                     onClick={() => { setSelectedWalletId(w.id.toString()); clearErr('wallet') }}
                   >
-                    {w.name}<span className="lbl" style={{ fontWeight: 500 }}>Rp {w.balance.toLocaleString('id-ID')}</span>
+                    <span className="wal-n">{w.name}</span>
+                    <span className="lbl">Rp {w.balance.toLocaleString('id-ID')}</span>
                   </button>
                 ))}
               </div>

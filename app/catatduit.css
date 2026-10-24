@@ -368,3 +368,12 @@ html.dark .cd .b-ok,.cd[data-theme="dark"] .b-ok{color:var(--income)}
 html.dark .cd .bc-paid{color:var(--income)}
 .cd .bc-key{width:8px;height:8px;border-radius:2px;display:block;padding:0}
 .cd .notif-btn{position:relative}.cd .notif-dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+/* Wallet picker: wrapping grid, no horizontal scroll — tap a whole tile (DESIGN.md 7.2) */
+.cd .walgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cd .wal{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-control);background:var(--surface);color:var(--text);text-align:left;width:100%;box-sizing:border-box;cursor:pointer}
+.cd .wal .wal-n{font-size:14px;font-weight:600;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cd .wal.on{border-color:var(--accent);background:var(--accent-tint)}
+.cd .wal.on .wal-n{color:var(--accent-hover)}
+.cd .wal.bad{border-color:var(--danger)}
+/* Mobile: 16px form controls stop iOS Safari auto-zoom on focus (visual size unchanged on desktop) */
+@media(max-width:767px){.cd input,.cd select,.cd textarea{font-size:16px}.cd .amount-box .val{font-size:36px}}
