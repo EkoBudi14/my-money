@@ -9,7 +9,7 @@
 .cd {
   --bg:#F3F6F5;--surface:#FFFFFF;--surface-2:#F7FAF9;--border:#E3E9E7;--border-strong:#D3DCD9;--divider:#EEF2F1;
   --text:#0F1F1C;--text-2:#5F6B69;--text-3:#4A5654;
-  --accent:#0F766E;--accent-hover:#115E59;--accent-tint:#E6F4F1;--on-accent:#FFFFFF;--on-accent-2:#CCEDE6;
+  --accent:#0F766E;--accent-hover:#115E59;--accent-tint:#E6F4F1;--on-accent:#FFFFFF;--on-accent-2:#CCEDE6;--hero-ic-income:#FFFFFF;--hero-ic-expense:#FFFFFF;
   --income:#4D7C0F;--income-tint:#ECFCCB;--income-chart:#84CC16;
   --danger:#DC2626;--danger-tint:#FEE2E2;--danger-text:#B91C1C;
   --warn:#92400E;--warn-tint:#FEF3C7;
@@ -21,7 +21,7 @@ html.dark .cd,.cd[data-theme="dark"]{
   /* Neutral black dark mode — no green cast. Accent/income/danger stay semantic. */
   --bg:#0A0A0B;--surface:#151518;--surface-2:#1D1D20;--border:#2A2A2E;--border-strong:#3B3B40;--divider:#212125;
   --text:#ECECEE;--text-2:#A0A0A6;--text-3:#C0C0C6;
-  --accent:#2DD4BF;--accent-hover:#5EEAD4;--accent-tint:#123634;--on-accent:#04201C;--on-accent-2:#134E48;
+  --accent:#2DD4BF;--accent-hover:#5EEAD4;--accent-tint:#123634;--on-accent:#04201C;--on-accent-2:#134E48;--hero-ic-income:#1F2A0A;--hero-ic-expense:#123634;
   --income:#A3E635;--income-tint:#1F2A0A;--income-chart:#A3E635;
   --danger:#F87171;--danger-tint:#3B1212;--danger-text:#FCA5A5;--warn:#FCD34D;--warn-tint:#3A2A06;
 }
@@ -135,6 +135,13 @@ html.dark .cd,.cd[data-theme="dark"]{
 .cd .hero .icon-btn{background:rgba(255,255,255,.14);border-color:transparent;color:var(--on-accent)}
 .cd .hero .bar{background:rgba(255,255,255,.2)}
 .cd .hero .bar>div{background:#fff}
+/* Dark hero: a full #2DD4BF block glares, so use a muted surface with an accent edge and accent amount. */
+html.dark .cd .hero,.cd[data-theme="dark"] .hero{background:#1A2222;color:var(--text);border:1px solid #263232;border-left:4px solid var(--accent)}
+html.dark .cd .hero .lbl,.cd[data-theme="dark"] .hero .lbl{color:var(--text-2)}
+html.dark .cd .hero .num-xl,.cd[data-theme="dark"] .hero .num-xl{color:var(--accent)}
+html.dark .cd .hero .icon-btn,.cd[data-theme="dark"] .hero .icon-btn{color:var(--text)}
+html.dark .cd .hero .bar>div,.cd[data-theme="dark"] .hero .bar>div{background:var(--accent)}
+html.dark .cd .hero-pill,.cd[data-theme="dark"] .hero-pill{background:#151B1B;border:1px solid #263232}
 .cd .bar.thick{height:10px}
 .cd .num-xl .mask,.cd .amt .mask{letter-spacing:1px}
 

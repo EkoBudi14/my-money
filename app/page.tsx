@@ -787,11 +787,11 @@ export default function HomePage() {
           </div>
           <div className="g2">
             <div className="hero-pill">
-              <div className="ic-s" style={{ background: '#FFFFFF', color: 'var(--income)' }}><ArrowDownLeft className="i i-s" /></div>
+              <div className="ic-s" style={{ background: 'var(--hero-ic-income)', color: 'var(--income)' }}><ArrowDownLeft className="i i-s" /></div>
               <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pemasukan<InfoTip label="pemasukan">Semua transaksi masuk pada periode ini. Pembayaran piutang tidak dihitung sebagai pemasukan.</InfoTip>{prevIncome > 0 ? ` · ${incomeChange >= 0 ? 'naik' : 'turun'} ${Math.abs(incomeChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentIncome) : '••'}</div></div>
             </div>
             <div className="hero-pill">
-              <div className="ic-s" style={{ background: '#FFFFFF', color: 'var(--accent)' }}><ArrowUpRight className="i i-s" /></div>
+              <div className="ic-s" style={{ background: 'var(--hero-ic-expense)', color: 'var(--accent)' }}><ArrowUpRight className="i i-s" /></div>
               <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pengeluaran<InfoTip label="pengeluaran">Semua transaksi keluar pada periode ini. Transaksi talangan tidak dihitung sebagai pengeluaran.</InfoTip>{prevExpense > 0 ? ` · ${expenseChange >= 0 ? 'naik' : 'turun'} ${Math.abs(expenseChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentExpense) : '••'}</div></div>
             </div>
           </div>
