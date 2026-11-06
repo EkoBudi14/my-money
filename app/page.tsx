@@ -449,22 +449,27 @@ export default function HomePage() {
                 <div className="meta">Terima {rp(lunasiDebt.amount)} ke dompet</div>
               </div>
             </div>
-            <div className="field">Masuk ke dompet
-              <div className="stack" style={{ gap: 8 }}>
-                {activeWallets.map(w => (
-                  <button
-                    key={w.id}
-                    className="input"
-                    style={{ justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}
-                    disabled={repayingWalletId !== null}
-                    onClick={() => markDebtAsPaid(lunasiDebt, w.id)}
-                  >
-                    <span style={{ fontWeight: 600 }}>{w.name}</span>
-                    <span className="lbl">{repayingWalletId === w.id ? 'Menyimpan…' : rp(w.balance)}</span>
-                  </button>
-                ))}
+            {[
+              { label: 'Masuk ke dompet', list: activeWallets },
+              { label: 'Masuk ke tabungan', list: wallets.filter(w => w.category === 'savings') },
+            ].filter(g => g.list.length > 0).map(g => (
+              <div key={g.label} className="field">{g.label}
+                <div className="stack" style={{ gap: 8 }}>
+                  {g.list.map(w => (
+                    <button
+                      key={w.id}
+                      className="input"
+                      style={{ justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}
+                      disabled={repayingWalletId !== null}
+                      onClick={() => markDebtAsPaid(lunasiDebt, w.id)}
+                    >
+                      <span style={{ fontWeight: 600 }}>{w.name}</span>
+                      <span className="lbl">{repayingWalletId === w.id ? 'Menyimpan…' : rp(w.balance)}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </>
       )}
