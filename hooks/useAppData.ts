@@ -1,13 +1,13 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import {
   getTransactions, getWallets, getBudgets, getDebts, getGoals,
 } from '@/lib/queries'
 import { getRecurringBills } from '@/lib/recurring-bills'
-import { Transaction, Wallet, Budget, Debt, Goal, Note, RecurringBill } from '@/types'
+import { Transaction, Wallet, Budget, Debt, Goal, Note } from '@/types'
 
 // Central query keys so every page shares the same cache entry for a table.
 // Reusing a key across pages means the second page to read it is instant.
@@ -31,31 +31,45 @@ async function unwrap<T>(p: PromiseLike<{ data: T | null; error: unknown }>): Pr
   return (data ?? ([] as unknown as T))
 }
 
-export const useTransactions = () =>
-  useQuery({ queryKey: qk.transactions, queryFn: () => unwrap<Transaction[]>(getTransactions()) })
-
-export const useWallets = () =>
-  useQuery({ queryKey: qk.wallets, queryFn: () => unwrap<Wallet[]>(getWallets()) })
-
-export const useBudgets = () =>
-  useQuery({ queryKey: qk.budgets, queryFn: () => unwrap<Budget[]>(getBudgets()) })
-
-export const useDebts = () =>
-  useQuery({ queryKey: qk.debts, queryFn: () => unwrap<Debt[]>(getDebts()) })
-
-export const useGoals = () =>
-  useQuery({ queryKey: qk.goals, queryFn: () => unwrap<Goal[]>(getGoals()) })
-
-export const useNotes = () =>
-  useQuery({
+// Query definitions, shared by the hooks below and by prefetchAppData.
+const q = {
+  transactions: { queryKey: qk.transactions, queryFn: () => unwrap<Transaction[]>(getTransactions()) },
+  wallets: { queryKey: qk.wallets, queryFn: () => unwrap<Wallet[]>(getWallets()) },
+  budgets: { queryKey: qk.budgets, queryFn: () => unwrap<Budget[]>(getBudgets()) },
+  debts: { queryKey: qk.debts, queryFn: () => unwrap<Debt[]>(getDebts()) },
+  goals: { queryKey: qk.goals, queryFn: () => unwrap<Goal[]>(getGoals()) },
+  notes: {
     queryKey: qk.notes,
     queryFn: () => unwrap<Note[]>(
       supabase.from('notes').select('*').order('updated_at', { ascending: false }),
     ),
-  })
+  },
+  bills: { queryKey: qk.bills, queryFn: () => getRecurringBills() },
+  // user_settings row id=1 (filter mode + custom range + custom categories).
+  settings: {
+    queryKey: qk.settings,
+    queryFn: async () => {
+      const { data } = await supabase.from('user_settings').select('*').eq('id', 1).single()
+      return data
+    },
+  },
+  filterHistory: {
+    queryKey: qk.filterHistory,
+    queryFn: () => unwrap(
+      supabase.from('filter_history').select('*').order('start_date', { ascending: true }),
+    ),
+  },
+}
 
-export const useBills = () =>
-  useQuery({ queryKey: qk.bills, queryFn: () => getRecurringBills() })
+export const useTransactions = () => useQuery(q.transactions)
+export const useWallets = () => useQuery(q.wallets)
+export const useBudgets = () => useQuery(q.budgets)
+export const useDebts = () => useQuery(q.debts)
+export const useGoals = () => useQuery(q.goals)
+export const useNotes = () => useQuery(q.notes)
+export const useBills = () => useQuery(q.bills)
+export const useSettings = () => useQuery(q.settings)
+export const useFilterHistory = () => useQuery(q.filterHistory)
 
 export const useBillPayments = (month: string) =>
   useQuery({
@@ -69,23 +83,11 @@ export const useBillPayments = (month: string) =>
     },
   })
 
-// user_settings row id=1 (filter mode + custom range + custom categories).
-export const useSettings = () =>
-  useQuery({
-    queryKey: qk.settings,
-    queryFn: async () => {
-      const { data } = await supabase.from('user_settings').select('*').eq('id', 1).single()
-      return data
-    },
-  })
-
-export const useFilterHistory = () =>
-  useQuery({
-    queryKey: qk.filterHistory,
-    queryFn: () => unwrap(
-      supabase.from('filter_history').select('*').order('start_date', { ascending: true }),
-    ),
-  })
+// Warm every shared cache entry so the first visit to any page renders
+// with data instead of a skeleton. Already-fresh entries are skipped.
+export function prefetchAppData(qc: QueryClient) {
+  return Promise.allSettled(Object.values(q).map(def => qc.prefetchQuery(def as Parameters<QueryClient['prefetchQuery']>[0])))
+}
 
 // Invalidate caches after a mutation so the affected pages revalidate.
 // Stable identity (useCallback) so it is safe in useEffect dependency arrays.

@@ -18,6 +18,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { useIsWeb } from '@/hooks/useIsWeb'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
 import TransactionModal from '@/components/TransactionModal'
+import CountUp from '@/components/CountUp'
 import { SkeletonRows } from '@/components/Skeleton'
 import { getCategoryIcon } from '@/lib/categories'
 import { getPercentageChange, formatPeriodLabel } from '@/lib/format'
@@ -589,22 +590,22 @@ export default function HomePage() {
           <div className="wrap">
             <div className="hero stack-12" style={{ flex: '2 1 380px' }}>
               <div className="lbl hstack" style={{ gap: 4 }}>Saldo aktif · siap dipakai dari {activeWallets.length} dompet<InfoTip label="saldo aktif">Total sisa saldo dari dompet bertipe Aktif. Uang yang siap digunakan untuk transaksi sehari-hari.</InfoTip></div>
-              <div className="num-xl" style={{ fontSize: 36 }}>{showBalance ? rp(activeBalance) : 'Rp ••••••'}</div>
+              <div className="num-xl" style={{ fontSize: 36 }}>{showBalance ? <CountUp value={activeBalance} format={rp} /> : 'Rp ••••••'}</div>
               <Link href="/wallets?tab=tabungan" className="between" style={{ color: '#FFFFFF', textDecoration: 'none', borderTop: '1px solid rgba(255,255,255,.18)', paddingTop: 12, marginTop: 'auto' }}>
                 <span className="lbl hstack" style={{ gap: 4 }}>Aset tersimpan (tabungan inti)<InfoTip label="aset tersimpan">Total saldo dari semua dompet bertipe Tabungan. Uang yang disimpan dan tidak untuk pengeluaran harian.</InfoTip></span>
-                <span className="hstack" style={{ fontWeight: 700 }}>{showBalance ? rp(savingsTotal) : 'Rp ••••'}<ChevronRight className="i i-s" /></span>
+                <span className="hstack" style={{ fontWeight: 700 }}>{showBalance ? <CountUp value={savingsTotal} format={rp} /> : 'Rp ••••'}<ChevronRight className="i i-s" /></span>
               </Link>
             </div>
             <div className="card stack" style={{ flex: '1 1 200px', padding: 20 }}>
               <div className="ic c-gaji"><ArrowDownLeft className="i" /></div>
               <div className="lbl hstack" style={{ marginTop: 4, gap: 4 }}>Pemasukan<InfoTip label="pemasukan">Semua transaksi masuk pada periode ini. Pembayaran piutang tidak dihitung sebagai pemasukan.</InfoTip></div>
-              <div className="num-l">{showBalance ? rp(currentIncome) : 'Rp ••••••'}</div>
+              <div className="num-l">{showBalance ? <CountUp value={currentIncome} format={rp} /> : 'Rp ••••••'}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: incomeChange >= 0 ? 'var(--income)' : 'var(--text-2)' }}>{changeText(incomeChange, prevIncome)}</div>
             </div>
             <div className="card stack" style={{ flex: '1 1 200px', padding: 20 }}>
               <div className="ic c-transfer"><ArrowUpRight className="i" /></div>
               <div className="lbl hstack" style={{ marginTop: 4, gap: 4 }}>Pengeluaran<InfoTip label="pengeluaran">Semua transaksi keluar pada periode ini. Transaksi talangan tidak dihitung sebagai pengeluaran.</InfoTip></div>
-              <div className="num-l">{showBalance ? rp(currentExpense) : 'Rp ••••••'}</div>
+              <div className="num-l">{showBalance ? <CountUp value={currentExpense} format={rp} /> : 'Rp ••••••'}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)' }}>{changeText(expenseChange, prevExpense)}</div>
             </div>
           </div>
@@ -616,9 +617,9 @@ export default function HomePage() {
               <div style={{ fontSize: 14 }}>Kamu sudah pakai <b>{usedPct}%</b> dari pemasukan periode ini.</div>
               <div className={`bar thick ${sisa < 0 ? 'over' : ''}`}><div style={{ width: `${usedPct}%` }} /></div>
               <div className="g3" style={{ gap: 16 }}>
-                <div><div className="lbl">Pemasukan</div><div className="num-m">{rp(currentIncome)}</div><div className="lbl">Tidak termasuk piutang</div></div>
-                <div><div className="lbl">Uang dipakai</div><div className="num-m">{rp(totalUsed)}</div><div className="lbl">Pengeluaran + transfer</div></div>
-                <div><div className="lbl">Sisa belum terpakai</div><div className="num-m" style={{ color: sisa >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rp(sisa)}</div><div className="lbl">Pemasukan − dipakai</div></div>
+                <div><div className="lbl">Pemasukan</div><div className="num-m"><CountUp value={currentIncome} format={rp} /></div><div className="lbl">Tidak termasuk piutang</div></div>
+                <div><div className="lbl">Uang dipakai</div><div className="num-m"><CountUp value={totalUsed} format={rp} /></div><div className="lbl">Pengeluaran + transfer</div></div>
+                <div><div className="lbl">Sisa belum terpakai</div><div className="num-m" style={{ color: sisa >= 0 ? 'var(--accent)' : 'var(--danger)' }}><CountUp value={sisa} format={rp} /></div><div className="lbl">Pemasukan − dipakai</div></div>
               </div>
             </section>
             <div className="stack" style={{ flex: '2 1 300px', gap: 16 }}>
@@ -669,10 +670,10 @@ export default function HomePage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '44px repeat(6, minmax(0, 1fr))', gap: 10, alignItems: 'end', height: 190 }}>
                 <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-2)' }}><span>{rpShort(chartMax).replace('Rp ', '')}</span><span>{rpShort(chartMax / 2).replace('Rp ', '')}</span><span>0</span></div>
-                {chartMonths.map(m => (
-                  <div key={m.key} className="hstack" style={{ height: '100%', alignItems: 'flex-end', justifyContent: 'center', gap: 4, borderBottom: '1px solid var(--border)' }}>
-                    <div title={`Pemasukan ${rp(m.income)}`} style={{ width: 18, height: `${(m.income / chartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)', borderRadius: '6px 6px 0 0' }} />
-                    <div title={`Pengeluaran ${rp(m.expense)}`} style={{ width: 18, height: `${(m.expense / chartMax) * 100}%`, minHeight: 2, background: 'var(--accent)', borderRadius: '6px 6px 0 0' }} />
+                {chartMonths.map((m, mi) => (
+                  <div key={m.key} className="hstack" style={{ height: '100%', alignItems: 'flex-end', justifyContent: 'center', gap: 4, borderBottom: '1px solid var(--border)', ['--cd-b' as string]: mi }}>
+                    <div className="cd-grow-y" title={`Pemasukan ${rp(m.income)}`} style={{ width: 18, height: `${(m.income / chartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)', borderRadius: '6px 6px 0 0' }} />
+                    <div className="cd-grow-y" title={`Pengeluaran ${rp(m.expense)}`} style={{ width: 18, height: `${(m.expense / chartMax) * 100}%`, minHeight: 2, background: 'var(--accent)', borderRadius: '6px 6px 0 0' }} />
                   </div>
                 ))}
               </div>
@@ -785,7 +786,7 @@ export default function HomePage() {
           <div className="between" style={{ alignItems: 'flex-start' }}>
             <div>
               <div className="lbl hstack" style={{ gap: 4 }}>Saldo aktif<InfoTip label="saldo aktif">Total sisa saldo dari dompet bertipe Aktif. Uang yang siap digunakan untuk transaksi sehari-hari.</InfoTip></div>
-              <div className="num-xl" style={{ marginTop: 4 }}>{showBalance ? rp(activeBalance) : 'Rp ••••••'}</div>
+              <div className="num-xl" style={{ marginTop: 4 }}>{showBalance ? <CountUp value={activeBalance} format={rp} /> : 'Rp ••••••'}</div>
               <div className="lbl" style={{ marginTop: 2 }}>Siap dipakai dari {activeWallets.length} dompet</div>
             </div>
             <button className="icon-btn" aria-label={showBalance ? 'Sembunyikan angka' : 'Tampilkan angka'} aria-pressed={showBalance} onClick={() => setShowBalance(v => !v)}>{showBalance ? <EyeOff className="i" /> : <Eye className="i" />}</button>
@@ -793,16 +794,16 @@ export default function HomePage() {
           <div className="g2">
             <div className="hero-pill">
               <div className="ic-s" style={{ background: 'var(--hero-ic-income)', color: 'var(--income)' }}><ArrowDownLeft className="i i-s" /></div>
-              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pemasukan<InfoTip label="pemasukan">Semua transaksi masuk pada periode ini. Pembayaran piutang tidak dihitung sebagai pemasukan.</InfoTip>{prevIncome > 0 ? ` · ${incomeChange >= 0 ? 'naik' : 'turun'} ${Math.abs(incomeChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentIncome) : '••'}</div></div>
+              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pemasukan<InfoTip label="pemasukan">Semua transaksi masuk pada periode ini. Pembayaran piutang tidak dihitung sebagai pemasukan.</InfoTip>{prevIncome > 0 ? ` · ${incomeChange >= 0 ? 'naik' : 'turun'} ${Math.abs(incomeChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? <CountUp value={currentIncome} format={rpShort} /> : '••'}</div></div>
             </div>
             <div className="hero-pill">
               <div className="ic-s" style={{ background: 'var(--hero-ic-expense)', color: 'var(--accent)' }}><ArrowUpRight className="i i-s" /></div>
-              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pengeluaran<InfoTip label="pengeluaran">Semua transaksi keluar pada periode ini. Transaksi talangan tidak dihitung sebagai pengeluaran.</InfoTip>{prevExpense > 0 ? ` · ${expenseChange >= 0 ? 'naik' : 'turun'} ${Math.abs(expenseChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? rpShort(currentExpense) : '••'}</div></div>
+              <div style={{ minWidth: 0 }}><div className="lbl" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>Pengeluaran<InfoTip label="pengeluaran">Semua transaksi keluar pada periode ini. Transaksi talangan tidak dihitung sebagai pengeluaran.</InfoTip>{prevExpense > 0 ? ` · ${expenseChange >= 0 ? 'naik' : 'turun'} ${Math.abs(expenseChange).toFixed(0)}%` : ''}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{showBalance ? <CountUp value={currentExpense} format={rpShort} /> : '••'}</div></div>
             </div>
           </div>
           <Link href="/wallets?tab=tabungan" className="between" style={{ color: '#FFFFFF', textDecoration: 'none', borderTop: '1px solid rgba(255,255,255,.18)', paddingTop: 12, minHeight: 32 }}>
             <span className="lbl hstack" style={{ gap: 4 }}>Aset tersimpan (tabungan inti)<InfoTip label="aset tersimpan">Total saldo dari semua dompet bertipe Tabungan. Uang yang disimpan dan tidak untuk pengeluaran harian.</InfoTip></span>
-            <span className="hstack" style={{ fontSize: 14, fontWeight: 700 }}>{showBalance ? rp(savingsTotal) : 'Rp ••••'} <ChevronRight className="i i-s" /></span>
+            <span className="hstack" style={{ fontSize: 14, fontWeight: 700 }}>{showBalance ? <CountUp value={savingsTotal} format={rp} /> : 'Rp ••••'} <ChevronRight className="i i-s" /></span>
           </Link>
         </div>
 
@@ -815,9 +816,9 @@ export default function HomePage() {
           <div style={{ fontSize: 14 }}>Kamu sudah pakai <b>{usedPct}%</b> dari pemasukan periode ini.</div>
           <div className={`bar thick ${sisa < 0 ? 'over' : ''}`}><div style={{ width: `${usedPct}%` }} /></div>
           <div className="g3">
-            <div><div className="lbl">Pemasukan</div><div className="num-m">{rpShort(currentIncome)}</div><div className="lbl">Tanpa piutang</div></div>
-            <div><div className="lbl">Dipakai</div><div className="num-m">{rpShort(totalUsed)}</div><div className="lbl">Keluar + transfer</div></div>
-            <div><div className="lbl">Sisa</div><div className="num-m" style={{ color: sisa >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpShort(sisa)}</div><div className="lbl">Belum terpakai</div></div>
+            <div><div className="lbl">Pemasukan</div><div className="num-m"><CountUp value={currentIncome} format={rpShort} /></div><div className="lbl">Tanpa piutang</div></div>
+            <div><div className="lbl">Dipakai</div><div className="num-m"><CountUp value={totalUsed} format={rpShort} /></div><div className="lbl">Keluar + transfer</div></div>
+            <div><div className="lbl">Sisa</div><div className="num-m" style={{ color: sisa >= 0 ? 'var(--accent)' : 'var(--danger)' }}><CountUp value={sisa} format={rpShort} /></div><div className="lbl">Belum terpakai</div></div>
           </div>
         </div>
 

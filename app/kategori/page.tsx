@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { AVAILABLE_ICONS, COLOR_PALETTES, CATEGORIES, getCategoryIcon } from '@/lib/categories'
 import { CustomCategoryDef } from '@/types'
+import { useQueryClient } from '@tanstack/react-query'
+import { useSettings, qk } from '@/hooks/useAppData'
 import FieldError from '@/components/FieldError'
 import { SkeletonRows } from '@/components/Skeleton'
 
@@ -22,8 +24,16 @@ export default function KategoriPage() {
   const { showConfirm } = useConfirm()
 
   const [type, setType] = useState<TxType>('pengeluaran')
-  const [customCategories, setCustomCategories] = useState<CustomList>({ pengeluaran: [], pemasukan: [] })
-  const [loading, setLoading] = useState(true)
+  // Seed from the shared settings cache so revisits render instantly.
+  const qc = useQueryClient()
+  const settingsQ = useSettings()
+  const [customCategories, setCustomCategories] = useState<CustomList>(
+    () => (qc.getQueryData(qk.settings) as { custom_categories?: CustomList } | null)?.custom_categories ?? { pengeluaran: [], pemasukan: [] },
+  )
+  const loading = settingsQ.isLoading
+  // Mirror a local save into the shared cache so other pages see it too.
+  const syncCache = (updated: CustomList) =>
+    qc.setQueryData(qk.settings, (old: Record<string, unknown> | null | undefined) => (old ? { ...old, custom_categories: updated } : old))
   const [saving, setSaving] = useState(false)
 
   // Form state for creating / editing a custom category
@@ -34,13 +44,9 @@ export default function KategoriPage() {
   const [nameError, setNameError] = useState('')
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.from('user_settings').select('custom_categories').eq('id', 1).single()
-      if (data?.custom_categories) setCustomCategories(data.custom_categories as CustomList)
-      setLoading(false)
-    }
-    load()
-  }, [])
+    const cc = (settingsQ.data as { custom_categories?: CustomList } | null | undefined)?.custom_categories
+    if (cc) setCustomCategories(cc)
+  }, [settingsQ.data])
 
   const resetForm = () => {
     setName('')
@@ -80,6 +86,7 @@ export default function KategoriPage() {
 
     if (!error) {
       setCustomCategories(updated)
+      syncCache(updated)
       resetForm()
       showToast('success', oldName ? 'Perubahan tersimpan' : 'Kategori ditambahkan')
     } else {
@@ -104,6 +111,7 @@ export default function KategoriPage() {
 
     if (!error) {
       setCustomCategories(updated)
+      syncCache(updated)
       if (editingName === catName) resetForm()
       showToast('success', 'Kategori dihapus')
     } else {

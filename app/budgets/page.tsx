@@ -33,12 +33,19 @@ const shortRp = (n: number) => {
   return `Rp ${n}`
 }
 
+// Last loaded period, kept across visits so reopening Budget renders instantly
+// and refreshes in the background (stale-while-revalidate).
+type CatList = { pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] }
+let budgetCache: { key: string; budgets: Budget[]; transactions: Transaction[]; wallets: Wallet[]; cats: CatList } | null = null
+const periodKeyOf = (d: Date, mode: 'monthly' | 'custom', range: { start: string; end: string }) =>
+    mode === 'monthly' ? `m|${d.getFullYear()}-${d.getMonth()}` : `c|${range.start}|${range.end}`
+
 export default function BudgetsPage() {
-    const [budgets, setBudgets] = useState<Budget[]>([])
-    const [customCategories, setCustomCategories] = useState<{ pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] }>({ pengeluaran: [], pemasukan: [] })
-    const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [wallets, setWallets] = useState<Wallet[]>([])
-    const [loading, setLoading] = useState(true)
+    const [budgets, setBudgets] = useState<Budget[]>(() => budgetCache?.budgets ?? [])
+    const [customCategories, setCustomCategories] = useState<CatList>(() => budgetCache?.cats ?? { pengeluaran: [], pemasukan: [] })
+    const [transactions, setTransactions] = useState<Transaction[]>(() => budgetCache?.transactions ?? [])
+    const [wallets, setWallets] = useState<Wallet[]>(() => budgetCache?.wallets ?? [])
+    const [fetching, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentDate, setCurrentDate] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -63,6 +70,9 @@ export default function BudgetsPage() {
             end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
         }
     })
+    // Skeleton only when there is no cached data for the period on screen.
+    const periodKey = periodKeyOf(currentDate, filterMode, customRange)
+    const loading = fetching && budgetCache?.key !== periodKey
     const [showSettings, setShowSettings] = useState(false)
     const isWeb = useIsWeb()
     const router = useRouter()
@@ -123,6 +133,10 @@ export default function BudgetsPage() {
 
     const fetchAllData = async () => {
         setLoading(true)
+        const key = periodKeyOf(currentDate, filterMode, customRange)
+        let cats: CatList = budgetCache?.cats ?? { pengeluaran: [], pemasukan: [] }
+        let walletRows: Wallet[] = budgetCache?.wallets ?? []
+        let txRows: Transaction[] = []
 
         let targetDate = currentDate
         let startIso: string
@@ -154,11 +168,12 @@ export default function BudgetsPage() {
 
         if (settingsRes.data && settingsRes.data.custom_categories) {
             try {
-                setCustomCategories(settingsRes.data.custom_categories as { pengeluaran: (string | CustomCategoryDef)[], pemasukan: (string | CustomCategoryDef)[] })
+                cats = settingsRes.data.custom_categories as CatList
+                setCustomCategories(cats)
             } catch (e) { }
         }
 
-        if (walletsRes.data) setWallets(walletsRes.data)
+        if (walletsRes.data) { walletRows = walletsRes.data; setWallets(walletsRes.data) }
         
         if (budgetsRes.error) showToast('error', 'Gagal memuat budget')
         let periodBudgets = budgetsRes.data || []
@@ -186,8 +201,9 @@ export default function BudgetsPage() {
         }
         setBudgets(periodBudgets)
         
-        if (transactionsRes.data) setTransactions(transactionsRes.data as unknown as Transaction[])
+        if (transactionsRes.data) { txRows = transactionsRes.data as unknown as Transaction[]; setTransactions(txRows) }
 
+        if (!budgetsRes.error) budgetCache = { key, budgets: periodBudgets, transactions: txRows, wallets: walletRows, cats }
         setLoading(false)
     }
 
