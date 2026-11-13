@@ -6,6 +6,7 @@ import { useTransactions, useWallets } from '@/hooks/useAppData'
 import { Transaction, Wallet } from '@/types'
 import { ChevronLeft, ChevronRight, Calendar, Lightbulb } from 'lucide-react'
 import EmptyState from '@/components/EmptyState'
+import CountUp from '@/components/CountUp'
 import { useIsWeb } from '@/hooks/useIsWeb'
 import PeriodSheet from '@/components/PeriodSheet'
 import { getCategoryIcon } from '@/lib/categories'
@@ -619,10 +620,10 @@ export default function AnalyticsPage() {
                     ) : (
                         <>
                             <div className="wrap">
-                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pemasukan</div><div className="num-l pos">{rpFull(income)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(income, periodComparison.prevIncome)}</div></div>
-                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pengeluaran</div><div className="num-l">{rpFull(expense)}</div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(expense, periodComparison.prevExpense)}</div></div>
-                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Sisa periode ini</div><div className="num-l" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpFull(netBalance)}</div><div className="lbl" style={{ marginTop: 4 }}>Pemasukan − pengeluaran</div></div>
-                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Saving rate</div><div className="num-l">{savingRate.toFixed(0)}%</div><div className="lbl" style={{ marginTop: 4 }}>Batas sehat 20%</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pemasukan</div><div className="num-l pos"><CountUp value={income} format={rpFull} /></div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(income, periodComparison.prevIncome)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Pengeluaran</div><div className="num-l"><CountUp value={expense} format={rpFull} /></div><div className="lbl" style={{ marginTop: 4 }}>{pctLabel(expense, periodComparison.prevExpense)}</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Sisa periode ini</div><div className="num-l" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}><CountUp value={netBalance} format={rpFull} /></div><div className="lbl" style={{ marginTop: 4 }}>Pemasukan − pengeluaran</div></div>
+                                <div className="card" style={{ flex: '1 1 200px', padding: 20 }}><div className="lbl">Saving rate</div><div className="num-l"><CountUp value={savingRate} round={false} format={n => `${n.toFixed(0)}%`} /></div><div className="lbl" style={{ marginTop: 4 }}>Batas sehat 20%</div></div>
                             </div>
 
                             {insights.length > 0 && (
@@ -651,9 +652,9 @@ export default function AnalyticsPage() {
                                     <div style={{ display: 'grid', gridTemplateColumns: `44px repeat(${Math.max(1, webChart.length)}, minmax(0, 1fr))`, gap: 8, alignItems: 'end', height: 220 }}>
                                         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-2)' }}><span>{rpShort(webChartMax).replace('Rp ', '')}</span><span>{rpShort(webChartMax / 2).replace('Rp ', '')}</span><span>0</span></div>
                                         {webChart.map((d, i) => (
-                                            <div key={i} className="colb">
-                                                <div title={`Pemasukan ${rpFull(d.income)}`} style={{ height: `${(d.income / webChartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)' }} />
-                                                <div title={`Pengeluaran ${rpFull(d.expense)}`} style={{ height: `${(d.expense / webChartMax) * 100}%`, minHeight: 2, background: 'var(--accent)' }} />
+                                            <div key={i} className="colb" style={{ ["--cd-b" as string]: i }}>
+                                                <div className="cd-grow-y" title={`Pemasukan ${rpFull(d.income)}`} style={{ height: `${(d.income / webChartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)' }} />
+                                                <div className="cd-grow-y" title={`Pengeluaran ${rpFull(d.expense)}`} style={{ height: `${(d.expense / webChartMax) * 100}%`, minHeight: 2, background: 'var(--accent)' }} />
                                             </div>
                                         ))}
                                     </div>
@@ -670,7 +671,7 @@ export default function AnalyticsPage() {
                                                 const share = expense > 0 ? (c.value / expense) * 100 : 0
                                                 return (
                                                     <div className="stack" key={c.name} style={{ gap: 6 }}>
-                                                        <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{c.name}</b><span>{rpShort(c.value)} <span className="lbl">· {share.toFixed(0)}%</span></span></div>
+                                                        <div className="between" style={{ fontSize: 13 }}><b style={{ fontWeight: 600 }}>{c.name}</b><span><CountUp value={c.value} format={rpShort} /> <span className="lbl">· {share.toFixed(0)}%</span></span></div>
                                                         <div className="bar"><div style={{ width: `${(c.value / maxCat) * 100}%` }} /></div>
                                                     </div>
                                                 )
@@ -821,13 +822,13 @@ export default function AnalyticsPage() {
                 {/* Summary */}
                 <div className="card stack-12">
                     <div className="g3">
-                        <div><div className="lbl">Pemasukan</div><div className="num-m pos">+{rpShort(income)}</div></div>
-                        <div><div className="lbl">Pengeluaran</div><div className="num-m">{rpShort(expense)}</div></div>
-                        <div><div className="lbl">Sisa</div><div className="num-m" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>{rpShort(netBalance)}</div></div>
+                        <div><div className="lbl">Pemasukan</div><div className="num-m pos">+<CountUp value={income} format={rpShort} /></div></div>
+                        <div><div className="lbl">Pengeluaran</div><div className="num-m"><CountUp value={expense} format={rpShort} /></div></div>
+                        <div><div className="lbl">Sisa</div><div className="num-m" style={{ color: netBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}><CountUp value={netBalance} format={rpShort} /></div></div>
                     </div>
                     <div className="between" style={{ borderTop: '1px solid var(--divider)', paddingTop: 10 }}>
                         <span className="lbl">Saving rate</span>
-                        <span className="num-m" style={{ color: savingRate >= 20 ? 'var(--income)' : savingRate > 0 ? 'var(--warn)' : 'var(--danger)' }}>{savingRate.toFixed(1)}%</span>
+                        <span className="num-m" style={{ color: savingRate >= 20 ? 'var(--income)' : savingRate > 0 ? 'var(--warn)' : 'var(--danger)' }}><CountUp value={savingRate} round={false} format={n => `${n.toFixed(1)}%`} /></span>
                     </div>
                 </div>
 
@@ -861,7 +862,7 @@ export default function AnalyticsPage() {
                                         <div className={`ic-s ${cls}`}><Icon className="i i-s" /></div>
                                         <span className="grow t">{c.name}</span>
                                         {pct != null && <span className="lbl" style={{ color: pct > 0 ? 'var(--danger)' : 'var(--income)' }}>{pct > 0 ? '+' : ''}{pct.toFixed(0)}%</span>}
-                                        <span className="amt">{rpFull(c.value)}</span>
+                                        <span className="amt"><CountUp value={c.value} format={rpFull} /></span>
                                     </div>
                                     <div className="bar"><div style={{ width: `${(c.value / maxCat) * 100}%` }} /></div>
                                 </div>
@@ -877,9 +878,9 @@ export default function AnalyticsPage() {
                         <div className="hstack" style={{ alignItems: 'flex-end', gap: 10, height: 140, justifyContent: 'space-between' }}>
                             {chartData.map((d, i) => (
                                 <div key={i} className="stack" style={{ flex: 1, alignItems: 'center', gap: 6, minWidth: 0 }}>
-                                    <div className="hstack" style={{ alignItems: 'flex-end', gap: 3, height: 100 }}>
-                                        <div style={{ width: 10, height: `${(d.income / chartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)', borderRadius: 3 }} title={`Masuk ${rpShort(d.income)}`} />
-                                        <div style={{ width: 10, height: `${(d.expense / chartMax) * 100}%`, minHeight: 2, background: 'var(--accent)', borderRadius: 3 }} title={`Keluar ${rpShort(d.expense)}`} />
+                                    <div className="hstack" style={{ alignItems: 'flex-end', gap: 3, height: 100, ["--cd-b" as string]: i }}>
+                                        <div className="cd-grow-y" style={{ width: 10, height: `${(d.income / chartMax) * 100}%`, minHeight: 2, background: 'var(--income-chart)', borderRadius: 3 }} title={`Masuk ${rpShort(d.income)}`} />
+                                        <div className="cd-grow-y" style={{ width: 10, height: `${(d.expense / chartMax) * 100}%`, minHeight: 2, background: 'var(--accent)', borderRadius: 3 }} title={`Keluar ${rpShort(d.expense)}`} />
                                     </div>
                                     <span className="lbl" style={{ fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{d.label}</span>
                                 </div>

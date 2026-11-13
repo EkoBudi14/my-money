@@ -489,6 +489,32 @@ export default function TransactionModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, isOpen, saving, onClose, snapshot])
 
+  // Type switch: fade/slide the form body and pop category tiles in one by one.
+  // Uses the Web Animations API so inputs are not remounted (keeps focus/state).
+  const rootRef = useRef<HTMLDivElement>(null)
+  const prevType = useRef(type)
+  useEffect(() => {
+    if (prevType.current === type) return
+    const order = ['pengeluaran', 'pemasukan', 'topup']
+    const dir = order.indexOf(type) > order.indexOf(prevType.current) ? 1 : -1
+    prevType.current = type
+    const root = rootRef.current
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ease = 'cubic-bezier(.16,1,.3,1)'
+    root.querySelectorAll<HTMLElement>('[data-swap]').forEach(el => {
+      el.animate(
+        [{ opacity: 0, transform: `translateX(${dir * 18}px)` }, { opacity: 1, transform: 'none' }],
+        { duration: 320, easing: ease },
+      )
+    })
+    root.querySelectorAll<HTMLElement>('.catb').forEach((el, i) => {
+      el.animate(
+        [{ opacity: 0, transform: 'translateY(8px) scale(.94)' }, { opacity: 1, transform: 'none' }],
+        { duration: 360, delay: Math.min(i, 14) * 18, easing: ease, fill: 'backwards' },
+      )
+    })
+  }, [type])
+
   if (!isOpen && mode !== 'page') return null
 
   // ── All category options combined ─────────────────────────────────────────
@@ -549,7 +575,7 @@ export default function TransactionModal({
             inputMode="numeric"
             placeholder="0"
             className="val"
-            style={{ color: type === 'pemasukan' ? 'var(--income)' : 'var(--text)' }}
+            style={{ color: type === 'pemasukan' ? 'var(--income)' : 'var(--text)', transition: 'color 250ms ease' }}
             value={amount ? parseInt(amount.replace(/\D/g, '') || '0').toLocaleString('id-ID') : ''}
             onChange={(e) => { const raw = e.target.value.replace(/\D/g, ''); setAmount(raw); clearErr('amount') }}
             autoFocus={!editingTransaction}
@@ -779,8 +805,11 @@ export default function TransactionModal({
     ? 'Ubah transaksi'
     : type === 'pemasukan' ? 'Pemasukan baru' : type === 'pengeluaran' ? 'Pengeluaran baru' : 'Transfer saldo'
 
+  const tabIndex = type === 'pengeluaran' ? 0 : type === 'pemasukan' ? 1 : 2
   const typeTabs = (
-    <div className="seg" role="tablist">
+    <div className="seg seg-anim" role="tablist">
+      {/* Sliding highlight behind the active tab */}
+      <span className="seg-pill" aria-hidden style={{ transform: `translateX(calc(${tabIndex} * (100% + 4px)))` }} />
       {[
         { key: 'pengeluaran', label: 'Pengeluaran' },
         { key: 'pemasukan', label: 'Pemasukan' },
@@ -801,7 +830,7 @@ export default function TransactionModal({
   // ── Page Mode (full screen, no overlay) ────────────────────────────────────
   if (mode === 'page') {
     return (
-      <div className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 0 }}>
+      <div ref={rootRef} className="cd scroll" style={{ minHeight: '100vh', background: 'var(--surface)', maxWidth: 560, margin: '0 auto', paddingBottom: 0 }}>
         {/* Header */}
         <div className="top">
           <div className="top-l">
@@ -823,7 +852,7 @@ export default function TransactionModal({
         {/* Form Content */}
         {isLoading ? loadingState : (
           <form onSubmit={handleSaveTransaction} className="stack-12">
-            {renderFields()}
+            <div data-swap className="stack-12">{renderFields()}</div>
             <div className="sticky-foot" style={{ borderTop: '1px solid var(--border)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}>
               {renderSubmit()}
             </div>
@@ -835,13 +864,14 @@ export default function TransactionModal({
 
   // ── Modal Mode (overlay: mobile bottom-sheet + desktop centered modal) ─────
   return (
-    <div className="cd" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+    <div ref={rootRef} className="cd" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       {/* Backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,20,18,.55)', backdropFilter: 'blur(4px)' }} onClick={requestClose} />
+      <div className="tx-backdrop" style={{ position: 'absolute', inset: 0, background: 'rgba(8,20,18,.55)', backdropFilter: 'blur(4px)' }} onClick={requestClose} />
 
       {/* ===== MOBILE BOTTOM SHEET ===== */}
       {!isWeb && (
       <div
+        className="tx-sheet"
         style={{ position: 'relative', zIndex: 50, width: '100%', maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden' }}
       >
         {/* Drag handle */}
@@ -869,7 +899,7 @@ export default function TransactionModal({
         ) : (
           <form onSubmit={handleSaveTransaction} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div className="stack-12" style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '4px 16px 16px' }}>
-              {renderFields()}
+              <div data-swap className="stack-12">{renderFields()}</div>
             </div>
             <div style={{ flexShrink: 0, padding: '12px 16px calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
               {renderSubmit()}
@@ -885,6 +915,7 @@ export default function TransactionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="tx-modal-title"
+        className="tx-modal"
         style={{ position: 'relative', zIndex: 50, width: 'calc(100% - 48px)', maxWidth: 760, maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, overflow: 'hidden', margin: 'auto' }}
       >
         <div className="between" style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
@@ -903,11 +934,13 @@ export default function TransactionModal({
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
               <div className="stack-12" style={{ flex: '1 1 280px', minWidth: 0 }}>
                 {typeTabs}
-                {renderTop()}
-                {renderNotes()}
+                <div data-swap className="stack-12">
+                  {renderTop()}
+                  {renderNotes()}
+                </div>
               </div>
               {type !== 'topup' && (
-                <div style={{ flex: '1.3 1 340px', minWidth: 0 }}>
+                <div data-swap style={{ flex: '1.3 1 340px', minWidth: 0 }}>
                   {renderCategory()}
                 </div>
               )}
