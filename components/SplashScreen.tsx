@@ -44,6 +44,10 @@ export default function SplashScreen() {
 
     return (
         <div
+            // Hidden by CSS before paint when the splash already ran this
+            // session (see the inline script in app/layout.tsx), so a page
+            // reload shows the page's own skeleton instead of the splash.
+            data-splash
             className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[var(--bg-page)] transition-opacity ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
             style={{ transitionDuration: `${FADE_MS}ms` }}
         >

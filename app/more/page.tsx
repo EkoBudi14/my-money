@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronRight, Wallet, Target, Repeat, ScanLine, Mic, StickyNote, List, Moon, Tags, Download } from 'lucide-react'
+import { ChevronRight, Wallet, Target, Repeat, ScanLine, Mic, StickyNote, List, Moon, Tags, Download, Sparkles, Flame, Tag } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 
 const tileStyle: React.CSSProperties = {
@@ -31,6 +31,16 @@ export default function MorePage() {
             <Link href="/budgets" className="tile" style={tileStyle}><span className="ic c-tagihan"><Wallet className="i" /></span>Budget</Link>
             <Link href="/goals" className="tile" style={tileStyle}><span className="ic c-bonus"><Target className="i" /></span>Goals</Link>
             <Link href="/recurring" className="tile" style={tileStyle}><span className="ic c-hiburan"><Repeat className="i" /></span>Tagihan rutin</Link>
+          </div>
+        </div>
+
+        {/* Insight */}
+        <div className="stack">
+          <span className="lbl" style={{ fontWeight: 700 }}>Insight</span>
+          <div className="g3">
+            <Link href="/rekap" className="tile" style={tileStyle}><span className="ic c-hiburan"><Sparkles className="i" /></span>Rekap</Link>
+            <Link href="/hemat" className="tile" style={tileStyle}><span className="ic c-dapur"><Flame className="i" /></span>Mode Hemat</Link>
+            <Link href="/tags" className="tile" style={tileStyle}><span className="ic c-edukasi"><Tag className="i" /></span>Label</Link>
           </div>
         </div>
 

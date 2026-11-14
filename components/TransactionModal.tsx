@@ -10,6 +10,8 @@ import { deleteTransactionWithRollback } from '@/lib/transactions'
 import FieldError from '@/components/FieldError'
 import NeoSelect from '@/components/NeoSelect'
 import DatePickerNeo from '@/components/DatePickerNeo'
+import TagPicker from '@/components/TagPicker'
+import { useTags } from '@/hooks/useAppData'
 import { Wallet, Transaction, Budget, CustomCategoryDef } from '@/types'
 import {
   Trash2, X, Package,
@@ -95,6 +97,10 @@ export default function TransactionModal({
   const { showSuccess } = useSuccessModal()
   const { showConfirm } = useConfirm()
   const isWeb = useIsWeb()
+  // Labels: null = tags table missing (migration not run), so the picker and
+  // the tag_ids column are both skipped.
+  const tagsQuery = useTags()
+  const tags = tagsQuery.data ?? null
 
   // Delete from inside the edit form (DESIGN-TAMBAHAN.md §8). Reuses the shared
   // rollback + section 3 dialog; on success the caller navigates away.
@@ -130,6 +136,8 @@ export default function TransactionModal({
   // Split Bill
   const [isSplitBill, setIsSplitBill] = useState(false)
   const [splitEntries, setSplitEntries] = useState<{ name: string; amount: string }[]>([{ name: '', amount: '' }])
+  // Labels (tag ids)
+  const [tagIds, setTagIds] = useState<number[]>([])
 
   // Debounce amount for budget awareness (expensive useMemo)
   const [debouncedAmount, setDebouncedAmount] = useState('')
@@ -155,6 +163,7 @@ export default function TransactionModal({
       setPiutangPerson(editingTransaction.piutang_person || '')
       setIsTalangan(editingTransaction.is_talangan || false)
       setTalanganPerson(editingTransaction.talangan_person || '')
+      setTagIds(editingTransaction.tag_ids ?? [])
     } else {
       // Reset for new transaction
       setTitle('')
@@ -176,6 +185,7 @@ export default function TransactionModal({
       setTalanganPerson('')
       setIsSplitBill(false)
       setSplitEntries([{ name: '', amount: '' }])
+      setTagIds([])
     }
     setDebouncedAmount('')
     needBaseline.current = true
@@ -183,7 +193,7 @@ export default function TransactionModal({
   }, [isOpen, editingTransaction, transactions.length, wallets.length])
 
   // ── "Buang perubahan?" (DESIGN-TAMBAHAN §10 / PolaDialog §4) ─────────────
-  const snapshot = JSON.stringify({ amount, title, category, type, selectedWalletId, sourceWalletId, adminFee, customDate, customTime, isPiutang, piutangPerson, isTalangan, talanganPerson, isSplitBill, splitEntries })
+  const snapshot = JSON.stringify({ amount, title, category, type, selectedWalletId, sourceWalletId, adminFee, customDate, customTime, isPiutang, piutangPerson, isTalangan, talanganPerson, isSplitBill, splitEntries, tagIds })
   const needBaseline = useRef(false)
   const baselineRef = useRef<string | null>(null)
   useEffect(() => {
@@ -292,7 +302,9 @@ export default function TransactionModal({
       is_piutang: type === 'pemasukan' ? isPiutang : false,
       piutang_person: type === 'pemasukan' && isPiutang ? piutangPerson.trim() : null,
       is_talangan: type === 'pengeluaran' ? isTalangan : false,
-      talangan_person: type === 'pengeluaran' && isTalangan ? talanganPerson.trim() : null
+      talangan_person: type === 'pengeluaran' && isTalangan ? talanganPerson.trim() : null,
+      // Only sent when the column exists, so saving keeps working before the migration.
+      ...(tags !== null ? { tag_ids: type === 'topup' ? [] : tagIds.filter(id => tags.some(t => t.id === id)) } : {}),
     }
 
     let error: any
@@ -760,6 +772,8 @@ export default function TransactionModal({
   )
 
   const renderNotes = () => (
+    <>
+      {tags !== null && type !== 'topup' && <TagPicker tags={tags} value={tagIds} onChange={setTagIds} />}
       <label className="field">Catatan (opsional)
         <textarea
           className="input"
@@ -768,6 +782,7 @@ export default function TransactionModal({
           onChange={(e) => setTitle(e.target.value)}
         />
       </label>
+    </>
   )
 
   const renderFields = () => (

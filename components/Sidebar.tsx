@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, List, PieChart, Wallet, Box, Goal, Repeat, StickyNote,
   ScanLine, Mic, Moon, Sun, Plus, PanelLeftClose, PanelLeft, MoreHorizontal,
+  Sparkles, Flame, Tag,
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { useSidebar } from '@/hooks/useSidebar'
@@ -20,6 +21,11 @@ const rencanaItems = [
   { name: 'Goals', icon: Goal, href: '/goals' },
   { name: 'Tagihan rutin', icon: Repeat, href: '/recurring' },
   { name: 'Catatan', icon: StickyNote, href: '/notes' },
+]
+const insightItems = [
+  { name: 'Rekap', icon: Sparkles, href: '/rekap' },
+  { name: 'Mode Hemat', icon: Flame, href: '/hemat' },
+  { name: 'Label', icon: Tag, href: '/tags' },
 ]
 const cepatItems = [
   { name: 'Scan struk', icon: ScanLine, href: '/scan-receipt' },
@@ -62,6 +68,8 @@ export default function Sidebar() {
         {mainItems.map(renderLink)}
         <div className="grp"><span className="side-label">Rencana</span></div>
         {rencanaItems.map(renderLink)}
+        <div className="grp"><span className="side-label">Insight</span></div>
+        {insightItems.map(renderLink)}
         <div className="grp"><span className="side-label">Catat cepat</span></div>
         {cepatItems.map(renderLink)}
 

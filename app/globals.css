@@ -300,3 +300,7 @@ html {
 .dark ::-webkit-scrollbar-button:single-button:vertical:increment {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 6'%3E%3Cpath d='M4 5L1 1H7L4 5Z' fill='%23ffffff'/%3E%3C/svg%3E");
 }
+/* Splash already shown this session: hide it before paint on later page loads. */
+html[data-splash-seen] [data-splash] {
+  display: none !important;
+}

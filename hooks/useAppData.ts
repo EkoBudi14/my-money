@@ -7,7 +7,7 @@ import {
   getTransactions, getWallets, getBudgets, getDebts, getGoals,
 } from '@/lib/queries'
 import { getRecurringBills } from '@/lib/recurring-bills'
-import { Transaction, Wallet, Budget, Debt, Goal, Note } from '@/types'
+import { Transaction, Wallet, Budget, Debt, Goal, Note, Tag } from '@/types'
 
 // Central query keys so every page shares the same cache entry for a table.
 // Reusing a key across pages means the second page to read it is instant.
@@ -22,6 +22,7 @@ export const qk = {
   billPayments: (month: string) => ['billPayments', month] as const,
   settings: ['settings'] as const,
   filterHistory: ['filterHistory'] as const,
+  tags: ['tags'] as const,
 }
 
 // Unwrap a Supabase result, throwing on error so React Query marks it failed.
@@ -53,6 +54,16 @@ const q = {
       return data
     },
   },
+  // Labels. null = the tags table does not exist yet (migration not run),
+  // which hides every label UI instead of showing an error.
+  tags: {
+    queryKey: qk.tags,
+    queryFn: async (): Promise<Tag[] | null> => {
+      const { data, error } = await supabase.from('tags').select('*').order('created_at', { ascending: true })
+      if (error) return null
+      return (data ?? []) as Tag[]
+    },
+  },
   filterHistory: {
     queryKey: qk.filterHistory,
     queryFn: () => unwrap(
@@ -70,6 +81,7 @@ export const useNotes = () => useQuery(q.notes)
 export const useBills = () => useQuery(q.bills)
 export const useSettings = () => useQuery(q.settings)
 export const useFilterHistory = () => useQuery(q.filterHistory)
+export const useTags = () => useQuery(q.tags)
 
 export const useBillPayments = (month: string) =>
   useQuery({

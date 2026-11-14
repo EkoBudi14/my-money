@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Calendar, X, Search, Download, RotateCw, Receipt, Plus, Pencil, Trash2 } from 'lucide-react'
 import {
-  useTransactions, useWallets, useDebts, useBudgets, useSettings, useFilterHistory, useInvalidate, qk,
+  useTransactions, useWallets, useDebts, useBudgets, useSettings, useFilterHistory, useTags, useInvalidate, qk,
 } from '@/hooks/useAppData'
 import { getCategoryIcon } from '@/lib/categories'
 import { deleteTransactionWithRollback } from '@/lib/transactions'
@@ -24,6 +24,7 @@ import { useIsWeb } from '@/hooks/useIsWeb'
 import { usePeriodSettings } from '@/hooks/usePeriodSettings'
 import PeriodSheet from '@/components/PeriodSheet'
 import { formatPeriodLabel } from '@/lib/format'
+import { tagClass, tagLabel } from '@/lib/tags'
 import { Transaction, Wallet, Debt, Budget, CustomCategoryDef } from '@/types'
 
 type CustomMap = { pengeluaran: (string | CustomCategoryDef)[]; pemasukan: (string | CustomCategoryDef)[] }
@@ -79,6 +80,8 @@ export default function TransactionsPage() {
   const budgetsQuery = useBudgets()
   const settingsQuery = useSettings()
   const filterHistoryQuery = useFilterHistory()
+  const tagsQuery = useTags()
+  const tags = useMemo(() => tagsQuery.data ?? [], [tagsQuery.data])
   const invalidate = useInvalidate()
 
   const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data])
@@ -95,6 +98,9 @@ export default function TransactionsPage() {
   // Web table state (RiwayatWeb)
   const isWeb = useIsWeb()
   const [catFilter, setCatFilter] = useState('')
+  // Label filter (/transactions?tag=<id> from the Label page). A label is an
+  // event that can span months, so it ignores the period filter.
+  const [tagFilter, setTagFilter] = useState('')
   const [walletFilter, setWalletFilter] = useState('')
   const [webPage, setWebPage] = useState(0)
   const [txModal, setTxModal] = useState<{ editing: Transaction | null } | null>(null)
@@ -110,7 +116,12 @@ export default function TransactionsPage() {
   useEffect(() => {
     const c = new URLSearchParams(window.location.search).get('category')
     if (c) setCatFilter(c)
+    const tg = new URLSearchParams(window.location.search).get('tag')
+    if (tg) setTagFilter(tg)
   }, [])
+
+  const activeTag = tagFilter ? tags.find(t => String(t.id) === tagFilter) : undefined
+  const tagsOf = (t: Transaction) => (t.tag_ids ?? []).map(id => tags.find(x => x.id === id)).filter((x): x is NonNullable<typeof x> => !!x)
 
   const reloadAll = () => invalidate([
     qk.transactions, qk.wallets, qk.debts, qk.budgets, qk.settings, qk.filterHistory,
@@ -147,13 +158,14 @@ export default function TransactionsPage() {
     const q = query.trim().toLowerCase()
     return transactions.filter(t => {
       if (!matchesFilter(t)) return false
-      if (!period.inPeriod(new Date(t.date || t.created_at))) return false
+      if (tagFilter) { if (!(t.tag_ids ?? []).some(id => String(id) === tagFilter)) return false }
+      else if (!period.inPeriod(new Date(t.date || t.created_at))) return false
       if (catFilter && t.category !== catFilter) return false
       if (!q) return true
       return (t.title || '').toLowerCase().includes(q) || (t.category || '').toLowerCase().includes(q)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions, query, filter, catFilter, period.filterMode, period.currentDate, period.customRange])
+  }, [transactions, query, filter, catFilter, tagFilter, period.filterMode, period.currentDate, period.customRange])
 
   const summary = useMemo(() => {
     let masuk = 0, keluar = 0
@@ -230,7 +242,8 @@ export default function TransactionsPage() {
   const pageCount = Math.max(1, Math.ceil(webRows.length / WEB_PAGE))
   const pageSafe = Math.min(webPage, pageCount - 1)
   const pageRows = webRows.slice(pageSafe * WEB_PAGE, pageSafe * WEB_PAGE + WEB_PAGE)
-  const resetWebFilters = () => { setQuery(''); setFilter('semua'); setCatFilter(''); setWalletFilter(''); setWebPage(0) }
+  const resetWebFilters = () => { setQuery(''); setFilter('semua'); setCatFilter(''); setWalletFilter(''); setTagFilter(''); setWebPage(0) }
+  const tagOptions = [{ label: 'Semua label', value: '' }, ...tags.map(t => ({ label: tagLabel(t), value: String(t.id) }))]
 
   if (isWeb) {
     return (
@@ -275,13 +288,14 @@ export default function TransactionsPage() {
               </div>
               <div style={{ width: 180 }}><NeoSelect value={catFilter} onChange={v => { setCatFilter(v); setWebPage(0) }} options={categoryOptions} placeholder="Kategori" className="btn-2 sel-btn" /></div>
               <div style={{ width: 180 }}><NeoSelect value={walletFilter} onChange={v => { setWalletFilter(v); setWebPage(0) }} options={walletOptions} placeholder="Dompet" className="btn-2 sel-btn" /></div>
+              {tags.length > 0 && <div style={{ width: 180 }}><NeoSelect value={tagFilter} onChange={v => { setTagFilter(v); setWebPage(0) }} options={tagOptions} placeholder="Label" className="btn-2 sel-btn" /></div>}
             </div>
 
             {loading ? (
               <div style={{ padding: 20 }}><SkeletonRows count={8} /></div>
             ) : webRows.length === 0 ? (
               <div style={{ padding: 20 }}>
-                {query.trim() || filter !== 'semua' || catFilter || walletFilter ? (
+                {query.trim() || filter !== 'semua' || catFilter || walletFilter || tagFilter ? (
                   <EmptyState icon={<Search className="i" />} title={query.trim() ? `Tidak ada yang cocok dengan “${query.trim()}”` : 'Tidak ada yang cocok'} text="Coba kata lain atau hapus filter." actionLabel="Hapus filter" actionVariant="secondary" onAction={resetWebFilters} style={{ border: 0 }} />
                 ) : (
                   <EmptyState icon={<Receipt className="i" />} title="Catat transaksi pertama" text="Pengeluaran dan pemasukan periode ini muncul di sini." actionLabel="Tambah transaksi" onAction={() => setTxModal({ editing: null })} style={{ border: 0 }} />
@@ -308,8 +322,9 @@ export default function TransactionsPage() {
                               <div className={`ic-s ${cls}`}><Icon className="i i-s" /></div>
                               <div style={{ minWidth: 0 }}>
                                 <div style={{ fontWeight: 600 }}>{t.title || t.category}</div>
-                                {(t.is_piutang || t.is_talangan || debts.some(x => x.original_transaction_id === t.id)) && (
-                                  <div className="hstack" style={{ gap: 4, marginTop: 2 }}>
+                                {(t.is_piutang || t.is_talangan || debts.some(x => x.original_transaction_id === t.id) || tagsOf(t).length > 0) && (
+                                  <div className="hstack" style={{ gap: 4, marginTop: 2, flexWrap: 'wrap' }}>
+                                    {tagsOf(t).map(tg => <span key={tg.id} className={`tagc-s ${tagClass(tg)}`}>{tagLabel(tg)}</span>)}
                                     {t.is_piutang && <span className="badge b-neutral">Piutang</span>}
                                     {t.is_talangan && <span className="badge b-neutral">Talangan</span>}
                                     {debts.some(x => x.original_transaction_id === t.id) && <span className="badge b-neutral">Split Bill</span>}
@@ -418,6 +433,11 @@ export default function TransactionsPage() {
             Kategori: {catFilter}<X className="i i-s" />
           </button>
         )}
+        {tagFilter && (
+          <button className="chip on" style={{ alignSelf: 'flex-start' }} onClick={() => setTagFilter('')} aria-label="Hapus filter label">
+            Label: {activeTag ? tagLabel(activeTag) : '—'} · semua periode<X className="i i-s" />
+          </button>
+        )}
 
         {/* Type filters */}
         <div className="chips">
@@ -438,14 +458,14 @@ export default function TransactionsPage() {
         {loading ? (
           <SkeletonRows count={8} />
         ) : filtered.length === 0 ? (
-          query.trim() || filter !== 'semua' || catFilter ? (
+          query.trim() || filter !== 'semua' || catFilter || tagFilter ? (
             <EmptyState
               icon={<Search className="i" />}
               title={query.trim() ? `Tidak ada yang cocok dengan “${query.trim()}”` : 'Tidak ada yang cocok'}
               text="Coba kata lain atau hapus filter."
               actionLabel="Hapus filter"
               actionVariant="secondary"
-              onAction={() => { setQuery(''); setFilter('semua'); setCatFilter(''); setVisible(PAGE_SIZE) }}
+              onAction={() => { setQuery(''); setFilter('semua'); setCatFilter(''); setTagFilter(''); setVisible(PAGE_SIZE) }}
             />
           ) : (
             <EmptyState
@@ -477,7 +497,7 @@ export default function TransactionsPage() {
                         <div className={`ic ${cls}`}><Icon className="i" /></div>
                         <div className="grow">
                           <div className="t">{t.title || t.category}</div>
-                          <div className="meta">{t.category} · {walletName(t.wallet_id)} · {timeLabel(t)}</div>
+                          <div className="meta">{t.category} · {walletName(t.wallet_id)} · {timeLabel(t)}{tagsOf(t).map(tg => ` · ${tagLabel(tg)}`).join('')}</div>
                         </div>
                         <div
                           className={`amt ${t.type === 'pemasukan' ? 'pos' : ''}`}

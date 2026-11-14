@@ -40,6 +40,22 @@ export interface Transaction {
     piutang_person?: string
     is_talangan?: boolean
     talangan_person?: string
+    tag_ids?: number[] | null
+}
+
+// User-made label (see supabase/migrations/20261114_tags_nospend.sql).
+export interface Tag {
+    id: number
+    name: string
+    color: string // key of TAG_COLORS in lib/tags.ts
+    emoji?: string | null
+    created_at?: string
+}
+
+// Mode Hemat settings stored in user_settings.nospend.
+export interface NoSpendSettings {
+    categories: string[]
+    target: number
 }
 
 export interface Debt {

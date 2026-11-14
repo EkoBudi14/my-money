@@ -60,6 +60,13 @@ export default function RootLayout({
                     document.documentElement.classList.add('dark');
                   }
                 } catch(e) {}
+                // Splash only on the first open of a session. Later full page
+                // loads hide it before paint (rule in globals.css).
+                try {
+                  if (sessionStorage.getItem('splashShown')) {
+                    document.documentElement.setAttribute('data-splash-seen', '');
+                  }
+                } catch(e) {}
               })();
             `,
           }}
